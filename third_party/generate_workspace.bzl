@@ -5,15 +5,15 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "ch_qos_logback_logback_access",
-    artifact = "ch.qos.logback:logback-access:jar:1.2.1",
+    artifact = "ch.qos.logback:logback-access:jar:1.2.3",
   )
   native.maven_jar(
     name = "ch_qos_logback_logback_classic",
-    artifact = "ch.qos.logback:logback-classic:jar:1.2.1",
+    artifact = "ch.qos.logback:logback-classic:jar:1.2.3",
   )
   native.maven_jar(
     name = "ch_qos_logback_logback_core",
-    artifact = "ch.qos.logback:logback-core:jar:1.2.1",
+    artifact = "ch.qos.logback:logback-core:jar:1.2.3",
   )
   native.maven_jar(
     name = "com_carrotsearch_hppc",
@@ -21,59 +21,59 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_core_jackson_annotations",
-    artifact = "com.fasterxml.jackson.core:jackson-annotations:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_core_jackson_core",
-    artifact = "com.fasterxml.jackson.core:jackson-core:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.core:jackson-core:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_core_jackson_databind",
-    artifact = "com.fasterxml.jackson.core:jackson-databind:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.core:jackson-databind:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_dataformat_jackson_dataformat_xml",
-    artifact = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_dataformat_jackson_dataformat_yaml",
-    artifact = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_datatype_jackson_datatype_guava",
-    artifact = "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_datatype_jackson_datatype_jdk8",
-    artifact = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_datatype_jackson_datatype_joda",
-    artifact = "com.fasterxml.jackson.datatype:jackson-datatype-joda:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.datatype:jackson-datatype-joda:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_datatype_jackson_datatype_jsr310",
-    artifact = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_jaxrs_jackson_jaxrs_base",
-    artifact = "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_jaxrs_jackson_jaxrs_json_provider",
-    artifact = "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_module_jackson_module_afterburner",
-    artifact = "com.fasterxml.jackson.module:jackson-module-afterburner:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.module:jackson-module-afterburner:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_module_jackson_module_jaxb_annotations",
-    artifact = "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_module_jackson_module_parameter_names",
-    artifact = "com.fasterxml.jackson.module:jackson-module-parameter-names:jar:2.8.9",
+    artifact = "com.fasterxml.jackson.module:jackson-module-parameter-names:jar:2.9.1",
   )
   native.maven_jar(
     name = "com_fasterxml_woodstox_woodstox_core",
@@ -81,7 +81,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "com_fasterxml_classmate",
-    artifact = "com.fasterxml:classmate:jar:1.3.3",
+    artifact = "com.fasterxml:classmate:jar:1.3.4",
   )
   native.maven_jar(
     name = "com_github_DANS_KNAW_dans_dp_lib",
@@ -126,7 +126,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "com_google_code_findbugs_jsr305",
-    artifact = "com.google.code.findbugs:jsr305:jar:3.0.1",
+    artifact = "com.google.code.findbugs:jsr305:jar:3.0.2",
   )
   native.maven_jar(
     name = "com_google_code_gson_gson",
@@ -301,107 +301,107 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_annotation",
-    artifact = "io.dropwizard.metrics:metrics-annotation:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-annotation:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_core",
-    artifact = "io.dropwizard.metrics:metrics-core:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-core:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_healthchecks",
-    artifact = "io.dropwizard.metrics:metrics-healthchecks:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-healthchecks:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_httpclient",
-    artifact = "io.dropwizard.metrics:metrics-httpclient:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-httpclient:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_jersey2",
-    artifact = "io.dropwizard.metrics:metrics-jersey2:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-jersey2:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_jetty9",
-    artifact = "io.dropwizard.metrics:metrics-jetty9:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-jetty9:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_json",
-    artifact = "io.dropwizard.metrics:metrics-json:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-json:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_jvm",
-    artifact = "io.dropwizard.metrics:metrics-jvm:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-jvm:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_logback",
-    artifact = "io.dropwizard.metrics:metrics-logback:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-logback:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_servlets",
-    artifact = "io.dropwizard.metrics:metrics-servlets:jar:3.2.2",
+    artifact = "io.dropwizard.metrics:metrics-servlets:jar:3.2.5",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_assets",
-    artifact = "io.dropwizard:dropwizard-assets:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-assets:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_client",
-    artifact = "io.dropwizard:dropwizard-client:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-client:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_configuration",
-    artifact = "io.dropwizard:dropwizard-configuration:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-configuration:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_core",
-    artifact = "io.dropwizard:dropwizard-core:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-core:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_forms",
-    artifact = "io.dropwizard:dropwizard-forms:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-forms:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_jackson",
-    artifact = "io.dropwizard:dropwizard-jackson:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-jackson:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_jersey",
-    artifact = "io.dropwizard:dropwizard-jersey:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-jersey:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_jetty",
-    artifact = "io.dropwizard:dropwizard-jetty:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-jetty:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_lifecycle",
-    artifact = "io.dropwizard:dropwizard-lifecycle:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-lifecycle:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_logging",
-    artifact = "io.dropwizard:dropwizard-logging:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-logging:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_metrics",
-    artifact = "io.dropwizard:dropwizard-metrics:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-metrics:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_request_logging",
-    artifact = "io.dropwizard:dropwizard-request-logging:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-request-logging:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_servlets",
-    artifact = "io.dropwizard:dropwizard-servlets:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-servlets:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_testing",
-    artifact = "io.dropwizard:dropwizard-testing:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-testing:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_util",
-    artifact = "io.dropwizard:dropwizard-util:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-util:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_dropwizard_dropwizard_validation",
-    artifact = "io.dropwizard:dropwizard-validation:jar:1.1.2",
+    artifact = "io.dropwizard:dropwizard-validation:jar:1.2.1",
   )
   native.maven_jar(
     name = "io_netty_netty",
@@ -473,7 +473,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "joda_time_joda_time",
-    artifact = "joda-time:joda-time:jar:2.9.7",
+    artifact = "joda-time:joda-time:jar:2.9.9",
   )
   native.maven_jar(
     name = "junit_junit",
@@ -699,7 +699,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "org_assertj_assertj_core",
-    artifact = "org.assertj:assertj-core:jar:3.6.2",
+    artifact = "org.assertj:assertj-core:jar:3.8.0",
   )
   native.maven_jar(
     name = "org_bouncycastle_bcmail_jdk15on",
@@ -759,43 +759,43 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_continuation",
-    artifact = "org.eclipse.jetty:jetty-continuation:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-continuation:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_http",
-    artifact = "org.eclipse.jetty:jetty-http:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-http:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_io",
-    artifact = "org.eclipse.jetty:jetty-io:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-io:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_security",
-    artifact = "org.eclipse.jetty:jetty-security:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-security:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_server",
-    artifact = "org.eclipse.jetty:jetty-server:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-server:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_servlet",
-    artifact = "org.eclipse.jetty:jetty-servlet:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-servlet:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_servlets",
-    artifact = "org.eclipse.jetty:jetty-servlets:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-servlets:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_util",
-    artifact = "org.eclipse.jetty:jetty-util:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-util:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_webapp",
-    artifact = "org.eclipse.jetty:jetty-webapp:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-webapp:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_jetty_jetty_xml",
-    artifact = "org.eclipse.jetty:jetty-xml:jar:9.4.2.v20170220",
+    artifact = "org.eclipse.jetty:jetty-xml:jar:9.4.7.v20170914",
   )
   native.maven_jar(
     name = "org_eclipse_rdf4j_rdf4j_model",
@@ -951,7 +951,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "org_hibernate_hibernate_validator",
-    artifact = "org.hibernate:hibernate-validator:jar:5.3.4.Final",
+    artifact = "org.hibernate:hibernate-validator:jar:5.4.1.Final",
   )
   native.maven_jar(
     name = "org_immutables_value",
@@ -1115,7 +1115,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "org_objenesis_objenesis",
-    artifact = "org.objenesis:objenesis:jar:2.5.1",
+    artifact = "org.objenesis:objenesis:jar:2.6",
   )
   native.maven_jar(
     name = "org_scala_lang_modules_scala_parser_combinators_2_11",
@@ -1131,19 +1131,23 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "org_slf4j_jcl_over_slf4j",
-    artifact = "org.slf4j:jcl-over-slf4j:jar:1.7.24",
+    artifact = "org.slf4j:jcl-over-slf4j:jar:1.7.25",
   )
   native.maven_jar(
     name = "org_slf4j_jul_to_slf4j",
-    artifact = "org.slf4j:jul-to-slf4j:jar:1.7.24",
+    artifact = "org.slf4j:jul-to-slf4j:jar:1.7.25",
   )
   native.maven_jar(
     name = "org_slf4j_log4j_over_slf4j",
-    artifact = "org.slf4j:log4j-over-slf4j:jar:1.7.24",
+    artifact = "org.slf4j:log4j-over-slf4j:jar:1.7.25",
   )
   native.maven_jar(
     name = "org_slf4j_slf4j_api",
-    artifact = "org.slf4j:slf4j-api:jar:1.7.24",
+    artifact = "org.slf4j:slf4j-api:jar:1.7.25",
+  )
+  native.maven_jar(
+    name = "org_twitter4j_twitter4j_core",
+    artifact = "org.twitter4j:twitter4j-core:jar:4.0.6",
   )
   native.maven_jar(
     name = "org_xmlunit_xmlunit_core",
@@ -1256,8 +1260,8 @@ def generated_java_libraries():
     visibility = ["//visibility:public"],
     exports = ["@com_fasterxml_jackson_dataformat_jackson_dataformat_yaml//jar"],
     runtime_deps = [
-      ":com_fasterxml_jackson_core_jackson_core",
       ":org_yaml_snakeyaml",
+      ":com_fasterxml_jackson_core_jackson_core",
     ],
   )
   native.java_library(
@@ -1265,9 +1269,9 @@ def generated_java_libraries():
     visibility = ["//visibility:public"],
     exports = ["@com_fasterxml_jackson_datatype_jackson_datatype_guava//jar"],
     runtime_deps = [
-      ":com_fasterxml_jackson_core_jackson_databind",
-      ":com_fasterxml_jackson_core_jackson_core",
       ":com_google_guava_guava",
+      ":com_fasterxml_jackson_core_jackson_core",
+      ":com_fasterxml_jackson_core_jackson_databind",
     ],
   )
   native.java_library(
@@ -1315,8 +1319,6 @@ def generated_java_libraries():
     exports = ["@com_fasterxml_jackson_jaxrs_jackson_jaxrs_json_provider//jar"],
     runtime_deps = [
       ":com_fasterxml_jackson_jaxrs_jackson_jaxrs_base",
-      ":com_fasterxml_jackson_core_jackson_core",
-      ":com_fasterxml_jackson_core_jackson_databind",
       ":com_fasterxml_jackson_module_jackson_module_jaxb_annotations",
     ],
   )
@@ -1334,8 +1336,8 @@ def generated_java_libraries():
     visibility = ["//visibility:public"],
     exports = ["@com_fasterxml_jackson_module_jackson_module_jaxb_annotations//jar"],
     runtime_deps = [
-      ":com_fasterxml_jackson_core_jackson_core",
       ":com_fasterxml_jackson_core_jackson_annotations",
+      ":com_fasterxml_jackson_core_jackson_core",
       ":com_fasterxml_jackson_core_jackson_databind",
     ],
   )
@@ -1589,20 +1591,12 @@ def generated_java_libraries():
       ":commons_beanutils_commons_beanutils",
       ":commons_cli_commons_cli",
       ":com_google_guava_guava",
-      ":com_sun_tools",
     ],
   )
   native.java_library(
     name = "com_sleepycat_je",
     visibility = ["//visibility:public"],
     exports = ["@com_sleepycat_je//jar"],
-    runtime_deps = [
-    ],
-  )
-  native.java_library(
-    name = "com_sun_tools",
-    visibility = ["//visibility:public"],
-    exports = ["@com_sun_tools//jar"],
     runtime_deps = [
     ],
   )
@@ -2017,7 +2011,6 @@ def generated_java_libraries():
       ":com_fasterxml_jackson_module_jackson_module_afterburner",
       ":com_fasterxml_jackson_datatype_jackson_datatype_joda",
       ":org_slf4j_slf4j_api",
-      ":ch_qos_logback_logback_classic",
     ],
   )
   native.java_library(
@@ -3831,6 +3824,13 @@ def generated_java_libraries():
     name = "org_slf4j_slf4j_api",
     visibility = ["//visibility:public"],
     exports = ["@org_slf4j_slf4j_api//jar"],
+    runtime_deps = [
+    ],
+  )
+  native.java_library(
+    name = "org_twitter4j_twitter4j_core",
+    visibility = ["//visibility:public"],
+    exports = ["@org_twitter4j_twitter4j_core//jar"],
     runtime_deps = [
     ],
   )

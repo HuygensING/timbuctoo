@@ -27,9 +27,13 @@ java_binary(
     ]),
     deps = [
         "//timbuctoo-test-services:timbuctoo-test-services",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/security/twitterexample",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload",
+        "//third_party:org_eclipse_rdf4j_rdf4j_model",
+        "//third_party:org_eclipse_rdf4j_rdf4j_rio_api",
+        "//third_party:com_sleepycat_je",
         "//security-client-agnostic",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml",

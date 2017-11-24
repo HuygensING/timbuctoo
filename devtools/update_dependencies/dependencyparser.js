@@ -164,12 +164,19 @@ const customUris = {
   "org.neo4j:neo4j-kernel:test-jar": "http://repo1.maven.org/maven2/org/neo4j/neo4j-kernel/%s/neo4j-kernel-%s-tests.jar"
 }
 
+const dependenciesToIgnore = [
+  "com.sun:tools"
+]
+
 function writeBazelScript(dependencies) {
   let result = "";
   result += "def generated_maven_jars():\n";
   for (let dependencyId of Object.keys(dependencies.lookup).sort()) {
     let dependency = dependencies.lookup[dependencyId]
     if (dependency.localProject) {
+      continue;
+    }
+    if (dependenciesToIgnore.indexOf(dependencyId) > -1) {
       continue;
     }
     let name = dependency.coords.identifier.replace(/[^a-zA-Z0-9_]/g, "_");
@@ -194,6 +201,9 @@ function writeBazelScript(dependencies) {
     if (dependency.localProject) {
       continue;
     }
+    if (dependenciesToIgnore.indexOf(dependencyId) > -1) {
+      continue;
+    }
     let name = dependency.coords.identifier.replace(/[^a-zA-Z0-9_]/g, "_");
     result += '  native.java_library(\n';
     result += '    name = "' + name + '",\n';
@@ -203,6 +213,10 @@ function writeBazelScript(dependencies) {
     let resultObj = {}
     for (let sub of dependency.dependencies) {
       if (sub.localProject) {
+        continue;
+      }
+      // console.log(JSON.stringify(sub))
+      if (dependenciesToIgnore.indexOf(sub.coords.identifier) > -1) {
         continue;
       }
       resultObj[sub.coords.identifier.replace(/[^a-zA-Z0-9_]/g, "_")] = true
