@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -27,10 +27,10 @@ public class ErrorResponseHelper {
       .build();
   }
 
-  public static Response handleImportManagerResult(Future<List<Throwable>> promise) {
+  public static Response handleImportManagerResult(Future<ImportStatus> promise) {
     try {
-      final List<Throwable> errorList = promise.get();
-      if (errorList.isEmpty()) {
+      final ImportStatus status = promise.get();
+      if (!status.hasErrors()) {
         return Response
           .status(Response.Status.CREATED)
           .build();
@@ -38,8 +38,7 @@ public class ErrorResponseHelper {
         return Response
           .status(Response.Status.BAD_REQUEST)
           .type(MediaType.APPLICATION_JSON_TYPE)
-          .entity(errorList.stream()
-            .map(Throwable::getMessage).collect(Collectors.toList()))
+          .entity(status)
           .build();
       }
     } catch (InterruptedException | ExecutionException e) {

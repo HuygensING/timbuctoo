@@ -63,6 +63,10 @@ public class ImportStatus {
     return !errors.isEmpty() || fatalError != null;
   }
 
+  public boolean isBusy() {
+    return stopwatch.isRunning();
+  }
+
   void setStarted(String methodName, String baseUri) {
     reset();
     stopwatch.start();
