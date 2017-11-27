@@ -72,7 +72,7 @@ public class Rml {
       //FIXME: trigger onprefix for all rml prefixes
       //FIXME: store rml and retrieve it from tripleStore when mapping
       final String baseUri = dataSet.get().getMetadata().getBaseUri();
-      Future<ImportStatus> future = importManager.generateLog(
+      Future<ImportStatus> promise = importManager.generateLog(
         baseUri,
         baseUri,
         new RmlRdfCreator(rmlMappingDocument, baseUri)
