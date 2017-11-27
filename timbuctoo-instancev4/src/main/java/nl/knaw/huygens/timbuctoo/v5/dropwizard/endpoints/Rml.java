@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -71,7 +72,7 @@ public class Rml {
       //FIXME: trigger onprefix for all rml prefixes
       //FIXME: store rml and retrieve it from tripleStore when mapping
       final String baseUri = dataSet.get().getMetadata().getBaseUri();
-      Future<List<Throwable>> promise = importManager.generateLog(
+      Future<ImportStatus> future = importManager.generateLog(
         baseUri,
         baseUri,
         new RmlRdfCreator(rmlMappingDocument, baseUri)
