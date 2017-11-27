@@ -52,7 +52,7 @@ public class ImportStatus {
   public boolean hasErrors() {
     return !errors.isEmpty() || fatalError != null;
   }
-
+  
   @JsonIgnore
   public boolean isBusy() {
     return stopwatch.isRunning();
