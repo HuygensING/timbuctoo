@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -28,7 +29,7 @@ public class BdbSchemaStoreTest {
 
     BdbSchemaStore schemaStore = new BdbSchemaStore(dataStore);
 
-    schemaStore.start();
+    schemaStore.start(new ImportStatus());
     schemaStore.onChangedSubject("subj", changeFetcher);
     schemaStore.onChangedSubject("obj", changeFetcher);
     schemaStore.finish();
