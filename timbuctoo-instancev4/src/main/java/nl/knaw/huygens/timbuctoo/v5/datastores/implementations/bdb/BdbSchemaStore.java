@@ -300,7 +300,9 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   @Override
   public void finish() {
     LOG.info("Finished processing entities");
-    currentStatus.addMessage("Finished processing entities");
+    if (currentStatus != null) {
+      currentStatus.addMessage("Finished processing entities");
+    }
     //Step 3: Add type information to inverse predicates
     for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
       Type type = typeEntry.getValue();

@@ -35,6 +35,9 @@ type Query {
   #metadata for a specific dataset
   dataSetMetadata(dataSetId: ID!): DataSetMetadata
 
+  #import status of a specific dataset
+  dataSetImportStatus(dataSetId: ID!): DataSetImportStatus
+
   #information about the logged in user, or null of no user is logged in
   aboutMe: AboutMe
 
@@ -64,6 +67,26 @@ type DataSetMetadata {
 
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
+}
+
+type DataSetImportStatus {
+  methodName: String!
+  baseUri: String
+  status: String!
+  messages: [String!]!
+  errors: [String!]!
+  fatalError: String
+  elapsedTime(unit: TimeUnit = SECONDS): Int!
+}
+
+enum TimeUnit {
+  #NANOSECONDS # no support for long in GraphQL
+  #MICROSECONDS
+  MILLISECONDS
+  SECONDS
+  MINUTES
+  HOURS
+  DAYS
 }
 
 type AboutMe {
