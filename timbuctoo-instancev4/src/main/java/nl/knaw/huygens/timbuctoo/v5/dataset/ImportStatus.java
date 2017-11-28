@@ -20,7 +20,6 @@ public class ImportStatus {
   private List<String> errors = new ArrayList<>();
   private String fatalError;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
-  private String totalTime;
 
   public String getStatus() {
     return status;
@@ -30,34 +29,24 @@ public class ImportStatus {
     return methodName;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getBaseUri() {
     return baseUri;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public List<String> getMessages() {
     return messages;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public List<String> getErrors() {
     return errors;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getFatalError() {
     return fatalError;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  public String getElapsedTime() {
-    return stopwatch.isRunning() ? stopwatch.elapsed(TimeUnit.SECONDS) + " seconds" : null;
-  }
-
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  public String getTotalTime() {
-    return totalTime;
+  public long getElapsedTime(String unit) {
+    return stopwatch.elapsed(TimeUnit.valueOf(unit));
   }
 
   public boolean hasErrors() {
@@ -110,11 +99,9 @@ public class ImportStatus {
     errors.clear();
     fatalError = null;
     stopwatch.reset();
-    totalTime = null;
   }
 
   private void setStopped() {
-    totalTime = stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
     if (stopwatch.isRunning()) {
       stopwatch.stop();
     }

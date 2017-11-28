@@ -8,6 +8,7 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -108,6 +109,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         final String dataSetId = env.getArgument("dataSetId");
         return dataSetRepository.getDataSet(dataSetId).map(DataSetWithDatabase::new);
       })
+      .dataFetcher("dataSetImportStatus", env -> {
+        final String dataSetId = env.getArgument("dataSetId");
+        return dataSetRepository.getDataSet(dataSetId).map(dataSet -> dataSet.getImportManager().getStatus());
+      })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
         .map(MimeTypeDescription::create)
@@ -133,6 +138,12 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         }
       })
       .dataFetcher("dataSetId", env -> ((PromotedDataSet) env.getSource()).getCombinedId())
+    );
+    wiring.type("DataSetImportStatus", builder -> builder
+      .dataFetcher("elapsedTime", env -> {
+        final String timeUnit = env.getArgument("unit");
+        return ((ImportStatus) env.getSource()).getElapsedTime(timeUnit);
+      })
     );
     wiring.type("CollectionMetadata", builder -> builder
       .dataFetcher("indexConfig", env -> {

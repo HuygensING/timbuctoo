@@ -217,7 +217,7 @@ public class IntegrationTest {
   }
 
   @Test
-  public void asynchronousUnsuccessfulRdfUpload() throws Exception {
+  public void asynchronousUnsuccessfulRdfUploadWithGraphql() throws Exception {
     String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=true",
@@ -230,15 +230,37 @@ public class IntegrationTest {
     );
 
     assertThat(uploadResponse.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
+
+    Thread.sleep(100);
+    Response graphqlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(String.format("{\n" +
+          "  dataSetImportStatus(dataSetId: \"%1s__%2s\")\n" +
+          "  {\n" +
+          "    elapsedTime(unit: MILLISECONDS)\n" +
+          "    status\n" +
+          "  }\n" +
+          "}\n",
+        PREFIX, vreName), MediaType.valueOf("application/graphql")));
+    ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
+    int elapsedTime = objectNode.get("data").get("dataSetImportStatus").get("elapsedTime").asInt();
+    assertThat(elapsedTime > 0, is(true));
+
     // Give asynchronous computations time to detect the error
     Thread.sleep(3000);
-
-    Response statusResponse = call("/v5/" + PREFIX + "/" + vreName + "/upload/rdf/status")
-      .get();
-    assertThat(statusResponse.getStatus(), is(Response.Status.OK.getStatusCode()));
-    String content = IOUtils.toString((InputStream) statusResponse.getEntity());
-    //System.out.println(content);
-    assertThat(content, containsString("Namespace prefix 'wrong_in_1' used but not defined"));
+    graphqlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(String.format("{\n" +
+          "  dataSetImportStatus(dataSetId: \"%1s__%2s\")\n" +
+          "  {\n" +
+          "    elapsedTime(unit: MILLISECONDS)\n" +
+          "    status\n" +
+          "  }\n" +
+          "}\n",
+        PREFIX, vreName), MediaType.valueOf("application/graphql")));
+    objectNode = graphqlCall.readEntity(ObjectNode.class);
+    String status = objectNode.get("data").get("dataSetImportStatus").get("status").asText();
+    assertThat(status, is("Finished with 1 errors"));
   }
 
   @Test
