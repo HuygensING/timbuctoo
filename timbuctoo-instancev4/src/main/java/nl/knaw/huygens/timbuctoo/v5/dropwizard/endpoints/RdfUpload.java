@@ -41,27 +41,6 @@ public class RdfUpload {
     this.authCheck = authCheck;
   }
 
-  @GET
-  @Path("/status")
-  public Response getStatus(@HeaderParam("authorization") final String authHeader,
-                            @PathParam("userId") final String userId,
-                            @PathParam("dataSet") final String dataSetId) {
-    final Either<Response, Response> result = authCheck
-      .getOrCreate( authHeader, userId, dataSetId, false)
-      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
-      .map((Tuple<User, DataSet> userDataSetTuple) -> {
-        final DataSet dataSet = userDataSetTuple.getRight();
-        return Response.ok(dataSet.getImportManager().getStatus())
-                       .type(MediaType.APPLICATION_JSON_TYPE)
-                       .build();
-      });
-    if (result.isLeft()) {
-      return result.getLeft();
-    } else {
-      return result.get();
-    }
-  }
-
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @POST
   public Response upload(@FormDataParam("file") final InputStream rdfInputStream,
