@@ -6,6 +6,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.stream.Stream;
 
@@ -14,6 +16,7 @@ import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OU
 
 public class BdbTruePatchStore {
 
+  private static final Logger LOG = LoggerFactory.getLogger(BdbTruePatchStore.class);
   private final BdbWrapper<String, String> bdbWrapper;
 
   public BdbTruePatchStore(BdbWrapper<String, String> bdbWrapper)
@@ -78,4 +81,11 @@ public class BdbTruePatchStore {
     );
   }
 
+  public void close() {
+    try {
+      bdbWrapper.close();
+    } catch (Exception e) {
+      LOG.error("Exception closing BdbTruePatchStore", e);
+    }
+  }
 }

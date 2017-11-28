@@ -6,4 +6,6 @@ import java.util.Map;
 
 public interface SchemaStore {
   Map<String, Type> getTypes();
+
+  void close();
 }

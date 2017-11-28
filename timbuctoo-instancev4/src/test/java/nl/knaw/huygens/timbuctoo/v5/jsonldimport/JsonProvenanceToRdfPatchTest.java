@@ -460,6 +460,11 @@ public class JsonProvenanceToRdfPatchTest {
         .getOrDefault(subject, new HashMap<>())
         .values().stream().flatMap(Collection::stream);
     }
+
+    @Override
+    public void close() {
+
+    }
   }
 
 }

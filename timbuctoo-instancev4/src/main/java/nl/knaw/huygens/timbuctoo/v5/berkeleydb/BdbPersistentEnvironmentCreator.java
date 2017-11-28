@@ -111,19 +111,7 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
 
   @Override
   public void stop() {
-    LOG.debug("stop databases: {}", databases.keySet());
 
-    for (String dbName : databases.keySet()) {
-      try {
-        LOG.debug("close database '{}'", dbName);
-        Database database = databases.get(dbName);
-        database.close();
-      } catch (Throwable e) {
-        LOG.error("Closing database '{}' went wrong.", dbName);
-        LOG.error("Closing database exception thrown", e);
-      }
-
-    }
   }
 
   @Override

@@ -6,9 +6,9 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbRmlDataSourceStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
@@ -32,9 +33,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 @Value.Immutable
-public interface DataSet {
+public abstract class DataSet {
 
-  static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
+  public static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
                          FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
                          BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
@@ -146,21 +147,49 @@ public interface DataSet {
       .typeNameStore(typeNameStore)
       .schemaStore(schema)
       .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
+      .rmlDataSourceStore(rmlDataSourceStore)
+      .schemaStore(schema)
+      .truePatchStore(truePatchStore)
+      .updatePerPatchStore(updatedPerPatchStore)
+      .versionStore(versionStore)
       .importManager(importManager)
       .build();
   }
 
-  SchemaStore getSchemaStore();
+  public void stop() {
+    getQuadStore().close();
+    try {
+      getTypeNameStore().close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    getSchemaStore().close();
+    getTruePatchStore().close();
+    getUpdatePerPatchStore().close();
+    getRmlDataSourceStore().close();
+    getVersionStore().close();
 
-  TypeNameStore getTypeNameStore();
+  }
 
-  ImportManager getImportManager();
+  protected abstract VersionStore getVersionStore();
 
-  RdfDataSourceFactory getDataSource();
+  protected abstract BdbTruePatchStore getTruePatchStore();
 
-  QuadStore getQuadStore();
+  protected abstract UpdatedPerPatchStore getUpdatePerPatchStore();
 
-  PromotedDataSet getMetadata();
+  protected abstract RmlDataSourceStore getRmlDataSourceStore();
+
+  public abstract SchemaStore getSchemaStore();
+
+  public abstract TypeNameStore getTypeNameStore();
+
+  public abstract ImportManager getImportManager();
+
+  public abstract RdfDataSourceFactory getDataSource();
+
+  public abstract QuadStore getQuadStore();
+
+  public abstract PromotedDataSet getMetadata();
 
 
 }

@@ -7,6 +7,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.stream.Stream;
 
@@ -15,6 +17,7 @@ import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.FOR
 
 public class BdbTripleStore implements QuadStore {
 
+  private static final Logger LOG = LoggerFactory.getLogger(BdbTripleStore.class);
   protected final BdbWrapper<String, String> bdbWrapper;
 
   public BdbTripleStore(BdbWrapper<String, String> rdfData)
@@ -55,6 +58,15 @@ public class BdbTripleStore implements QuadStore {
       .dontSkip()
       .forwards()
       .getKeysAndValues(this::formatResult);
+  }
+
+  @Override
+  public void close() {
+    try {
+      bdbWrapper.close();
+    } catch (Exception e) {
+      LOG.error("Exception closing BdbTripleStore", e);
+    }
   }
 
   private CursorQuad formatResult(String key, String value) {
