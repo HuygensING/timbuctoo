@@ -1,6 +1,6 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:8-jdk
 
-RUN apk add --no-cache curl tar bash jq inotify-tools
+RUN apt-get update && apt-get install -y curl tar
 
 ARG MAVEN_VERSION=3.3.9
 ARG USER_HOME_DIR="/root"
@@ -15,7 +15,7 @@ ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
 
 RUN echo -e '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">\n  <localRepository>/usr/share/maven/ref/repository</localRepository>\n</settings>' > /usr/share/maven/ref/settings-docker.xml
 
-WORKDIR /app
+WORKDIR /build/timbuctoo
 
 COPY ./ContractDiff/pom.xml ./ContractDiff/pom.xml
 COPY ./HttpCommand/pom.xml ./HttpCommand/pom.xml
@@ -25,18 +25,8 @@ COPY ./timbuctoo-instancev4/pom.xml ./timbuctoo-instancev4/pom.xml
 COPY ./pom.xml ./pom.xml
 COPY ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml
 
+COPY ./maven-prefill /root/.m2/repository
+
 RUN mvn clean package dependency:go-offline
 
 RUN rm -r ./*
-
-EXPOSE 80 81
-
-RUN mkdir -p /root/data/auth/authorizations && \
-    mkdir -p /root/data/neo4j && \
-    echo "[]" > /root/data/auth/logins.json && \
-    echo "[]" > /root/data/auth/users.json
-
-COPY ./devtools/run-with-services/rerun-launcher.sh /tools/rerun-launcher.sh
-COPY ./devtools/run-with-services/trigger.sh /tools/trigger.sh
-
-CMD ["/tools/rerun-launcher.sh"]

@@ -8,25 +8,37 @@ COPY ./timbuctoo-instancev4/src ./timbuctoo-instancev4/src
 COPY ./timbuctoo-instancev4/pom.xml ./timbuctoo-instancev4/pom.xml
 COPY ./pom.xml ./pom.xml
 
-# FIXME: do a maven install and then run appassembler with generateRepository=false and specify /root/.m2 as the REPO
-# variable
-# This will save unnecessary package copying from the local repository to the target folder. Making the image smaller
 COPY ./timbuctoo-instancev4/example_config.yaml ./timbuctoo-instancev4/example_config.yaml
 RUN mvn clean package
 
-CMD ["./timbuctoo-instancev4/target/appassembler/bin/timbuctoo", "server", "./timbuctoo-instancev4/example_config.yaml"]
+FROM openjdk:8-jre-alpine
 
-RUN mkdir -p /root/data/dataSets
+WORKDIR /app
+
+RUN apk add --no-cache jq && \
+  mkdir -p /root/data/dataSets && \
+  mkdir -p /root/data/neo4j && \
+  mkdir -p /root/data/auth/authorizations && \
+  echo "[]" > /root/data/auth/logins.json && \
+  echo "[]" > /root/data/auth/users.json
+
+COPY --from=0 /build/timbuctoo/timbuctoo-instancev4/target/appassembler .
+COPY --from=0 /build/timbuctoo/timbuctoo-instancev4/example_config.yaml .
+
+CMD ["./bin/timbuctoo", "server", "./example_config.yaml"]
+
+EXPOSE 80 81
+ENV timbuctoo_port="80"
+ENV timbuctoo_adminPort="81"
+ENV base_uri=http://localhost:8080
 
 ENV timbuctoo_elasticsearch_host=http://example.com/elasticsearchhost
 ENV timbuctoo_elasticsearch_port=80
 ENV timbuctoo_elasticsearch_user=user
 ENV timbuctoo_elasticsearch_password=password
-ENV timbuctoo_indexer_url=http://indexer
+
 ENV timbuctoo_dataPath="/root/data"
 ENV timbuctoo_authPath="/root/data/auth"
-ENV timbuctoo_port="80"
-ENV timbuctoo_adminPort="81"
-ENV base_uri=http://localhost:8080
+
 ENV timbuctoo_search_url=http://localhost:8082
-ENV timbuctoo_gui_public_url=http://localhost:8082/overview/
+ENV timbuctoo_indexer_url=http://indexer
