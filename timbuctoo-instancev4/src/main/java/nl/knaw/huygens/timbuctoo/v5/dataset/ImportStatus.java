@@ -34,28 +34,20 @@ public class ImportStatus {
     return methodName;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getBaseUri() {
     return baseUri;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public List<String> getMessages() {
     return messages;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public List<String> getErrors() {
     return errors;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getFatalError() {
     return fatalError;
-  }
-
-  public long getElapsedTime() {
-    return getElapsedTime("SECONDS");
   }
 
   public long getElapsedTime(String unit) {
@@ -116,11 +108,9 @@ public class ImportStatus {
     errors.clear();
     fatalError = null;
     stopwatch.reset();
-    totalTime = null;
   }
 
   private void setStopped() {
-    totalTime = stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
     if (stopwatch.isRunning()) {
       stopwatch.stop();
     }
