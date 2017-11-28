@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
@@ -9,40 +8,25 @@ import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
-import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
@@ -52,15 +36,10 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.JsonContractMatcher.matchesContract;
-import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 
 public class IntegrationTest {
@@ -76,11 +55,17 @@ public class IntegrationTest {
   private static String V21_PREFIX = "33707283d426f900d4d33707283d426f900d4d0d";
 
   static {
-    EvilEnvironmentVariableHacker.setEnv(ImmutableMap.of(
-      "timbuctoo_dataPath", resourceFilePath(TEST_PATH),
-      "timbuctoo_port", "0",
-      "timbuctoo_adminPort", "0"
-    ));
+    EvilEnvironmentVariableHacker.setEnv(
+      "http://localhost",
+      "9200",
+      "elastic",
+      "changeme",
+      "http://127.0.0.1:0",
+      resourceFilePath(TEST_PATH),
+      resourceFilePath(TEST_PATH),
+      "0",
+      "0"
+    );
   }
 
   @BeforeClass

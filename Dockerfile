@@ -14,14 +14,19 @@ COPY ./pom.xml ./pom.xml
 COPY ./timbuctoo-instancev4/example_config.yaml ./timbuctoo-instancev4/example_config.yaml
 RUN mvn clean package
 
-COPY ./timbuctoo-instancev4/docker_config.yaml ./timbuctoo-instancev4/docker_config.yaml
-
-CMD ["./timbuctoo-instancev4/target/appassembler/bin/timbuctoo", "server", "./timbuctoo-instancev4/docker_config.yaml"]
+CMD ["./timbuctoo-instancev4/target/appassembler/bin/timbuctoo", "server", "./timbuctoo-instancev4/example_config.yaml"]
 
 RUN mkdir -p /root/data/dataSets
 
-ENV TIMBUCTOO_ELASTICSEARCH_HOST=http://example.com/elasticsearchhost
-ENV TIMBUCTOO_ELASTICSEARCH_PORT=80
-ENV TIMBUCTOO_ELASTICSEARCH_USER=user
-ENV TIMBUCTOO_ELASTICSEARCH_PASSWORD=password
-ENV TIMBUCTOO_INDEXER_URL=http://indexer
+ENV timbuctoo_elasticsearch_host=http://example.com/elasticsearchhost
+ENV timbuctoo_elasticsearch_port=80
+ENV timbuctoo_elasticsearch_user=user
+ENV timbuctoo_elasticsearch_password=password
+ENV timbuctoo_indexer_url=http://indexer
+ENV timbuctoo_dataPath="/root/data"
+ENV timbuctoo_authPath="/root/data/auth"
+ENV timbuctoo_port="80"
+ENV timbuctoo_adminPort="81"
+ENV base_uri=http://localhost:8080
+ENV timbuctoo_search_url=http://localhost:8082
+ENV timbuctoo_gui_public_url=http://localhost:8082/overview/

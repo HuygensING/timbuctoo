@@ -2,11 +2,26 @@ package nl.knaw.huygens.timbuctoo.util;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class EvilEnvironmentVariableHacker {
 
-  public static void setEnv(Map<String, String> newEnv) {
+  public static void setEnv(String elasticsearchHost, String elasticsearchPort, String elasticsearchUser,
+                            String elasticsearchPassword, String baseUri, String authPath, String dataPath, String port,
+                            String adminPort) {
+    Map<String, String> newEnv = new HashMap<>();
+    newEnv.put("timbuctoo_elasticsearch_host", elasticsearchHost);
+    newEnv.put("timbuctoo_elasticsearch_port", elasticsearchPort);
+    newEnv.put("timbuctoo_elasticsearch_user", elasticsearchUser);
+    newEnv.put("timbuctoo_elasticsearch_password", elasticsearchPassword);
+    newEnv.put("base_uri", baseUri);
+    newEnv.put("timbuctoo_authPath", authPath);
+    newEnv.put("timbuctoo_dataPath", dataPath);
+    newEnv.put("timbuctoo_port", port);
+    newEnv.put("timbuctoo_adminPort", adminPort);
+    newEnv.put("timbuctoo_search_url", "");
+    newEnv.put("timbuctoo_indexer_url", "");
     try {
       Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
       Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");

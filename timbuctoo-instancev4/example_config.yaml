@@ -5,9 +5,9 @@ securityConfiguration:
   "@class": nl.knaw.huygens.timbuctoo.server.security.OldStyleSecurityFactoryConfiguration
   localAuthentication:
     "@class": nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory
-    authorizationsPath: ${timbuctoo_dataPath}/authorizations
-    loginsFilePath: ${timbuctoo_dataPath}/logins.json
-    usersFilePath: ${timbuctoo_dataPath}/users.json
+    authorizationsPath: ${timbuctoo_authPath}/authorizations
+    loginsFilePath: ${timbuctoo_authPath}/logins.json
+    usersFilePath: ${timbuctoo_authPath}/users.json
   autoLogoutTimeout:
     duration: 8
     timeUnit: HOURS
@@ -16,16 +16,16 @@ securityConfiguration:
     authenticationServerUrl: DUMMY
     authenticationCredentials: DUMMY
 
-baseUri: http://127.0.0.1:0 #port will be replaced with the port that timbuctoo ends up listening on
+baseUri: ${base_uri} #specifying 0 as port will replace it with the port that timbuctoo ends up listening on
 userRedirectUrl: ./static/graphiql
 
 collectionFilters:
   elasticsearch:
     "@class": nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearchFilter
-    hostname: localhost
-    port: 9200
-    username: elastic
-    password: changeme
+    hostname: ${timbuctoo_elasticsearch_host}
+    port: ${timbuctoo_elasticsearch_port}
+    username: ${timbuctoo_elasticsearch_user}
+    password: ${timbuctoo_elasticsearch_password}
 
 archetypesSchema: |
   type Archetypes {
@@ -46,7 +46,7 @@ databases:
   databaseLocation: ${timbuctoo_dataPath}/datasets
 
 databaseConfiguration:
-  databasePath: ${timbuctoo_dataPath}/database
+  databasePath: ${timbuctoo_dataPath}/neo4j
 
 dataSet:
   dataSetMetadataLocation: ${timbuctoo_dataPath}/datasets
@@ -68,8 +68,11 @@ searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
 
-#webhooks:
-#  vreAdded: <some url to send a post request to when a new VRE is added>
+webhooks:
+  vreAdded: ${timbuctoo_search_url}
+  dataSetUpdated: ${timbuctoo_indexer_url}
+  httpClient:
+    connectionRequestTimeout: 200ms
 
 activeMq:
   #persistent=false means that the broker does not try to store the queue. This is not needed in a debugrun.
@@ -93,7 +96,6 @@ server:
   applicationConnectors:
     - type: http #Note! if you change this you might or might not also want to change the baseUri
       port: ${timbuctoo_port} #Note! if you change this you might or might not also want to change the baseUri
-      bindHost: 127.0.0.1 #Note! if you change this you might or might not also want to change the baseUri
   adminConnectors:
     - type: http
       port: ${timbuctoo_adminPort}
