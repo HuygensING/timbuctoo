@@ -152,6 +152,12 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         return ((ImportStatus) env.getSource()).getElapsedTime(timeUnit);
       })
     );
+    wiring.type("DataSetImportStatus", builder -> builder
+      .dataFetcher("elapsedTime", env -> {
+        final String timeUnit = env.getArgument("unit");
+        return ((ImportStatus) env.getSource()).getElapsedTime(timeUnit);
+      })
+    );
     wiring.type("CollectionMetadata", builder -> builder
       .dataFetcher("indexConfig", env -> {
         SubjectReference source = env.getSource();
