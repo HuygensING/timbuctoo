@@ -45,15 +45,16 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   private final DataStorage dataStore;
 
   Map<String, Type> types = new HashMap<>();
-  private ImportStatus currentStatus;
+  private ImportStatus importStatus;
 
-  public BdbSchemaStore(DataStorage dataStore) throws IOException {
+  public BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
 
     this.dataStore = dataStore;
     final String storedValue = this.dataStore.getValue();
     if (storedValue != null) {
       types = objectMapper.readValue(storedValue, new TypeReference<Map<String, Type>>() {});
     }
+    this.importStatus = importStatus;
   }
 
   @Override
@@ -72,9 +73,8 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   }
 
   @Override
-  public void start(ImportStatus status) {
-    currentStatus = status;
-    currentStatus.setStatus("Processing entities");
+  public void start() {
+    importStatus.setStatus("Processing entities");
     LOG.info("Processing entities");
   }
 
@@ -231,7 +231,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       .mapToLong(p -> p.getValueTypes().values().size() + p.getReferenceTypes().values().size())
       .sum();
     LOG.info("types-size is: " + totalPredicateCount + "");
-    currentStatus.addMessage("types-size is: " + totalPredicateCount);
+    importStatus.addMessage("types-size is: " + totalPredicateCount);
   }
 
   public void updatePredicateOccurrence(List<Type> addedTypes, List<Type> removedTypes, List<Type> unchangedTypes,
@@ -300,9 +300,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   @Override
   public void finish() {
     LOG.info("Finished processing entities");
-    if (currentStatus != null) {
-      currentStatus.addMessage("Finished processing entities");
-    }
+    importStatus.addMessage("Finished processing entities");
     //Step 3: Add type information to inverse predicates
     for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
       Type type = typeEntry.getValue();
@@ -328,12 +326,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
                 }
               }
               LOG.error("Error during inverse generation (ignored): " + cause , e);
-              currentStatus.addError("Error during inverse generation (ignored): " + cause, e);
+              importStatus.addError("Error during inverse generation (ignored): " + cause, e);
             } catch (Exception e2) {
               LOG.error("Error during inverse generation " + cause, e);
-              currentStatus.addError("Error during inverse generation " + cause, e);
+              importStatus.addError("Error during inverse generation " + cause, e);
               LOG.error("Error during recovery generation ", e2);
-              currentStatus.addError("Error during recovery generation ", e2);
+              importStatus.addError("Error during recovery generation ", e2);
             }
           }
         }

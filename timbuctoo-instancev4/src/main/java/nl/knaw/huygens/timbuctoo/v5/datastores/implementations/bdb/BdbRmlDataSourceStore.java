@@ -28,10 +28,12 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   private static final Logger LOG = LoggerFactory.getLogger(BdbRmlDataSourceStore.class);
   protected final BdbWrapper<String, String> bdbWrapper;
   private final Map<String, Map<String, Property>> collectionProperties = new HashMap<>();
+  private ImportStatus importStatus;
 
-  public BdbRmlDataSourceStore(BdbWrapper<String, String> bdbWrapper)
+  public BdbRmlDataSourceStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus)
     throws DataStoreCreationException {
     this.bdbWrapper = bdbWrapper;
+    this.importStatus = importStatus;
   }
 
   @Override
@@ -53,8 +55,8 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   }
 
   @Override
-  public void start(ImportStatus status) {
-    status.setStatus("Storing entities");
+  public void start() {
+    importStatus.setStatus("Storing entities");
   }
 
   @Override

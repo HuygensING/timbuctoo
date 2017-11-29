@@ -159,7 +159,7 @@ public class ImportManager implements DataProvider {
               LOG.info(msg);
               status.addMessage(msg);
               RdfParser rdfParser = serializerFactory.makeRdfParser(log);
-              processor.start(index, status);
+              processor.start(index);
               rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
               processor.commit();
             }

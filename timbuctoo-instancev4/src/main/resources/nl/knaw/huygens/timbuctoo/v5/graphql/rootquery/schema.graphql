@@ -64,24 +64,31 @@ type DataSetMetadata {
   license: License @rdf(predicate: "http://purl.org/dc/terms/license", direction: "OUT", isList: false, isObject: true, isValue: false)
 
   #archetypes: Archetypes! @passThrough (added by the RootQuery based on the config)
-
+  #
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
 }
 
 type DataSetImportStatus {
+  #has this import started
+  started: Boolean!
+  #the method of import
   methodName: String!
   baseUri: String
+  #the momentary status of this import
   status: String!
+  #messages generated during import
   messages: [String!]!
+  #errors encountered during import
   errors: [String!]!
   fatalError: String
+  #elapsed time since import started
   elapsedTime(unit: TimeUnit = SECONDS): Int!
+  #is this import stil running
+  running: Boolean!
 }
 
 enum TimeUnit {
-  #NANOSECONDS # no support for long in GraphQL
-  #MICROSECONDS
   MILLISECONDS
   SECONDS
   MINUTES
