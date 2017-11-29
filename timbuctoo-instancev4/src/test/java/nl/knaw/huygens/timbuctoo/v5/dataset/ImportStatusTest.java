@@ -11,6 +11,7 @@ public class ImportStatusTest {
   @Test
   public void multipleStart() throws Exception {
     ImportStatus status = new ImportStatus();
+
     assertThat(status.isRunning(), is(false));
     status.setStarted("method", "baseUri");
     assertThat(status.isRunning(), is(true));
