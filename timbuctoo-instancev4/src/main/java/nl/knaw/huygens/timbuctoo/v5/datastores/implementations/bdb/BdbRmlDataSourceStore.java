@@ -11,6 +11,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +25,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
 public class BdbRmlDataSourceStore implements RmlDataSourceStore {
+  private static final Logger LOG = LoggerFactory.getLogger(BdbRmlDataSourceStore.class);
   protected final BdbWrapper<String, String> bdbWrapper;
   private final Map<String, Map<String, Property>> collectionProperties = new HashMap<>();
 
@@ -38,6 +41,15 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
       .dontSkip()
       .forwards()
       .getValues();
+  }
+
+  @Override
+  public void close() {
+    try {
+      bdbWrapper.close();
+    } catch (Exception e) {
+      LOG.error("Exception closing BdbRmlDataSourceStore", e);
+    }
   }
 
   @Override

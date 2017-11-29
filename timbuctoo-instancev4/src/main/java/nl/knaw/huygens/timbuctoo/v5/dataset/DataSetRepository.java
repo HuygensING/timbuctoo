@@ -284,6 +284,10 @@ public class DataSetRepository {
   }
 
   public void stop() {
+    for (DataSet dataSet : getDataSets()) {
+      dataSet.stop();
+    }
+
     dataStoreFactory.stop();
   }
 

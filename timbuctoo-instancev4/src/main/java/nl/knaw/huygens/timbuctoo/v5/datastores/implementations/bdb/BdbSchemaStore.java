@@ -62,6 +62,16 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   }
 
   @Override
+  public void close() {
+    this.finish();
+    try {
+      this.dataStore.close();
+    } catch (Exception e) {
+      LOG.error("Exception while closing BdbSchemaStore", e);
+    }
+  }
+
+  @Override
   public void start(ImportStatus status) {
     currentStatus = status;
     currentStatus.setStatus("Processing entities");

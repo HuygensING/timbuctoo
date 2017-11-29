@@ -71,11 +71,17 @@ public class IntegrationTest {
   private static String PREFIX = "u33707283d426f900d4d33707283d426f900d4d0d";
 
   static {
-    EvilEnvironmentVariableHacker.setEnv(ImmutableMap.of(
-      "timbuctoo_dataPath", resourceFilePath("integrationtest"),
-      "timbuctoo_port", "0",
-      "timbuctoo_adminPort", "0"
-    ));
+    EvilEnvironmentVariableHacker.setEnv(
+      "http://localhost",
+      "9200",
+      "elastic",
+      "changeme",
+      "http://127.0.0.1:0",
+      resourceFilePath("integrationtest"),
+      resourceFilePath("integrationtest"),
+      "0",
+      "0"
+    );
   }
 
   @BeforeClass
