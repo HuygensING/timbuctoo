@@ -11,15 +11,15 @@ public class ImportStatusTest {
   @Test
   public void multipleStart() throws Exception {
     ImportStatus status = new ImportStatus();
-    assertThat(status.isBusy(), is(false));
+    assertThat(status.isRunning(), is(false));
     status.setStarted("method", "baseUri");
-    assertThat(status.isBusy(), is(true));
+    assertThat(status.isRunning(), is(true));
 
     status.setStarted("method2", "baseUri2");
-    assertThat(status.isBusy(), is(true));
+    assertThat(status.isRunning(), is(true));
 
     status.setFinished();
-    assertThat(status.isBusy(), is(false));
+    assertThat(status.isRunning(), is(false));
   }
 
 }

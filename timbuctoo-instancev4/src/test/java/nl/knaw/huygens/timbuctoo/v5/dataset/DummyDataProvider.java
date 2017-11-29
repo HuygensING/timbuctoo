@@ -22,7 +22,7 @@ public class DummyDataProvider implements DataProvider {
   }
 
   public void start() throws RdfProcessingFailedException {
-    processor.start(0, new ImportStatus());
+    processor.start(0);
   }
 
   public void finish() throws RdfProcessingFailedException {

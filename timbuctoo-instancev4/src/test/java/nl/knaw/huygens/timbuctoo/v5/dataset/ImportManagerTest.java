@@ -223,7 +223,6 @@ public class ImportManagerTest {
   private static class CountingProcessor implements RdfProcessor {
     private final AtomicInteger counter;
     private int currentVersion = -1;
-    private ImportStatus currentStatus;
 
     public CountingProcessor() {
       counter = new AtomicInteger();
@@ -279,9 +278,8 @@ public class ImportManagerTest {
     }
 
     @Override
-    public void start(int index, ImportStatus status) throws RdfProcessingFailedException {
+    public void start(int index) throws RdfProcessingFailedException {
       currentVersion = index;
-      currentStatus = status;
       counter.incrementAndGet();
     }
 
