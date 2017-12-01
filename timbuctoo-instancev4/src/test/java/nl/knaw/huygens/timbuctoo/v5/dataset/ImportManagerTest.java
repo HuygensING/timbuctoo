@@ -223,7 +223,6 @@ public class ImportManagerTest {
   private static class CountingProcessor implements RdfProcessor {
     private final AtomicInteger counter;
     private int currentVersion = -1;
-    private ImportStatus currentStatus;
 
     public CountingProcessor() {
       counter = new AtomicInteger();
