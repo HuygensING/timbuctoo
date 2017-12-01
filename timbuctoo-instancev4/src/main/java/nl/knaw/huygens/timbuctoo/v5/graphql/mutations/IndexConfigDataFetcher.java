@@ -15,8 +15,6 @@ import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_VIEW_CONFIG;
-
 public class IndexConfigDataFetcher implements DataFetcher {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final DataSetRepository dataSetRepository;
