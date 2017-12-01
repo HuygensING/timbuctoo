@@ -716,6 +716,126 @@ public class IntegrationTest {
 
   }
 
+  @Test
+  public void indexConfigCanBeChangedWithGraphQl() throws Exception {
+    final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = PREFIX + "__" + dataSetName;
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
+      "application/vnd.timbuctoo-rdf.nquads_unified_diff",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.nqud"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    final String collectionUri = "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons";
+    Response graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation SetIndexConfig($dataSetId:ID!, $collectionUri: String!, $indexConfig: IndexConfigInput!) {\n" +
+            "  setIndexConfig(dataSet: $dataSetId, collectionUri:$collectionUri, indexConfig: $indexConfig) {\n" +
+            "    facet {\n" +
+            "      paths\n" +
+            "      type\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId),
+          "collectionUri", jsn(collectionUri),
+          "indexConfig", jsnO(
+            "facet", jsnA(
+              jsnO(
+                "paths", jsnA(jsn("tim_name.value")),
+                "type", jsn("MultiSelect")
+              )
+            ),
+            "fullText", jsnA()
+          )
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(graphQlCall.getStatus(), is(200));
+    assertThat(graphQlCall.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "setIndexConfig", jsnO(
+          "facet", jsnA(
+            jsnO(
+              "paths", jsnA(jsn("tim_name.value")),
+              "type", jsn("MultiSelect")
+            )
+          )
+        )
+      )
+    )));
+
+    graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(
+        Entity.entity(
+          jsnO(
+            "query", jsn(
+              "query metadata($dataSetId: ID!) {\n" +
+                "  dataSetMetadata(dataSetId: $dataSetId) {\n" +
+                "    collectionList {\n" +
+                "      items {\n" +
+                "        uri\n" +
+                "        indexConfig {\n" +
+                "          facet {\n" +
+                "            paths\n" +
+                "            type\n" +
+                "          }\n" +
+                "          fullText {\n" +
+                "            fields {\n" +
+                "              path\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}"
+            ),
+            "variables", jsnO(
+              "dataSetId", jsn(dataSetId)
+            )
+          ),
+          MediaType.valueOf("application/json")
+        )
+      );
+
+    assertThat(graphQlCall.getStatus(), is(200));
+    ObjectNode metaData = graphQlCall.readEntity(ObjectNode.class);
+    assertThat(
+      stream(metaData
+        .get("data")
+        .get("dataSetMetadata")
+        .get("collectionList")
+        .get("items").iterator()).collect(Collectors.toList()),
+      hasItem(jsnO(
+        "uri", jsn(collectionUri),
+        "indexConfig", jsnO(
+          "facet", jsnA(
+            jsnO(
+              "paths", jsnA(jsn("tim_name.value")),
+              "type", jsn("MultiSelect")
+            )
+          ),
+          "fullText", jsnA()
+        )
+      ))
+    );
+
+  }
+
   private List<String> getDataSetNamesOfDummy() {
     Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)

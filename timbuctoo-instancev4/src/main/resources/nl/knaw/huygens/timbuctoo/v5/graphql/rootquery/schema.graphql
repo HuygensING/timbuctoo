@@ -136,6 +136,27 @@ type FullTextFieldConfig {
   boost: Float
 }
 
+input IndexConfigInput {
+  facet: [FacetConfigInput]!
+  fullText: [FullTextConfigInput]!
+}
+
+input FacetConfigInput {
+  paths: [String!]
+  type: String!
+  caption: String
+}
+
+input FullTextConfigInput {
+  caption: String
+  fields: [FullTextFieldConfigInput!]!
+}
+
+input FullTextFieldConfigInput {
+  path: String!
+  boost: Float
+}
+
 type PropertyList {
   prevCursor: ID
   nextCursor: ID
@@ -201,4 +222,5 @@ input FormatterConfigInput {
 type Mutation {
   setViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
   setSummaryProperties(dataSet: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
+  setIndexConfig(dataSet: ID!, collectionUri: String!, indexConfig: IndexConfigInput!): IndexConfig!
 }
