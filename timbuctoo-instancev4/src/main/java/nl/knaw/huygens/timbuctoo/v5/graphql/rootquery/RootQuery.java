@@ -114,10 +114,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         final String dataSetId = env.getArgument("dataSetId");
         return dataSetRepository.getDataSet(dataSetId).map(DataSetWithDatabase::new);
       })
-      .dataFetcher("dataSetImportStatus", env -> {
-        final String dataSetId = env.getArgument("dataSetId");
-        return dataSetRepository.getDataSet(dataSetId).map(dataSet -> dataSet.getImportManager().getStatus());
-      })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
         .map(MimeTypeDescription::create)
@@ -125,6 +121,12 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       )
     );
     wiring.type("DataSetMetadata", builder -> builder
+
+      .dataFetcher("importStatus", env -> {
+        PromotedDataSet input = env.getSource();
+        return dataSetRepository.getDataSet(input.getOwnerId(),
+          input.getDataSetId()).map(dataSet -> dataSet.getImportManager().getStatus());
+      })
       .dataFetcher("collectionList", env -> getCollections(env.getSource()))
       .dataFetcher("collection", env -> {
         String collectionId = (String) env.getArguments().get("collectionId");
