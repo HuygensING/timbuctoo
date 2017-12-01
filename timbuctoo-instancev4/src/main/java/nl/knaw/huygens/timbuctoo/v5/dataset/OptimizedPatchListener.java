@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 
 public interface OptimizedPatchListener {
 
-  void start(ImportStatus status) throws RdfProcessingFailedException;
+  void start() throws RdfProcessingFailedException;
 
   void onChangedSubject(String subject, ChangeFetcher changeFetcher) throws RdfProcessingFailedException;
 

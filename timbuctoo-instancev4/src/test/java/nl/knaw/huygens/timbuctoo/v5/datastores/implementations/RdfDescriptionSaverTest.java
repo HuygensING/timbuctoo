@@ -29,8 +29,8 @@ public class RdfDescriptionSaverTest {
     descriptionFileName = "description.xml";
     descriptionFile = new File(descriptionFileName);
     importStatus = new ImportStatus();
-    testRdfDescriptionSaver = new RdfDescriptionSaver(descriptionFile, BASE_URI);
-    testRdfDescriptionSaver.start(0, importStatus);
+    testRdfDescriptionSaver = new RdfDescriptionSaver(descriptionFile, BASE_URI, importStatus);
+    testRdfDescriptionSaver.start(0);
   }
 
   @After

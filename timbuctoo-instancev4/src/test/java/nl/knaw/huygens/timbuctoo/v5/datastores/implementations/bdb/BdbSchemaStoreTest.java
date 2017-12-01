@@ -27,9 +27,9 @@ public class BdbSchemaStoreTest {
       CursorQuad.create("obj", "pred", Direction.IN, ChangeType.ASSERTED, "subj", null, null, "")
     );
 
-    BdbSchemaStore schemaStore = new BdbSchemaStore(dataStore);
+    BdbSchemaStore schemaStore = new BdbSchemaStore(dataStore, new ImportStatus());
 
-    schemaStore.start(new ImportStatus());
+    schemaStore.start();
     schemaStore.onChangedSubject("subj", changeFetcher);
     schemaStore.onChangedSubject("obj", changeFetcher);
     schemaStore.finish();

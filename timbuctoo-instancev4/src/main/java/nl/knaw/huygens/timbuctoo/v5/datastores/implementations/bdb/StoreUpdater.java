@@ -9,10 +9,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,12 +36,12 @@ public class StoreUpdater implements RdfProcessor {
   private List<OptimizedPatchListener> listeners;
   private long prevTime;
   private String logString;
-  private ImportStatus currentStatus;
+  private ImportStatus importStatus;
 
   public StoreUpdater(BdbEnvironmentCreator dbFactory, BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
                       BdbTruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
                       List<OptimizedPatchListener> listeners,
-                      VersionStore versionStore) {
+                      VersionStore versionStore, ImportStatus importStatus) {
     this.dbFactory = dbFactory;
     this.tripleStore = tripleStore;
     this.typeNameStore = typeNameStore;
@@ -52,12 +50,13 @@ public class StoreUpdater implements RdfProcessor {
     this.versionStore = versionStore;
     currentversion = versionStore.getVersion();
     this.listeners = listeners;
+    this.importStatus = importStatus;
   }
 
   private void updateListeners() throws RdfProcessingFailedException {
     logString = "Processed {} subjects ({} subjects/s)";
     for (OptimizedPatchListener listener : listeners) {
-      listener.start(currentStatus);
+      listener.start();
     }
 
     count = 0;
@@ -161,10 +160,9 @@ public class StoreUpdater implements RdfProcessor {
 
 
   @Override
-  public void start(int index, ImportStatus status) throws RdfProcessingFailedException {
+  public void start(int index) throws RdfProcessingFailedException {
     stopwatch = Stopwatch.createStarted();
     currentversion = index;
-    currentStatus = status;
     dbFactory.startTransaction();
     logString = "Processed {} triples ({} triples/s)";
   }
@@ -175,7 +173,7 @@ public class StoreUpdater implements RdfProcessor {
     if (curTime - prevTime > 5) {
       final long itemsPerSecond = (count - prevCount) / (curTime - prevTime);
       LOG.info(logString, count, itemsPerSecond);
-      currentStatus.addMessage(String.format(logString.replaceAll("\\{\\}", "%d"),
+      importStatus.addMessage(String.format(logString.replaceAll("\\{\\}", "%d"),
         count, itemsPerSecond));
       prevCount = count;
       prevTime = curTime;
@@ -194,13 +192,13 @@ public class StoreUpdater implements RdfProcessor {
     try {
       String msg = "processing " + count + " triples took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      currentStatus.addMessage(msg);
+      importStatus.addMessage(msg);
       stopwatch.reset();
       stopwatch.start();
       updateListeners();
       msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      currentStatus.addMessage(msg);
+      importStatus.addMessage(msg);
 
       stopwatch.reset();
       stopwatch.start();
@@ -208,7 +206,7 @@ public class StoreUpdater implements RdfProcessor {
       dbFactory.commitTransaction();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      currentStatus.addMessage(msg);
+      importStatus.addMessage(msg);
 
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);

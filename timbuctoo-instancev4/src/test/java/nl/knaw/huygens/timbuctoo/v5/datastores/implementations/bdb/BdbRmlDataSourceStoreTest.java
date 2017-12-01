@@ -61,7 +61,8 @@ public class BdbRmlDataSourceStoreTest {
         true,
         TupleBinding.getPrimitiveBinding(String.class),
         TupleBinding.getPrimitiveBinding(String.class)
-      )
+      ),
+      new ImportStatus()
     );
 
     RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(rmlDataSourceStore);
@@ -168,7 +169,7 @@ public class BdbRmlDataSourceStoreTest {
     @Override
     public void close() throws LogStorageFailedException {
       try {
-        processor.start(new ImportStatus());
+        processor.start();
         for (Map.Entry<String, Multimap<String, CursorQuad>> subject : triples.entrySet()) {
           processor.onChangedSubject(subject.getKey(), new ChangeFetcher() {
             @Override
