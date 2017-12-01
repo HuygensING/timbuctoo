@@ -238,6 +238,13 @@ public class IntegrationTest {
     assertThat(uploadResponse.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
     // Give asynchronous computations time to detect the error
     Thread.sleep(3000);
+
+    Response statusResponse = call("/v5/" + PREFIX + "/" + vreName + "/upload/rdf/status")
+      .get();
+    assertThat(statusResponse.getStatus(), is(Response.Status.OK.getStatusCode()));
+    String content = IOUtils.toString((InputStream) statusResponse.getEntity());
+    //System.out.println(content);
+    assertThat(content, containsString("Namespace prefix 'wrong_in_1' used but not defined"));
   }
 
   @Test

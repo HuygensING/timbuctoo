@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.rml.datasource.jexl.JexlRowFactory;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
@@ -167,7 +168,7 @@ public class BdbRmlDataSourceStoreTest {
     @Override
     public void close() throws LogStorageFailedException {
       try {
-        processor.start();
+        processor.start(new ImportStatus());
         for (Map.Entry<String, Multimap<String, CursorQuad>> subject : triples.entrySet()) {
           processor.onChangedSubject(subject.getKey(), new ChangeFetcher() {
             @Override
