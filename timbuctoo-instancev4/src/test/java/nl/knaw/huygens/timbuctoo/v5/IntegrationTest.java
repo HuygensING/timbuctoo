@@ -241,15 +241,20 @@ public class IntegrationTest {
     Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(String.format("{\n" +
-          "  dataSetImportStatus(dataSetId: \"%1s__%2s\")\n" +
+          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
           "  {\n" +
-          "    elapsedTime(unit: MILLISECONDS)\n" +
-          "    status\n" +
+          "    importStatus {\n" +
+          "      elapsedTime(unit: MILLISECONDS)\n" +
+          "      status\n" +
+          "    }\n" +
           "  }\n" +
           "}\n",
         PREFIX, vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
-    int elapsedTime = objectNode.get("data").get("dataSetImportStatus").get("elapsedTime").asInt();
+    int elapsedTime = objectNode.get("data")
+                                .get("dataSetMetadata")
+                                .get(("importStatus"))
+                                .get("elapsedTime").asInt();
     assertThat(elapsedTime > 0, is(true));
 
     // Give asynchronous computations time to detect the error
@@ -257,15 +262,20 @@ public class IntegrationTest {
     graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(String.format("{\n" +
-          "  dataSetImportStatus(dataSetId: \"%1s__%2s\")\n" +
+          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
           "  {\n" +
-          "    elapsedTime(unit: MILLISECONDS)\n" +
-          "    status\n" +
+          "    importStatus {\n" +
+          "      elapsedTime(unit: MILLISECONDS)\n" +
+          "      status\n" +
+          "    }\n" +
           "  }\n" +
           "}\n",
         PREFIX, vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
-    String status = objectNode.get("data").get("dataSetImportStatus").get("status").asText();
+    String status = objectNode.get("data")
+                              .get("dataSetMetadata")
+                              .get(("importStatus"))
+                              .get("status").asText();
     assertThat(status, is("Finished with 1 errors"));
   }
 

@@ -35,9 +35,6 @@ type Query {
   #metadata for a specific dataset
   dataSetMetadata(dataSetId: ID!): DataSetMetadata
 
-  #import status of a specific dataset
-  dataSetImportStatus(dataSetId: ID!): DataSetImportStatus
-
   #information about the logged in user, or null of no user is logged in
   aboutMe: AboutMe
 
@@ -64,6 +61,8 @@ type DataSetMetadata {
   #
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
+  #import status of a specific dataset
+  importStatus: DataSetImportStatus
 }
 
 type DataSetImportStatus {
