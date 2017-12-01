@@ -13,6 +13,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -37,6 +38,27 @@ public class RdfUpload {
 
   public RdfUpload(AuthCheck authCheck) {
     this.authCheck = authCheck;
+  }
+
+  @GET
+  @Path("/status")
+  public Response getStatus(@HeaderParam("authorization") final String authHeader,
+                            @PathParam("userId") final String userId,
+                            @PathParam("dataSet") final String dataSetId) {
+    final Either<Response, Response> result = authCheck
+      .getOrCreate( authHeader, userId, dataSetId, false)
+      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
+      .map((Tuple<User, DataSet> userDataSetTuple) -> {
+        final DataSet dataSet = userDataSetTuple.getRight();
+        return Response.ok(dataSet.getImportManager().getStatus())
+                       .type(MediaType.APPLICATION_JSON_TYPE)
+                       .build();
+      });
+    if (result.isLeft()) {
+      return result.getLeft();
+    } else {
+      return result.get();
+    }
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)

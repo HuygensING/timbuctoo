@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Stopwatch;
 
@@ -19,7 +21,10 @@ public class ImportStatus {
   private List<String> errors = new ArrayList<>();
   private String fatalError;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
+
   private boolean started;
+
+  private String totalTime;
 
   public String getStatus() {
     return status;
@@ -71,7 +76,6 @@ public class ImportStatus {
   }
 
   void setStarted(String methodName, String baseUri) {
-    started = true;
     reset();
     stopwatch.start();
     setStatus("Started");
@@ -112,9 +116,11 @@ public class ImportStatus {
     errors.clear();
     fatalError = null;
     stopwatch.reset();
+    totalTime = null;
   }
 
   private void setStopped() {
+    totalTime = stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
     if (stopwatch.isRunning()) {
       stopwatch.stop();
     }

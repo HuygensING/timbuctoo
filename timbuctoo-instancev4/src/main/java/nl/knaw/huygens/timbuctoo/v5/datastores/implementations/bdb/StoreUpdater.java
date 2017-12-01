@@ -199,7 +199,6 @@ public class StoreUpdater implements RdfProcessor {
       msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.addMessage(msg);
-
       stopwatch.reset();
       stopwatch.start();
       versionStore.setVersion(currentversion);
@@ -207,7 +206,6 @@ public class StoreUpdater implements RdfProcessor {
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.addMessage(msg);
-
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
     }
