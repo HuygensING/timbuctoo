@@ -223,4 +223,5 @@ type Mutation {
   setViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
   setSummaryProperties(dataSet: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
   setIndexConfig(dataSet: ID!, collectionUri: String!, indexConfig: IndexConfigInput!): IndexConfig!
+  createDataSet(dataSetName: String!): DataSetMetadata!
 }

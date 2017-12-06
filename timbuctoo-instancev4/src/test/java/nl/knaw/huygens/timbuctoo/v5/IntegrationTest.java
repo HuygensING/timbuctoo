@@ -836,6 +836,72 @@ public class IntegrationTest {
 
   }
 
+  @Test
+  public void aDataSetCanBeCreatedWithGraphQl() {
+    final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = PREFIX + "__" + dataSetName;
+
+    Response graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation CreateDataSet($dataSetName: String!) {" +
+          "  createDataSet(dataSetName: $dataSetName) {" +
+          "    dataSetId" +
+          "  }" +
+          "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetName", jsn(dataSetName)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(graphQlCall.getStatus(), is(200));
+    assertThat(graphQlCall.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "createDataSet", jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      )
+    )));
+
+    graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(
+        Entity.entity(
+          jsnO(
+            "query", jsn(
+              "query metadata($dataSetId: ID!) {\n" +
+                "  dataSetMetadata(dataSetId: $dataSetId) {\n" +
+                "    dataSetId" +
+                "  }\n" +
+                "}"
+            ),
+            "variables", jsnO(
+              "dataSetId", jsn(dataSetId)
+            )
+          ),
+          MediaType.valueOf("application/json")
+        )
+      );
+
+    assertThat(graphQlCall.getStatus(), is(200));
+    ObjectNode metaData = graphQlCall.readEntity(ObjectNode.class);
+    assertThat(metaData, is(
+      jsnO(
+        "data", jsnO(
+          "dataSetMetadata", jsnO(
+            "dataSetId", jsn(dataSetId)
+          )
+        )
+      )
+    ));
+
+  }
+
   private List<String> getDataSetNamesOfDummy() {
     Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)

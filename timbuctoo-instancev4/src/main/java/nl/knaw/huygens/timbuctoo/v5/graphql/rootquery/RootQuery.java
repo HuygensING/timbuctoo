@@ -3,16 +3,17 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -24,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
@@ -35,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePro
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,6 +193,28 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("setViewConfig", new ViewConfigDataFetcher(dataSetRepository))
       .dataFetcher("setSummaryProperties", new SummaryPropsMutationDataFetcher(dataSetRepository))
       .dataFetcher("setIndexConfig", new IndexConfigDataFetcher(dataSetRepository))
+      .dataFetcher("createDataSet", (DataFetchingEnvironment environment) -> {
+        Optional<User> currentUser = ((RootData) environment.getRoot()).getCurrentUser();
+        if (!currentUser.isPresent()) {
+          throw new RuntimeException("User is not provided");
+        }
+
+        String dataSetName   = environment.getArgument("dataSetName");
+        try {
+          Optional<DataSet> dataSetOpt =
+            dataSetRepository.getDataSet("u" + currentUser.get().getPersistentId(), dataSetName);
+          if (dataSetOpt.isPresent()) {
+            return dataSetOpt.get().getMetadata();
+          }
+          return dataSetRepository.createDataSet(currentUser.get(), dataSetName).getMetadata();
+        } catch (DataStoreCreationException e) {
+          LOG.error("Data set creation exception", e);
+          throw new RuntimeException("Data set could not be created");
+        } catch (IllegalDataSetNameException e) {
+          LOG.error("Data set creation exception", e);
+          throw new RuntimeException("Data set id is not supported: " + e.getMessage());
+        }
+      })
     );
 
     wiring.wiringFactory(wiringFactory);
