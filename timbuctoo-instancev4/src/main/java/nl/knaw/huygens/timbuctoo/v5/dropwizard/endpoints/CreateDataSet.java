@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 
 import javax.ws.rs.HeaderParam;
@@ -21,8 +20,7 @@ public class CreateDataSet {
 
   @POST
   public Response create(@PathParam("userId") String userId, @PathParam("dataSetId") String dataSetId,
-                         @HeaderParam("Authorization") String authorization)
-    throws DataStoreCreationException {
+                         @HeaderParam("Authorization") String authorization) {
 
     final Either<Response, Response> result = authCheck.getOrCreate(authorization, userId, dataSetId, true)
       .map(ds -> {

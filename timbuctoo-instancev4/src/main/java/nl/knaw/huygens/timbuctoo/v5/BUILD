@@ -21,9 +21,13 @@ java_library(
     runtime_deps = [
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/backupforstaging/azureblob/dropwizardconfiguration",
     ],
+    exports = [
+      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/berkeleydb",
+    ],
     deps = [
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/backupforstaging",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/filehelper",
+      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/berkeleydb",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena",

@@ -10,7 +10,7 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
@@ -45,7 +45,7 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
   public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
                                                              boolean allowDuplicates, EntryBinding<KeyT> keyBinder,
                                                              EntryBinding<ValueT> valueBinder)
-    throws DataStoreCreationException {
+    throws BdbDbCreationException {
     try {
       DatabaseConfig config = new DatabaseConfig();
       config.setAllowCreate(true);
@@ -61,7 +61,7 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
       environmentMap.put(environmentKey, dataSetEnvironment);
       return new BdbWrapper<>(dataSetEnvironment, database, config, keyBinder, valueBinder);
     } catch (DatabaseException e) {
-      throw new DataStoreCreationException(e);
+      throw new BdbDbCreationException(e);
     }
   }
 
