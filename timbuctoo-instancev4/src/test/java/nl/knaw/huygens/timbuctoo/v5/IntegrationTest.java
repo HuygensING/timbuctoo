@@ -837,7 +837,7 @@ public class IntegrationTest {
   }
 
   @Test
-  public void aDataSetCanBeCreatedWithGraphQl() {
+  public void dataSetCanBeCreatedWithGraphQl() {
     final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     final String dataSetId = PREFIX + "__" + dataSetName;
 
