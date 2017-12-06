@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   private static final Logger LOG = LoggerFactory.getLogger(BdbPersistentEnvironmentCreator.class);
+
   private final String databaseLocation;
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
@@ -97,6 +98,10 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
       environmentMap.get(environmentKey).close();
       environmentMap.remove(environmentKey);
     }
+  }
+
+  public String getDatabaseLocation() {
+    return databaseLocation;
   }
 
   @Override

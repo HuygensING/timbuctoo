@@ -99,14 +99,15 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
-import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StagingBackup;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
@@ -430,6 +431,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     environment.admin().addTask(new DbLogCreatorTask(graphManager));
     environment.admin().addTask(new BdbDumpTask(configuration.getDatabases()));
+    if (configuration.getDatabaseBackupper().isPresent()) {
+      environment.admin().addTask(new StagingBackup(configuration.getDatabaseBackupper().get().create(
+        configuration.getDatabaseConfiguration().getDatabasePath(),
+        configuration.getDatabases().getDatabaseLocation()
+      )));
+    }
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance
