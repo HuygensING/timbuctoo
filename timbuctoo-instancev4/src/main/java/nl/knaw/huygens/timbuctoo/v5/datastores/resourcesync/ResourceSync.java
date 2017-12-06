@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 
 import java.io.File;
 import java.io.IOException;

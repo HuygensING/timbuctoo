@@ -1,7 +1,6 @@
-package nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem;
+package nl.knaw.huygens.timbuctoo.v5.filehelper;
 
 import java.io.File;
-
 
 public class FileHelper {
   private final File rootDir;

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 
 import java.io.File;
 
