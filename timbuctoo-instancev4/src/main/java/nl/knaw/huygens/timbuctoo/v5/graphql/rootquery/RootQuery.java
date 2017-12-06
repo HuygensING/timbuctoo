@@ -137,6 +137,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         }
       })
       .dataFetcher("dataSetId", env -> ((PromotedDataSet) env.getSource()).getCombinedId())
+      .dataFetcher("dataSetName", env -> ((PromotedDataSet) env.getSource()).getDataSetId())
+      .dataFetcher("ownerId", env -> ((PromotedDataSet) env.getSource()).getOwnerId())
     );
     wiring.type("CollectionMetadata", builder -> builder
       .dataFetcher("indexConfig", env -> {

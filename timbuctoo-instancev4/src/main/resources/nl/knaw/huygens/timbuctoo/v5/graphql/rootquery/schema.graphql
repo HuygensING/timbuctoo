@@ -49,6 +49,9 @@ type MimeType {
 type DataSetMetadata {
   uri: String! @uri
   dataSetId: ID!
+  dataSetName: String!
+  ownerId: String!
+
   title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
   description: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
   imageUrl: Value @rdf(predicate: "http://xmlns.com/foaf/0.1/depiction", direction: "OUT", isList: false, isObject: false, isValue: true)
