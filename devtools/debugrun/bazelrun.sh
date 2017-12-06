@@ -62,8 +62,16 @@ bazel build //timbuctoo-instancev4:everything || exit $?
 cd ./timbuctoo-instancev4
 
 export timbuctoo_dataPath="./temp_for_debugrun"
+export timbuctoo_authPath="./temp_for_debugrun"
 export timbuctoo_port="8080"
 export timbuctoo_adminPort="8081"
+export base_uri="http://127.0.0.1:0"
+export timbuctoo_elasticsearch_host="localhost"
+export timbuctoo_elasticsearch_port="9200"
+export timbuctoo_elasticsearch_user="elastic"
+export timbuctoo_elasticsearch_password="changeme"
+export timbuctoo_search_url=""
+export timbuctoo_indexer_url="http://localhost:3000"
 
 if [ "$CLEAN" = "true" ]; then
   echo "Removing database and auth dirs"
