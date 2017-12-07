@@ -326,12 +326,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
                 }
               }
               LOG.error("Error during inverse generation (ignored): " + cause , e);
-              importStatus.addError("Error during inverse generation (ignored): " + cause, e);
+              importStatus.addEntryError("Error during inverse generation (ignored): " + cause, e);
             } catch (Exception e2) {
               LOG.error("Error during inverse generation " + cause, e);
-              importStatus.addError("Error during inverse generation " + cause, e);
+              importStatus.addEntryError("Error during inverse generation " + cause, e);
               LOG.error("Error during recovery generation ", e2);
-              importStatus.addError("Error during recovery generation ", e2);
+              importStatus.addEntryError("Error during recovery generation ", e2);
             }
           }
         }

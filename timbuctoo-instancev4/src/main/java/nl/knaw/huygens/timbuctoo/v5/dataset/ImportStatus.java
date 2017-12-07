@@ -3,26 +3,44 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Stopwatch;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.TimeWithUnit;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.NAME)
 public class ImportStatus {
 
-  private String methodName = "Unknown";
-  private String baseUri;
-  private String status = "Unknown";
-  private List<String> messages = new ArrayList<>();
-  private List<String> errors = new ArrayList<>();
-  private String fatalError;
-  private Stopwatch stopwatch = Stopwatch.createUnstarted();
-  private boolean started;
+  private final LogList logList;
+  private final Stopwatch stopwatch;
 
-  public String getStatus() {
-    return status;
+  private String methodName;
+  private String baseUri;
+  private int errorCount;
+  private LogEntry currentLogEntry;
+  private long currentEntryStart;
+
+  public ImportStatus(LogList logList) {
+    this.logList = logList;
+    stopwatch = Stopwatch.createUnstarted();
+  }
+
+  public void start(String methodName, String baseUri) {
+    reset();
+    this.methodName = methodName;
+    this.baseUri = baseUri;
+    setStatus("Started " + methodName);
+    stopwatch.start();
+  }
+
+  public long getElapsedTime(String unit) {
+    return stopwatch.elapsed(TimeUnit.valueOf(unit));
   }
 
   public String getMethodName() {
@@ -33,59 +51,116 @@ public class ImportStatus {
     return baseUri;
   }
 
+  public String getStatus() {
+    return logList.getLastStatus();
+  }
+
+  public void setStatus(String status) {
+    logList.setLastStatus(status);
+  }
+
+  public void addListError(String message, Throwable error) {
+    String errorString = "[" + Instant.now().toString() + "] " +
+      "; method: " + methodName +
+      "; message: " + message +
+      "; error: " + error.getMessage();
+    logList.addListError(errorString);
+    errorCount += 1;
+  }
+
+  public List<String> getListErrors() {
+    return logList.getListErrors();
+  }
+
+  public void setCurrentLogEntry(LogEntry logEntry) {
+    currentLogEntry = logEntry;
+    currentLogEntry.getImportStatus().ifPresent(eis -> {
+      eis.setDate(Instant.now().toString());
+    });
+    currentEntryStart = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+  }
+
+  public Optional<LogEntry> getCurrentLogEntry() {
+    return Optional.ofNullable(currentLogEntry);
+  }
+
+  public void setEntryStatus(String entryStatus) {
+    getCurrentLogEntry().ifPresent(entry -> {
+      entry.getImportStatus().ifPresent(eis -> eis.setStatus(entryStatus));
+    });
+  }
+
+  public void addEntryError(String message, Throwable error) {
+    getCurrentLogEntry().ifPresent(entry -> {
+      String errorString = "[" + Instant.now().toString() + "] " +
+        "; message: " + message +
+        "; error: " + error.getMessage();
+      entry.getImportStatus().ifPresent(eis -> eis.addError(errorString));
+    });
+    logList.incrementEntityErrorCount();
+    errorCount += 1;
+  }
+
+  public void finishEntry() {
+    getCurrentLogEntry().ifPresent(entry -> {
+      entry.getImportStatus().ifPresent(eis -> {
+        int errors = eis.getErrors().size();
+        eis.setStatus("Finished with " + errors + " error" + (errors == 1 ? "" : "s"));
+        eis.setDate(Instant.now().toString());
+        eis.setElapsedTimeMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS) - currentEntryStart);
+      });
+    });
+    currentLogEntry = null;
+  }
+
+  public void finishList() {
+    stopwatch.stop();
+    logList.setLastStatus("Finished import with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
+    logList.setLastImportDate(Instant.now().toString());
+    logList.setLastImportDuration(new TimeWithUnit(TimeUnit.MILLISECONDS.name(),
+      stopwatch.elapsed(TimeUnit.MILLISECONDS)));
+    reset();
+  }
+
+  public boolean hasErrors() {
+    return !logList.getListErrors().isEmpty() || logList.getEntityErrorCount() > 0;
+  }
+
+  private void reset() {
+    errorCount = 0;
+    methodName = null;
+    baseUri = null;
+    currentLogEntry = null;
+    stopwatch.reset();
+  }
+
+
+  //////////////////////////////////////////////////////////
+
+  private List<String> messages = new ArrayList<>();
+  private String fatalError;
+
+
+
   public List<String> getMessages() {
     return messages;
   }
 
-  public List<String> getErrors() {
-    return errors;
-  }
 
   public String getFatalError() {
     return fatalError;
   }
 
-  public long getElapsedTime() {
-    return getElapsedTime("SECONDS");
-  }
 
-  public long getElapsedTime(String unit) {
-    return stopwatch.elapsed(TimeUnit.valueOf(unit));
-  }
 
-  public boolean hasErrors() {
-    return !errors.isEmpty() || fatalError != null;
-  }
-
-  public boolean isStarted() {
-    return started;
-  }
 
   @JsonIgnore
   public boolean isRunning() {
     return stopwatch.isRunning();
   }
 
-  void setStarted(String methodName, String baseUri) {
-    started = true;
-    reset();
-    stopwatch.start();
-    setStatus("Started");
-    this.methodName = methodName;
-    this.baseUri = baseUri;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
-  }
-
   public void addMessage(String msg) {
     messages.add("[" + LocalDateTime.now().toString() + "] " + msg);
-  }
-
-  public void addError(String msg, Throwable error) {
-    String message = msg == null ? "Error: " : msg + " :";
-    errors.add("[" + LocalDateTime.now().toString() + "] " + message + error.getMessage());
   }
 
   public void setFatalError(String msg, Throwable error) {
@@ -97,18 +172,8 @@ public class ImportStatus {
 
   void setFinished() {
     setStopped();
-    setStatus("Finished with " + errors.size() + " errors");
   }
 
-  private void reset() {
-    methodName = "Unknown";
-    baseUri = null;
-    status = "Unknown";
-    messages.clear();
-    errors.clear();
-    fatalError = null;
-    stopwatch.reset();
-  }
 
   private void setStopped() {
     if (stopwatch.isRunning()) {
