@@ -64,13 +64,11 @@ type DataSetMetadata {
   #
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
-  #import status of a specific dataset
+  #status of the import of this dataset
   importStatus: DataSetImportStatus
 }
 
 type DataSetImportStatus {
-  #has this import started
-  started: Boolean!
   #the method of import
   methodName: String!
   baseUri: String
@@ -83,7 +81,7 @@ type DataSetImportStatus {
   fatalError: String
   #elapsed time since import started
   elapsedTime(unit: TimeUnit = SECONDS): Int!
-  #is this import stil running
+  #has this import started and is it stil running
   running: Boolean!
 }
 

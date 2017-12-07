@@ -124,8 +124,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
       .dataFetcher("importStatus", env -> {
         PromotedDataSet input = env.getSource();
-        return dataSetRepository.getDataSet(input.getOwnerId(),
-          input.getDataSetId()).map(dataSet -> dataSet.getImportManager().getStatus());
+        return dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId())
+                                .map(dataSet -> dataSet.getImportManager().getStatus());
       })
       .dataFetcher("collectionList", env -> getCollections(env.getSource()))
       .dataFetcher("collection", env -> {

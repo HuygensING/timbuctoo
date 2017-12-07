@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -76,7 +77,7 @@ public class ImportManager implements DataProvider {
       throw new DataStoreCreationException(e);
     }
     subscribedProcessors = new ArrayList<>();
-    status = new ImportStatus();
+    status = new ImportStatus(logListStore.getData());
   }
 
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
@@ -84,17 +85,17 @@ public class ImportManager implements DataProvider {
                                                    Optional<Charset> charset, MediaType mediaType)
     throws LogStorageFailedException {
 
-    status.setStarted(this.getClass().getSimpleName() + ".addLog", baseUri);
+    status.start(this.getClass().getSimpleName() + ".addLog", baseUri);
     int[] index = new int[1];
     try {
       String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
+      status.setStatus("Saved log " + token);
       logListStore.updateData(logList -> {
         index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
         return logList;
       });
-      status.addMessage("Saved log, token=" + token);
     } catch (IOException e) {
-      status.setFatalError("Could not save log", e);
+      status.addListError("Could not save log", e);
       throw new LogStorageFailedException(e);
     }
     return executorService.submit(() -> processLogsUntil(index[0]));
@@ -124,6 +125,8 @@ public class ImportManager implements DataProvider {
 
   public Future<ImportStatus> generateLog(String baseUri, String defaultGraph, RdfCreator creator)
     throws LogStorageFailedException {
+
+    status.start(this.getClass().getSimpleName() + ".generateLog", baseUri);
     try {
       //add to the log structure
       int[] index = new int[1];
@@ -134,30 +137,34 @@ public class ImportManager implements DataProvider {
       //schedule processing
       return executorService.submit(() -> processLogsUntil(index[0]));
     } catch (IOException e) {
+      status.addListError("Could not update logList", e);
       throw new LogStorageFailedException(e);
     }
   }
 
   public Future<ImportStatus> processLogs() {
+    status.start(this.getClass().getSimpleName() + ".processLogs", null);
     return executorService.submit(() -> processLogsUntil(Integer.MAX_VALUE));
   }
 
   private synchronized ImportStatus processLogsUntil(int maxIndex) {
-    status.setStatus("Processing");
     ListIterator<LogEntry> unprocessed = logListStore.getData().getUnprocessed();
     boolean dataWasAdded = false;
     while (unprocessed.hasNext() && unprocessed.nextIndex() <= maxIndex) {
       int index = unprocessed.nextIndex();
       LogEntry entry = unprocessed.next();
+      status.setCurrentLogEntry(entry);
       if (entry.getLogToken().isPresent()) { // logToken
+        String logToken = entry.getLogToken().get();
+        status.setStatus("Adding logEntry " + logToken);
         try {
-          CachedLog log = logStorage.getLog(entry.getLogToken().get());
+          CachedLog log = logStorage.getLog(logToken);
           final Stopwatch stopwatch = Stopwatch.createStarted();
           for (RdfProcessor processor : subscribedProcessors) {
             if (processor.getCurrentVersion() <= index) {
               String msg = "******* " + processor.getClass().getSimpleName() + " Started importing full log...";
               LOG.info(msg);
-              status.addMessage(msg);
+              status.setEntryStatus(msg);
               RdfParser rdfParser = serializerFactory.makeRdfParser(log);
               processor.start(index);
               rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
@@ -165,13 +172,15 @@ public class ImportManager implements DataProvider {
             }
           }
           long elapsedTime = stopwatch.elapsed(TimeUnit.SECONDS);
-          LOG.info("Finished importing. Total import took " + elapsedTime + " seconds.");
-          status.setStatus("Finished importing. Total import took " + elapsedTime + " seconds.");
+          String msg = "Finished importing. Total import took " + elapsedTime + " seconds.";
+          LOG.info(msg);
+          status.setEntryStatus(msg);
           dataWasAdded = true;
         } catch (RdfProcessingFailedException | IOException e) {
           LOG.error("Processing log failed", e);
-          status.addError("Processing log failed", e);
+          status.addEntryError("Processing log failed", e);
         }
+
         // Update the log, even after RdfProcessingFailedException | IOException
         try {
           logListStore.updateData(logList -> {
@@ -180,10 +189,11 @@ public class ImportManager implements DataProvider {
           });
         } catch (IOException e) {
           LOG.error("Updating the log failed", e);
-          status.addError("Updating log failed", e);
+          status.addListError("Updating log failed", e);
         }
       } else { // no logToken
         RdfCreator creator = entry.getRdfCreator().get();
+        status.setStatus("Creating RDF with " + creator.getClass().getSimpleName());
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();//FIXME: write to tempFile
 
         String token = "";
@@ -197,7 +207,7 @@ public class ImportManager implements DataProvider {
             ((PlainRdfCreator) creator).sendQuads(serializer);
           } catch (Exception e) {
             LOG.error("Log generation failed", e);
-            status.addError("Log generation failed", e);
+            status.addEntryError("Log generation failed", e);
             break;
           }
         } else {
@@ -207,7 +217,7 @@ public class ImportManager implements DataProvider {
             ((PatchRdfCreator) creator).sendQuads(srlzr);
           } catch (Exception e) {
             LOG.error("Log generation failed", e);
-            status.addError("Log generation failed", e);
+            status.addEntryError("Log generation failed", e);
             break;
           }
         }
@@ -230,15 +240,23 @@ public class ImportManager implements DataProvider {
           } else {
             LOG.error("Log processing failed. Log created but not added to the list!", e);
           }
-          status.addError("Log processing failed", e);
+          status.addEntryError("Log processing failed", e);
           break;
         }
       } // end else with no condition
+      status.finishEntry();
     } // end main while loop
     if (dataWasAdded) {
       webhooks.run();
     }
-    status.setFinished();
+    status.finishList();
+    // update log.json
+    try {
+      logListStore.updateData(Function.identity());
+    } catch (IOException e) {
+      LOG.error("Updating the log failed", e);
+      status.addListError("Updating log failed", e);
+    }
     return status;
   }
 
