@@ -77,6 +77,7 @@ public class ImportManager implements DataProvider {
       throw new DataStoreCreationException(e);
     }
     subscribedProcessors = new ArrayList<>();
+
     status = new ImportStatus(logListStore.getData());
   }
 
@@ -89,11 +90,11 @@ public class ImportManager implements DataProvider {
     int[] index = new int[1];
     try {
       String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
-      status.setStatus("Saved log " + token);
       logListStore.updateData(logList -> {
         index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
         return logList;
       });
+      status.addMessage("Saved log, token=" + token);
     } catch (IOException e) {
       status.addListError("Could not save log", e);
       throw new LogStorageFailedException(e);
@@ -156,7 +157,6 @@ public class ImportManager implements DataProvider {
       status.setCurrentLogEntry(entry);
       if (entry.getLogToken().isPresent()) { // logToken
         String logToken = entry.getLogToken().get();
-        status.setStatus("Adding logEntry " + logToken);
         try {
           CachedLog log = logStorage.getLog(logToken);
           final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -193,7 +193,7 @@ public class ImportManager implements DataProvider {
         }
       } else { // no logToken
         RdfCreator creator = entry.getRdfCreator().get();
-        status.setStatus("Creating RDF with " + creator.getClass().getSimpleName());
+        status.setEntryStatus("Creating RDF with " + creator.getClass().getSimpleName());
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();//FIXME: write to tempFile
 
         String token = "";

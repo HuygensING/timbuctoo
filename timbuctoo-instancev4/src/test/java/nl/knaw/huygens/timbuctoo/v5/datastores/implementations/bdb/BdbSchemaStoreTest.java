@@ -4,7 +4,10 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
+<<<<<<< HEAD
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
+=======
+>>>>>>> d5b1c4fe09b87920ad089ef708399976c55e1876
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;

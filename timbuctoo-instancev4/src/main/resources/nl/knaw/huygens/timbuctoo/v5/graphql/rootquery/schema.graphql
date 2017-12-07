@@ -66,6 +66,7 @@ type DataSetMetadata {
 }
 
 type DataSetImportStatus {
+<<<<<<< HEAD
   #the method of import
   methodName: String!
   baseUri: String
@@ -78,7 +79,7 @@ type DataSetImportStatus {
   fatalError: String
   #elapsed time since import started
   elapsedTime(unit: TimeUnit = SECONDS): Int!
-  #has this import started and is it stil running
+  #is this import stil running
   running: Boolean!
 }
 
