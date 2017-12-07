@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
@@ -182,7 +183,6 @@ public class DataSetRepository {
     return user != null && user.getPersistentId() != null && ("u" + user.getPersistentId()).equals(prefix);
   }
 
-
   public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException,
     IllegalDataSetNameException {
     //The ownerId might not be valid (i.e. a safe string). We make it safe here:
@@ -272,7 +272,8 @@ public class DataSetRepository {
     return unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSet).isPresent();
   }
 
-  public DataSetMetaData publishDataSet(String userId,String ownerId, String dataSetName) {
+  public void publishDataSet(String userId,String ownerId, String dataSetName)
+    throws DataSetPublishException {
     Optional<DataSet> dataSet = getDataSet(userId,
       ownerId, dataSetName);
     try {
@@ -290,19 +291,15 @@ public class DataSetRepository {
 
         File metaDataFile = fileHelper.fileInDataSet(ownerId, dataSetName, "metaData.json");
 
-
         try {
           objectMapper.writeValue(metaDataFile, dataSetMetaData);
         } catch (IOException e) {
-          e.printStackTrace();
+          throw new DataSetPublishException(e);
         }
-
-        return dataSetMetaData;
       }
     } catch (PermissionFetchingException e) {
-      return null;
+      throw new DataSetPublishException(e);
     }
-    return null;
   }
 
   public Collection<DataSet> getDataSets() {

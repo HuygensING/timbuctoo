@@ -4,12 +4,14 @@ import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.security.BasicPermissionFetcher;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +19,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.Executors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -167,6 +170,28 @@ public class DataSetRepositoryTest {
     dataSetRepository.start();
 
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(true));
+  }
+
+  @Test
+  public void publishDataSetWillReturnDataSetMetaDataWithPublishedFlagSet() throws Exception, DataSetPublishException {
+    User user = User.create(null, "user");
+
+    dataSetRepository.createDataSet(user, "dataset");
+
+    Collection<DataSet> dataSetCollection = dataSetRepository.getDataSets();
+
+    DataSet dataSet = dataSetRepository.getDataSet("user", "uuser", "dataset").get();
+
+    DataSetMetaData metadata = dataSet.getMetadata();
+    assertThat(metadata.isPublished(), is(false));
+
+
+    dataSetRepository.publishDataSet("user", "uuser",
+      "dataset");
+
+
+    assertThat(metadata.isPublished(), is(true));
+
   }
 
 }

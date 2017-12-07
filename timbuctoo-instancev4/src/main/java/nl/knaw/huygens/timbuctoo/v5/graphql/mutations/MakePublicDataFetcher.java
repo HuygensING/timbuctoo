@@ -5,9 +5,13 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MakePublicDataFetcher implements DataFetcher {
+  private static final Logger LOG = LoggerFactory.getLogger(MakePublicDataFetcher.class);
   private final DataSetRepository dataSetRepository;
 
   public MakePublicDataFetcher(DataSetRepository dataSetRepository) {
@@ -28,12 +32,20 @@ public class MakePublicDataFetcher implements DataFetcher {
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
 
-    DataSetMetaData dataSetMetaData = dataSetRepository.publishDataSet(userId, ownerId, dataSetName);
+
+    try {
+      dataSetRepository.publishDataSet(userId, ownerId, dataSetName);
+    } catch (DataSetPublishException e) {
+      LOG.error("Failed to publish data set", e);
+      throw new RuntimeException("Failed to publish data set");
+    }
+
+    DataSetMetaData dataSetMetaData = dataSetRepository.getDataSet(userId,ownerId,dataSetName).get().getMetadata();
 
     if (dataSetMetaData != null) {
       return dataSetMetaData;
     } else {
-      throw new RuntimeException("Dataset does not exist");
+      throw new RuntimeException("Data set does not exist");
     }
   }
 }
