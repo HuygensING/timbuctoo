@@ -35,9 +35,6 @@ public interface DataSetMetaData {
   @Value.Auxiliary
   boolean isPromoted();
 
-  @Value.Auxiliary
-  boolean isPublic();
-
   Optional<String> role = Optional.empty();
 
   static Tuple<String, String> splitCombinedId(String combinedId) {
@@ -49,4 +46,8 @@ public interface DataSetMetaData {
     return ownerId + "__" + dataSetId;
   }
 
+  @Value.Auxiliary
+  boolean isPublished();
+
+  void publish();
 }

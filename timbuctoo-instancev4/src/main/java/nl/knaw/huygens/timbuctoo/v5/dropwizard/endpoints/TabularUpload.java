@@ -68,9 +68,7 @@ public class TabularUpload {
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
 
-    final Either<Response, Response> result = authCheck.getOrCreate(authHeader, ownerId, dataSetId,
-      forceCreation
-    )
+    final Either<Response, Response> result = authCheck.getOrCreate(authHeader, ownerId, dataSetId, forceCreation)
       .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
       .map(userAndDs -> {
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;

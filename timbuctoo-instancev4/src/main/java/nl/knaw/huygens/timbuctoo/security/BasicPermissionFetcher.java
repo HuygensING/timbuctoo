@@ -36,7 +36,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     String vreId = createCombinedId(ownerId, dataSetId);
     Set<Permission> permissions = new HashSet<>();
 
-    if (dataSetMetadata.isPublic()) {
+    if (dataSetMetadata.isPublished()) {
       permissions.add(Permission.READ);
     }
 

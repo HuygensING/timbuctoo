@@ -32,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
@@ -116,7 +117,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .stream()
         .map(DataSetWithDatabase::new)
         .filter(x -> {
-          if (x.isPublic()) {
+          if (x.isPublished()) {
             return true;
           } else {
             ContextData contextData = env.getContext();
@@ -292,6 +293,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           throw new RuntimeException("Data set id is not supported: " + e.getMessage());
         }
       }).dataFetcher("deleteDataSet", new DeleteDataSetDataFetcher(dataSetRepository))
+      .dataFetcher("publish",new MakePublicDataFetcher(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);

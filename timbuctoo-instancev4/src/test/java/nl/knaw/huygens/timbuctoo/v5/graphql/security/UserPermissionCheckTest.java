@@ -22,7 +22,7 @@ public class UserPermissionCheckTest {
     UserPermissionCheck userPermissionCheck = new UserPermissionCheck(Optional.empty(),
       permissionFetcher, defaultPermissions);
     DataSetMetaData dataSetMetaData = mock(BasicDataSetMetaData.class);
-    given(dataSetMetaData.isPublic()).willReturn(false);
+    given(dataSetMetaData.isPublished()).willReturn(false);
 
     Set<Permission> permissions = userPermissionCheck.getPermissions(dataSetMetaData);
 
@@ -36,7 +36,7 @@ public class UserPermissionCheckTest {
     UserPermissionCheck userPermissionCheck = new UserPermissionCheck(Optional.empty(),
       permissionFetcher, defaultPermissions);
     DataSetMetaData dataSetMetaData = mock(BasicDataSetMetaData.class);
-    given(dataSetMetaData.isPublic()).willReturn(true);
+    given(dataSetMetaData.isPublished()).willReturn(true);
 
     Set<Permission> permissions = userPermissionCheck.getPermissions(dataSetMetaData);
 

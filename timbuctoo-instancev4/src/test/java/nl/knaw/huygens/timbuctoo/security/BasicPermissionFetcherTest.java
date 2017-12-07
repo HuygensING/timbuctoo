@@ -47,7 +47,7 @@ public class BasicPermissionFetcherTest {
     dataSetMetaData = mock(BasicDataSetMetaData.class);
     given(dataSetMetaData.getDataSetId()).willReturn("testdatasetid");
     given(dataSetMetaData.getOwnerId()).willReturn("testownerid");
-    given(dataSetMetaData.isPublic()).willReturn(true);
+    given(dataSetMetaData.isPublished()).willReturn(true);
   }
 
   @Test
@@ -113,7 +113,7 @@ public class BasicPermissionFetcherTest {
     DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
     given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
     given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
-    given(dataSetMetaData2.isPublic()).willReturn(false);
+    given(dataSetMetaData2.isPublished()).willReturn(false);
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId", dataSetMetaData2);
 
@@ -129,7 +129,7 @@ public class BasicPermissionFetcherTest {
     DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
     given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
     given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
-    given(dataSetMetaData2.isPublic()).willReturn(false);
+    given(dataSetMetaData2.isPublished()).willReturn(false);
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testadminId", dataSetMetaData2);
 
@@ -145,7 +145,7 @@ public class BasicPermissionFetcherTest {
     DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
     given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
     given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
-    given(dataSetMetaData2.isPublic()).willReturn(false);
+    given(dataSetMetaData2.isPublished()).willReturn(false);
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testWriterId", dataSetMetaData2);
 

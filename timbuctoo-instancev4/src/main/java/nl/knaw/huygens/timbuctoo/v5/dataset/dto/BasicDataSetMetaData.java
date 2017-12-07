@@ -15,8 +15,8 @@ public class BasicDataSetMetaData implements DataSetMetaData {
   private final String baseUri;
   private final String uriPrefix;
   private final String combinedId;
-  private boolean isPromoted;
-  private boolean isPublic;
+  private boolean promoted;
+  private boolean published;
 
 
   @JsonCreator
@@ -25,7 +25,7 @@ public class BasicDataSetMetaData implements DataSetMetaData {
                               @JsonProperty("baseUri") String baseUri,
                               @JsonProperty("uriPrefix") String uriPrefix,
                               @JsonProperty("promoted") boolean promoted,
-                              @JsonProperty("public") boolean isPublic) throws IllegalDataSetNameException {
+                              @JsonProperty("published") boolean published) throws IllegalDataSetNameException {
     if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
       throw new IllegalDataSetNameException("Owner id and dataSet id should match " + VALID_ID);
     }
@@ -35,8 +35,8 @@ public class BasicDataSetMetaData implements DataSetMetaData {
     this.combinedId = createCombinedId(ownerId, dataSetId);
     this.baseUri = baseUri;
     this.uriPrefix = uriPrefix;
-    this.isPromoted = promoted;
-    this.isPublic = isPublic;
+    this.promoted = promoted;
+    this.published = published;
   }
 
   @Override
@@ -73,12 +73,17 @@ public class BasicDataSetMetaData implements DataSetMetaData {
   @Override
   @Value.Auxiliary
   public boolean isPromoted() {
-    return isPromoted;
+    return promoted;
   }
 
   @Override
   @Value.Auxiliary
-  public boolean isPublic() {
-    return isPublic;
+  public boolean isPublished() {
+    return published;
+  }
+
+  @Override
+  public void publish() {
+    this.published = true;
   }
 }

@@ -272,6 +272,39 @@ public class DataSetRepository {
     return unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSet).isPresent();
   }
 
+  public DataSetMetaData publishDataSet(String userId,String ownerId, String dataSetName) {
+    Optional<DataSet> dataSet = getDataSet(userId,
+      ownerId, dataSetName);
+    try {
+      if (dataSet.isPresent() &&
+        permissionFetcher.getPermissions(userId,dataSet.get().getMetadata()).contains(Permission.ADMIN)) {
+        DataSetMetaData dataSetMetaData = dataSet.get().getMetadata();
+
+        dataSetMetaData.publish();
+
+        ObjectMapper objectMapper = new ObjectMapper()
+          .registerModule(new Jdk8Module())
+          .registerModule(new GuavaModule())
+          .registerModule(new TimbuctooCustomSerializers())
+          .enable(SerializationFeature.INDENT_OUTPUT);
+
+        File metaDataFile = fileHelper.fileInDataSet(ownerId, dataSetName, "metaData.json");
+
+
+        try {
+          objectMapper.writeValue(metaDataFile, dataSetMetaData);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+
+        return dataSetMetaData;
+      }
+    } catch (PermissionFetchingException e) {
+      return null;
+    }
+    return null;
+  }
+
   public Collection<DataSet> getDataSets() {
     return dataSetMap.values().stream().flatMap(x -> x.values().stream())
       .collect(Collectors.toList());

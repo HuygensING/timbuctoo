@@ -36,7 +36,7 @@ public class UserPermissionCheck {
         Sets.newHashSet()
       );
 
-    if (permissions.isEmpty() && dataSetMetaData.isPublic()) {
+    if (permissions.isEmpty() && dataSetMetaData.isPublished()) {
       permissions = defaultPermissions;
     }
     return permissions;
