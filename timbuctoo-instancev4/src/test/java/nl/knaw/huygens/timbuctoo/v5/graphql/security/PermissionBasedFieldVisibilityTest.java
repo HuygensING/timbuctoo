@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -122,7 +123,7 @@ public class PermissionBasedFieldVisibilityTest {
   }
 
   private PromotedDataSet createDataSetMetadata(String combinedId) {
-    PromotedDataSet promotedDataSet2 = mock(PromotedDataSet.class);
+    PromotedDataSet promotedDataSet2 = mock(BasicDataSetMetaData.class);
     given(promotedDataSet2.getCombinedId()).willReturn(combinedId);
     return promotedDataSet2;
   }

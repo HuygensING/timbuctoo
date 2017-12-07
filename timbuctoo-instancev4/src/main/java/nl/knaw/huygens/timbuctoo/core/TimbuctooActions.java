@@ -22,9 +22,9 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -70,10 +70,10 @@ public class TimbuctooActions implements AutoCloseable {
     UUID id = UUID.randomUUID();
     Change created = createChange(userId);
     CreateEntity createEntity = ImmutableCreateEntity.builder()
-                                                     .properties(properties)
-                                                     .id(id)
-                                                     .created(created)
-                                                     .build();
+      .properties(properties)
+      .id(id)
+      .created(created)
+      .build();
 
     dataStoreOperations.createEntity(collection, baseCollection, createEntity);
 
@@ -82,10 +82,10 @@ public class TimbuctooActions implements AutoCloseable {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), id, 1),
         ImmutableEntityLookup.builder()
-                             .rev(1)
-                             .timId(id)
-                             .collection(collection.getCollectionName())
-                             .build()
+          .rev(1)
+          .timId(id)
+          .collection(collection.getCollectionName())
+          .build()
       )
     );
 
@@ -105,10 +105,10 @@ public class TimbuctooActions implements AutoCloseable {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), updateEntity.getId(), rev),
         ImmutableEntityLookup.builder()
-                             .rev(rev)
-                             .timId(updateEntity.getId())
-                             .collection(collection.getCollectionName())
-                             .build()
+          .rev(rev)
+          .timId(updateEntity.getId())
+          .collection(collection.getCollectionName())
+          .build()
       )
     );
   }
@@ -128,10 +128,10 @@ public class TimbuctooActions implements AutoCloseable {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), uuid, rev),
         ImmutableEntityLookup.builder()
-                             .rev(rev)
-                             .timId(uuid)
-                             .collection(collection.getCollectionName())
-                             .build()
+          .rev(rev)
+          .timId(uuid)
+          .collection(collection.getCollectionName())
+          .build()
       )
     );
   }
@@ -145,7 +145,7 @@ public class TimbuctooActions implements AutoCloseable {
 
   private void checkIfAllowedToWrite(String userId, Collection collection) throws
     PermissionFetchingException {
-    if (!permissionFetcher.getOldPermissions(userId,collection.getVreName()).contains(Permission.WRITE)) {
+    if (!permissionFetcher.getOldPermissions(userId, collection.getVreName()).contains(Permission.WRITE)) {
       throw new PermissionFetchingException("Write permission not pressent.");
     }
   }
@@ -324,7 +324,7 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public void deleteVre(String vreName, User user) throws PermissionFetchingException {
-    boolean isAdmin = permissionFetcher.getOldPermissions(user.getPersistentId(),vreName).contains(Permission.ADMIN);
+    boolean isAdmin = permissionFetcher.getOldPermissions(user.getPersistentId(), vreName).contains(Permission.ADMIN);
     if (isAdmin) {
       dataStoreOperations.deleteVre(vreName);
     } else {

@@ -1,24 +1,19 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import org.immutables.value.Value;
 
 import java.util.Optional;
 
-@Value.Immutable
-@JsonSerialize(as = ImmutablePromotedDataSet.class)
-@JsonDeserialize(as = ImmutablePromotedDataSet.class)
 public interface PromotedDataSet {
-  //DataSetId's must be Safe. Meaning that they can be used on the fileSystem, in queries, wherever.
-  //We implement that by making sure that the the owner and dataSetId contain only a-z (lowercase for case
-  // insensitive environments) and 0-9
-  //we also allow for an underscore. But only one, so that we can join the parts using 2 underscores
-
-  //finally, the id must start with a character because some environments (java variables, graphql, javascript, sql)
-  //don't allow an identifier to start with a number
+  /**
+   * DataSetId's must be Safe. Meaning that they can be used on the fileSystem, in queries, wherever.
+   * We implement that by making sure that the the owner and dataSetId contain only a-z (lowercase for case
+   * insensitive environments) and 0-9
+   * we also allow for an underscore. But only one, so that we can join the parts using 2 underscores
+   * finally, the id must start with a character because some environments (java variables, graphql, javascript, sql)
+   * don't allow an identifier to start with a number
+   */
   String VALID_ID = "^[a-z](_?[a-z0-9]+)+$";
 
   String getDataSetId();
@@ -42,7 +37,7 @@ public interface PromotedDataSet {
 
   @Value.Auxiliary
   boolean isPublic();
-  
+
   Optional<String> role = Optional.empty();
 
   static Tuple<String, String> splitCombinedId(String combinedId) {
@@ -54,20 +49,4 @@ public interface PromotedDataSet {
     return ownerId + "__" + dataSetId;
   }
 
-  static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, String baseUri, String uriPrefix,
-                                         boolean promoted, boolean isPublic) throws IllegalDataSetNameException {
-    if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
-      throw new IllegalDataSetNameException("Owner id and dataSet id should match " + VALID_ID);
-    }
-
-    return ImmutablePromotedDataSet.builder()
-      .combinedId(createCombinedId(ownerId,dataSetId))
-      .ownerId(ownerId)
-      .baseUri(baseUri)
-      .uriPrefix(uriPrefix)
-      .dataSetId(dataSetId)
-      .isPromoted(promoted)
-      .isPublic(isPublic)
-      .build();
-  }
 }

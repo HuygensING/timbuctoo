@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -45,7 +46,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
-import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.promotedDataSet;
 
 /**
  * - stores all configuration parameters so it can inject them in the dataset constructor
@@ -94,12 +94,12 @@ public class DataSetRepository {
           path -> {
             File tempFile = new File(path.toString() + "/metaData.json");
             if (tempFile.exists()) {
-              JsonFileBackedData<PromotedDataSet> metaDataFromFile = null;
+              JsonFileBackedData<BasicDataSetMetaData> metaDataFromFile = null;
               try {
                 metaDataFromFile = JsonFileBackedData.getOrCreate(
                   tempFile,
                   null,
-                  new TypeReference<PromotedDataSet>() {
+                  new TypeReference<BasicDataSetMetaData>() {
                   });
                 tempMetaDataSet.add(metaDataFromFile.getData());
               } catch (IOException e) {
@@ -167,7 +167,7 @@ public class DataSetRepository {
       return Optional.empty();
     }
   }
-  
+
   public Optional<DataSet> unsafeGetDataSetWithoutCheckingPermissions(String ownerId, String dataSetId) {
     synchronized (dataSetMap) {
       if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
@@ -214,7 +214,7 @@ public class DataSetRepository {
       uriPrefix = baseUri;
     }
 
-    final PromotedDataSet dataSet = promotedDataSet(
+    final PromotedDataSet dataSet = new BasicDataSetMetaData(
       ownerPrefix,
       dataSetId,
       baseUri,

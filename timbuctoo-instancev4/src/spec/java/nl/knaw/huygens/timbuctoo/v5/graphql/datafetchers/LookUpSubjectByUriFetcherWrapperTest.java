@@ -11,6 +11,7 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
@@ -133,7 +134,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             @Override
             public PromotedDataSet getMetadata() {
               try {
-                return PromotedDataSet.promotedDataSet(
+                return new BasicDataSetMetaData(
                   "ownerid",
                   "datasetid",
                   "http://example.org",

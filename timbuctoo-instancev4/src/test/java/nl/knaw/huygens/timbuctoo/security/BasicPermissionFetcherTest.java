@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
@@ -9,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,7 +44,7 @@ public class BasicPermissionFetcherTest {
     given(testUser.getId()).willReturn("testownerid");
     given(userValidator.getUserFromId("testownerid")).willReturn(Optional.of(testUser));
     permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, userValidator);
-    promotedDataSet = mock(PromotedDataSet.class);
+    promotedDataSet = mock(BasicDataSetMetaData.class);
     given(promotedDataSet.getDataSetId()).willReturn("testdatasetid");
     given(promotedDataSet.getOwnerId()).willReturn("testownerid");
     given(promotedDataSet.isPublic()).willReturn(true);
@@ -110,7 +110,7 @@ public class BasicPermissionFetcherTest {
 
   @Test
   public void getPermissionsDoesNotReturnReadPermissionForUnauthorizedUserInPrivateDataset() throws Exception {
-    PromotedDataSet promotedDataSet2 = mock(PromotedDataSet.class);
+    PromotedDataSet promotedDataSet2 = mock(BasicDataSetMetaData.class);
     given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
     given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
     given(promotedDataSet2.isPublic()).willReturn(false);
@@ -126,7 +126,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorization.hasAdminAccess()).willReturn(true);
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
-    PromotedDataSet promotedDataSet2 = mock(PromotedDataSet.class);
+    PromotedDataSet promotedDataSet2 = mock(BasicDataSetMetaData.class);
     given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
     given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
     given(promotedDataSet2.isPublic()).willReturn(false);
@@ -142,7 +142,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorization.isAllowedToWrite()).willReturn(true);
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
-    PromotedDataSet promotedDataSet2 = mock(PromotedDataSet.class);
+    PromotedDataSet promotedDataSet2 = mock(BasicDataSetMetaData.class);
     given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
     given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
     given(promotedDataSet2.isPublic()).willReturn(false);

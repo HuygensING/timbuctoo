@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.createCombinedId;
+
 public class BasicPermissionFetcher implements PermissionFetcher {
   private final VreAuthorizationCrud vreAuthorizationCrud;
   private final UserValidator userValidator;
@@ -31,7 +33,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     String ownerId = dataSetMetadata.getOwnerId();
     String dataSetId = dataSetMetadata.getDataSetId();
 
-    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
+    String vreId = createCombinedId(ownerId, dataSetId);
     Set<Permission> permissions = new HashSet<>();
 
     if (dataSetMetadata.isPublic()) {
@@ -86,7 +88,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   public void initializeOwnerAuthorization(String userId, String ownerId, String dataSetId)
     throws AuthorizationCreationException {
 
-    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
+    String vreId = createCombinedId(ownerId, dataSetId);
 
     try {
       vreAuthorizationCrud.createAuthorization(vreId, userId, "ADMIN");

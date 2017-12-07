@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.security;
 
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -20,7 +21,7 @@ public class UserPermissionCheckTest {
     Set<Permission> defaultPermissions = Sets.newHashSet(Permission.READ);
     UserPermissionCheck userPermissionCheck = new UserPermissionCheck(Optional.empty(),
       permissionFetcher, defaultPermissions);
-    PromotedDataSet promotedDataSet = mock(PromotedDataSet.class);
+    PromotedDataSet promotedDataSet = mock(BasicDataSetMetaData.class);
     given(promotedDataSet.isPublic()).willReturn(false);
 
     Set<Permission> permissions = userPermissionCheck.getPermissions(promotedDataSet);
@@ -34,7 +35,7 @@ public class UserPermissionCheckTest {
     Set<Permission> defaultPermissions = Sets.newHashSet(Permission.READ);
     UserPermissionCheck userPermissionCheck = new UserPermissionCheck(Optional.empty(),
       permissionFetcher, defaultPermissions);
-    PromotedDataSet promotedDataSet = mock(PromotedDataSet.class);
+    PromotedDataSet promotedDataSet = mock(BasicDataSetMetaData.class);
     given(promotedDataSet.isPublic()).willReturn(true);
 
     Set<Permission> permissions = userPermissionCheck.getPermissions(promotedDataSet);

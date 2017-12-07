@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -39,12 +39,13 @@ public class AuthCheckTest {
     UserValidator userValidator = mock(UserValidator.class);
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
-    given(permissionFetcher.getPermissions(anyString(), any(PromotedDataSet.class))).willReturn(permissionsForAdmin());
+    given(permissionFetcher.getPermissions(anyString(), any(BasicDataSetMetaData.class)))
+      .willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
       userValidator,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/",
+      new BasicDataSetMetaData("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/",
         false, false)
     );
 
@@ -59,7 +60,7 @@ public class AuthCheckTest {
       null,
       userValidator,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org",
+      new BasicDataSetMetaData("ownerid", "datasetid", "http://ex.org",
         "http://example.org/prefix/", false, false)
     );
 
@@ -73,13 +74,13 @@ public class AuthCheckTest {
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
 
-    given(permissionFetcher.getPermissions(anyString(), any(PromotedDataSet.class)))
+    given(permissionFetcher.getPermissions(anyString(), any(BasicDataSetMetaData.class)))
       .willReturn(permissionsForNonAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
       userValidator,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org",
+      new BasicDataSetMetaData("ownerid", "datasetid", "http://ex.org",
         "http://example.org/prefix/", false, false)
     );
 
@@ -92,12 +93,13 @@ public class AuthCheckTest {
     UserValidator userValidator = mock(UserValidator.class);
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
-    given(permissionFetcher.getPermissions(anyString(), any(PromotedDataSet.class))).willReturn(permissionsForAdmin());
+    given(permissionFetcher.getPermissions(anyString(), any(BasicDataSetMetaData.class)))
+      .willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
       userValidator,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org",
+      new BasicDataSetMetaData("ownerid", "datasetid", "http://ex.org",
         "http://example.org/prefix/", false, false)
     );
 

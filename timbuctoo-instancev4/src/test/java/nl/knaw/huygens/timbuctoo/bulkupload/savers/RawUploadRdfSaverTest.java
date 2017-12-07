@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
@@ -49,7 +50,7 @@ public class RawUploadRdfSaverTest {
   @Before
   public void setUp() throws Exception {
     rdfSerializer = mock(RdfSerializer.class);
-    dataSetMetadata = PromotedDataSet.promotedDataSet(
+    dataSetMetadata = new BasicDataSetMetaData(
       "userid",
       "dataset",
       "http://timbuctoo.huygens.knaw.nl/v5/datasets/userid/dataset",

@@ -37,11 +37,11 @@ public class PromotedDataSetTest {
     );
 
     assertThat(
-      ok.stream().filter(x -> x.matches(PromotedDataSet.VALID_ID)).collect(Collectors.toList()),
+      ok.stream().filter(x -> x.matches(BasicDataSetMetaData.VALID_ID)).collect(Collectors.toList()),
       is(ok)
     );
     assertThat(
-      notOk.stream().filter(x -> x.matches(PromotedDataSet.VALID_ID)).collect(Collectors.toList()),
+      notOk.stream().filter(x -> x.matches(BasicDataSetMetaData.VALID_ID)).collect(Collectors.toList()),
       is(emptyIterable())
     );
   }
