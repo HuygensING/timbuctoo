@@ -31,6 +31,7 @@ java_binary(
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/backupforstaging/azureblob/dropwizardconfiguration",
         "//third_party:org_eclipse_rdf4j_rdf4j_model",
         "//third_party:org_eclipse_rdf4j_rdf4j_rio_api",
         "//third_party:com_sleepycat_je",

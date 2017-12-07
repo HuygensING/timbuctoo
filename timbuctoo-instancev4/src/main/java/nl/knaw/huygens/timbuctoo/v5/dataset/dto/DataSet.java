@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -22,7 +23,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
 import org.xml.sax.SAXException;
@@ -64,96 +65,101 @@ public abstract class DataSet {
     }
     
     final TupleBinding<String> stringBinding = TupleBinding.getPrimitiveBinding(String.class);
-    BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
-      userId,
-      dataSetId,
-      "rdfData",
-      true,
-      stringBinding,
-      stringBinding
-    ));
-    final BdbTypeNameStore typeNameStore = new BdbTypeNameStore(
-      new BdbBackedData(dataStoreFactory.getDatabase(
+    try {
+      BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
         userId,
         dataSetId,
-        "typenames",
+        "rdfData",
+        true,
+        stringBinding,
+        stringBinding
+      ));
+      final BdbTypeNameStore typeNameStore = new BdbTypeNameStore(
+        new BdbBackedData(dataStoreFactory.getDatabase(
+          userId,
+          dataSetId,
+          "typenames",
+          false,
+          stringBinding,
+          stringBinding
+        )),
+        rdfPrefix
+      );
+      final BdbSchemaStore schema = new BdbSchemaStore(
+        new BdbBackedData(dataStoreFactory.getDatabase(
+          userId,
+          dataSetId,
+          "schema",
+          false,
+          stringBinding,
+          stringBinding
+        ))
+      );
+      final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
+        dataStoreFactory.getDatabase(
+          userId,
+          dataSetId,
+          "truePatch",
+          true,
+          stringBinding,
+          stringBinding
+        )
+      );
+      final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
+      final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
+        dataStoreFactory.getDatabase(
+          userId,
+          dataSetId,
+          "updatedPerPatch",
+          true,
+          integerBinding,
+          stringBinding
+        )
+      );
+      final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
+        dataStoreFactory.getDatabase(
+          userId,
+          dataSetId,
+          "rmlSource",
+          true,
+          stringBinding,
+          stringBinding
+        )
+      );
+      VersionStore versionStore = new VersionStore(dataStoreFactory.getDatabase(
+        userId,
+        dataSetId,
+        "versions",
         false,
         stringBinding,
-        stringBinding
-      )),
-      rdfPrefix
-    );
-    final BdbSchemaStore schema = new BdbSchemaStore(
-      new BdbBackedData(dataStoreFactory.getDatabase(
-        userId,
-        dataSetId,
-        "schema",
-        false,
-        stringBinding,
-        stringBinding
-      ))
-    );
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
-      dataStoreFactory.getDatabase(
-        userId,
-        dataSetId,
-        "truePatch",
-        true,
-        stringBinding,
-        stringBinding
-      )
-    );
-    final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
-    final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
-      dataStoreFactory.getDatabase(
-        userId,
-        dataSetId,
-        "updatedPerPatch",
-        true,
-        integerBinding,
-        stringBinding
-      )
-    );
-    final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
-      dataStoreFactory.getDatabase(
-        userId,
-        dataSetId,
-        "rmlSource",
-        true,
-        stringBinding,
-        stringBinding)
-    );
-    VersionStore versionStore = new VersionStore(dataStoreFactory.getDatabase(
-      userId,
-      dataSetId,
-      "versions",
-      false,
-      stringBinding,
-      integerBinding
-    ));
-    final StoreUpdater storeUpdater = new StoreUpdater(
-      dataStoreFactory,
-      quadStore,
-      typeNameStore,
-      truePatchStore,
-      updatedPerPatchStore,
-      Lists.newArrayList(schema, rmlDataSourceStore),
-      versionStore
-    );
-    importManager.subscribeToRdf(storeUpdater);
-    return ImmutableDataSet.builder()
-      .metadata(metadata)
-      .quadStore(quadStore)
-      .typeNameStore(typeNameStore)
-      .schemaStore(schema)
-      .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
-      .rmlDataSourceStore(rmlDataSourceStore)
-      .schemaStore(schema)
-      .truePatchStore(truePatchStore)
-      .updatePerPatchStore(updatedPerPatchStore)
-      .versionStore(versionStore)
-      .importManager(importManager)
-      .build();
+        integerBinding
+      ));
+      final StoreUpdater storeUpdater = new StoreUpdater(
+        dataStoreFactory,
+        quadStore,
+        typeNameStore,
+        truePatchStore,
+        updatedPerPatchStore,
+        Lists.newArrayList(schema, rmlDataSourceStore),
+        versionStore
+      );
+      importManager.subscribeToRdf(storeUpdater);
+      return ImmutableDataSet.builder()
+        .metadata(metadata)
+        .quadStore(quadStore)
+        .typeNameStore(typeNameStore)
+        .schemaStore(schema)
+        .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
+        .rmlDataSourceStore(rmlDataSourceStore)
+        .schemaStore(schema)
+        .truePatchStore(truePatchStore)
+        .updatePerPatchStore(updatedPerPatchStore)
+        .versionStore(versionStore)
+        .importManager(importManager)
+        .build();
+    } catch (BdbDbCreationException e) {
+      throw new DataStoreCreationException(e.getCause());
+    }
   }
 
   public void stop() {

@@ -18,7 +18,16 @@ java_library(
     srcs = glob([
         "**/*.java",
     ]),
+    runtime_deps = [
+      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/backupforstaging/azureblob/dropwizardconfiguration",
+    ],
+    exports = [
+      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/berkeleydb",
+    ],
     deps = [
+      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/backupforstaging",
+      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/filehelper",
+      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/berkeleydb",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena",
@@ -42,6 +51,7 @@ java_library(
       "//third_party:com_fasterxml_jackson_datatype_jackson_datatype_jdk8",
       "//third_party:com_fasterxml_jackson_datatype_jackson_datatype_guava",
       "//third_party:io_dropwizard_dropwizard_validation",
+      "//third_party:io_dropwizard_dropwizard_servlets",
       "//third_party:javax_ws_rs_javax_ws_rs_api",
       "//third_party:com_googlecode_juniversalchardet_juniversalchardet",
       "//third_party:org_eclipse_rdf4j_rdf4j_model",

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.util;
+package nl.knaw.huygens.timbuctoo.rdfconversion;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
