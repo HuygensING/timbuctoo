@@ -10,7 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.is;
 
-public class PromotedDataSetTest {
+public class DataSetMetaDataTest {
 
   @Test
   public void testRegex() throws Exception {

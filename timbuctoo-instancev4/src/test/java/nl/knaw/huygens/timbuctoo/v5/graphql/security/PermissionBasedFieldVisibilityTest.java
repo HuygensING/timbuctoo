@@ -6,7 +6,7 @@ import graphql.schema.GraphQLFieldsContainer;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,21 +111,21 @@ public class PermissionBasedFieldVisibilityTest {
   }
 
   private DataSet createDataSetWithUserPermissions(String combinedId, Set<Permission> permissions) {
-    PromotedDataSet promotedDataSet = createDataSetMetadata(combinedId);
-    given(userPermissionCheck.getPermissions(promotedDataSet)).willReturn(permissions);
-    return createDataSet(promotedDataSet);
+    DataSetMetaData dataSetMetaData = createDataSetMetadata(combinedId);
+    given(userPermissionCheck.getPermissions(dataSetMetaData)).willReturn(permissions);
+    return createDataSet(dataSetMetaData);
   }
 
-  private DataSet createDataSet(PromotedDataSet promotedDataSet) {
+  private DataSet createDataSet(DataSetMetaData dataSetMetaData) {
     DataSet dataSet = mock(DataSet.class);
-    given(dataSet.getMetadata()).willReturn(promotedDataSet);
+    given(dataSet.getMetadata()).willReturn(dataSetMetaData);
     return dataSet;
   }
 
-  private PromotedDataSet createDataSetMetadata(String combinedId) {
-    PromotedDataSet promotedDataSet2 = mock(BasicDataSetMetaData.class);
-    given(promotedDataSet2.getCombinedId()).willReturn(combinedId);
-    return promotedDataSet2;
+  private DataSetMetaData createDataSetMetadata(String combinedId) {
+    DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
+    given(dataSetMetaData2.getCombinedId()).willReturn(combinedId);
+    return dataSetMetaData2;
   }
 
 

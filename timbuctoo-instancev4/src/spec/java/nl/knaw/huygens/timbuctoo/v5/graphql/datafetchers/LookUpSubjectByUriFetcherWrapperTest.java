@@ -13,7 +13,7 @@ import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
@@ -132,7 +132,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
-            public PromotedDataSet getMetadata() {
+            public DataSetMetaData getMetadata() {
               try {
                 return new BasicDataSetMetaData(
                   "ownerid",

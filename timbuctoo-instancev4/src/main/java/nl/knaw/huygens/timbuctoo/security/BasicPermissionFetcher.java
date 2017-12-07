@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.createCombinedId;
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCombinedId;
 
 public class BasicPermissionFetcher implements PermissionFetcher {
   private final VreAuthorizationCrud vreAuthorizationCrud;
@@ -28,7 +28,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public Set<Permission> getPermissions(String persistentId, PromotedDataSet dataSetMetadata)
+  public Set<Permission> getPermissions(String persistentId, DataSetMetaData dataSetMetadata)
     throws PermissionFetchingException {
     String ownerId = dataSetMetadata.getOwnerId();
     String dataSetId = dataSetMetadata.getDataSetId();

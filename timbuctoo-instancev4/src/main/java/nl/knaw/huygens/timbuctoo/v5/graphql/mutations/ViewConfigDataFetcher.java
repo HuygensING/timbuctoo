@@ -8,7 +8,7 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
@@ -41,7 +41,7 @@ public class ViewConfigDataFetcher implements DataFetcher {
 
     UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
 
-    Tuple<String, String> ownerAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
+    Tuple<String, String> ownerAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
 
     String ownerId = ownerAndDataSet.getLeft();
     String dataSetName = ownerAndDataSet.getRight();

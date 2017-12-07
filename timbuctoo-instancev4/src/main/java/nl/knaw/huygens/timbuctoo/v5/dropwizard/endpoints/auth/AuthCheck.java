@@ -4,7 +4,7 @@ import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
@@ -52,7 +52,7 @@ public class AuthCheck {
 
   public static Response checkAdminAccess(PermissionFetcher permissionFetcher, UserValidator userValidator,
                                           String authHeader,
-                                          PromotedDataSet dataSetMetadata) {
+                                          DataSetMetaData dataSetMetadata) {
 
     Optional<User> user;
     try {

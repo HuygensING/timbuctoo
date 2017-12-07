@@ -15,7 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -48,7 +48,7 @@ public class BdbRmlDataSourceStoreTest {
   @Test
   public void itWorks() throws Exception {
     BdbNonPersistentEnvironmentCreator dbCreator = new BdbNonPersistentEnvironmentCreator();
-    PromotedDataSet dataSetMetadata = new BasicDataSetMetaData(
+    DataSetMetaData dataSetMetadata = new BasicDataSetMetaData(
       "userid",
       "datasetid",
       "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",

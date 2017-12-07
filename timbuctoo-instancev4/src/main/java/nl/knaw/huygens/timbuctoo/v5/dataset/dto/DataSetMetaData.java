@@ -5,7 +5,7 @@ import org.immutables.value.Value;
 
 import java.util.Optional;
 
-public interface PromotedDataSet {
+public interface DataSetMetaData {
   /**
    * DataSetId's must be Safe. Meaning that they can be used on the fileSystem, in queries, wherever.
    * We implement that by making sure that the the owner and dataSetId contain only a-z (lowercase for case

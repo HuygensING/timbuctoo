@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import org.immutables.value.Value;
 
-import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.createCombinedId;
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCombinedId;
 
 
-public class BasicDataSetMetaData implements PromotedDataSet {
+public class BasicDataSetMetaData implements DataSetMetaData {
 
   private final String dataSetId;
   private final String ownerId;

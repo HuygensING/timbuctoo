@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import org.junit.Before;
@@ -45,7 +45,7 @@ public class RawUploadRdfSaverTest {
   private static final String COLLECTION = "coll";
   private RawUploadRdfSaver instance;
   private RdfSerializer rdfSerializer;
-  private PromotedDataSet dataSetMetadata;
+  private DataSetMetaData dataSetMetadata;
 
   @Before
   public void setUp() throws Exception {
@@ -59,7 +59,7 @@ public class RawUploadRdfSaverTest {
     instance = instanceWithRdfSerializer(rdfSerializer, dataSetMetadata);
   }
 
-  private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer, PromotedDataSet dataSetMetadata)
+  private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer, DataSetMetaData dataSetMetadata)
     throws LogStorageFailedException {
     return new RawUploadRdfSaver(dataSetMetadata, "fileName", APPLICATION_OCTET_STREAM_TYPE, rdfSerializer);
   }

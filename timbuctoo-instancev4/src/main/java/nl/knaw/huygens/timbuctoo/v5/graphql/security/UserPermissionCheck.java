@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.security;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -23,7 +23,7 @@ public class UserPermissionCheck {
     this.defaultPermissions = defaultPermissions;
   }
 
-  public Set<Permission> getPermissions(PromotedDataSet dataSetMetaData) {
+  public Set<Permission> getPermissions(DataSetMetaData dataSetMetaData) {
     Set<Permission> permissions = user
       .map(user -> {
         try {

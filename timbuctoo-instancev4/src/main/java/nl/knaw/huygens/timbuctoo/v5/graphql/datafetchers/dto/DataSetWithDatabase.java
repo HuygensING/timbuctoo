@@ -1,54 +1,53 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 
-public class DataSetWithDatabase extends LazyTypeSubjectReference implements PromotedDataSet {
-  private final PromotedDataSet promotedDataSet;
+public class DataSetWithDatabase extends LazyTypeSubjectReference implements DataSetMetaData {
+  private final DataSetMetaData dataSetMetaData;
 
   @Override
   public String getDataSetId() {
-    return promotedDataSet.getDataSetId();
+    return dataSetMetaData.getDataSetId();
   }
 
   @Override
   public String getOwnerId() {
-    return promotedDataSet.getOwnerId();
+    return dataSetMetaData.getOwnerId();
   }
 
   @Override
   public String getBaseUri() {
-    return promotedDataSet.getBaseUri();
+    return dataSetMetaData.getBaseUri();
   }
 
   @Override
   public String getUriPrefix() {
-    return promotedDataSet.getUriPrefix();
+    return dataSetMetaData.getUriPrefix();
   }
 
   @Override
   public String getCombinedId() {
-    return promotedDataSet.getCombinedId();
+    return dataSetMetaData.getCombinedId();
   }
 
   public boolean isPromoted() {
-    return promotedDataSet.isPromoted();
+    return dataSetMetaData.isPromoted();
   }
 
   public boolean isPublic() {
-    return promotedDataSet.isPublic();
+    return dataSetMetaData.isPublic();
   }
 
   public DataSetWithDatabase(DataSet dataSet) {
     super(dataSet.getMetadata().getBaseUri(), dataSet);
-    this.promotedDataSet = dataSet.getMetadata();
+    this.dataSetMetaData = dataSet.getMetadata();
   }
 
   @Override
   public String getSubjectUri() {
-    return promotedDataSet.getBaseUri();
+    return dataSetMetaData.getBaseUri();
   }
 
 }

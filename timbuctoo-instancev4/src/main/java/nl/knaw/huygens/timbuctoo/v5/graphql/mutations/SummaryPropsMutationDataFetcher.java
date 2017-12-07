@@ -6,7 +6,7 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
@@ -42,7 +42,7 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
     String userId = contextData.getUser().get().getPersistentId();
     UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
 
-    Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
+    Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();

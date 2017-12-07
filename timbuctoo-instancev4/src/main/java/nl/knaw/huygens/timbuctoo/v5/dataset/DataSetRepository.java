@@ -10,7 +10,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
@@ -61,7 +61,7 @@ public class DataSetRepository {
   private final DataSetConfiguration configuration;
   private final BdbEnvironmentCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
-  private final Map<String, Set<PromotedDataSet>> metaDataSet;
+  private final Map<String, Set<DataSetMetaData>> metaDataSet;
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
   private final boolean publicByDefault;
@@ -87,7 +87,7 @@ public class DataSetRepository {
     for (int i = 0; i < directories.length; i++) {
       String dirName = directories[i].toString();
       String currentOwnerId = dirName.substring(dirName.lastIndexOf("/") + 1, dirName.length());
-      Set<PromotedDataSet> tempMetaDataSet = new HashSet<>();
+      Set<DataSetMetaData> tempMetaDataSet = new HashSet<>();
       Files.walk(directories[i].toPath())
         .filter(current -> Files.isDirectory(current))
         .forEach(
@@ -128,20 +128,20 @@ public class DataSetRepository {
       metaDataSet.forEach((ownerId, ownerMetaDatas) -> {
         HashMap<String, DataSet> ownersSets = new HashMap<>();
         dataSetMap.put(ownerId, ownersSets);
-        for (PromotedDataSet promotedDataSet : ownerMetaDatas) {
-          String dataSetName = promotedDataSet.getDataSetId();
+        for (DataSetMetaData dataSetMetaData : ownerMetaDatas) {
+          String dataSetName = dataSetMetaData.getDataSetId();
           try {
             ownersSets.put(
               dataSetName,
               dataSet(
-                promotedDataSet,
+                dataSetMetaData,
                 configuration,
                 fileHelper,
                 executorService,
                 rdfBaseUri,
                 dataStoreFactory,
                 resourceSync,
-                () -> onUpdated.accept(promotedDataSet.getCombinedId())
+                () -> onUpdated.accept(dataSetMetaData.getCombinedId())
               )
             );
           } catch (IOException | DataStoreCreationException | ResourceSyncException e) {
@@ -214,7 +214,7 @@ public class DataSetRepository {
       uriPrefix = baseUri;
     }
 
-    final PromotedDataSet dataSet = new BasicDataSetMetaData(
+    final DataSetMetaData dataSet = new BasicDataSetMetaData(
       ownerPrefix,
       dataSetId,
       baseUri,
@@ -321,7 +321,7 @@ public class DataSetRepository {
   }
 
   public void removeDataSet(String combinedId) throws IOException {
-    Tuple<String, String> ownerIdDataSetName = PromotedDataSet.splitCombinedId(combinedId);
+    Tuple<String, String> ownerIdDataSetName = DataSetMetaData.splitCombinedId(combinedId);
 
     this.removeDataSet(ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight());
   }

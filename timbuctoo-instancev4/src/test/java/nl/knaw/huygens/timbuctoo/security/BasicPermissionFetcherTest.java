@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
@@ -34,7 +34,7 @@ public class BasicPermissionFetcherTest {
   private PermissionFetcher permissionFetcher;
   private UserValidator userValidator;
   private User testUser;
-  private PromotedDataSet promotedDataSet;
+  private DataSetMetaData dataSetMetaData;
 
   @Before
   public void setUp() throws Exception {
@@ -44,10 +44,10 @@ public class BasicPermissionFetcherTest {
     given(testUser.getId()).willReturn("testownerid");
     given(userValidator.getUserFromId("testownerid")).willReturn(Optional.of(testUser));
     permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, userValidator);
-    promotedDataSet = mock(BasicDataSetMetaData.class);
-    given(promotedDataSet.getDataSetId()).willReturn("testdatasetid");
-    given(promotedDataSet.getOwnerId()).willReturn("testownerid");
-    given(promotedDataSet.isPublic()).willReturn(true);
+    dataSetMetaData = mock(BasicDataSetMetaData.class);
+    given(dataSetMetaData.getDataSetId()).willReturn("testdatasetid");
+    given(dataSetMetaData.getOwnerId()).willReturn("testownerid");
+    given(dataSetMetaData.isPublic()).willReturn(true);
   }
 
   @Test
@@ -57,7 +57,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      promotedDataSet);
+      dataSetMetaData);
 
     assertThat(permissions, containsInAnyOrder(Permission.WRITE, Permission.READ));
   }
@@ -69,7 +69,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      promotedDataSet);
+      dataSetMetaData);
 
     assertThat(permissions, containsInAnyOrder(Permission.ADMIN, Permission.READ));
   }
@@ -81,7 +81,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      promotedDataSet);
+      dataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
@@ -93,7 +93,7 @@ public class BasicPermissionFetcherTest {
     );
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      promotedDataSet);
+      dataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
@@ -103,19 +103,19 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.empty());
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      promotedDataSet);
+      dataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
 
   @Test
   public void getPermissionsDoesNotReturnReadPermissionForUnauthorizedUserInPrivateDataset() throws Exception {
-    PromotedDataSet promotedDataSet2 = mock(BasicDataSetMetaData.class);
-    given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
-    given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
-    given(promotedDataSet2.isPublic()).willReturn(false);
+    DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
+    given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
+    given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
+    given(dataSetMetaData2.isPublic()).willReturn(false);
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId", promotedDataSet2);
+    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId", dataSetMetaData2);
 
     assertThat(permissions, is(empty()));
   }
@@ -126,12 +126,12 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorization.hasAdminAccess()).willReturn(true);
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
-    PromotedDataSet promotedDataSet2 = mock(BasicDataSetMetaData.class);
-    given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
-    given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
-    given(promotedDataSet2.isPublic()).willReturn(false);
+    DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
+    given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
+    given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
+    given(dataSetMetaData2.isPublic()).willReturn(false);
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testadminId", promotedDataSet2);
+    Set<Permission> permissions = permissionFetcher.getPermissions("testadminId", dataSetMetaData2);
 
     assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.ADMIN));
   }
@@ -142,12 +142,12 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorization.isAllowedToWrite()).willReturn(true);
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
-    PromotedDataSet promotedDataSet2 = mock(BasicDataSetMetaData.class);
-    given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
-    given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
-    given(promotedDataSet2.isPublic()).willReturn(false);
+    DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
+    given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
+    given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
+    given(dataSetMetaData2.isPublic()).willReturn(false);
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testWriterId", promotedDataSet2);
+    Set<Permission> permissions = permissionFetcher.getPermissions("testWriterId", dataSetMetaData2);
 
     assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.WRITE));
   }
