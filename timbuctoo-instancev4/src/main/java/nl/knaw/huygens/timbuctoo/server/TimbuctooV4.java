@@ -90,8 +90,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
@@ -316,12 +314,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       register(environment, twitterLogin);
     }
 
-    register(environment, new CreateDataSet(authCheck));
-    register(environment, new DataSet(
-        securityConfig.getUserValidator(),
-        securityConfig.getPermissionFetcher(), dataSetRepository
-      )
-    );
     register(environment, new JsonLdEditEndpoint(
       securityConfig.getUserValidator(),
       securityConfig.getPermissionFetcher(),

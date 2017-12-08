@@ -125,7 +125,7 @@ public class IntegrationTest {
       objectNode
         .get("data")
         .get("dataSets")
-        .get(PREFIX + "__" + vreName)
+        .get(createDataSetId(vreName))
         .get("clusius_ResidenceList")
         .get("items").size(),
       is(20)
@@ -156,7 +156,7 @@ public class IntegrationTest {
       stream(objectNode
         .get("data")
         .get("dataSets")
-        .get(PREFIX + "__" + vreName)
+        .get(createDataSetId(vreName))
         .get("clusius_ResidenceList")
         .get("items").iterator())
         .map(item -> item
@@ -171,7 +171,7 @@ public class IntegrationTest {
       stream(objectNode
         .get("data")
         .get("dataSets")
-        .get(PREFIX + "__" + vreName)
+        .get(createDataSetId(vreName))
         .get("clusius_ResidenceList")
         .get("items").iterator())
         .flatMap(item ->
@@ -272,7 +272,7 @@ public class IntegrationTest {
       objectNode
         .get("data")
         .get("dataSets")
-        .get(PREFIX + "__" + vreName)
+        .get(createDataSetId(vreName))
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
         .get("items")
         .size(),
@@ -301,7 +301,7 @@ public class IntegrationTest {
       stream(objectNode
         .get("data")
         .get("dataSets")
-        .get(PREFIX + "__" + vreName)
+        .get(createDataSetId(vreName))
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
         .get("items").iterator())
         .map(item -> item
@@ -393,40 +393,9 @@ public class IntegrationTest {
     // assertThat(response.getHeaderString(HttpHeaders.LOCATION), Matchers.is(notNullValue()));
   }
 
-  @Test
-  public void deleteDataSet() throws Exception {
-    // Create a dataset
-    Client client = ClientBuilder.newBuilder().build();
-    String dataSetId = "dataset" + UUID.randomUUID().toString().replace("-", "_");
-    WebTarget createTarget =
-      client
-        .target(format("http://localhost:%d/v5/dataSets/" + PREFIX + "/" + dataSetId + "/create/", APP.getLocalPort()));
-
-    Response createResponse = createTarget.request()
-      .header(HttpHeaders.AUTHORIZATION, "fake")
-      .post(Entity.json(jsnO()));
-    assertThat(createResponse.getStatus(), is(201));
-    // check if the dataset is created
-    List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy();
-    System.out.println("datasets: " + dataSetNamesOfDummy);
-    assertThat(dataSetNamesOfDummy, hasItem(PREFIX + "__" + dataSetId));
-
-    // delete dataset
-    WebTarget deleteTarget =
-      client.target(format("http://localhost:%d/v5/" + PREFIX + "/" + dataSetId, APP.getLocalPort()));
-
-    Response deleteResponse = deleteTarget.request()
-      .header(HttpHeaders.AUTHORIZATION, "fake")
-      .delete();
-
-    assertThat(deleteResponse.getStatus(), is(204));
-
-    // check if the dataset still exists
-    assertThat(getDataSetNamesOfDummy(), not(hasItem(dataSetId)));
-  }
 
   @Test
-  public void checkJsonLdDeserialization() throws Exception {
+  public void checkJsonLdDeserialization() {
     final String context = "{\n" +
       "    \"@vocab\": \"http://example.org/UNKNOWN#\",\n" +
       "    \"prov\": \"http://www.w3.org/ns/prov#\",\n" +
@@ -508,25 +477,34 @@ public class IntegrationTest {
 
     Client client = ClientBuilder.newBuilder().build();
 
-    String vreName = "ldtest" + UUID.randomUUID().toString().replace("-", "_");
-    WebTarget createDataSet =
+    String dataSetName = "ldtest" + UUID.randomUUID().toString().replace("-", "_");
+    Response graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation CreateDataSet($dataSetName: String!) {" +
+            "  createDataSet(dataSetName: $dataSetName) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetName", jsn(dataSetName)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(graphQlCall.getStatus(), is(200));
+
+    final WebTarget updateLoadJsonLdTarget =
       client.target(String.format(
-        "http://localhost:%d/v5/dataSets/" + PREFIX + "/" + vreName + "/create/",
+        "http://localhost:%d/v5/" + PREFIX + "/" + dataSetName + "/upload/jsonld/",
         APP.getLocalPort()
       ));
 
-    createDataSet.request()
-      .header(HttpHeaders.AUTHORIZATION, "fake")
-      .post(Entity.json(null));
 
-    final WebTarget createTarget =
-      client.target(String.format(
-        "http://localhost:%d/v5/" + PREFIX + "/" + vreName + "/upload/jsonld/",
-        APP.getLocalPort()
-      ));
-
-
-    Response createResponse = createTarget.request()
+    Response createResponse = updateLoadJsonLdTarget.request()
       .header(HttpHeaders.AUTHORIZATION, "fake")
       .put(Entity.json(testRdfReader));
 
@@ -548,12 +526,12 @@ public class IntegrationTest {
         "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", PREFIX, vreName), MediaType.valueOf("application/graphql")));
+        "}", PREFIX, dataSetName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     String revision = objectNode
       .get("data")
       .get("dataSets")
-      .get(PREFIX + "__" + vreName)
+      .get(createDataSetId(dataSetName))
       .get("local_col_Person")
       .get("tim_latestRevision")
       .get("uri")
@@ -585,7 +563,7 @@ public class IntegrationTest {
 
     final WebTarget createTarget2 =
       client.target(String.format(
-        "http://localhost:%d/v5/" + PREFIX + "/" + vreName + "/upload/jsonld/",
+        "http://localhost:%d/v5/" + PREFIX + "/" + dataSetName + "/upload/jsonld/",
         APP.getLocalPort()
       ));
 
@@ -613,14 +591,14 @@ public class IntegrationTest {
         "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", PREFIX, vreName), MediaType.valueOf("application/graphql")));
+        "}", PREFIX, dataSetName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
 
     assertThat(
       stream(objectNode
         .get("data")
         .get("dataSets")
-        .get(PREFIX + "__" + vreName)
+        .get(createDataSetId(dataSetName))
         .get("local_col_Person")
         .get("local_pred_pred2List")
         .get("items").iterator())
@@ -636,7 +614,7 @@ public class IntegrationTest {
   @Test
   public void viewConfigCanBeChangedWithGraphQl() throws Exception {
     final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
-    final String dataSetId = PREFIX + "__" + dataSetName;
+    final String dataSetId = createDataSetId(dataSetName);
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
@@ -717,10 +695,14 @@ public class IntegrationTest {
 
   }
 
+  private String createDataSetId(String dataSetName) {
+    return PREFIX + "__" + dataSetName;
+  }
+
   @Test
   public void indexConfigCanBeChangedWithGraphQl() throws Exception {
     final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
-    final String dataSetId = PREFIX + "__" + dataSetName;
+    final String dataSetId = createDataSetId(dataSetName);
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
@@ -840,7 +822,7 @@ public class IntegrationTest {
   @Test
   public void dataSetCanBeCreatedWithGraphQl() {
     final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
-    final String dataSetId = PREFIX + "__" + dataSetName;
+    final String dataSetId = createDataSetId(dataSetName);
 
     Response graphQlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
@@ -906,7 +888,7 @@ public class IntegrationTest {
   @Test
   public void dataSetCanBeDeletedWithGraphQl() {
     final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
-    final String dataSetId = PREFIX + "__" + dataSetName;
+    final String dataSetId = createDataSetId(dataSetName);
 
     Response createCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
