@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
@@ -899,6 +900,121 @@ public class IntegrationTest {
         )
       )
     ));
+
+  }
+
+  @Test
+  public void dataSetCanBeDeletedWithGraphQl() {
+    final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = PREFIX + "__" + dataSetName;
+
+    Response createCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation CreateDataSet($dataSetName: String!) {" +
+            "  createDataSet(dataSetName: $dataSetName) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetName", jsn(dataSetName)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(createCall.getStatus(), is(200));
+    assertThat(createCall.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "createDataSet", jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      )
+    )));
+
+    Response retrieveBeforeDelete = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "{\n" +
+            "  allDataSets {\n" +
+            "    dataSetId\n" +
+            "  }\n" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetName", jsn(dataSetName)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(retrieveBeforeDelete.getStatus(), is(200));
+    ObjectNode dataSetsBeforeDelete = retrieveBeforeDelete.readEntity(ObjectNode.class);
+    assertThat(stream(dataSetsBeforeDelete
+        .get("data")
+        .get("allDataSets").iterator()
+      ).collect(Collectors.toList()),
+      hasItem((JsonNode) jsnO("dataSetId", jsn(dataSetId)))
+    );
+
+    Response deleteCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation DeleteDataSet($dataSetId: String!) {" +
+            "  deleteDataSet(dataSetId: $dataSetId) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(deleteCall.getStatus(), is(200));
+    assertThat(deleteCall.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "deleteDataSet", jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      )
+    )));
+
+
+    Response retrieveAfterDelete = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "{\n" +
+            "  allDataSets {\n" +
+            "    dataSetId\n" +
+            "  }\n" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetName", jsn(dataSetName)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(retrieveAfterDelete.getStatus(), is(200));
+    ObjectNode dataSetsAfterDelete = retrieveAfterDelete.readEntity(ObjectNode.class);
+    assertThat(stream(dataSetsAfterDelete
+        .get("data")
+        .get("allDataSets").iterator()
+      ).collect(Collectors.toList()),
+      not(hasItem((JsonNode) jsnO("dataSetId", jsn(dataSetId))))
+    );
+
 
   }
 

@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
@@ -216,7 +217,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           LOG.error("Data set creation exception", e);
           throw new RuntimeException("Data set id is not supported: " + e.getMessage());
         }
-      })
+      }).dataFetcher("deleteDataSet", new DeleteDataSetDataFetcher(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);

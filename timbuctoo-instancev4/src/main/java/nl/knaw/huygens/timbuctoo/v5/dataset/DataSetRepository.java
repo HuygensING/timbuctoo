@@ -261,6 +261,12 @@ public class DataSetRepository {
     return Tuple.tuple(uuid, rdfCreator);
   }
 
+  public void removeDataSet(String combinedId) throws IOException {
+    Tuple<String, String> ownerIdDataSetName = PromotedDataSet.splitCombinedId(combinedId);
+
+    this.removeDataSet(ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight());
+  }
+
   public void removeDataSet(String ownerId, String dataSetName) throws IOException {
     dataStoreFactory.removeDatabasesFor(ownerId, dataSetName);
     // remove from datasets.json
