@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Optional;
 
 public class LogList {
 
@@ -24,9 +25,6 @@ public class LogList {
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<String> listErrors = new ArrayList<>();
-
-  @JsonProperty
-  private int entityErrorCount;
 
   @JsonProperty
   private List<LogEntry> logEntries = new ArrayList<>();
@@ -66,8 +64,8 @@ public class LogList {
     this.lastImportDate = dateString;
   }
 
-  public TimeWithUnit getLastImportDuration() {
-    return lastImportDuration;
+  public Optional<TimeWithUnit> getLastImportDuration() {
+    return Optional.ofNullable(lastImportDuration);
   }
 
   public void setLastImportDuration(TimeWithUnit lastImportDuration) {
@@ -80,13 +78,5 @@ public class LogList {
 
   public List<String> getListErrors() {
     return listErrors;
-  }
-
-  public void incrementEntityErrorCount() {
-    entityErrorCount += 1;
-  }
-
-  public int getEntityErrorCount() {
-    return entityErrorCount;
   }
 }

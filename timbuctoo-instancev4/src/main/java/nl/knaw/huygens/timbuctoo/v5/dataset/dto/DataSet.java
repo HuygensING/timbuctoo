@@ -57,8 +57,8 @@ public abstract class DataSet {
     );
 
     try {
-      importManager
-        .subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri(), importManager.getStatus()));
+      importManager.subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri(),
+        importManager.getImportStatus()));
     } catch (ParserConfigurationException e) {
       e.printStackTrace();
     } catch (SAXException e) {
@@ -95,7 +95,7 @@ public abstract class DataSet {
           stringBinding,
           stringBinding
         )),
-        importManager.getStatus()
+        importManager.getImportStatus()
       );
       final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
         dataStoreFactory.getDatabase(
@@ -127,7 +127,7 @@ public abstract class DataSet {
           stringBinding,
           stringBinding
         ),
-        importManager.getStatus()
+        importManager.getImportStatus()
       );
       VersionStore versionStore = new VersionStore(dataStoreFactory.getDatabase(
         userId,
@@ -145,7 +145,7 @@ public abstract class DataSet {
         updatedPerPatchStore,
         Lists.newArrayList(schema, rmlDataSourceStore),
         versionStore,
-        importManager.getStatus()
+        importManager.getImportStatus()
       );
       importManager.subscribeToRdf(storeUpdater);
       return ImmutableDataSet.builder()

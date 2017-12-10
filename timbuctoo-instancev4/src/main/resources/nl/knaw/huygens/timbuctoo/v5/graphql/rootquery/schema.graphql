@@ -64,25 +64,56 @@ type DataSetMetadata {
   #
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
-  #status of the import of this dataset
-  importStatus: DataSetImportStatus
+  #status of the last import
+  currentImportStatus: CurrentImportStatus
+  #status of imports
+  dataSetImportStatus: DataSetImportStatus
 }
 
-type DataSetImportStatus {
+type CurrentImportStatus {
+  #date of last import
+  date: String
   #the method of import
-  methodName: String!
+  methodName: String
+  #the base uri for the current import
   baseUri: String
-  #the momentary status of this import
-  status: String!
+  #the momentary status of the current import
+  status: String
   #messages generated during import
   messages: [String!]!
   #errors encountered during import
   errors: [String!]!
-  fatalError: String
   #elapsed time since import started
   elapsedTime(unit: TimeUnit = SECONDS): Int!
-  #has this import started and is it stil running
-  running: Boolean!
+  #is this import stil processing
+  active: Boolean!
+}
+
+type DataSetImportStatus {
+  #the status of the current or last import
+  status: String
+  #the date of the last completed import
+  lastImportDate: String
+  #the duration of the last completed import
+  lastImportDuration(unit: TimeUnit = SECONDS): Int!
+  #global errors for imports on this dataset
+  dataSetErrors: [String!]!
+  #errors while importing entries
+  entryErrors: [String!]!
+  #total number of import errors
+  totalErrorCount: Int!
+  #status of entry imports as list
+  entryImports: [EntryImportStatus!]!
+  #imports of entries with error(s)
+  entryImportsWithErrors: [EntryImportStatus!]!
+}
+
+type EntryImportStatus {
+  date: String
+  status: String
+  elapsedTime(unit: TimeUnit = SECONDS): Int!
+  #errors encountered during import
+  errors: [String!]!
 }
 
 enum TimeUnit {

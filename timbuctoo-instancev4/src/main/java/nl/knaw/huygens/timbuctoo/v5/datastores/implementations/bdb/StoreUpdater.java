@@ -173,7 +173,7 @@ public class StoreUpdater implements RdfProcessor {
     if (curTime - prevTime > 5) {
       final long itemsPerSecond = (count - prevCount) / (curTime - prevTime);
       LOG.info(logString, count, itemsPerSecond);
-      importStatus.addMessage(String.format(logString.replaceAll("\\{\\}", "%d"),
+      importStatus.setStatus(String.format(logString.replaceAll("\\{\\}", "%d"),
         count, itemsPerSecond));
       prevCount = count;
       prevTime = curTime;
@@ -192,20 +192,20 @@ public class StoreUpdater implements RdfProcessor {
     try {
       String msg = "processing " + count + " triples took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      importStatus.addMessage(msg);
+      importStatus.setStatus(msg);
       stopwatch.reset();
       stopwatch.start();
       updateListeners();
       msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      importStatus.addMessage(msg);
+      importStatus.setStatus(msg);
       stopwatch.reset();
       stopwatch.start();
       versionStore.setVersion(currentversion);
       dbFactory.commitTransaction();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      importStatus.addMessage(msg);
+      importStatus.setStatus(msg);
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
     }

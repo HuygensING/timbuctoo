@@ -146,7 +146,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
       Rio.write(model, newFileWriter, RDFFormat.RDFXML);
       newFileWriter.flush();
       newFileWriter.close();
-      importStatus.addMessage("Description saved");
+      importStatus.setStatus("Description saved");
     } catch (IOException e) {
       throw new RdfProcessingFailedException(e);
     }

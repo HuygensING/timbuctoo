@@ -204,9 +204,7 @@ public class IntegrationTest {
 
     assertThat(uploadResponse.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
     String content = IOUtils.toString((InputStream) uploadResponse.getEntity());
-    // @ToDo
-    System.out.println(">>>>>>>>>>" + content);
-    //assertThat(content, containsString("Namespace prefix 'wrong_in_1' used but not defined"));
+    assertThat(content, containsString("Namespace prefix 'wrong_in_1' used but not defined"));
 
     uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=false",
@@ -219,10 +217,8 @@ public class IntegrationTest {
     );
     assertThat(uploadResponse.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
     content = IOUtils.toString((InputStream) uploadResponse.getEntity());
-    // @ToDo
-    System.out.println("<<<<<<<<<<" + content);
-    //assertThat(content, containsString("Namespace prefix 'wrong_in_2' used but not defined"));
-    //assertThat(content.contains("Namespace prefix 'wrong_in_1' used but not defined"), is(false));
+    assertThat(content, containsString("Namespace prefix 'wrong_in_2' used but not defined"));
+    assertThat(content.contains("Namespace prefix 'wrong_in_1' used but not defined"), is(false));
   }
 
   @Test
@@ -246,7 +242,7 @@ public class IntegrationTest {
       .post(Entity.entity(String.format("{\n" +
           "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
           "  {\n" +
-          "    importStatus {\n" +
+          "    currentImportStatus {\n" +
           "      elapsedTime(unit: MILLISECONDS)\n" +
           "      status\n" +
           "    }\n" +
@@ -256,11 +252,9 @@ public class IntegrationTest {
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     int elapsedTime = objectNode.get("data")
                                 .get("dataSetMetadata")
-                                .get(("importStatus"))
+                                .get(("currentImportStatus"))
                                 .get("elapsedTime").asInt();
-    // @ToDo
-    System.out.println("========= " + elapsedTime);
-    //assertThat(elapsedTime > 0, is(true));
+    assertThat(elapsedTime > 0, is(true));
 
     // Give asynchronous computations time to detect the error
     Thread.sleep(3000);
@@ -269,7 +263,7 @@ public class IntegrationTest {
       .post(Entity.entity(String.format("{\n" +
           "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
           "  {\n" +
-          "    importStatus {\n" +
+          "    currentImportStatus {\n" +
           "      elapsedTime(unit: MILLISECONDS)\n" +
           "      status\n" +
           "    }\n" +
@@ -279,11 +273,9 @@ public class IntegrationTest {
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     String status = objectNode.get("data")
                               .get("dataSetMetadata")
-                              .get(("importStatus"))
+                              .get(("currentImportStatus"))
                               .get("status").asText();
-    // @ToDo
-    System.out.println(status);
-    //assertThat(status.contains("Finished with 1 error"), is(true));
+    assertThat(status.contains("Finished import with 1 error"), is(true));
   }
 
   @Test

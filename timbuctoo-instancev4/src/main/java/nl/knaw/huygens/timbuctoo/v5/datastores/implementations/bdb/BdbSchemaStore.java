@@ -231,7 +231,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       .mapToLong(p -> p.getValueTypes().values().size() + p.getReferenceTypes().values().size())
       .sum();
     LOG.info("types-size is: " + totalPredicateCount + "");
-    importStatus.addMessage("types-size is: " + totalPredicateCount);
+    importStatus.setStatus("types-size is: " + totalPredicateCount);
   }
 
   public void updatePredicateOccurrence(List<Type> addedTypes, List<Type> removedTypes, List<Type> unchangedTypes,
@@ -300,7 +300,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   @Override
   public void finish() {
     LOG.info("Finished processing entities");
-    importStatus.addMessage("Finished processing entities");
+    importStatus.setStatus("Finished processing entities");
     //Step 3: Add type information to inverse predicates
     for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
       Type type = typeEntry.getValue();
@@ -326,12 +326,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
                 }
               }
               LOG.error("Error during inverse generation (ignored): " + cause , e);
-              importStatus.addEntryError("Error during inverse generation (ignored): " + cause, e);
+              importStatus.addError("Error during inverse generation (ignored): " + cause, e);
             } catch (Exception e2) {
               LOG.error("Error during inverse generation " + cause, e);
-              importStatus.addEntryError("Error during inverse generation " + cause, e);
+              importStatus.addError("Error during inverse generation " + cause, e);
               LOG.error("Error during recovery generation ", e2);
-              importStatus.addEntryError("Error during recovery generation ", e2);
+              importStatus.addError("Error during recovery generation ", e2);
             }
           }
         }
