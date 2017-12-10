@@ -71,7 +71,7 @@ public class ImportManagerTest {
     String name = "http://example.com/clusius.ttl";
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
-    importManager.addLog(
+    Future<ImportStatus> promise = importManager.addLog(
       baseUri,
       defaultGraph,
       name,
@@ -79,6 +79,9 @@ public class ImportManagerTest {
       Optional.of(Charsets.UTF_8),
       MediaType.valueOf("text/turtle")
     );
+
+    ImportStatus status = promise.get();
+    assertThat(status.getErrorCount(), is((0)));
 
     LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getBaseUri(), is(baseUri));

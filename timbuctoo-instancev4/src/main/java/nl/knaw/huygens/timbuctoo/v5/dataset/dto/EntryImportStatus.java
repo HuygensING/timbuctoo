@@ -1,14 +1,14 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class ImportStatus {
+public class EntryImportStatus {
 
   @JsonProperty
   private String date;
@@ -16,10 +16,8 @@ public class ImportStatus {
   @JsonProperty
   private String status;
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
   private TimeWithUnit elapsedTime;
 
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<String> errors = new ArrayList<>();
 
   public String getStatus() {
@@ -38,19 +36,24 @@ public class ImportStatus {
     this.date = importDate;
   }
 
-  public TimeWithUnit getElapsedTime() {
-    return elapsedTime;
-  }
-
   public void setElapsedTime(TimeWithUnit elapsedTime) {
     this.elapsedTime = elapsedTime;
   }
 
-  public void setElapsedTimeMillis(long millis) {
-    elapsedTime = new TimeWithUnit("MILLISECONDS", millis);
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public TimeWithUnit getElapsedTime() {
+    return elapsedTime;
   }
 
-  @JsonIgnore
+  public long getElapsedTime(String unit) {
+    if (elapsedTime != null) {
+      return  TimeUnit.valueOf(unit).convert(elapsedTime.getTime(), TimeUnit.valueOf(elapsedTime.getTimeUnit()));
+    } else {
+      return -1L;
+    }
+  }
+
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public List<String> getErrors() {
     return errors;
   }

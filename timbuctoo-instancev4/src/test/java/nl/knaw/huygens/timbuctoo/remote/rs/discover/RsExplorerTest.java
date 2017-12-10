@@ -180,7 +180,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(result.getErrors().isEmpty(), is(false));
     assertThat(result.getErrors().get(0), instanceOf(RemoteException.class));
     assertThat(result.getContent().isPresent(), is(false));
-    //result.getListErrors().forEach(Throwable::printStackTrace);
+    //result.getDataSetErrors().forEach(Throwable::printStackTrace);
   }
 
   @Test

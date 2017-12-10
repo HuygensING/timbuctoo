@@ -30,15 +30,15 @@ public class ErrorResponseHelper {
   public static Response handleImportManagerResult(Future<ImportStatus> promise) {
     try {
       final ImportStatus status = promise.get();
-      if (!status.hasErrors()) {
-        return Response
-          .status(Response.Status.CREATED)
-          .build();
-      } else {
+      if (status.hasErrors()) {
         return Response
           .status(Response.Status.BAD_REQUEST)
           .type(MediaType.APPLICATION_JSON_TYPE)
           .entity(status)
+          .build();
+      } else {
+        return Response
+          .status(Response.Status.CREATED)
           .build();
       }
     } catch (InterruptedException | ExecutionException e) {
