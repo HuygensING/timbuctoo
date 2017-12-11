@@ -3,11 +3,9 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.TimeWithUnit;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,8 +30,7 @@ public class DataSetImportStatus {
 
   public long getLastImportDuration(String unit) {
     if (logList.getLastImportDuration().isPresent()) {
-      TimeWithUnit duration = logList.getLastImportDuration().get();
-      return  TimeUnit.valueOf(unit).convert(duration.getTime(), TimeUnit.valueOf(duration.getTimeUnit()));
+      return  logList.getLastImportDuration().get().getTime(unit);
     } else {
       return -1L;
     }

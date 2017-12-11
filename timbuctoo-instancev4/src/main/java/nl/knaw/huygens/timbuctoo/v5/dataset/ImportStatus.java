@@ -34,6 +34,8 @@ import java.util.concurrent.TimeUnit;
 @JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.NAME)
 public class ImportStatus {
 
+  private static TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
+
   private final LogList logList;
   private final Stopwatch stopwatch;
   private final ConcurrentLinkedDeque<String> messages;
@@ -70,7 +72,7 @@ public class ImportStatus {
     currentLogEntry = logEntry;
     date = Instant.now().toString();
     currentLogEntry.getImportStatus().ifPresent(eis -> eis.setDate(date));
-    currentEntryStart = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+    currentEntryStart = stopwatch.elapsed(TIME_UNIT);
   }
 
   public void setStatus(String status) {
@@ -104,7 +106,7 @@ public class ImportStatus {
         date = Instant.now().toString();
         eis.setDate(date);
         eis.setElapsedTime(
-          new TimeWithUnit().withMilliseconds(stopwatch.elapsed(TimeUnit.MILLISECONDS) - currentEntryStart));
+          new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT) - currentEntryStart));
       });
       currentLogEntry = null;
       entry.getLogToken().ifPresent(token -> setStatus("Finished adding entry with token " + token));
@@ -119,7 +121,7 @@ public class ImportStatus {
     setStatus("Finished import with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
     date = Instant.now().toString();
     logList.setLastImportDate(date);
-    logList.setLastImportDuration(new TimeWithUnit().withMilliseconds(stopwatch.elapsed(TimeUnit.MILLISECONDS)));
+    logList.setLastImportDuration(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT)));
   }
 
   public String getMethodName() {
@@ -167,7 +169,7 @@ public class ImportStatus {
   }
 
   public TimeWithUnit getElapsedTime() {
-    return new TimeWithUnit().withMilliseconds(getElapsedTime(TimeUnit.MILLISECONDS.name()));
+    return new TimeWithUnit(TIME_UNIT, getElapsedTime(TIME_UNIT.name()));
   }
 
   public boolean isActive() {
