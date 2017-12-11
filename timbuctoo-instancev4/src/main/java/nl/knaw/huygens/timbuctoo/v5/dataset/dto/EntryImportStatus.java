@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class EntryImportStatus {
 
@@ -47,7 +46,7 @@ public class EntryImportStatus {
 
   public long getElapsedTime(String unit) {
     if (elapsedTime != null) {
-      return  TimeUnit.valueOf(unit).convert(elapsedTime.getTime(), TimeUnit.valueOf(elapsedTime.getTimeUnit()));
+      return elapsedTime.getTime(unit);
     } else {
       return -1L;
     }

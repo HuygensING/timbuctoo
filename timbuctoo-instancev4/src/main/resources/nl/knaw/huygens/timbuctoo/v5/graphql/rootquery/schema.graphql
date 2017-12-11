@@ -64,7 +64,7 @@ type DataSetMetadata {
   #
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
-  #status of the last import
+  #status of current or last import
   currentImportStatus: CurrentImportStatus
   #status of imports
   dataSetImportStatus: DataSetImportStatus
@@ -109,8 +109,11 @@ type DataSetImportStatus {
 }
 
 type EntryImportStatus {
+  #start date of import, when finished end date of import
   date: String
+  #status of import
   status: String
+  #duration of import
   elapsedTime(unit: TimeUnit = SECONDS): Int!
   #errors encountered during import
   errors: [String!]!
