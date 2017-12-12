@@ -18,12 +18,15 @@ public interface LogEntry {
 
   Optional<String> getLogToken();
 
+  Optional<EntryImportStatus> getImportStatus();
+
   static LogEntry create(String baseUri, String defaultGraph, String token) {
     return ImmutableLogEntry.builder()
       .baseUri(baseUri)
       .defaultGraph(defaultGraph)
       .logToken(token)
       .rdfCreator(Optional.empty())
+      .importStatus(new EntryImportStatus())
       .build();
   }
 
@@ -33,6 +36,7 @@ public interface LogEntry {
       .defaultGraph(defaultGraph)
       .logToken(Optional.empty())
       .rdfCreator(creator)
+      .importStatus(new EntryImportStatus())
       .build();
   }
 

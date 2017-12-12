@@ -37,8 +37,8 @@ import java.util.concurrent.ExecutorService;
 public abstract class DataSet {
 
   public static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
-                         FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
-                         BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
+                                FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
+                                BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
 
     String userId = metadata.getOwnerId();
@@ -57,13 +57,14 @@ public abstract class DataSet {
     );
 
     try {
-      importManager.subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri()));
+      importManager.subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri(),
+        importManager.getImportStatus()));
     } catch (ParserConfigurationException e) {
       e.printStackTrace();
     } catch (SAXException e) {
       e.printStackTrace();
     }
-    
+
     final TupleBinding<String> stringBinding = TupleBinding.getPrimitiveBinding(String.class);
     try {
       BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
@@ -93,7 +94,8 @@ public abstract class DataSet {
           false,
           stringBinding,
           stringBinding
-        ))
+        )),
+        importManager.getImportStatus()
       );
       final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
         dataStoreFactory.getDatabase(
@@ -124,7 +126,8 @@ public abstract class DataSet {
           true,
           stringBinding,
           stringBinding
-        )
+        ),
+        importManager.getImportStatus()
       );
       VersionStore versionStore = new VersionStore(dataStoreFactory.getDatabase(
         userId,
@@ -141,22 +144,23 @@ public abstract class DataSet {
         truePatchStore,
         updatedPerPatchStore,
         Lists.newArrayList(schema, rmlDataSourceStore),
-        versionStore
+        versionStore,
+        importManager.getImportStatus()
       );
       importManager.subscribeToRdf(storeUpdater);
       return ImmutableDataSet.builder()
-        .metadata(metadata)
-        .quadStore(quadStore)
-        .typeNameStore(typeNameStore)
-        .schemaStore(schema)
-        .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
-        .rmlDataSourceStore(rmlDataSourceStore)
-        .schemaStore(schema)
-        .truePatchStore(truePatchStore)
-        .updatePerPatchStore(updatedPerPatchStore)
-        .versionStore(versionStore)
-        .importManager(importManager)
-        .build();
+                             .metadata(metadata)
+                             .quadStore(quadStore)
+                             .typeNameStore(typeNameStore)
+                             .schemaStore(schema)
+                             .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
+                             .rmlDataSourceStore(rmlDataSourceStore)
+                             .schemaStore(schema)
+                             .truePatchStore(truePatchStore)
+                             .updatePerPatchStore(updatedPerPatchStore)
+                             .versionStore(versionStore)
+                             .importManager(importManager)
+                             .build();
     } catch (BdbDbCreationException e) {
       throw new DataStoreCreationException(e.getCause());
     }

@@ -21,7 +21,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -72,7 +71,7 @@ public class ImportManagerTest {
     String name = "http://example.com/clusius.ttl";
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
-    importManager.addLog(
+    Future<ImportStatus> promise = importManager.addLog(
       baseUri,
       defaultGraph,
       name,
@@ -80,6 +79,9 @@ public class ImportManagerTest {
       Optional.of(Charsets.UTF_8),
       MediaType.valueOf("text/turtle")
     );
+
+    ImportStatus status = promise.get();
+    assertThat(status.getErrorCount(), is((0)));
 
     LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getBaseUri(), is(baseUri));
@@ -95,7 +97,7 @@ public class ImportManagerTest {
     String baseUri = "http://example.com/baseUri";
     File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
 
-    Future<?> promise = importManager.addLog(
+    Future<ImportStatus> promise = importManager.addLog(
       baseUri,
       defaultGraph,
       name,
@@ -121,7 +123,7 @@ public class ImportManagerTest {
     importManager.subscribeToRdf(processor);
 
 
-    Future<?> promise = importManager.addLog(
+    Future<ImportStatus> promise = importManager.addLog(
       baseUri,
       defaultGraph,
       name,
@@ -129,8 +131,9 @@ public class ImportManagerTest {
       Optional.of(Charsets.UTF_8),
       MediaType.valueOf("text/turtle")
     );
-    promise.get();
+    ImportStatus status = promise.get();
     assertThat(processor.getCounter(), is(28));
+    assertThat(status.hasErrors(), is(false));
   }
 
   @Test
@@ -140,13 +143,14 @@ public class ImportManagerTest {
     CountingProcessor processor = new CountingProcessor();
     importManager.subscribeToRdf(processor);
 
-    Future<List<Throwable>> promise = importManager.generateLog(
+    Future<ImportStatus> promise = importManager.generateLog(
       baseUri,
       defaultGraph,
       new DummyRdfCreator()
     );
 
-    promise.get();
+    ImportStatus status = promise.get();
+    assertThat(status.hasErrors(), is(false));
     assertThat(processor.getCounter(), is(3));
     LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getBaseUri(), is(baseUri));

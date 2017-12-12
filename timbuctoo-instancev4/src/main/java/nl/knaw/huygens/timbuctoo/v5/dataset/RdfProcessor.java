@@ -55,4 +55,6 @@ public interface RdfProcessor {
   int getCurrentVersion();
 
   void commit() throws RdfProcessingFailedException;
+
+
 }

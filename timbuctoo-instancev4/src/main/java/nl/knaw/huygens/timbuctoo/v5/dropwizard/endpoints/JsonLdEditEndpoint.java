@@ -6,6 +6,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -25,7 +26,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.Clock;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Future;
@@ -89,7 +89,7 @@ public class JsonLdEditEndpoint {
     }
 
     try {
-      final Future<List<Throwable>> promise = importManager.generateLog(
+      final Future<ImportStatus> promise = importManager.generateLog(
         dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
         fromCurrentState(
@@ -110,4 +110,3 @@ public class JsonLdEditEndpoint {
   }
 
 }
-

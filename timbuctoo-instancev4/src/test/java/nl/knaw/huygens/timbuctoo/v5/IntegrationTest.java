@@ -204,7 +204,6 @@ public class IntegrationTest {
 
     assertThat(uploadResponse.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
     String content = IOUtils.toString((InputStream) uploadResponse.getEntity());
-    //System.out.println(content);
     assertThat(content, containsString("Namespace prefix 'wrong_in_1' used but not defined"));
 
     uploadResponse = multipartPost(
@@ -218,13 +217,12 @@ public class IntegrationTest {
     );
     assertThat(uploadResponse.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
     content = IOUtils.toString((InputStream) uploadResponse.getEntity());
-    //System.out.println(content);
     assertThat(content, containsString("Namespace prefix 'wrong_in_2' used but not defined"));
     assertThat(content.contains("Namespace prefix 'wrong_in_1' used but not defined"), is(false));
   }
 
   @Test
-  public void asynchronousUnsuccessfulRdfUpload() throws Exception {
+  public void asynchronousUnsuccessfulRdfUploadWithGraphql() throws Exception {
     String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=true",
@@ -237,8 +235,47 @@ public class IntegrationTest {
     );
 
     assertThat(uploadResponse.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
+
+    Thread.sleep(100);
+    Response graphqlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(String.format("{\n" +
+          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
+          "  {\n" +
+          "    currentImportStatus {\n" +
+          "      elapsedTime(unit: MILLISECONDS)\n" +
+          "      status\n" +
+          "    }\n" +
+          "  }\n" +
+          "}\n",
+        PREFIX, vreName), MediaType.valueOf("application/graphql")));
+    ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
+    int elapsedTime = objectNode.get("data")
+                                .get("dataSetMetadata")
+                                .get(("currentImportStatus"))
+                                .get("elapsedTime").asInt();
+    assertThat(elapsedTime > 0, is(true));
+
     // Give asynchronous computations time to detect the error
     Thread.sleep(3000);
+    graphqlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(String.format("{\n" +
+          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
+          "  {\n" +
+          "    currentImportStatus {\n" +
+          "      elapsedTime(unit: MILLISECONDS)\n" +
+          "      status\n" +
+          "    }\n" +
+          "  }\n" +
+          "}\n",
+        PREFIX, vreName), MediaType.valueOf("application/graphql")));
+    objectNode = graphqlCall.readEntity(ObjectNode.class);
+    String status = objectNode.get("data")
+                              .get("dataSetMetadata")
+                              .get(("currentImportStatus"))
+                              .get("status").asText();
+    assertThat(status.contains("Finished import with 1 error"), is(true));
   }
 
   @Test

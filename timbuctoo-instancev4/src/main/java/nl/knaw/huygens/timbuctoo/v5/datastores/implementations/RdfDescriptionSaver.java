@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations;
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import org.eclipse.rdf4j.model.Model;
@@ -30,9 +31,10 @@ public class RdfDescriptionSaver implements RdfProcessor {
     "http://schema.org"
   );
   private int currentVersion;
+  private ImportStatus importStatus;
 
 
-  public RdfDescriptionSaver(File descriptionFile, String baseUri) throws IOException,
+  public RdfDescriptionSaver(File descriptionFile, String baseUri, ImportStatus importStatus) throws IOException,
     ParserConfigurationException, SAXException {
     this.baseUri = baseUri;
     descriptionFile.createNewFile();
@@ -43,6 +45,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
     } else {
       model = new TreeModel();
     }
+    this.importStatus = importStatus;
   }
 
   private boolean isDescriptionPredicate(String predicate) {
@@ -132,6 +135,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
   @Override
   public void start(int index) throws RdfProcessingFailedException {
     this.currentVersion = index;
+    importStatus.setStatus("Started " + this.getClass().getSimpleName());
   }
 
   @Override
@@ -142,6 +146,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
       Rio.write(model, newFileWriter, RDFFormat.RDFXML);
       newFileWriter.flush();
       newFileWriter.close();
+      importStatus.setStatus("Description saved");
     } catch (IOException e) {
       throw new RdfProcessingFailedException(e);
     }

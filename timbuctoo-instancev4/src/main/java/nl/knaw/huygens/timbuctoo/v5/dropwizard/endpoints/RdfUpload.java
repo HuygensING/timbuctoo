@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
@@ -22,7 +23,6 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -76,7 +76,7 @@ public class RdfUpload {
             .build();
         }
 
-        Future<List<Throwable>> promise = null;
+        Future<ImportStatus> promise = null;
         try {
           promise = importManager.addLog(
             baseUri == null ? dataSet.getMetadata().getBaseUri() : baseUri.toString(),

@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,12 +23,16 @@ public class RdfDescriptionSaverTest {
   private RdfDescriptionSaver testRdfDescriptionSaver;
   private String descriptionFileName;
   private File descriptionFile;
+  private LogList logList;
+  private ImportStatus importStatus;
 
   @Before
   public void setUp() throws Exception {
     descriptionFileName = "description.xml";
     descriptionFile = new File(descriptionFileName);
-    testRdfDescriptionSaver = new RdfDescriptionSaver(descriptionFile, BASE_URI);
+    logList = new LogList();
+    importStatus = new ImportStatus(logList);
+    testRdfDescriptionSaver = new RdfDescriptionSaver(descriptionFile, BASE_URI, importStatus);
     testRdfDescriptionSaver.start(0);
   }
 
