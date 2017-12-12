@@ -23,4 +23,5 @@ public interface VreAuthorizationCrud {
     AuthorizationUnavailableException;
 
   Optional<VreAuthorization> getAuthorization(String vreId, String userId) throws AuthorizationUnavailableException;
+
 }

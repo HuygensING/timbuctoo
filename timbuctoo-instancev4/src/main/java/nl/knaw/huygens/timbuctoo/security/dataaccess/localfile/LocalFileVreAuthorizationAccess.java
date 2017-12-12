@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 
@@ -61,26 +62,46 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   public Optional<VreAuthorization> getAuthorization(String vreId, String userId)
     throws AuthorizationUnavailableException {
 
+    Optional<VreAuthorization> authorizationValue = Optional.empty();
+
     File file = getFile(vreId);
 
-    if (!file.exists()) {
-      return Optional.empty();
-    }
-
-    try {
-      List<VreAuthorization> authorizations;
-      synchronized (authorizationsFolder) {
-        authorizations =
-          objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
-          });
+    if (file.exists()) {
+      try {
+        List<VreAuthorization> authorizations;
+        synchronized (authorizationsFolder) {
+          authorizations =
+            objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
+            });
+        }
+        authorizationValue =  authorizations.stream()
+          .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
+          .findAny();
+      } catch (IOException e) {
+        throw new AuthorizationUnavailableException(e.getMessage());
       }
-      return authorizations.stream()
-        .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
-        .findAny();
-    } catch (IOException e) {
-      throw new AuthorizationUnavailableException(e.getMessage());
     }
 
+    if (!authorizationValue.isPresent()) {
+      file = getFile("authorizations");
+
+      try {
+        List<VreAuthorization> authorizations;
+        synchronized (authorizationsFolder) {
+          authorizations =
+            objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
+            });
+        }
+        authorizationValue =  authorizations.stream()
+          .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
+          .findAny();
+      } catch (IOException e) {
+        return Optional.empty();
+      }
+
+    }
+
+    return authorizationValue;
   }
 
   @Override

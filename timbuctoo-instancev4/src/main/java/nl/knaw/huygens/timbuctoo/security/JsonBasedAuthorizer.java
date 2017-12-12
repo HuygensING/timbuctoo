@@ -39,6 +39,7 @@ public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCrud {
     return authorizationAccess.getAuthorization(vreId, userId);
   }
 
+
   @Override
   public void createAuthorization(String vreId, String userId, String vreRole) throws AuthorizationCreationException {
     try {

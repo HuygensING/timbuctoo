@@ -178,8 +178,6 @@ public class DataSetRepositoryTest {
 
     dataSetRepository.createDataSet(user, "dataset");
 
-    Collection<DataSet> dataSetCollection = dataSetRepository.getDataSets();
-
     DataSet dataSet = dataSetRepository.getDataSet("user", "uuser", "dataset").get();
 
     DataSetMetaData metadata = dataSet.getMetadata();
@@ -189,9 +187,7 @@ public class DataSetRepositoryTest {
     dataSetRepository.publishDataSet("user", "uuser",
       "dataset");
 
-
     assertThat(metadata.isPublished(), is(true));
-
   }
 
 }
