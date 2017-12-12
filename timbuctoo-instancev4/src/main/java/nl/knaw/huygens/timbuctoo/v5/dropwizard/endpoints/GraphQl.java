@@ -117,7 +117,10 @@ public class GraphQl {
     if (acceptParam != null && !acceptParam.isEmpty()) {
       acceptHeader = acceptParam; //Accept param overrules header because it's more under the user's control
     }
-    if (unSpecifiedAcceptHeader(acceptHeader) || acceptHeader.equals(MediaType.APPLICATION_JSON)) {
+    if (unSpecifiedAcceptHeader(acceptHeader)) {
+      acceptHeader = MediaType.APPLICATION_JSON;
+    }
+    if (MediaType.APPLICATION_JSON.equals(acceptHeader)) {
       serializerWriter = null;
     } else {
       Optional<SerializerWriter> bestMatch = serializerWriterRegistry.getBestMatch(acceptHeader);
