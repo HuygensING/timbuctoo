@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.openrefine.Query;
+import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResults;
 import nl.knaw.huygens.timbuctoo.v5.openrefine.ReconciliationQueryExecutor;
 
 import javax.ws.rs.Consumes;
@@ -25,50 +27,58 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 @Path("v5/openrefinereconciliation")
 public class OpenRefineReconciliationEndpoint {
-  private final ReconciliationQueryExecutor executor;
+  private final ReconciliationQueryExecutor executer;
   private final ObjectMapper objectMapper;
 
-  public OpenRefineReconciliationEndpoint(ReconciliationQueryExecutor executor) {
+  public OpenRefineReconciliationEndpoint(ReconciliationQueryExecutor executer) {
     objectMapper = new ObjectMapper();
-    this.executor = executor;
+    this.executer = executer;
   }
 
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @Produces("application/json")
-  public Response doPost(@FormParam("queries") String queries) throws IOException {
+  public Response doPost(@FormParam("queries") String message) throws IOException {
     Map<String, Query> query;
     try {
-      query = objectMapper.readValue(queries, new TypeReference<Map<String,Query>>() { });
+      query = objectMapper.readValue(message, new TypeReference<Map<String,Query>>() {
+      });
     } catch (IOException e) {
       return Response.status(400).entity(e.getMessage()).build();
     }
-    return Response.ok(executor.execute(query)).build();
+    Map<String, QueryResults> queryResult = executer.execute(query);
+    try {
+      String result = objectMapper.writeValueAsString(queryResult);
+      // System.err.println("queryResult: " + result);
+      return Response.ok(queryResult).build();
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+
+    return Response.serverError().build();
   }
 
   @GET
-  @Produces("application/json")
-  public Response query(@QueryParam("queries") String queries,
+  public Response query(@QueryParam("query") String queries,
                         @QueryParam("callback") String callback) throws ResourceSyncException {
-    JsonNode result;
-    if (queries != null) {
-      result = jsnO("queries", jsn(queries));
-    } else {
-      result = jsnO(
-        "name", jsn("Timbuctoo"),
-        "view", jsnO("url", jsn("http://localhost:8080/v5/openrefinereconciliation/{{id}}")),
-        "identifierSpace", jsn("http://rdf.freebase.com/ns/authority.netflix.movie"),
-        "schemaSpace", jsn("http://rdf.freebase.com/ns/type.object.id"),
-        "defaultTypes", jsnA(
-          jsnO("id", jsn("/getname"), "name", jsn("Person"))
-        )
-      );
+
+    String result = "{ \"query (GET)\" : \"" + queries + "\" }";
+    System.err.println(result);
+    if (queries == null) {
+      // websites need changing
+      result = "{ \"name\": \"Timbuctoo\", \"view\" : {\"url\": " +
+        "\"http://localhost:8080/v5/openrefinereconciliation/{{id}}\"}, \"defaultTypes\" : " +
+        "[{\"id\":\"/getname\",\"name\":\"Person\"}], \"identifierSpace\": " +
+        "\"http://rdf.freebase.com/ns/authority.netflix.movie\",\"schemaSpace\": " +
+        "\"http://rdf.freebase.com/ns/type.object.id\" }";
     }
     if (callback != null) {
-      return Response.ok("/**/" + callback + "(" + result.toString() + ");", MediaType.TEXT_PLAIN).build();
-    } else {
-      return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
-    }
-  }
+      result = "/**/" + callback + "(" + result + ");";
+      // System.err.println(result);
+      return Response.ok(result, MediaType.TEXT_PLAIN).build();
 
+    }
+    // System.err.println(result);
+    return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
+  }
 }
