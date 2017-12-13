@@ -63,7 +63,14 @@ public class EsFilterResult implements FilterResult {
     if (data.has("buckets") && data.get("buckets").isArray()) {
       final JsonNode buckets = data.get("buckets");
       for (JsonNode bucket: buckets) {
-        facet.incOption(bucket.get("key").asText(), bucket.get("doc_count").asInt());
+        final String key;
+        if (bucket.has("key_as_string") && !bucket.get("key_as_string").isNull()) {
+          key = bucket.get("key_as_string").asText();
+        } else {
+          key = bucket.get("key").asText();
+        }
+        final int doc_count = bucket.get("doc_count").asInt();
+        facet.incOption(key, doc_count);
       }
     } else {
       for (JsonNode datum : data) {
