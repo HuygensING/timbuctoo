@@ -297,7 +297,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.wiringFactory(wiringFactory);
-    StringBuilder root = new StringBuilder("type DataSets {\n");
+    StringBuilder root = new StringBuilder("type DataSets {\n sillyWorkaroundWhenNoDataSetsAreVisible: Boolean\n");
 
     boolean[] dataSetAvailable = new boolean[]{false};
 
