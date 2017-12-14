@@ -105,13 +105,10 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.DummyReconciliationExecutor;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.Query;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResult;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResults;
+import nl.knaw.huygens.timbuctoo.v5.openrefine.ElasticSearchQueryExecuter;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -125,8 +122,6 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.channels.ServerSocketChannel;
 import java.time.Clock;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -189,7 +184,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       httpClient
     );
 
-    securityConfig.getHealthChecks().forEachRemaining(check -> register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight())));
+    securityConfig.getHealthChecks().forEachRemaining(check -> {
+      register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight()));
+    });
 
     // Database migrations
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
@@ -452,7 +449,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     //Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
 
-    register(environment, new OpenRefineReconciliationEndpoint(new DummyReconciliationExecutor()));
+    register(environment, new OpenRefineReconciliationEndpoint(new ElasticSearchQueryExecuter()));
 
     //Add embedded AMQ (if any) to the metrics
     configuration.getLocalAmqJmxPath(HANDLE_QUEUE).ifPresent(rethrowConsumer(jmxPath -> {
@@ -491,7 +488,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   private class BaseUriDeriver implements ServerLifecycleListener {
     private final TimbuctooConfiguration timbuctooConfiguration;
 
-    BaseUriDeriver(TimbuctooConfiguration timbuctooConfiguration) {
+    public BaseUriDeriver(TimbuctooConfiguration timbuctooConfiguration) {
       this.timbuctooConfiguration = timbuctooConfiguration;
     }
 
