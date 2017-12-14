@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailable
 import java.util.Optional;
 
 public interface VreAuthorizationCrud {
-  void createAuthorization(String vreId, String userId, String vreRole) throws AuthorizationCreationException;
+  void createAuthorization(String vreId, User user, String vreRole) throws AuthorizationCreationException;
 
   /**
    * Removes all the authorizations from the Vre.
@@ -22,6 +22,6 @@ public interface VreAuthorizationCrud {
   void deleteVreAuthorizations(String vreId, User user) throws AuthorizationException,
     AuthorizationUnavailableException;
 
-  Optional<VreAuthorization> getAuthorization(String vreId, String userId) throws AuthorizationUnavailableException;
+  Optional<VreAuthorization> getAuthorization(String vreId, User user) throws AuthorizationUnavailableException;
 
 }

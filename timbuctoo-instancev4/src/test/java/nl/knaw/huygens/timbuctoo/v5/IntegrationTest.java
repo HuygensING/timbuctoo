@@ -765,7 +765,7 @@ public class IntegrationTest {
     List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy();
     System.out.println("datasets: " + dataSetNamesOfDummy);
     assertThat(dataSetNamesOfDummy, hasItem(PREFIX + "__" + dataSetName));
-    
+
   }
 
   @Test

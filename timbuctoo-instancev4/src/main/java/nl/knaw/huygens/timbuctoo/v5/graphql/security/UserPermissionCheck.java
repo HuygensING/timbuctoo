@@ -27,7 +27,7 @@ public class UserPermissionCheck {
     Set<Permission> permissions = user
       .map(user -> {
         try {
-          return permissionFetcher.getPermissions(user.getPersistentId(), dataSetMetaData);
+          return permissionFetcher.getPermissions(user, dataSetMetaData);
         } catch (PermissionFetchingException e) {
           return Collections.<Permission>emptySet();
         }

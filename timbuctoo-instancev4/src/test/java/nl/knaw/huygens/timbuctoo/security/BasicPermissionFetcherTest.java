@@ -16,11 +16,13 @@ import org.junit.Test;
 import java.util.Optional;
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
@@ -54,10 +56,12 @@ public class BasicPermissionFetcherTest {
   public void getPermissionsReturnsPermissionsForGivenUserAndDataSet() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
     given(vreAuthorization.isAllowedToWrite()).willReturn(true);
-    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
+    given(vreAuthorizationCrud.getAuthorization(
+      anyString(),
+      any(User.class))
+    ).willReturn(Optional.of(vreAuthorization));
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
 
     assertThat(permissions, containsInAnyOrder(Permission.WRITE, Permission.READ));
   }
@@ -66,10 +70,10 @@ public class BasicPermissionFetcherTest {
   public void getPermissionsReturnsAdminAndReadPermissionsForAdminUserAndDataSet() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
     given(vreAuthorization.hasAdminAccess()).willReturn(true);
-    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
+    given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class)))
+      .willReturn(Optional.of(vreAuthorization));
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
 
     assertThat(permissions, containsInAnyOrder(Permission.ADMIN, Permission.READ));
   }
@@ -78,32 +82,30 @@ public class BasicPermissionFetcherTest {
   public void getPermissionsReturnsReadPermissionOnlyUserWithoutWritePermissionInDataSet() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
     given(vreAuthorization.isAllowedToWrite()).willReturn(false);
-    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
+    given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class)))
+      .willReturn(Optional.of(vreAuthorization));
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
 
   @Test
   public void getPermissionsReturnsReadPermissionWhenAuthorizationUnavailableExceptionTriggered() throws Exception {
-    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willThrow(
+    given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class))).willThrow(
       AuthorizationUnavailableException.class
     );
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
 
   @Test
   public void getPermissionsReturnsReadPermissionWhenUserNotPresent() throws Exception {
-    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.empty());
+    given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class))).willReturn(Optional.empty());
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
@@ -115,7 +117,7 @@ public class BasicPermissionFetcherTest {
     given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
     given(dataSetMetaData2.isPublished()).willReturn(false);
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId", dataSetMetaData2);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData2);
 
     assertThat(permissions, is(empty()));
   }
@@ -124,14 +126,15 @@ public class BasicPermissionFetcherTest {
   public void getPermissionsReturnsPermissionsForAdminInPrivateDataset() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
     given(vreAuthorization.hasAdminAccess()).willReturn(true);
-    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
+    given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class)))
+      .willReturn(Optional.of(vreAuthorization));
 
     DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
     given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
     given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
     given(dataSetMetaData2.isPublished()).willReturn(false);
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testadminId", dataSetMetaData2);
+    Set<Permission> permissions = permissionFetcher.getPermissions(userWithId("testadminId"), dataSetMetaData2);
 
     assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.ADMIN));
   }
@@ -140,31 +143,35 @@ public class BasicPermissionFetcherTest {
   public void getPermissionsReturnsPermissionsForUserWithWriteAccessInPrivateDataset() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
     given(vreAuthorization.isAllowedToWrite()).willReturn(true);
-    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
+    given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class)))
+      .willReturn(Optional.of(vreAuthorization));
 
     DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
     given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
     given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
     given(dataSetMetaData2.isPublished()).willReturn(false);
 
-    Set<Permission> permissions = permissionFetcher.getPermissions("testWriterId", dataSetMetaData2);
+    Set<Permission> permissions = permissionFetcher.getPermissions(userWithId("testWriterId"), dataSetMetaData2);
 
     assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.WRITE));
   }
 
   @Test
   public void initializeOwnerAuthorizationCreatesAdminAuthorization() throws Exception {
-    permissionFetcher.initializeOwnerAuthorization("testuserid","testownerid", "testdatasetid");
+    User user = userWithId("testuserid");
+    permissionFetcher.initializeOwnerAuthorization(user,"testownerid", "testdatasetid");
 
-    verify(vreAuthorizationCrud).createAuthorization("testownerid__testdatasetid", "testuserid", "ADMIN");
+    verify(vreAuthorizationCrud).createAuthorization("testownerid__testdatasetid", user, "ADMIN");
   }
 
   @Test(expected = AuthorizationCreationException.class)
   public void initializeOwnerAuthorizationThrowsExceptionWhenVreAuthorizationCrudFails() throws Exception {
+    User user = userWithId("testuserid");
     doThrow(AuthorizationCreationException.class).when(vreAuthorizationCrud)
-      .createAuthorization("testownerid__testdatasetid", "testuserid", "ADMIN");
+                                                 .createAuthorization("testownerid__testdatasetid",
+                                                   user, "ADMIN");
 
-    permissionFetcher.initializeOwnerAuthorization("testuserid","testownerid", "testdatasetid");
+    permissionFetcher.initializeOwnerAuthorization(user,"testownerid", "testdatasetid");
   }
 
   @Test

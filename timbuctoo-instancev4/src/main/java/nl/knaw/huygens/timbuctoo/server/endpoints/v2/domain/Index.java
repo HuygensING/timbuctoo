@@ -77,7 +77,7 @@ public class Index {
       return transactionEnforcer.executeAndReturn(timbuctooActions -> {
         JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
         try {
-          UUID id = crudService.create(collectionName, body, newUser.get().getId());
+          UUID id = crudService.create(collectionName, body, newUser.get());
           return commitAndReturn(
             Response.created(SingleEntity.makeUrl(collectionName, id)).build()
           );

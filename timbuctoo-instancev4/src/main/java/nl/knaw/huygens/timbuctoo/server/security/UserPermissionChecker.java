@@ -38,7 +38,7 @@ public class UserPermissionChecker {
     }
 
     try {
-      if (permissionFetcher.getOldPermissions(user.get().getId(), vreName).contains(Permission.WRITE)) {
+      if (permissionFetcher.getOldPermissions(user.get(), vreName).contains(Permission.WRITE)) {
         return ALLOWED_TO_WRITE;
       } else {
         return NO_PERMISSION;

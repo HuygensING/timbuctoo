@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class MakePublicDataFetcher implements DataFetcher {
 
     ContextData contextData = env.getContext();
 
-    String userId = contextData.getUser().get().getPersistentId();
+    User user = contextData.getUser().get();
 
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
 
@@ -34,13 +35,13 @@ public class MakePublicDataFetcher implements DataFetcher {
 
 
     try {
-      dataSetRepository.publishDataSet(userId, ownerId, dataSetName);
+      dataSetRepository.publishDataSet(user, ownerId, dataSetName);
     } catch (DataSetPublishException e) {
       LOG.error("Failed to publish data set", e);
       throw new RuntimeException("Failed to publish data set");
     }
 
-    DataSetMetaData dataSetMetaData = dataSetRepository.getDataSet(userId,ownerId,dataSetName).get().getMetadata();
+    DataSetMetaData dataSetMetaData = dataSetRepository.getDataSet(user, ownerId, dataSetName).get().getMetadata();
 
     if (dataSetMetaData != null) {
       return dataSetMetaData;

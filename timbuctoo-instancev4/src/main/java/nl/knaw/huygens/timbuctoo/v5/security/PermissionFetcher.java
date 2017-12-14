@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.security;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
@@ -8,13 +9,13 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingExcept
 import java.util.Set;
 
 public interface PermissionFetcher {
-  Set<Permission> getPermissions(String persistentId, DataSetMetaData dataSetMetadata)
+  Set<Permission> getPermissions(User user, DataSetMetaData dataSetMetadata)
     throws PermissionFetchingException;
 
-  Set<Permission> getOldPermissions(String persistentId, String vreId)
+  Set<Permission> getOldPermissions(User user, String vreId)
     throws PermissionFetchingException;
 
-  void initializeOwnerAuthorization(String userId, String ownerId, String dataSetId)
+  void initializeOwnerAuthorization(User user, String ownerId, String dataSetId)
     throws PermissionFetchingException, AuthorizationCreationException;
 
   void removeAuthorizations(String ownerId, String vreId) throws PermissionFetchingException;

@@ -39,7 +39,7 @@ public class AuthCheckTest {
     UserValidator userValidator = mock(UserValidator.class);
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
-    given(permissionFetcher.getPermissions(anyString(), any(BasicDataSetMetaData.class)))
+    given(permissionFetcher.getPermissions(any(User.class), any(BasicDataSetMetaData.class)))
       .willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
@@ -74,7 +74,7 @@ public class AuthCheckTest {
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
 
-    given(permissionFetcher.getPermissions(anyString(), any(BasicDataSetMetaData.class)))
+    given(permissionFetcher.getPermissions(any(User.class), any(BasicDataSetMetaData.class)))
       .willReturn(permissionsForNonAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
@@ -93,7 +93,7 @@ public class AuthCheckTest {
     UserValidator userValidator = mock(UserValidator.class);
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
-    given(permissionFetcher.getPermissions(anyString(), any(BasicDataSetMetaData.class)))
+    given(permissionFetcher.getPermissions(any(User.class), any(BasicDataSetMetaData.class)))
       .willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,

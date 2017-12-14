@@ -64,11 +64,11 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public UUID createEntity(Collection collection, Optional<Collection> baseCollection,
-                           Iterable<TimProperty<?>> properties, String userId)
+                           Iterable<TimProperty<?>> properties, User user)
     throws PermissionFetchingException, IOException {
-    checkIfAllowedToWrite(userId, collection);
+    checkIfAllowedToWrite(user, collection);
     UUID id = UUID.randomUUID();
-    Change created = createChange(userId);
+    Change created = createChange(user);
     CreateEntity createEntity = ImmutableCreateEntity.builder()
       .properties(properties)
       .id(id)
@@ -92,12 +92,12 @@ public class TimbuctooActions implements AutoCloseable {
     return id;
   }
 
-  public void replaceEntity(Collection collection, UpdateEntity updateEntity, String userId)
+  public void replaceEntity(Collection collection, UpdateEntity updateEntity, User user)
     throws PermissionFetchingException, NotFoundException, AlreadyUpdatedException,
     IOException {
-    checkIfAllowedToWrite(userId, collection);
+    checkIfAllowedToWrite(user, collection);
 
-    updateEntity.setModified(createChange(userId));
+    updateEntity.setModified(createChange(user));
 
     int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
     afterSuccessTaskExecutor.addTask(
@@ -116,11 +116,11 @@ public class TimbuctooActions implements AutoCloseable {
   // collection, but writes to a property that exists regardless of the collection. It also generates a new persistent
   // url after you have deleted an entity (which therefore always 404's)
 
-  public void deleteEntity(Collection collection, UUID uuid, String userId)
+  public void deleteEntity(Collection collection, UUID uuid, User user)
     throws PermissionFetchingException, NotFoundException {
-    checkIfAllowedToWrite(userId, collection);
+    checkIfAllowedToWrite(user, collection);
 
-    int rev = dataStoreOperations.deleteEntity(collection, uuid, createChange(userId));
+    int rev = dataStoreOperations.deleteEntity(collection, uuid, createChange(user));
 
 
     afterSuccessTaskExecutor.addTask(
@@ -136,16 +136,16 @@ public class TimbuctooActions implements AutoCloseable {
     );
   }
 
-  private Change createChange(String userId) {
+  private Change createChange(User user) {
     Change change = new Change();
-    change.setUserId(userId);
+    change.setUserId(user.getId());
     change.setTimeStamp(clock.instant().toEpochMilli());
     return change;
   }
 
-  private void checkIfAllowedToWrite(String userId, Collection collection) throws
+  private void checkIfAllowedToWrite(User user, Collection collection) throws
     PermissionFetchingException {
-    if (!permissionFetcher.getOldPermissions(userId, collection.getVreName()).contains(Permission.WRITE)) {
+    if (!permissionFetcher.getOldPermissions(user, collection.getVreName()).contains(Permission.WRITE)) {
       throw new PermissionFetchingException("Write permission not pressent.");
     }
   }
@@ -177,13 +177,13 @@ public class TimbuctooActions implements AutoCloseable {
     return dataStoreOperations.doQuickSearch(collection, quickSearch, limit);
   }
 
-  public UUID createRelation(Collection collection, CreateRelation createRelation, String userId)
+  public UUID createRelation(Collection collection, CreateRelation createRelation, User user)
     throws PermissionFetchingException, IOException {
-    checkIfAllowedToWrite(userId, collection);
+    checkIfAllowedToWrite(user, collection);
 
     // TODO make this method determine the id of the relation
     // createRelation.setId(id);
-    createRelation.setCreated(createChange(userId));
+    createRelation.setCreated(createChange(user));
 
     try {
       return dataStoreOperations.acceptRelation(collection, createRelation);
@@ -193,11 +193,11 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
 
-  public void replaceRelation(Collection collection, UpdateRelation updateRelation, String userId)
+  public void replaceRelation(Collection collection, UpdateRelation updateRelation, User user)
     throws PermissionFetchingException, NotFoundException {
-    checkIfAllowedToWrite(userId, collection);
+    checkIfAllowedToWrite(user, collection);
 
-    updateRelation.setModified(createChange(userId));
+    updateRelation.setModified(createChange(user));
 
     dataStoreOperations.replaceRelation(collection, updateRelation);
   }
@@ -324,7 +324,7 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public void deleteVre(String vreName, User user) throws PermissionFetchingException {
-    boolean isAdmin = permissionFetcher.getOldPermissions(user.getPersistentId(), vreName).contains(Permission.ADMIN);
+    boolean isAdmin = permissionFetcher.getOldPermissions(user, vreName).contains(Permission.ADMIN);
     if (isAdmin) {
       dataStoreOperations.deleteVre(vreName);
     } else {

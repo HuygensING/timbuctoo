@@ -17,6 +17,7 @@ import java.util.Optional;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.USER_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.core.Is.is;
@@ -53,7 +54,7 @@ public class JsonBasedAuthorizerTest {
   @Test
   public void createAuthorizationLetsCreatesANewAuthorizationForTheUserVreAndRole()
     throws Exception {
-    instance.createAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+    instance.createAuthorization(VRE_ID, userWithId(USER_ID), UserRoles.USER_ROLE);
 
     verify(authorizationAccess).getOrCreateAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
   }
@@ -64,7 +65,7 @@ public class JsonBasedAuthorizerTest {
     when(authorizationAccess.getOrCreateAuthorization(anyString(), anyString(), anyString()))
       .thenThrow(new AuthorizationUnavailableException());
 
-    instance.createAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+    instance.createAuthorization(VRE_ID, userWithId(USER_ID), UserRoles.USER_ROLE);
   }
 
   @Test
@@ -72,7 +73,7 @@ public class JsonBasedAuthorizerTest {
     when(authorizationAccess.getAuthorization(VRE_ID, USER_ID)).thenReturn(Optional.of(
       VreAuthorizationStubs.authorizationWithRole(ADMIN_ROLE)));
 
-    instance.deleteVreAuthorizations(VRE_ID, UserStubs.userWithId(USER_ID));
+    instance.deleteVreAuthorizations(VRE_ID, userWithId(USER_ID));
 
     verify(authorizationAccess).deleteVreAuthorizations(VRE_ID);
   }
@@ -85,7 +86,7 @@ public class JsonBasedAuthorizerTest {
     when(authorizationAccess.getAuthorization(VRE_ID, USER_ID)).thenReturn(Optional.empty());
 
     try {
-      instance.deleteVreAuthorizations(VRE_ID, UserStubs.userWithId(USER_ID));
+      instance.deleteVreAuthorizations(VRE_ID, userWithId(USER_ID));
     } finally {
       verify(authorizationAccess, never()).deleteVreAuthorizations(VRE_ID);
     }
@@ -99,7 +100,7 @@ public class JsonBasedAuthorizerTest {
     when(authorizationAccess.getAuthorization(VRE_ID, USER_ID)).thenReturn(authorization);
 
     try {
-      instance.deleteVreAuthorizations(VRE_ID, UserStubs.userWithId(USER_ID));
+      instance.deleteVreAuthorizations(VRE_ID, userWithId(USER_ID));
     } finally {
       verify(authorizationAccess, never()).deleteVreAuthorizations(VRE_ID);
     }
@@ -111,7 +112,7 @@ public class JsonBasedAuthorizerTest {
     when(authorizationAccess.getAuthorization(VRE_ID, USER_ID)).thenThrow(AuthorizationUnavailableException.class);
 
     try {
-      instance.deleteVreAuthorizations(VRE_ID, UserStubs.userWithId(USER_ID));
+      instance.deleteVreAuthorizations(VRE_ID, userWithId(USER_ID));
     } finally {
       verify(authorizationAccess, never()).deleteVreAuthorizations(VRE_ID);
     }

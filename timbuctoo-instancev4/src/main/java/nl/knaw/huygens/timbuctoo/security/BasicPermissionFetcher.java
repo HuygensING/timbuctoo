@@ -28,7 +28,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public Set<Permission> getPermissions(String persistentId, DataSetMetaData dataSetMetadata)
+  public Set<Permission> getPermissions(User user, DataSetMetaData dataSetMetadata)
     throws PermissionFetchingException {
     String ownerId = dataSetMetadata.getOwnerId();
     String dataSetId = dataSetMetadata.getDataSetId();
@@ -41,8 +41,8 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     }
 
     try {
-      if (persistentId != null) {
-        Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, persistentId);
+      if (user != null) {
+        Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, user);
         if (vreAuthorization.isPresent()) {
           if (vreAuthorization.get().isAllowedToWrite()) {
             permissions.add(Permission.WRITE);
@@ -62,14 +62,14 @@ public class BasicPermissionFetcher implements PermissionFetcher {
 
   @Override
   @Deprecated
-  public Set<Permission> getOldPermissions(String persistentId, String vreId)
+  public Set<Permission> getOldPermissions(User user, String vreId)
     throws PermissionFetchingException {
     Set<Permission> permissions = new HashSet<>();
 
     permissions.add(Permission.READ);
 
     try {
-      Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, persistentId);
+      Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, user);
       if (vreAuthorization.isPresent()) {
         if (vreAuthorization.get().isAllowedToWrite()) {
           permissions.add(Permission.WRITE);
@@ -85,13 +85,13 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public void initializeOwnerAuthorization(String userId, String ownerId, String dataSetId)
+  public void initializeOwnerAuthorization(User user, String ownerId, String dataSetId)
     throws AuthorizationCreationException {
 
     String vreId = createCombinedId(ownerId, dataSetId);
 
     try {
-      vreAuthorizationCrud.createAuthorization(vreId, userId, "ADMIN");
+      vreAuthorizationCrud.createAuthorization(vreId, user, "ADMIN");
     } catch (AuthorizationCreationException e) {
       throw e;
     }

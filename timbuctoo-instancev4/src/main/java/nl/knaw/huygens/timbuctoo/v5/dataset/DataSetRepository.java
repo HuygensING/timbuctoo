@@ -153,11 +153,11 @@ public class DataSetRepository {
     }
   }
 
-  public Optional<DataSet> getDataSet(String userId, String ownerId, String dataSetId) {
+  public Optional<DataSet> getDataSet(User user, String ownerId, String dataSetId) {
     synchronized (dataSetMap) {
       if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
         try {
-          if (permissionFetcher.getPermissions(userId, dataSetMap.get(ownerId).get(dataSetId).getMetadata()
+          if (permissionFetcher.getPermissions(user, dataSetMap.get(ownerId).get(dataSetId).getMetadata()
           ).contains(Permission.READ)) {
             return Optional.ofNullable(dataSetMap.get(ownerId).get(dataSetId));
           }
@@ -244,8 +244,7 @@ public class DataSetRepository {
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          permissionFetcher.initializeOwnerAuthorization(user.getPersistentId(),
-            dataSet.getOwnerId(), dataSet.getDataSetId());
+          permissionFetcher.initializeOwnerAuthorization(user, dataSet.getOwnerId(), dataSet.getDataSetId());
           userDataSets.put(
             dataSetId,
             dataSet(
@@ -272,13 +271,13 @@ public class DataSetRepository {
     return unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSet).isPresent();
   }
 
-  public void publishDataSet(String userId,String ownerId, String dataSetName)
+  public void publishDataSet(User user, String ownerId, String dataSetName)
     throws DataSetPublishException {
-    Optional<DataSet> dataSet = getDataSet(userId,
+    Optional<DataSet> dataSet = getDataSet(user,
       ownerId, dataSetName);
     try {
       if (dataSet.isPresent() &&
-        permissionFetcher.getPermissions(userId,dataSet.get().getMetadata()).contains(Permission.ADMIN)) {
+        permissionFetcher.getPermissions(user,dataSet.get().getMetadata()).contains(Permission.ADMIN)) {
         DataSetMetaData dataSetMetaData = dataSet.get().getMetadata();
 
         dataSetMetaData.publish();
@@ -313,13 +312,13 @@ public class DataSetRepository {
       .collect(Collectors.toList());
   }
 
-  public Collection<DataSet> getDataSetsWithWriteAccess(String userId) {
+  public Collection<DataSet> getDataSetsWithWriteAccess(User user) {
     List<DataSet> dataSetsWithWriteAccess = new ArrayList<>();
 
     for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
       for (DataSet dataSet : userDataSets.values()) {
         try {
-          boolean isAllowedToWrite = permissionFetcher.getOldPermissions(userId, dataSet.getMetadata().getCombinedId())
+          boolean isAllowedToWrite = permissionFetcher.getOldPermissions(user, dataSet.getMetadata().getCombinedId())
             .contains(Permission.WRITE);
           if (isAllowedToWrite) {
             dataSetsWithWriteAccess.add(dataSet);

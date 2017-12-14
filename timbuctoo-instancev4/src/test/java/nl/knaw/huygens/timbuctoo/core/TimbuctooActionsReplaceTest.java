@@ -16,6 +16,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithId;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
@@ -60,7 +61,7 @@ public class TimbuctooActionsReplaceTest {
     TimbuctooActions instance = createInstance(false);
 
     try {
-      instance.replaceEntity(collection, updateEntity, USER_ID);
+      instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
     } finally {
       verifyZeroInteractions(dataStoreOperations);
     }
@@ -71,7 +72,7 @@ public class TimbuctooActionsReplaceTest {
     when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenReturn(NEW_REV);
     TimbuctooActions instance = createInstance(true);
 
-    instance.replaceEntity(collection, updateEntity, USER_ID);
+    instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
 
     InOrder inOrder = inOrder(dataStoreOperations, persistentUrlCreator, afterSuccessTaskExecutor);
     inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
@@ -89,7 +90,7 @@ public class TimbuctooActionsReplaceTest {
   public void replaceEntityAddsTheModifiedPropertyToUpdateEntityBeforeExecutingTheUpdate() throws Exception {
     TimbuctooActions instance = createInstance(true);
 
-    instance.replaceEntity(collection, updateEntity, USER_ID);
+    instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
 
     InOrder inOrder = inOrder(dataStoreOperations, updateEntity);
     inOrder.verify(updateEntity).setModified(argThat(allOf(
@@ -105,7 +106,7 @@ public class TimbuctooActionsReplaceTest {
     when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenThrow(new NotFoundException());
     TimbuctooActions instance = createInstance(true);
 
-    instance.replaceEntity(collection, updateEntity, USER_ID);
+    instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
   }
 
   @Test(expected = AlreadyUpdatedException.class)
@@ -114,7 +115,7 @@ public class TimbuctooActionsReplaceTest {
     when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenThrow(new AlreadyUpdatedException());
     TimbuctooActions instance = createInstance(true);
 
-    instance.replaceEntity(collection, updateEntity, USER_ID);
+    instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
   }
 
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {

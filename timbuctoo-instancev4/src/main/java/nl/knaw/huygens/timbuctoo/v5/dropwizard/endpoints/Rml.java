@@ -62,7 +62,7 @@ public class Rml {
     } catch (UserValidationException e) {
       user = Optional.empty();
     }
-    final Optional<DataSet> dataSet = dataSetRepository.getDataSet(user.get().getPersistentId(),ownerId, dataSetId);
+    final Optional<DataSet> dataSet = dataSetRepository.getDataSet(user.get(),ownerId, dataSetId);
     if (dataSet.isPresent()) {
       ImportManager importManager = dataSet.get().getImportManager();
       RdfDataSourceFactory dataSourceFactory = dataSet.get().getDataSource();

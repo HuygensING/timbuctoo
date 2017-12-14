@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyType
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,17 +40,16 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
     Map viewConfig = env.getArgument("summaryProperties");
 
     ContextData contextData = env.getContext();
-    String userId = contextData.getUser().get().getPersistentId();
+    User user = contextData.getUser().get();
     UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
 
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
-    Optional<DataSet> dataSet = dataSetRepository.getDataSet(userId,
-      ownerId,dataSetName);
+    Optional<DataSet> dataSet = dataSetRepository.getDataSet(user, ownerId, dataSetName);
     if (dataSet.isPresent() &&
-      userPermissionCheck.getPermissions(dataSetRepository.getDataSet(userId,ownerId, dataSetName).get()
+      userPermissionCheck.getPermissions(dataSetRepository.getDataSet(user, ownerId, dataSetName).get()
         .getMetadata())
         .contains(Permission.ADMIN)) {
       dataSet.get().getQuadStore();

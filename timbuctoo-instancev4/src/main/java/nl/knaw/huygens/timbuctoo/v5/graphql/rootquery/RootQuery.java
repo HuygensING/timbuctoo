@@ -129,11 +129,11 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("dataSetMetadata", env -> {
         final String dataSetId = env.getArgument("dataSetId");
         ContextData context = env.getContext();
-        final String userId = context.getUser().map(User::getPersistentId).orElse(null);
+        final User user = context.getUser().orElse(null);
 
         Tuple<String, String> splitCombinedId = DataSetMetaData.splitCombinedId(dataSetId);
 
-        return dataSetRepository.getDataSet(userId, splitCombinedId.getLeft(), splitCombinedId.getRight())
+        return dataSetRepository.getDataSet(user, splitCombinedId.getLeft(), splitCombinedId.getRight())
           .map(DataSetWithDatabase::new);
       })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
@@ -151,7 +151,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           throw new RuntimeException("User is not provided");
         }
         return dataSetRepository.getDataSet(
-          currentUser.get().getPersistentId(),
+          currentUser.get(),
           input.getOwnerId(),
           input.getDataSetId()
         ).map(dataSet -> dataSet.getImportManager().getImportStatus());
@@ -163,7 +163,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         }
         DataSetMetaData input = env.getSource();
         return dataSetRepository.getDataSet(
-          currentUser.get().getPersistentId(),
+          currentUser.get(),
           input.getOwnerId(),
           input.getDataSetId()
         ).map(dataSet -> dataSet.getImportManager().getDataSetImportStatus());
@@ -177,9 +177,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         }
         DataSetMetaData input = env.getSource();
         ContextData context = env.getContext();
-        final String userId = context.getUser().map(User::getPersistentId).orElse(null);
+        final User user = context.getUser().orElse(null);
 
-        final DataSet dataSet = dataSetRepository.getDataSet(userId, input.getOwnerId(), input.getDataSetId()).get();
+        final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
         final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
         String collectionUri = typeNameStore.makeUri(collectionId);
         if (dataSet.getSchemaStore().getTypes() == null ||
@@ -254,7 +254,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
     wiring.type("AboutMe", builder -> builder
       .dataFetcher("dataSets", env -> (Iterable) () -> dataSetRepository
-        .getDataSetsWithWriteAccess(((User) env.getSource()).getPersistentId())
+        .getDataSetsWithWriteAccess(env.getSource())
         .stream().map(DataSetWithDatabase::new).iterator()
       )
       .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
@@ -277,7 +277,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         try {
           Optional<DataSet> dataSetOpt =
             dataSetRepository.getDataSet(
-              currentUser.get().getPersistentId(),
+              currentUser.get(),
               "u" + currentUser.get().getPersistentId(),
               dataSetName
             );
@@ -341,10 +341,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     return schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
   }
 
-  public CollectionMetadataList getCollections(DataSetMetaData input,
-                                               Optional<User> user) {
-    final String userId = user.map(User::getPersistentId).orElse(null);
-    final DataSet dataSet = dataSetRepository.getDataSet(userId, input.getOwnerId(), input.getDataSetId()).get();
+  public CollectionMetadataList getCollections(DataSetMetaData input, Optional<User> userOpt) {
+    final User user = userOpt.orElse(null);
+    final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
 
     final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
     final List<CollectionMetadata> colls = dataSet

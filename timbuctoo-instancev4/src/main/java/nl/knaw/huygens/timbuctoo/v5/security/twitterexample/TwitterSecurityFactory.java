@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
@@ -40,10 +41,10 @@ public class TwitterSecurityFactory implements SecurityFactory {
   public PermissionFetcher getPermissionFetcher() throws AccessNotPossibleException, NoSuchAlgorithmException {
     return new PermissionFetcher() {
       @Override
-      public Set<Permission> getPermissions(String persistentId, DataSetMetaData dataSetMetaData)
+      public Set<Permission> getPermissions(User user, DataSetMetaData dataSetMetaData)
         throws PermissionFetchingException {
         HashSet<Permission> result = new HashSet<>();
-        if (persistentId != null && persistentId.equals(dataSetMetaData.getOwnerId())) {
+        if (user != null && user.equals(dataSetMetaData.getOwnerId())) {
           result.add(Permission.ADMIN);
           result.add(Permission.WRITE);
         } else {
@@ -53,14 +54,14 @@ public class TwitterSecurityFactory implements SecurityFactory {
       }
 
       @Override
-      public Set<Permission> getOldPermissions(String persistentId, String vreId) throws PermissionFetchingException {
+      public Set<Permission> getOldPermissions(User user, String vreId) throws PermissionFetchingException {
         HashSet<Permission> result = new HashSet<>();
         result.add(Permission.READ);
         return result;
       }
 
       @Override
-      public void initializeOwnerAuthorization(String userId, String ownerId,
+      public void initializeOwnerAuthorization(User user, String ownerId,
                                                String dataSetId) throws PermissionFetchingException,
         AuthorizationCreationException {
       }

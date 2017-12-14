@@ -36,10 +36,8 @@ public class AuthCheck {
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
-    String currentUserId = user.get().getPersistentId();
     try {
-      if (!permissionFetcher.getPermissions(currentUserId,
-        dataSet.getMetadata()).contains(Permission.WRITE)) {
+      if (!permissionFetcher.getPermissions(user.get(), dataSet.getMetadata()).contains(Permission.WRITE)) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
     } catch (PermissionFetchingException e) {
@@ -63,10 +61,9 @@ public class AuthCheck {
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
-    String currentUserId = user.get().getPersistentId();
 
     try {
-      if (!permissionFetcher.getPermissions(currentUserId, dataSetMetadata)
+      if (!permissionFetcher.getPermissions(user.get(), dataSetMetadata)
         .contains(Permission.ADMIN)) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
@@ -109,7 +106,7 @@ public class AuthCheck {
                                                             boolean forceCreation) {
     return getUser(authHeader, userValidator)
       .flatMap(user ->
-        dataSetRepository.getDataSet(user.getPersistentId(),ownerId, dataSetId)
+        dataSetRepository.getDataSet(user, ownerId, dataSetId)
           .map(ds -> Either.<Response, Tuple<User, DataSet>>right(Tuple.tuple(user, ds)))
           .orElseGet(() -> handleForceCreate(ownerId, dataSetId, forceCreation, user))
       );
@@ -117,7 +114,7 @@ public class AuthCheck {
 
   public Either<Response, Tuple<User, DataSet>> hasAdminAccess(User user, DataSet dataSet) {
     try {
-      if (permissionFetcher.getPermissions(user.getPersistentId(),
+      if (permissionFetcher.getPermissions(user,
         dataSet.getMetadata()).contains(Permission.ADMIN)) {
         return Either.right(Tuple.tuple(user, dataSet));
       } else {

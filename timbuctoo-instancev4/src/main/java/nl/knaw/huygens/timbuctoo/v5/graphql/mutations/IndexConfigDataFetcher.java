@@ -46,8 +46,11 @@ public class IndexConfigDataFetcher implements DataFetcher {
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
-    Optional<DataSet> dataSetExists = dataSetRepository.getDataSet(contextData.getUser().get().getPersistentId(),
-      ownerId, dataSetName);
+    Optional<DataSet> dataSetExists = dataSetRepository.getDataSet(
+      contextData.getUser().get(),
+      ownerId,
+      dataSetName
+    );
     if (dataSetExists.isPresent() && userPermissionCheck.getPermissions(dataSetExists.get().getMetadata())
       .contains(Permission.ADMIN)) {
       DataSet dataSet = dataSetExists.get();
