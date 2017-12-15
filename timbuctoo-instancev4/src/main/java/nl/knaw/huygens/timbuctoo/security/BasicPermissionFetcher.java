@@ -103,7 +103,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     Optional<User> user;
 
     try {
-      user = userValidator.getUserFromUserId(ownerId); // TODO call method to get user from persistent id
+      user = userValidator.getUserFromPersistentId(ownerId);
     } catch (UserValidationException e) {
       throw new PermissionFetchingException(String.format("Could not retrieve User for userId '%s'", ownerId));
     }

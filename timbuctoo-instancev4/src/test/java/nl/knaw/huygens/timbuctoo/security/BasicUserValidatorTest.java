@@ -16,17 +16,15 @@ import static org.mockito.Mockito.mock;
 
 public class BasicUserValidatorTest {
 
-  private AuthenticationHandler authenticationHandler;
   private UserStore userStore;
   private BasicUserValidator basicUserValidator;
   private LoggedInUsers loggedInUsers;
 
   @Before
   public void setUp() throws Exception {
-    authenticationHandler = mock(AuthenticationHandler.class);
     userStore = mock(UserStore.class);
     loggedInUsers = mock(LoggedInUsers.class);
-    basicUserValidator = new BasicUserValidator(authenticationHandler, userStore, null);
+    basicUserValidator = new BasicUserValidator(userStore, null);
   }
 
   @Test
@@ -40,7 +38,7 @@ public class BasicUserValidatorTest {
   public void getUserFromAccessTokenReturnsUserWhenAccessTokenIsValid() throws Exception {
     given(loggedInUsers.userFor("validAccessToken")).willReturn(Optional.of(anyUser()));
 
-    BasicUserValidator basicUserValidator2 = new BasicUserValidator(authenticationHandler, userStore, loggedInUsers);
+    BasicUserValidator basicUserValidator2 = new BasicUserValidator(userStore, loggedInUsers);
 
     Optional<User> user = basicUserValidator2.getUserFromAccessToken("validAccessToken");
 
@@ -53,7 +51,7 @@ public class BasicUserValidatorTest {
       null
     );
 
-    BasicUserValidator basicUserValidator2 = new BasicUserValidator(authenticationHandler, userStore, loggedInUsers);
+    BasicUserValidator basicUserValidator2 = new BasicUserValidator(userStore, loggedInUsers);
 
     Optional<User> user = basicUserValidator2.getUserFromAccessToken("validAccessToken");
 
@@ -72,6 +70,31 @@ public class BasicUserValidatorTest {
     given(userStore.userForId("testUserId")).willReturn(Optional.of(anyUser()));
 
     Optional<User> user = basicUserValidator.getUserFromUserId("testUserId");
+
+    assertThat(user, is(OptionalPresentMatcher.present()));
+  }
+
+  @Test
+  public void getUserFromPersistentIdReturnsEmptyWhenTheIdIsNull() throws Exception {
+    Optional<User> user = basicUserValidator.getUserFromPersistentId(null);
+
+    assertThat(user, is(Optional.empty()));
+  }
+
+  @Test
+  public void getUserFromPersistentIdReturnsEmptyWhenTheCannotBeFound() throws Exception {
+    given(userStore.userFor("pid")).willReturn(Optional.empty());
+
+    Optional<User> user = basicUserValidator.getUserFromPersistentId("userId");
+
+    assertThat(user, is(Optional.empty()));
+  }
+
+  @Test
+  public void getUserFromPersistentIdReturnsUserWhenIdIsValid() throws Exception {
+    given(userStore.userFor("pid")).willReturn(Optional.of(anyUser()));
+
+    Optional<User> user = basicUserValidator.getUserFromPersistentId("pid");
 
     assertThat(user, is(OptionalPresentMatcher.present()));
   }

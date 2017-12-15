@@ -51,4 +51,10 @@ public class TwitterUserValidator implements UserValidator {
     }
     return Optional.of(User.create(user.getScreenName(), userId, userId));
   }
+
+  @Override
+  public Optional<User> getUserFromPersistentId(String persistentId) throws UserValidationException {
+    // for twitter persistentId and userId are the same
+    return getUserFromUserId(persistentId);
+  }
 }

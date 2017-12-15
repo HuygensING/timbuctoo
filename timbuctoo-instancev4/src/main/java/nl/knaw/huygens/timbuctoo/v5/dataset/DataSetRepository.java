@@ -368,6 +368,8 @@ public class DataSetRepository {
 
     // remove folder
     FileUtils.deleteDirectory(fileHelper.dataSetPath(ownerId, dataSetName));
+
+    // TODO remove authorizations
   }
 
   public void stop() {

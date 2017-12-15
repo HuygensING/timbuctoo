@@ -9,4 +9,7 @@ public interface UserValidator {
   Optional<User> getUserFromAccessToken(String accessToken) throws UserValidationException;
 
   Optional<User> getUserFromUserId(String userId) throws UserValidationException;
+
+  Optional<User> getUserFromPersistentId(String persistentId) throws UserValidationException;
+
 }

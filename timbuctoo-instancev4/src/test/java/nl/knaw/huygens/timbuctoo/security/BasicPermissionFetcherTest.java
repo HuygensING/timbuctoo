@@ -176,6 +176,8 @@ public class BasicPermissionFetcherTest {
 
   @Test
   public void removeAuthorizationsRemovesAdminAuthorization() throws Exception {
+    given(userValidator.getUserFromPersistentId("testownerid")).willReturn(Optional.of(testUser));
+
     permissionFetcher.removeAuthorizations("testownerid", "testownerid__testdatasetid");
 
     verify(vreAuthorizationCrud).deleteVreAuthorizations("testownerid__testdatasetid", testUser);
@@ -183,8 +185,6 @@ public class BasicPermissionFetcherTest {
 
   @Test(expected = PermissionFetchingException.class)
   public void removeAuthorizationsThrowsExceptionWhenUserRetrievalFails() throws Exception {
-    given(testUser.getId()).willReturn("testwrongid");
-
-    permissionFetcher.removeAuthorizations("testwrongid", "testdatasetid");
+    permissionFetcher.removeAuthorizations("idOfUnknownUser", "testdatasetid");
   }
 }
