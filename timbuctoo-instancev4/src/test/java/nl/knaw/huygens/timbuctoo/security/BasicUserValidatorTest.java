@@ -2,17 +2,13 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.hamcrest.OptionalPresentMatcher;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
-import nl.knaw.huygens.security.client.model.SecurityInformation;
-import nl.knaw.huygens.security.core.model.Affiliation;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
-import java.security.Principal;
-import java.util.EnumSet;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.anyUser;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
@@ -42,7 +38,7 @@ public class BasicUserValidatorTest {
 
   @Test
   public void getUserFromAccessTokenReturnsUserWhenAccessTokenIsValid() throws Exception {
-    given(loggedInUsers.userFor("validAccessToken")).willReturn(Optional.of(createMockUser()));
+    given(loggedInUsers.userFor("validAccessToken")).willReturn(Optional.of(anyUser()));
 
     BasicUserValidator basicUserValidator2 = new BasicUserValidator(authenticationHandler, userStore, loggedInUsers);
 
@@ -73,81 +69,11 @@ public class BasicUserValidatorTest {
 
   @Test
   public void getUserFromUserIdReturnsUserWhenIdIsValid() throws Exception {
-    given(userStore.userForId("testUserId")).willReturn(Optional.of(createMockUser()));
+    given(userStore.userForId("testUserId")).willReturn(Optional.of(anyUser()));
 
     Optional<User> user = basicUserValidator.getUserFromUserId("testUserId");
 
     assertThat(user, is(OptionalPresentMatcher.present()));
-  }
-
-  private SecurityInformation createMockSecurityInformation(final String persistentId) {
-    return new SecurityInformation() {
-      @Override
-      public String getDisplayName() {
-        return "";
-      }
-
-      @Override
-      public Principal getPrincipal() {
-        return null;
-      }
-
-      @Override
-      public String getCommonName() {
-        return null;
-      }
-
-      @Override
-      public String getGivenName() {
-        return null;
-      }
-
-      @Override
-      public String getSurname() {
-        return null;
-      }
-
-      @Override
-      public String getEmailAddress() {
-        return null;
-      }
-
-      @Override
-      public EnumSet<Affiliation> getAffiliations() {
-        return null;
-      }
-
-      @Override
-      public String getOrganization() {
-        return null;
-      }
-
-      @Override
-      public String getPersistentID() {
-        return persistentId;
-      }
-    };
-  }
-
-  private User createMockUser() {
-    return new User() {
-      @Nullable
-      @Override
-      public String getDisplayName() {
-        return null;
-      }
-
-      @Nullable
-      @Override
-      public String getPersistentId() {
-        return null;
-      }
-
-      @Override
-      public String getId() {
-        return null;
-      }
-    };
   }
 
 }

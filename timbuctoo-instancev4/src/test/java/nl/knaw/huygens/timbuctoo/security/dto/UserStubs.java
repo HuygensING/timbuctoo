@@ -26,4 +26,25 @@ public class UserStubs {
       }
     };
   }
+
+  public static User anyUser() {
+    return new User() {
+      @Nullable
+      @Override
+      public String getDisplayName() {
+        return null;
+      }
+
+      @Nullable
+      @Override
+      public String getPersistentId() {
+        return null;
+      }
+
+      @Override
+      public String getId() {
+        return null;
+      }
+    };
+  }
 }
