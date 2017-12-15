@@ -38,9 +38,10 @@ public class DataSetRepositoryTest {
   protected File tempFile;
   private DataSetRepository dataSetRepository;
   private ResourceSync resourceSync;
+  private File authDir;
 
   @Before
-  public void init() throws IOException, InterruptedException {
+  public void init() throws Exception {
     tempFile = Files.createTempDir();
     resourceSync = mock(ResourceSync.class);
     when(resourceSync.getDataSetDescriptionFile(anyString(), anyString())).thenReturn(new File(tempFile, "test.xml"));
@@ -48,9 +49,10 @@ public class DataSetRepositoryTest {
   }
 
   private DataSetRepository createDataSetRepo() throws IOException {
+    authDir = tempFile;
     return new DataSetRepository(
       Executors.newSingleThreadExecutor(),
-      new BasicPermissionFetcher(new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())), null),
+      new BasicPermissionFetcher(new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(authDir.toPath()))),
       ImmutableDataSetConfiguration.builder()
         .dataSetMetadataLocation(tempFile.getAbsolutePath())
         .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))

@@ -18,5 +18,5 @@ public interface PermissionFetcher {
   void initializeOwnerAuthorization(User user, String ownerId, String dataSetId)
     throws PermissionFetchingException, AuthorizationCreationException;
 
-  void removeAuthorizations(String ownerId, String vreId) throws PermissionFetchingException;
+  void removeAuthorizations(String combinedId) throws PermissionFetchingException;
 }

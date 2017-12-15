@@ -67,7 +67,7 @@ public class TwitterSecurityFactory implements SecurityFactory {
       }
 
       @Override
-      public void removeAuthorizations(String ownerId, String vreId) throws PermissionFetchingException {
+      public void removeAuthorizations(String vreId) throws PermissionFetchingException {
       }
     };
   }

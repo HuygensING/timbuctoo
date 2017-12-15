@@ -45,7 +45,7 @@ public class BasicPermissionFetcherTest {
     testUser = mock(User.class);
     given(testUser.getId()).willReturn("testownerid");
     given(userValidator.getUserFromUserId("testownerid")).willReturn(Optional.of(testUser));
-    permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, userValidator);
+    permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud);
     dataSetMetaData = mock(BasicDataSetMetaData.class);
     given(dataSetMetaData.getDataSetId()).willReturn("testdatasetid");
     given(dataSetMetaData.getOwnerId()).willReturn("testownerid");
@@ -178,13 +178,9 @@ public class BasicPermissionFetcherTest {
   public void removeAuthorizationsRemovesAdminAuthorization() throws Exception {
     given(userValidator.getUserFromPersistentId("testownerid")).willReturn(Optional.of(testUser));
 
-    permissionFetcher.removeAuthorizations("testownerid", "testownerid__testdatasetid");
+    permissionFetcher.removeAuthorizations("testownerid__testdatasetid");
 
-    verify(vreAuthorizationCrud).deleteVreAuthorizations("testownerid__testdatasetid", testUser);
+    verify(vreAuthorizationCrud).deleteVreAuthorizations("testownerid__testdatasetid");
   }
 
-  @Test(expected = PermissionFetchingException.class)
-  public void removeAuthorizationsThrowsExceptionWhenUserRetrievalFails() throws Exception {
-    permissionFetcher.removeAuthorizations("idOfUnknownUser", "testdatasetid");
-  }
 }

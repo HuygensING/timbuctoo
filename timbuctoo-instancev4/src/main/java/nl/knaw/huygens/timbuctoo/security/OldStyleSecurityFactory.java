@@ -148,7 +148,7 @@ public class OldStyleSecurityFactory implements SecurityFactory {
 
   @Override
   public PermissionFetcher getPermissionFetcher()
-    throws AccessNotPossibleException, NoSuchAlgorithmException {
-    return new BasicPermissionFetcher(getVreAuthorizationCreator(), getUserValidator());
+    throws AccessNotPossibleException {
+    return new BasicPermissionFetcher(getVreAuthorizationCreator());
   }
 }
