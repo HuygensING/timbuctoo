@@ -65,17 +65,17 @@ public class BasicUserValidatorTest {
   }
 
   @Test
-  public void getUserFromIdReturnsEmptyWhenIdIsNull() throws Exception {
-    Optional<User> user = basicUserValidator.getUserFromId(null);
+  public void getUserFromUserIdReturnsEmptyWhenIdIsNull() throws Exception {
+    Optional<User> user = basicUserValidator.getUserFromUserId(null);
 
     assertThat(user, is(Optional.empty()));
   }
 
   @Test
-  public void getUserFromIdReturnsUserWhenIdIsValid() throws Exception {
+  public void getUserFromUserIdReturnsUserWhenIdIsValid() throws Exception {
     given(userStore.userForId("testUserId")).willReturn(Optional.of(createMockUser()));
 
-    Optional<User> user = basicUserValidator.getUserFromId("testUserId");
+    Optional<User> user = basicUserValidator.getUserFromUserId("testUserId");
 
     assertThat(user, is(OptionalPresentMatcher.present()));
   }

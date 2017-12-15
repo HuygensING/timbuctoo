@@ -42,7 +42,7 @@ public class TwitterUserValidator implements UserValidator {
   }
 
   @Override
-  public Optional<User> getUserFromId(String userId) throws UserValidationException {
+  public Optional<User> getUserFromUserId(String userId) throws UserValidationException {
     twitter4j.User user;
     try {
       user = twitter.showUser(Long.valueOf(userId));

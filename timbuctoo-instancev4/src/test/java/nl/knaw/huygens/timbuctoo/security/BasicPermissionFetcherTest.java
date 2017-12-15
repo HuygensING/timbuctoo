@@ -44,7 +44,7 @@ public class BasicPermissionFetcherTest {
     userValidator = mock(UserValidator.class);
     testUser = mock(User.class);
     given(testUser.getId()).willReturn("testownerid");
-    given(userValidator.getUserFromId("testownerid")).willReturn(Optional.of(testUser));
+    given(userValidator.getUserFromUserId("testownerid")).willReturn(Optional.of(testUser));
     permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, userValidator);
     dataSetMetaData = mock(BasicDataSetMetaData.class);
     given(dataSetMetaData.getDataSetId()).willReturn("testdatasetid");

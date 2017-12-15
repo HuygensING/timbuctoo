@@ -34,7 +34,7 @@ class BasicUserValidator implements UserValidator {
   }
 
   @Override
-  public Optional<User> getUserFromId(String userId) throws UserValidationException {
+  public Optional<User> getUserFromUserId(String userId) throws UserValidationException {
     if (userId != null) {
       try {
         return userStore.userForId(userId);
