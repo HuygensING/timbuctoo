@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 import graphql.TypeResolutionEnvironment;
 import graphql.language.BooleanValue;
 import graphql.language.Directive;
+import graphql.language.Field;
 import graphql.language.InlineFragment;
 import graphql.language.Selection;
 import graphql.language.StringValue;
@@ -28,13 +29,13 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
-import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.valueOf;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
 
 public class RdfWiringFactory implements WiringFactory {
   private final UriFetcher uriFetcher;
@@ -149,7 +150,7 @@ public class RdfWiringFactory implements WiringFactory {
     @Override
     public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
 
-      String typeName = null;
+      String typeName;
       if (environment.getObject() instanceof TypedValue) {
         final TypedValue typedValue = (TypedValue) environment.getObject();
         final String typeUri = typedValue.getType();
@@ -162,37 +163,44 @@ public class RdfWiringFactory implements WiringFactory {
         //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
         //In rdf things can have more then one type though (types are like java interfaces)
         //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types
-        // that
-        //the user actually requested
+        //that the user actually requested
         final SubjectReference subjectReference = (SubjectReference) environment.getObject();
         final String prefix = subjectReference.getDataSet().getMetadata().getCombinedId();
         Set<String> typeUris = subjectReference.getTypes();
         final TypeNameStore typeNameStore = subjectReference.getDataSet().getTypeNameStore();
         if (typeUris.isEmpty()) {
-          typeName = prefix + "_" + typeNameStore.makeGraphQlname(RdfConstants.UNKNOWN);
+          typeName = prefix + "_" + typeNameStore.makeGraphQlname(UNKNOWN);
         } else {
+          typeName = null;
           for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
             if (selection instanceof InlineFragment) {
               InlineFragment fragment = (InlineFragment) selection;
+              final String typeConditionName = fragment.getTypeCondition().getName();
               String typeUri = typeNameStore.makeUri(
-                fragment.getTypeCondition().getName().substring(prefix.length() + 1)
+                typeConditionName.startsWith(prefix) ?
+                  typeConditionName.substring(prefix.length() + 1) :
+                  typeConditionName
               );
               if (typeUris.contains(typeUri)) {
                 typeName = prefix + "_" + typeNameStore.makeGraphQlname(typeUri);
                 break;
               }
+            } else if (selection instanceof Field && ((Field) selection).getName().equals("__typename")) {
+              //Ignore, __typename is indeed not part of a fragment
             } else {
               LOG.error("I have a union type whose selection is not an InlineFragment!");
             }
           }
+          if (typeName == null) {
+            //there's no overlap. Just pick one (object will be excluded from the result)
+            typeName = prefix + "_" + typeNameStore.makeGraphQlname(
+              typeUris.isEmpty() ? UNKNOWN : typeUris.iterator().next()
+            );
+          }
         }
       }
-      if (typeName == null) {
-        return null;
-      } else {
-        final GraphQLObjectType type = (GraphQLObjectType) environment.getSchema().getType(typeName);
-        return type;
-      }
+      final GraphQLObjectType type = (GraphQLObjectType) environment.getSchema().getType(typeName);
+      return type;
     }
   }
 }
