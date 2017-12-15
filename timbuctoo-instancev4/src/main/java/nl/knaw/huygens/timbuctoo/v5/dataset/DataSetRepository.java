@@ -356,20 +356,22 @@ public class DataSetRepository {
   }
 
   public void removeDataSet(String ownerId, String dataSetName) throws IOException {
-    dataStoreFactory.removeDatabasesFor(ownerId, dataSetName);
-
+    DataSet dataSet = dataSetMap.get(ownerId).get(dataSetName);
+    String combinedId = dataSet.getMetadata().getCombinedId();
+    dataSet.stop();
     dataSetMap.get(ownerId).remove(dataSetName);
 
     try {
       resourceSync.removeDataSet(ownerId, dataSetName);
-    } catch (ResourceSyncException e) {
+      permissionFetcher.removeAuthorizations(combinedId);
+    } catch (ResourceSyncException | PermissionFetchingException e) {
       throw new IOException(e);
     }
 
     // remove folder
     FileUtils.deleteDirectory(fileHelper.dataSetPath(ownerId, dataSetName));
 
-    // TODO remove authorizations
+
   }
 
   public void stop() {

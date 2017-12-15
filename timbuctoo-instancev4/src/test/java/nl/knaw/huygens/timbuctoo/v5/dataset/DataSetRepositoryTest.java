@@ -19,7 +19,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.concurrent.Executors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -157,6 +156,24 @@ public class DataSetRepositoryTest {
     dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
 
     verify(resourceSync).removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
+  }
+
+
+  @Test
+  public void removeDataSetRemovesTheDataSetsAuthorizations() throws Exception {
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
+      "dataset"
+    );
+
+    String owner = dataSet.getMetadata().getOwnerId();
+    String dataSetName = dataSet.getMetadata().getDataSetId();
+
+    File authFile = new File(authDir, owner + "____" + dataSetName + ".json");
+    assertThat(authFile.exists(), is(true));
+
+    dataSetRepository.removeDataSet(owner, "dataset");
+
+    assertThat(authFile.exists(), is(false));
   }
 
   @Test
