@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.poi.ss.formula.functions.T;
 
 import java.util.concurrent.TimeUnit;
 
