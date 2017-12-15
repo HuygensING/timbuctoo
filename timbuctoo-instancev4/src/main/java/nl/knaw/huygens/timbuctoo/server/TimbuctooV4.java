@@ -68,7 +68,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Import;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.ListVres;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.SingleVre;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.LambdaHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
@@ -387,9 +386,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         uriHelper
       )
     );
-    register(environment, new SingleVre(permissionChecker, transactionEnforcer,
-      securityConfig.getPermissionFetcher()
-    ));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
 
