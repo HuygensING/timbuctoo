@@ -4,9 +4,11 @@ import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.security.BasicPermissionFetcher;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
@@ -17,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.naming.NoPermissionException;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -125,45 +128,49 @@ public class DataSetRepositoryTest {
 
   @Test
   public void removeDataSetRemovesTheDataSetFromDisk() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
-      "dataset"
-    );
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
     File dataSetPath = new File(new File(tempFile, dataSet.getMetadata().getOwnerId()), "dataset");
     assertThat(dataSetPath.exists(), is(true));
 
-    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
 
     assertThat(dataSetPath.exists(), is(false));
   }
 
   @Test
   public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
-      "dataset"
-    );
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
 
-    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
 
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(false));
   }
 
   @Test
   public void removeDataSetRemovesItFromResourceSync() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
-      "dataset"
-    );
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
 
-    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
 
     verify(resourceSync).removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
   }
 
+  @Test(expected = NotEnoughPermissionsException.class)
+  public void removeDataSetThrowsAnExceptionWhenTheUserHasNoAdminPermissions() throws Exception {
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
+    User userWithOutPermissions = User.create(null, "userWithOutPermissions");
+
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", userWithOutPermissions);
+  }
 
   @Test
   public void removeDataSetRemovesTheDataSetsAuthorizations() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
-      "dataset"
-    );
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user, "dataset" );
 
     String owner = dataSet.getMetadata().getOwnerId();
     String dataSetName = dataSet.getMetadata().getDataSetId();
@@ -171,7 +178,7 @@ public class DataSetRepositoryTest {
     File authFile = new File(authDir, owner + "____" + dataSetName + ".json");
     assertThat(authFile.exists(), is(true));
 
-    dataSetRepository.removeDataSet(owner, "dataset");
+    dataSetRepository.removeDataSet(owner, "dataset", user);
 
     assertThat(authFile.exists(), is(false));
   }

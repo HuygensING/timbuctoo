@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
@@ -349,19 +350,23 @@ public class DataSetRepository {
     return Tuple.tuple(uuid, rdfCreator);
   }
 
-  public void removeDataSet(String combinedId) throws IOException {
-    Tuple<String, String> ownerIdDataSetName = DataSetMetaData.splitCombinedId(combinedId);
 
-    this.removeDataSet(ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight());
-  }
-
-  public void removeDataSet(String ownerId, String dataSetName) throws IOException {
-    DataSet dataSet = dataSetMap.get(ownerId).get(dataSetName);
-    String combinedId = dataSet.getMetadata().getCombinedId();
-    dataSet.stop();
-    dataSetMap.get(ownerId).remove(dataSetName);
-
+  public void removeDataSet(String ownerId, String dataSetName, User user)
+    throws IOException, NotEnoughPermissionsException {
     try {
+      DataSet dataSet = dataSetMap.get(ownerId).get(dataSetName);
+      String combinedId = dataSet.getMetadata().getCombinedId();
+      if (!permissionFetcher.getPermissions(user, dataSet.getMetadata()).contains(Permission.ADMIN)) {
+        throw new NotEnoughPermissionsException(
+          String.format(
+            "User '%s' is not allowed to remove dataset '%s'",
+            user.getDisplayName(),
+            combinedId
+          )
+        );
+      }
+      dataSet.stop();
+      dataSetMap.get(ownerId).remove(dataSetName);
       resourceSync.removeDataSet(ownerId, dataSetName);
       permissionFetcher.removeAuthorizations(combinedId);
     } catch (ResourceSyncException | PermissionFetchingException e) {

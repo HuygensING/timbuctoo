@@ -2,7 +2,10 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
@@ -30,11 +33,13 @@ public class DeleteDataSetDataFetcher implements DataFetcher {
 
     String dataSetId = environment.getArgument("dataSetId");
 
+    Tuple<String, String> ownerDataSetName = DataSetMetaData.splitCombinedId(dataSetId);
+
     try {
-      dataSetRepository.removeDataSet(dataSetId);
+      dataSetRepository.removeDataSet(ownerDataSetName.getLeft(),ownerDataSetName.getRight(),currentUser.get());
 
       return new RemovedDataSet(dataSetId);
-    } catch (IOException e) {
+    } catch (IOException | NotEnoughPermissionsException e) {
       LOG.error("Data set deletion exception", e);
       throw new RuntimeException("Data set could not be deleted");
     }
