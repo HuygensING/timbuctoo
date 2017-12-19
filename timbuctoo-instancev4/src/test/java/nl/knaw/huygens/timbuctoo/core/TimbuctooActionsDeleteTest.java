@@ -15,6 +15,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithId;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
@@ -56,7 +57,7 @@ public class TimbuctooActionsDeleteTest {
   public void deleteEntityLetsDataAccessDeleteTheEntity() throws Exception {
     TimbuctooActions instance = createInstance(true);
 
-    instance.deleteEntity(collection, ID, USER_ID);
+    instance.deleteEntity(collection, ID, userWithId(USER_ID));
 
     verify(dataStoreOperations).deleteEntity(collection, ID, change);
   }
@@ -66,7 +67,7 @@ public class TimbuctooActionsDeleteTest {
     TimbuctooActions instance = createInstance(false);
 
     try {
-      instance.deleteEntity(collection, ID, USER_ID);
+      instance.deleteEntity(collection, ID, userWithId(USER_ID));
     } finally {
       verifyZeroInteractions(dataStoreOperations);
     }
@@ -77,7 +78,7 @@ public class TimbuctooActionsDeleteTest {
     doThrow(new NotFoundException()).when(dataStoreOperations).deleteEntity(collection, ID, change);
     TimbuctooActions instance = createInstance(true);
 
-    instance.deleteEntity(collection, ID, USER_ID);
+    instance.deleteEntity(collection, ID, userWithId(USER_ID));
   }
 
   @Test
@@ -85,7 +86,7 @@ public class TimbuctooActionsDeleteTest {
     when(dataStoreOperations.deleteEntity(collection, ID, change)).thenReturn(REV);
     TimbuctooActions instance = createInstance(true);
 
-    instance.deleteEntity(collection, ID, USER_ID);
+    instance.deleteEntity(collection, ID, userWithId(USER_ID));
 
     verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddPersistentUrlTask(
@@ -99,10 +100,10 @@ public class TimbuctooActionsDeleteTest {
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
     if (allowedToWrite) {
-      given(permissionFetcher.getPermissions(any(), any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(), any())).willReturn(
         Sets.newHashSet(Permission.WRITE, Permission.READ));
     } else {
-      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(),any())).willReturn(
         Sets.newHashSet(Permission.READ));
     }
     return new TimbuctooActions(permissionFetcher, clock, persistentUrlCreator,

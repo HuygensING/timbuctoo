@@ -11,8 +11,9 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
@@ -131,13 +132,13 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
-            public PromotedDataSet getMetadata() {
+            public DataSetMetaData getMetadata() {
               try {
-                return PromotedDataSet.promotedDataSet(
+                return new BasicDataSetMetaData(
                   "ownerid",
                   "datasetid",
                   "http://example.org",
-                  "http://example.org/prefix/", false
+                  "http://example.org/prefix/", false,false
                 );
               } catch (IllegalDataSetNameException e) {
                 throw new RuntimeException(e);

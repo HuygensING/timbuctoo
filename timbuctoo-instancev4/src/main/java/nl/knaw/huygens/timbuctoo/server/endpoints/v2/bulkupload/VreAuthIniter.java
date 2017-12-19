@@ -57,7 +57,7 @@ public class VreAuthIniter {
     }
 
     try {
-      authorizationCreator.createAuthorization(namespacedVre, user.get().getId(), UserRoles.ADMIN_ROLE);
+      authorizationCreator.createAuthorization(namespacedVre, user.get(), UserRoles.ADMIN_ROLE);
     } catch (AuthorizationCreationException e) {
       LOG.error("Cannot add authorization for user {} and VRE {}", user.get().getId(), namespacedVre);
       LOG.error("Exception thrown", e);

@@ -8,8 +8,11 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,20 +37,27 @@ public class ViewConfigDataFetcher implements DataFetcher {
     String collectionUri = env.getArgument("collectionUri");
     Object viewConfig = env.getArgument("viewConfig");
 
-    Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
+    ContextData contextData = env.getContext();
 
-    String ownerId = userAndDataSet.getLeft();
-    String dataSetName = userAndDataSet.getRight();
-    if (dataSetRepository.dataSetExists(ownerId, dataSetName)) {
-      DataSet dataSet = dataSetRepository.getDataSet(ownerId, dataSetName).get();
-      dataSet.getQuadStore();
+    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+
+    Tuple<String, String> ownerAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
+
+    String ownerId = ownerAndDataSet.getLeft();
+    String dataSetName = ownerAndDataSet.getRight();
+
+    Optional<DataSet> dataSet = dataSetRepository.getDataSet(contextData.getUser().get(),
+      ownerId, dataSetName);
+    if (dataSet.isPresent() && userPermissionCheck.getPermissions(dataSet.get().getMetadata())
+        .contains(Permission.ADMIN)) {
+      dataSet.get().getQuadStore();
       try {
-        final String baseUri = dataSet.getMetadata().getBaseUri();
-        dataSet.getImportManager().generateLog(
+        final String baseUri = dataSet.get().getMetadata().getBaseUri();
+        dataSet.get().getImportManager().generateLog(
           baseUri,
           baseUri,
           new StringPredicatesRdfCreator(
-            dataSet.getQuadStore(),
+            dataSet.get().getQuadStore(),
             ImmutableMap.of(
               Tuple.tuple(collectionUri, HAS_VIEW_CONFIG), Optional.of(OBJECT_MAPPER.writeValueAsString(viewConfig))
             ),

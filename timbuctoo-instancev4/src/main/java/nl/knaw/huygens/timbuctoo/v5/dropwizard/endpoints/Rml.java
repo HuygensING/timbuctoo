@@ -14,10 +14,14 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -26,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
@@ -36,18 +41,28 @@ public class Rml {
   private final DataSetRepository dataSetRepository;
   private final ErrorResponseHelper errorResponseHelper;
   private final JenaBasedReader rmlBuilder = new JenaBasedReader();
+  private final UserValidator userValidator;
 
-  public Rml(DataSetRepository dataSetRepository, ErrorResponseHelper errorResponseHelper) {
+  public Rml(DataSetRepository dataSetRepository, ErrorResponseHelper errorResponseHelper,
+             UserValidator userValidator) {
     this.dataSetRepository = dataSetRepository;
     this.errorResponseHelper = errorResponseHelper;
+    this.userValidator = userValidator;
   }
 
   @POST
   public Response upload(final String rdfData,
                          @PathParam("userId") final String ownerId,
-                         @PathParam("dataSetId") final String dataSetId)
-    throws DataStoreCreationException, LogStorageFailedException {
-    final Optional<DataSet> dataSet = dataSetRepository.getDataSet(ownerId, dataSetId);
+                         @PathParam("dataSetId") final String dataSetId,
+                         @HeaderParam("authorization") String authHeader)
+    throws DataStoreCreationException, LogStorageFailedException, ExecutionException, InterruptedException {
+    Optional<User> user;
+    try {
+      user = userValidator.getUserFromAccessToken(authHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
+    final Optional<DataSet> dataSet = dataSetRepository.getDataSet(user.get(),ownerId, dataSetId);
     if (dataSet.isPresent()) {
       ImportManager importManager = dataSet.get().getImportManager();
       RdfDataSourceFactory dataSourceFactory = dataSet.get().getDataSource();

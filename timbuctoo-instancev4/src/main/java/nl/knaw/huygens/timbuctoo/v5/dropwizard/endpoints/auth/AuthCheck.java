@@ -4,7 +4,7 @@ import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
@@ -36,10 +36,8 @@ public class AuthCheck {
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
-    String currentUserId = user.get().getPersistentId();
     try {
-      if (!permissionFetcher.getPermissions(currentUserId, dataSet.getMetadata().getOwnerId(),
-        dataSet.getMetadata().getDataSetId()).contains(Permission.WRITE)) {
+      if (!permissionFetcher.getPermissions(user.get(), dataSet.getMetadata()).contains(Permission.WRITE)) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
     } catch (PermissionFetchingException e) {
@@ -52,7 +50,7 @@ public class AuthCheck {
 
   public static Response checkAdminAccess(PermissionFetcher permissionFetcher, UserValidator userValidator,
                                           String authHeader,
-                                          PromotedDataSet dataSet) {
+                                          DataSetMetaData dataSetMetadata) {
 
     Optional<User> user;
     try {
@@ -63,10 +61,9 @@ public class AuthCheck {
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
-    String currentUserId = user.get().getPersistentId();
 
     try {
-      if (!permissionFetcher.getPermissions(currentUserId, dataSet.getOwnerId(), dataSet.getDataSetId())
+      if (!permissionFetcher.getPermissions(user.get(), dataSetMetadata)
         .contains(Permission.ADMIN)) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
@@ -109,7 +106,7 @@ public class AuthCheck {
                                                             boolean forceCreation) {
     return getUser(authHeader, userValidator)
       .flatMap(user ->
-        dataSetRepository.getDataSet(ownerId, dataSetId)
+        dataSetRepository.getDataSet(user, ownerId, dataSetId)
           .map(ds -> Either.<Response, Tuple<User, DataSet>>right(Tuple.tuple(user, ds)))
           .orElseGet(() -> handleForceCreate(ownerId, dataSetId, forceCreation, user))
       );
@@ -117,8 +114,8 @@ public class AuthCheck {
 
   public Either<Response, Tuple<User, DataSet>> hasAdminAccess(User user, DataSet dataSet) {
     try {
-      if (permissionFetcher.getPermissions(user.getPersistentId(), dataSet.getMetadata().getOwnerId(),
-        dataSet.getMetadata().getDataSetId()).contains(Permission.ADMIN)) {
+      if (permissionFetcher.getPermissions(user,
+        dataSet.getMetadata()).contains(Permission.ADMIN)) {
         return Either.right(Tuple.tuple(user, dataSet));
       } else {
         return Either.left(Response.status(Response.Status.FORBIDDEN).build());

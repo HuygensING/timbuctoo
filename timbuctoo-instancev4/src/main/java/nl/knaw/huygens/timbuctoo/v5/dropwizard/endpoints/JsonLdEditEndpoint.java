@@ -65,23 +65,25 @@ public class JsonLdEditEndpoint {
 
   @PUT
   public Response submitChanges(String jsonLdImport,
-                                @PathParam("user") String userId,
+                                @PathParam("user") String ownerId,
                                 @PathParam("dataset") String dataSetId,
                                 @HeaderParam("authorization") String authHeader) throws LogStorageFailedException {
-
-    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(userId, dataSetId);
-    if (!dataSetOpt.isPresent()) {
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
-    final DataSet dataSet = dataSetOpt.get();
-    final QuadStore quadStore = dataSet.getQuadStore();
-    final ImportManager importManager = dataSet.getImportManager();
     Optional<User> user;
     try {
       user = userValidator.getUserFromAccessToken(authHeader);
     } catch (UserValidationException e) {
       user = Optional.empty();
     }
+
+    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user.get(), ownerId, dataSetId);
+
+    if (!dataSetOpt.isPresent()) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+    final DataSet dataSet = dataSetOpt.get();
+    final QuadStore quadStore = dataSet.getQuadStore();
+    final ImportManager importManager = dataSet.getImportManager();
+
 
     final Response response = checkWriteAccess(dataSet, user, permissionFetcher);
     if (response != null) {

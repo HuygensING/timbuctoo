@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -14,9 +15,9 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
-import static nl.knaw.huygens.timbuctoo.util.FileHelpers.makeTempDir;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
+import static nl.knaw.huygens.timbuctoo.util.FileHelpers.makeTempDir;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -26,13 +27,12 @@ import static org.hamcrest.Matchers.contains;
 
 public class LocalFileVreAuthorizationAccessTest {
 
-  private Path authorizationsFolder;
   public static final String VRE = "vre";
   public static final String VRE_FILE = "vre.json";
-  private Path vreAuthPath;
-
   public static final String USER_ID = "USER000000000001";
   public static final String USER_ID_WITHOUT_WRITE_PERMISSIONS = "USER000000000002";
+  private Path authorizationsFolder;
+  private Path vreAuthPath;
   private VreAuthorizationAccess instance;
   private ObjectMapper objectMapper;
 
@@ -54,6 +54,7 @@ public class LocalFileVreAuthorizationAccessTest {
 
   @After
   public void teardown() throws Exception {
+
     if (new File(vreAuthPath.toString()).exists()) {
       Files.delete(vreAuthPath);
     }
@@ -143,4 +144,40 @@ public class LocalFileVreAuthorizationAccessTest {
     instance.deleteVreAuthorizations(VRE);
     assertThat(new File(authorizationsFolder.resolve(VRE_FILE).toString()).exists(), equalTo(false));
   }
+
+
+  @Test
+  public void getAuthorizationReturnsAuthorizationFromAuthorizationsJsonFileIfDataSetNotPresent() throws Exception {
+    File file = new File(authorizationsFolder.toFile(), "authorizations.json");
+    file.createNewFile();
+
+    String testAuthInfo = "[{\"vreId\":\"test_vre\",\"userId\":\"33707283d426f900d4d33707283d426f9testing\"," +
+      "\"roles\":[\"ADMIN\"]}]\n";
+
+    Files.write(file.toPath(), testAuthInfo.getBytes());
+
+    String userId = "33707283d426f900d4d33707283d426f9testing";
+
+    Optional<VreAuthorization> authorization = instance.getAuthorization("",userId);
+
+    assertThat(authorization, is(present()));
+  }
+
+  @Test
+  public void getAuthorizationReturnsEmptyIfPermissionNotPresentInEitherFile() throws Exception {
+    File file = new File(authorizationsFolder.toFile(), "authorizations.json");
+    file.createNewFile();
+
+    String testAuthInfo = "[{\"vreId\":\"test_vre\",\"userId\":\"33707283d426f900d4d33707283d4268testing2\"," +
+      "\"roles\":[\"ADMIN\"]}]\n";
+
+    Files.write(file.toPath(), testAuthInfo.getBytes());
+
+    String userId = "33707283d426f900d4d33707283d426f9testing";
+
+    Optional<VreAuthorization> authorization = instance.getAuthorization("",userId);
+
+    assertThat(authorization, is(not(present())));
+  }
+
 }

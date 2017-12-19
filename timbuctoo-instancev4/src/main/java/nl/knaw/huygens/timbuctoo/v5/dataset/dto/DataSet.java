@@ -26,6 +26,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,10 +37,12 @@ import java.util.concurrent.ExecutorService;
 
 @Value.Immutable
 public abstract class DataSet {
+  private static final Logger LOG = LoggerFactory.getLogger(DataSet.class);
 
-  public static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
-                                FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
-                                BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
+
+  public static DataSet dataSet(DataSetMetaData metadata, DataSetConfiguration configuration,
+                         FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
+                         BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
 
     String userId = metadata.getOwnerId();
@@ -199,7 +203,7 @@ public abstract class DataSet {
 
   public abstract QuadStore getQuadStore();
 
-  public abstract PromotedDataSet getMetadata();
+  public abstract DataSetMetaData getMetadata();
 
 
 }

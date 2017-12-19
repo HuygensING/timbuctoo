@@ -51,7 +51,8 @@ type DataSetMetadata {
   dataSetId: ID!
   dataSetName: String!
   ownerId: String!
-
+  published: Boolean!
+  promoted: Boolean!
   title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
   description: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
   imageUrl: Value @rdf(predicate: "http://xmlns.com/foaf/0.1/depiction", direction: "OUT", isList: false, isObject: false, isValue: true)
@@ -293,4 +294,5 @@ type Mutation {
   setIndexConfig(dataSet: ID!, collectionUri: String!, indexConfig: IndexConfigInput!): IndexConfig!
   createDataSet(dataSetName: String!): DataSetMetadata!
   deleteDataSet(dataSetId: String!): RemovedDataSet!
+  publish(dataSet: String!): DataSetMetadata!
 }

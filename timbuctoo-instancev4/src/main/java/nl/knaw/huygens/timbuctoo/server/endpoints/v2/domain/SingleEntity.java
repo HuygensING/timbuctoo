@@ -109,7 +109,7 @@ public class SingleEntity {
       UpdateMessage updateMessage = transactionEnforcer.executeAndReturn(timbuctooActions -> {
         JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
         try {
-          crudService.replace(collectionName, id.get(), body, newUser.get().getId());
+          crudService.replace(collectionName, id.get(), body, newUser.get());
           return commitAndReturn(UpdateMessage.success());
         } catch (InvalidCollectionException e) {
           return rollbackAndReturn(
@@ -182,7 +182,7 @@ public class SingleEntity {
       return transactionEnforcer.executeAndReturn(timbuctooActions -> {
         JsonCrudService jsonCrudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
         try {
-          jsonCrudService.delete(collectionName, id.get(), newUser.get().getId());
+          jsonCrudService.delete(collectionName, id.get(), newUser.get());
           return commitAndReturn(Response.noContent().build());
         } catch (InvalidCollectionException e) {
           return rollbackAndReturn(

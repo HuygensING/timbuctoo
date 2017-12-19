@@ -68,7 +68,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Import;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.ListVres;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.SingleVre;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.LambdaHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
@@ -256,7 +255,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         } catch (IOException e) {
           LOG.error("Webhook call failed", e);
         }
-      })
+      }),
+      configuration.dataSetsArePublicByDefault()
     );
 
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
@@ -278,12 +278,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new Rml(
       dataSetRepository,
-      errorResponseHelper
+      errorResponseHelper,
+      securityConfig.getUserValidator()
     ));
 
     register(environment, new Rml(
       dataSetRepository,
-      errorResponseHelper
+      errorResponseHelper,
+      securityConfig.getUserValidator()
     ));
 
     SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(
@@ -305,7 +307,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       ),
       serializerWriterRegistry,
       securityConfig.getUserValidator(),
-      uriHelper
+      uriHelper,
+      securityConfig.getPermissionFetcher(),dataSetRepository
     );
     register(environment, graphQlEndpoint);
 
@@ -383,9 +386,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         uriHelper
       )
     );
-    register(environment, new SingleVre(permissionChecker, transactionEnforcer,
-      securityConfig.getPermissionFetcher()
-    ));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
 

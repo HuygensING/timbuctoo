@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.dto.UserStubs;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
@@ -17,13 +17,13 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithId;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -55,7 +55,7 @@ public class TimbuctooActionsRelationTest {
   public void createRelationCreatesANewRelation() throws Exception {
     TimbuctooActions instance = createInstance(true);
 
-    instance.createRelation(collection, createRelation, USER_ID);
+    instance.createRelation(collection, createRelation, userWithId(USER_ID));
 
     verify(dataStoreOperations).acceptRelation(argThat(is(collection)), argThat(allOf(
       hasProperty("created", allOf(
@@ -72,7 +72,7 @@ public class TimbuctooActionsRelationTest {
       .thenReturn(UUID.randomUUID());
     TimbuctooActions instance = createInstance(true);
 
-    UUID id = instance.createRelation(collection, createRelation, USER_ID);
+    UUID id = instance.createRelation(collection, createRelation, userWithId(USER_ID));
 
     assertThat(id, is(notNullValue(UUID.class)));
   }
@@ -82,7 +82,7 @@ public class TimbuctooActionsRelationTest {
     TimbuctooActions instance = createInstance(false);
 
     try {
-      instance.createRelation(collection, createRelation, USER_ID);
+      instance.createRelation(collection, createRelation, userWithId(USER_ID));
     } finally {
       verifyZeroInteractions(dataStoreOperations);
     }
@@ -95,7 +95,7 @@ public class TimbuctooActionsRelationTest {
       .thenThrow(new RelationNotPossibleException(""));
     TimbuctooActions instance = createInstance(true);
 
-    instance.createRelation(collection, createRelation, USER_ID);
+    instance.createRelation(collection, createRelation, userWithId(USER_ID));
   }
 
   @Test(expected = PermissionFetchingException.class)
@@ -103,7 +103,8 @@ public class TimbuctooActionsRelationTest {
     TimbuctooActions instance = createInstance(false);
 
     try {
-      instance.replaceRelation(collection, new UpdateRelation(UUID.randomUUID(), 1, false), USER_ID);
+      instance.replaceRelation(collection, new UpdateRelation(UUID.randomUUID(), 1, false),
+        userWithId(USER_ID));
     } finally {
       verifyZeroInteractions(dataStoreOperations);
     }
@@ -115,7 +116,7 @@ public class TimbuctooActionsRelationTest {
     UpdateRelation updateRelation = new UpdateRelation(id, 1, false);
     TimbuctooActions instance = createInstance(true);
 
-    instance.replaceRelation(collection, updateRelation, USER_ID);
+    instance.replaceRelation(collection, updateRelation, userWithId(USER_ID));
 
     verify(dataStoreOperations).replaceRelation(argThat(is(collection)), argThat(allOf(
       hasProperty("id", is(id)),
@@ -132,16 +133,16 @@ public class TimbuctooActionsRelationTest {
     doThrow(new NotFoundException()).when(dataStoreOperations).replaceRelation(collection, updateRelation);
     TimbuctooActions instance = createInstance(true);
 
-    instance.replaceRelation(collection, updateRelation, USER_ID);
+    instance.replaceRelation(collection, updateRelation, userWithId(USER_ID));
   }
 
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
     if (allowedToWrite) {
-      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(),any())).willReturn(
         Sets.newHashSet(Permission.WRITE, Permission.READ));
     } else {
-      given(permissionFetcher.getPermissions(any(), any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(), any())).willReturn(
         Sets.newHashSet(Permission.READ));
     }
     return new TimbuctooActions(permissionFetcher, clock,

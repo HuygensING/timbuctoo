@@ -6,13 +6,18 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.Optional.ofNullable;
@@ -34,20 +39,27 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
     String collectionUri = env.getArgument("collectionUri");
     Map viewConfig = env.getArgument("summaryProperties");
 
-    Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
+    ContextData contextData = env.getContext();
+    User user = contextData.getUser().get();
+    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+
+    Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
-    if (dataSetRepository.dataSetExists(ownerId, dataSetName)) {
-      DataSet dataSet = dataSetRepository.getDataSet(ownerId, dataSetName).get();
-      dataSet.getQuadStore();
+    Optional<DataSet> dataSet = dataSetRepository.getDataSet(user, ownerId, dataSetName);
+    if (dataSet.isPresent() &&
+      userPermissionCheck.getPermissions(dataSetRepository.getDataSet(user, ownerId, dataSetName).get()
+        .getMetadata())
+        .contains(Permission.ADMIN)) {
+      dataSet.get().getQuadStore();
       try {
-        final String baseUri = dataSet.getMetadata().getBaseUri();
-        dataSet.getImportManager().generateLog(
+        final String baseUri = dataSet.get().getMetadata().getBaseUri();
+        dataSet.get().getImportManager().generateLog(
           baseUri,
           baseUri,
           new StringPredicatesRdfCreator(
-            dataSet.getQuadStore(),
+            dataSet.get().getQuadStore(),
             ImmutableMap.of(
               Tuple.tuple(collectionUri, TIM_SUMMARYTITLEPREDICATE),
               ofNullable((String) viewConfig.get("title")),
@@ -61,7 +73,7 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
             baseUri
           )
         ).get();
-        return new LazyTypeSubjectReference(collectionUri, dataSet);
+        return new LazyTypeSubjectReference(collectionUri, dataSet.get());
       } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
         throw new RuntimeException(e);
       }

@@ -80,19 +80,19 @@ public class JsonBasedUserStoreTest {
 
   @Test
   public void createUserAddsAUserToTheUsersFile() throws Exception {
-    String userId = instance.createUser("pidOfOtherUser", "email", "givenName", "surname", "organization");
+    User createdUser = instance.createUser("pidOfOtherUser", "email", "givenName", "surname", "organization");
 
-    Optional<User> user = instance.userForId(userId);
+    Optional<User> user = instance.userForId(createdUser.getId());
     assertThat(user, is(present()));
     assertThat(user.get().getPersistentId(), is("pidOfOtherUser"));
   }
 
   @Test
   public void createUserLetsTheUserBeCreatedOnlyOnce() throws Exception {
-    String userId1 = instance.createUser("pid", "email", "givenName", "surname", "organization");
-    String userId2 = instance.createUser("pid", "email", "givenName", "surname", "organization");
+    User user1 = instance.createUser("pid", "email", "givenName", "surname", "organization");
+    User user2 = instance.createUser("pid", "email", "givenName", "surname", "organization");
 
-    assertThat(userId1, is(userId2));
+    assertThat(user1.getId(), is(user2.getId()));
 
   }
 
