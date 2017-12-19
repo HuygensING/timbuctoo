@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -19,9 +21,20 @@ import static org.mockito.Mockito.mock;
 
 public class MetaDataMigrationTest {
 
+  private File testDataSetsFolder;
+
+  @Before
+  public void setUp() throws Exception {
+    testDataSetsFolder = createTempDir();
+  }
+
+  @After
+  public void tearDown() {
+    testDataSetsFolder.delete();
+  }
+
   @Test
   public void metaDataMigrationCreatesMetaDataFiles() throws Exception {
-    File testDataSetsFolder = createTempDir();
 
     File testUserFolder = new File(testDataSetsFolder.toString() + "/u33707283d426f900d4d33707283d426f900d4d0d");
     testUserFolder.mkdir();
@@ -138,6 +151,5 @@ public class MetaDataMigrationTest {
         hasProperty("published", is(false))
       ));
 
-    testDataSetsFolder.delete();
   }
 }

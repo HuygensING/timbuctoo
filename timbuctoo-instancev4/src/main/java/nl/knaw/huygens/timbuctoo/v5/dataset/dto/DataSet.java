@@ -63,10 +63,8 @@ public abstract class DataSet {
     try {
       importManager.subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri(),
         importManager.getImportStatus()));
-    } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-    } catch (SAXException e) {
-      e.printStackTrace();
+    } catch (ParserConfigurationException | SAXException e) {
+      LOG.error("Could not construct import manager of data set", e);
     }
 
     final TupleBinding<String> stringBinding = TupleBinding.getPrimitiveBinding(String.class);

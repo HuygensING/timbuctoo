@@ -282,12 +282,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getUserValidator()
     ));
 
-    register(environment, new Rml(
-      dataSetRepository,
-      errorResponseHelper,
-      securityConfig.getUserValidator()
-    ));
-
     SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(
       new CsvWriter(),
       new JsonLdWriter(),

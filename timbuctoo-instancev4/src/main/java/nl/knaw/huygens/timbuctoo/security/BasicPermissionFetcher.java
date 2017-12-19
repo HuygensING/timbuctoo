@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -17,6 +19,7 @@ import java.util.Set;
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCombinedId;
 
 public class BasicPermissionFetcher implements PermissionFetcher {
+  private static final Logger LOG = LoggerFactory.getLogger(BasicPermissionFetcher.class);
   private final VreAuthorizationCrud vreAuthorizationCrud;
 
   public BasicPermissionFetcher(VreAuthorizationCrud vreAuthorizationCrud) {
@@ -52,6 +55,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
       }
       return permissions;
     } catch (AuthorizationUnavailableException e) {
+      LOG.error("Authorizations unavailable", e);
       return permissions;
     }
   }

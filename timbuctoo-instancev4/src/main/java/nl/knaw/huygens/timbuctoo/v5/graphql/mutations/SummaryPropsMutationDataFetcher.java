@@ -47,19 +47,19 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
-    Optional<DataSet> dataSet = dataSetRepository.getDataSet(user, ownerId, dataSetName);
-    if (dataSet.isPresent() &&
+    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user, ownerId, dataSetName);
+    if (dataSetOpt.isPresent() &&
       userPermissionCheck.getPermissions(dataSetRepository.getDataSet(user, ownerId, dataSetName).get()
-        .getMetadata())
-        .contains(Permission.ADMIN)) {
-      dataSet.get().getQuadStore();
+        .getMetadata()).contains(Permission.ADMIN)) {
+      DataSet dataSet = dataSetOpt.get();
+      dataSet.getQuadStore();
       try {
-        final String baseUri = dataSet.get().getMetadata().getBaseUri();
-        dataSet.get().getImportManager().generateLog(
+        final String baseUri = dataSet.getMetadata().getBaseUri();
+        dataSet.getImportManager().generateLog(
           baseUri,
           baseUri,
           new StringPredicatesRdfCreator(
-            dataSet.get().getQuadStore(),
+            dataSet.getQuadStore(),
             ImmutableMap.of(
               Tuple.tuple(collectionUri, TIM_SUMMARYTITLEPREDICATE),
               ofNullable((String) viewConfig.get("title")),
@@ -73,7 +73,7 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
             baseUri
           )
         ).get();
-        return new LazyTypeSubjectReference(collectionUri, dataSet.get());
+        return new LazyTypeSubjectReference(collectionUri, dataSet);
       } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
         throw new RuntimeException(e);
       }

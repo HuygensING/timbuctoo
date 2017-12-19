@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.OldDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
@@ -23,7 +22,7 @@ import java.util.Set;
 public class MetaDataMigration {
   private DataSetConfiguration configuration;
 
-  public MetaDataMigration(DataSetConfiguration configuration) throws IOException {
+  public MetaDataMigration(DataSetConfiguration configuration) {
     this.configuration = configuration;
   }
 
