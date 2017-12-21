@@ -42,7 +42,7 @@ public class TwitterUserValidator implements UserValidator {
   }
 
   @Override
-  public Optional<User> getUserFromId(String userId) throws UserValidationException {
+  public Optional<User> getUserFromUserId(String userId) throws UserValidationException {
     twitter4j.User user;
     try {
       user = twitter.showUser(Long.valueOf(userId));
@@ -50,5 +50,11 @@ public class TwitterUserValidator implements UserValidator {
       throw new UserValidationException(e);
     }
     return Optional.of(User.create(user.getScreenName(), userId, userId));
+  }
+
+  @Override
+  public Optional<User> getUserFromPersistentId(String persistentId) throws UserValidationException {
+    // for twitter persistentId and userId are the same
+    return getUserFromUserId(persistentId);
   }
 }

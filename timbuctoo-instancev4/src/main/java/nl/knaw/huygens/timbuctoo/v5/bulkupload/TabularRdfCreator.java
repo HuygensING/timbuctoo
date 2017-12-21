@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
@@ -19,11 +19,11 @@ import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 public class TabularRdfCreator implements PlainRdfCreator {
   private final ImportManager importManager;
   private final Loader loader;
-  private final PromotedDataSet dataSet;
+  private final DataSetMetaData dataSet;
   private final Consumer<String> importStatusConsumer; // TODO hoe gaan we deze reconstrueren na deserialisatie
   private final String fileToken;
 
-  public TabularRdfCreator(ImportManager importManager, Loader loader, PromotedDataSet dataSet,
+  public TabularRdfCreator(ImportManager importManager, Loader loader, DataSetMetaData dataSet,
                            Consumer<String> importStatusConsumer, String fileToken) {
     this.importManager = importManager;
     this.loader = loader;

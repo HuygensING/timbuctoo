@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -734,6 +733,39 @@ public class IntegrationTest {
 
   private String createDataSetId(String dataSetName) {
     return PREFIX + "__" + dataSetName;
+  }
+
+  @Test
+  public void authorizationReadFromAuthorizationsFileIfVreFileNotPresent() throws Exception {
+    // Create a dataset
+    Client client = ClientBuilder.newBuilder().build();
+    String dataSetName = "dataset" + UUID.randomUUID().toString().replace("-", "_");
+
+
+    Response graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation CreateDataSet($dataSetName: String!) {" +
+            "  createDataSet(dataSetName: $dataSetName) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetName", jsn(dataSetName)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+
+    assertThat(graphQlCall.getStatus(), is(200));
+    // check if the dataset is created
+    List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy();
+    System.out.println("datasets: " + dataSetNamesOfDummy);
+    assertThat(dataSetNamesOfDummy, hasItem(PREFIX + "__" + dataSetName));
+
   }
 
   @Test

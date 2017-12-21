@@ -41,14 +41,15 @@ public interface DataSetConfiguration {
   default DataSetRepository createRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                                              BdbPersistentEnvironmentCreator databases,
                                              TimbuctooRdfIdHelper rdfIdHelper,
-                                             Consumer<String> onUpdated) throws IOException {
+                                             Consumer<String> onUpdated, boolean publicByDefault) throws IOException {
     return new DataSetRepository(
       executorService,
       permissionFetcher,
       this,
       databases,
       rdfIdHelper,
-      onUpdated
+      onUpdated,
+      publicByDefault
     );
   }
 }

@@ -28,4 +28,8 @@ public class OldStyleSecurityFactoryConfiguration implements SecurityFactoryConf
     return new OldStyleSecurityFactory(localAuthentication, algorithm, autoLogoutTimeout, federatedAuthentication,
       new HttpCaller(httpCaller));
   }
+
+  public AccessFactory getLocalAuthenticationForMigration() {
+    return localAuthentication;
+  }
 }

@@ -1,21 +1,30 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.security.BasicPermissionFetcher;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
+import org.apache.commons.compress.archivers.dump.DumpArchiveEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.naming.NoPermissionException;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -25,6 +34,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -36,9 +46,11 @@ public class DataSetRepositoryTest {
   protected File tempFile;
   private DataSetRepository dataSetRepository;
   private ResourceSync resourceSync;
+  private File authDir;
+  private PermissionFetcher permissionFetcher;
 
   @Before
-  public void init() throws IOException, InterruptedException {
+  public void init() throws Exception {
     tempFile = Files.createTempDir();
     resourceSync = mock(ResourceSync.class);
     when(resourceSync.getDataSetDescriptionFile(anyString(), anyString())).thenReturn(new File(tempFile, "test.xml"));
@@ -46,9 +58,11 @@ public class DataSetRepositoryTest {
   }
 
   private DataSetRepository createDataSetRepo() throws IOException {
+    authDir = tempFile;
+    permissionFetcher = mock(PermissionFetcher.class);
     return new DataSetRepository(
       Executors.newSingleThreadExecutor(),
-      new BasicPermissionFetcher(new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())), null),
+      permissionFetcher,
       ImmutableDataSetConfiguration.builder()
         .dataSetMetadataLocation(tempFile.getAbsolutePath())
         .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
@@ -58,7 +72,8 @@ public class DataSetRepositoryTest {
       new BdbNonPersistentEnvironmentCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
       combinedId -> {
-      }
+      },
+      false
     );
   }
 
@@ -121,36 +136,66 @@ public class DataSetRepositoryTest {
 
   @Test
   public void removeDataSetRemovesTheDataSetFromDisk() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
     File dataSetPath = new File(new File(tempFile, dataSet.getMetadata().getOwnerId()), "dataset");
     assertThat(dataSetPath.exists(), is(true));
+    given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(Sets.newHashSet(Permission.ADMIN));
 
-    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
 
     assertThat(dataSetPath.exists(), is(false));
   }
 
   @Test
   public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
+    given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(Sets.newHashSet(Permission.ADMIN));
 
-    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
 
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(false));
   }
 
   @Test
   public void removeDataSetRemovesItFromResourceSync() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
+    given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(Sets.newHashSet(Permission.ADMIN));
 
-    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
 
     verify(resourceSync).removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
   }
 
+  @Test(expected = NotEnoughPermissionsException.class)
+  public void removeDataSetThrowsAnExceptionWhenTheUserHasNoAdminPermissions() throws Exception {
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
+    User userWithOutPermissions = User.create(null, "userWithOutPermissions");
+
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", userWithOutPermissions);
+  }
+
+  @Test
+  public void removeDataSetRemovesTheDataSetsAuthorizations() throws Exception {
+    User user = User.create(null, "user");
+    final DataSet dataSet = dataSetRepository.createDataSet(user, "dataset" );
+    DataSetMetaData metadata = dataSet.getMetadata();
+    String owner = metadata.getOwnerId();
+    given(permissionFetcher.getPermissions(user, metadata)).willReturn(Sets.newHashSet(Permission.ADMIN));
+
+    dataSetRepository.removeDataSet(owner, "dataset", user);
+
+    verify(permissionFetcher).removeAuthorizations(metadata.getCombinedId());
+  }
+
   @Test
   public void dataSetsWillBeTheSameAfterRestart() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
+      "dataset"
+    );
 
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(true));
 
@@ -159,6 +204,22 @@ public class DataSetRepositoryTest {
     dataSetRepository.start();
 
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(true));
+  }
+
+  @Test
+  public void publishDataSetWillReturnDataSetMetaDataWithPublishedFlagSet() throws Exception {
+    User user = User.create(null, "user");
+    DataSet dataSet = dataSetRepository.createDataSet(user, "dataset");
+    DataSetMetaData metadata = dataSet.getMetadata();
+    given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(
+      Sets.newHashSet(Permission.ADMIN, Permission.READ)
+    );
+
+    assertThat(metadata.isPublished(), is(false));
+
+    dataSetRepository.publishDataSet(user, "uuser", "dataset");
+
+    assertThat(metadata.isPublished(), is(true));
   }
 
 }

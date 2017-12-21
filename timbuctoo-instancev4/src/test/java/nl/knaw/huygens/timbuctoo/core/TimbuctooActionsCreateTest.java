@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.when;
 public class TimbuctooActionsCreateTest {
 
   public static final String COLLECTION_NAME = "collectionName";
+  private static final String USER_ID = "userId";
   private Clock clock;
   private Instant instant;
   private Collection collection;
@@ -50,7 +52,7 @@ public class TimbuctooActionsCreateTest {
     when(clock.instant()).thenReturn(instant);
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
-    userId = "userId";
+    userId = USER_ID;
     baseCollection = Optional.empty();
     persistentUrlCreator = mock(PersistentUrlCreator.class);
     dataStoreOperations = mock(DataStoreOperations.class);
@@ -63,7 +65,7 @@ public class TimbuctooActionsCreateTest {
     TimbuctooActions instance = createInstance(false);
 
     try {
-      instance.createEntity(mock(Collection.class), baseCollection, newArrayList(), "userId");
+      instance.createEntity(mock(Collection.class), baseCollection, newArrayList(), userWithId(userId));
     } finally {
       verifyZeroInteractions(dataStoreOperations);
     }
@@ -73,7 +75,7 @@ public class TimbuctooActionsCreateTest {
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
     TimbuctooActions instance = createInstance(true);
 
-    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
+    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userWithId(userId));
 
     verify(dataStoreOperations).createEntity(
       collection,
@@ -94,7 +96,7 @@ public class TimbuctooActionsCreateTest {
   public void createEntityReturnsTheId() throws Exception {
     TimbuctooActions instance = createInstance(true);
 
-    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
+    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userWithId(userId));
 
     assertThat(id, is(notNullValue()));
   }
@@ -103,7 +105,7 @@ public class TimbuctooActionsCreateTest {
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
     TimbuctooActions instance = createInstance(true);
 
-    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
+    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userWithId(userId));
 
     verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddPersistentUrlTask(
@@ -119,7 +121,7 @@ public class TimbuctooActionsCreateTest {
     doThrow(IOException.class).when(dataStoreOperations).createEntity(eq(collection), eq(baseCollection), any());
     TimbuctooActions instance = createInstance(true);
 
-    instance.createEntity(collection, baseCollection, newArrayList(), userId);
+    instance.createEntity(collection, baseCollection, newArrayList(), userWithId(userId));
 
     verifyZeroInteractions(afterSuccessTaskExecutor);
   }
@@ -127,10 +129,10 @@ public class TimbuctooActionsCreateTest {
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
     if (allowedToWrite) {
-      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(),any())).willReturn(
         Sets.newHashSet(Permission.WRITE, Permission.READ));
     } else {
-      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(),any())).willReturn(
         Sets.newHashSet(Permission.READ));
     }
     return new TimbuctooActions(permissionFetcher, clock, persistentUrlCreator,

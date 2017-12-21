@@ -8,8 +8,11 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +37,20 @@ public class ViewConfigDataFetcher implements DataFetcher {
     String collectionUri = env.getArgument("collectionUri");
     Object viewConfig = env.getArgument("viewConfig");
 
-    Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
+    ContextData contextData = env.getContext();
 
-    String ownerId = userAndDataSet.getLeft();
-    String dataSetName = userAndDataSet.getRight();
-    if (dataSetRepository.dataSetExists(ownerId, dataSetName)) {
-      DataSet dataSet = dataSetRepository.getDataSet(ownerId, dataSetName).get();
+    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+
+    Tuple<String, String> ownerAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
+
+    String ownerId = ownerAndDataSet.getLeft();
+    String dataSetName = ownerAndDataSet.getRight();
+
+    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(contextData.getUser().get(),
+      ownerId, dataSetName);
+    DataSet dataSet = dataSetOpt.get();
+    if (dataSetOpt.isPresent() && userPermissionCheck.getPermissions(dataSet.getMetadata())
+                                                  .contains(Permission.ADMIN)) {
       dataSet.getQuadStore();
       try {
         final String baseUri = dataSet.getMetadata().getBaseUri();

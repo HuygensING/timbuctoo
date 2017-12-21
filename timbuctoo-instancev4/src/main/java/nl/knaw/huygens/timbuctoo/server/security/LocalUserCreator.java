@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
 import nl.knaw.huygens.timbuctoo.security.LoginCreator;
@@ -46,8 +47,8 @@ public class LocalUserCreator {
 
     try {
       loginCreator.createLogin(userPid, userName, password, givenName, surname, emailAddress, organization);
-      String userId = userCreator.createUser(userPid, emailAddress, givenName, surname, organization);
-      authorizationCreator.createAuthorization(vreId, userId, vreRole);
+      User user = userCreator.createUser(userPid, emailAddress, givenName, surname, organization);
+      authorizationCreator.createAuthorization(vreId, user, vreRole);
     } catch (LoginCreationException e) {
       throw new UserCreationException(e);
     } catch (AuthorizationCreationException e) {

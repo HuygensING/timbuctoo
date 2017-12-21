@@ -143,12 +143,12 @@ public class OldStyleSecurityFactory implements SecurityFactory {
 
   @Override
   public UserValidator getUserValidator() throws AccessNotPossibleException, NoSuchAlgorithmException {
-    return new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore(), getLoggedInUsers());
+    return new BasicUserValidator(getUserStore(), getLoggedInUsers());
   }
 
   @Override
   public PermissionFetcher getPermissionFetcher()
-    throws AccessNotPossibleException, NoSuchAlgorithmException {
-    return new BasicPermissionFetcher(getVreAuthorizationCreator(), getUserValidator());
+    throws AccessNotPossibleException {
+    return new BasicPermissionFetcher(getVreAuthorizationCreator());
   }
 }

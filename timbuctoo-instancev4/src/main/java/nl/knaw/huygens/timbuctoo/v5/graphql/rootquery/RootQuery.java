@@ -9,15 +9,15 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -25,12 +25,14 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
@@ -42,6 +44,9 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePro
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,10 +116,25 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("allDataSets", env -> dataSetRepository.getDataSets()
         .stream()
         .map(DataSetWithDatabase::new)
+        .filter(x -> {
+          if (x.isPublished()) {
+            return true;
+          } else {
+            ContextData contextData = env.getContext();
+            UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+            return userPermissionCheck.getPermissions(x.getDataSet().getMetadata()).contains(Permission.READ);
+          }
+        })
         .collect(Collectors.toList()))
       .dataFetcher("dataSetMetadata", env -> {
         final String dataSetId = env.getArgument("dataSetId");
-        return dataSetRepository.getDataSet(dataSetId).map(DataSetWithDatabase::new);
+        ContextData context = env.getContext();
+        final User user = context.getUser().orElse(null);
+
+        Tuple<String, String> splitCombinedId = DataSetMetaData.splitCombinedId(dataSetId);
+
+        return dataSetRepository.getDataSet(user, splitCombinedId.getLeft(), splitCombinedId.getRight())
+          .map(DataSetWithDatabase::new);
       })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
@@ -125,23 +145,41 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     wiring.type("DataSetMetadata", builder -> builder
 
       .dataFetcher("currentImportStatus", env -> {
-        PromotedDataSet input = env.getSource();
-        return dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId())
-                                .map(dataSet -> dataSet.getImportManager().getImportStatus());
+        DataSetMetaData input = env.getSource();
+        Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
+        if (!currentUser.isPresent()) {
+          throw new RuntimeException("User is not provided");
+        }
+        return dataSetRepository.getDataSet(
+          currentUser.get(),
+          input.getOwnerId(),
+          input.getDataSetId()
+        ).map(dataSet -> dataSet.getImportManager().getImportStatus());
       })
       .dataFetcher("dataSetImportStatus", env -> {
-        PromotedDataSet input = env.getSource();
-        return dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId())
-                                .map(dataSet -> dataSet.getImportManager().getDataSetImportStatus());
+        Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
+        if (!currentUser.isPresent()) {
+          throw new RuntimeException("User is not provided");
+        }
+        DataSetMetaData input = env.getSource();
+        return dataSetRepository.getDataSet(
+          currentUser.get(),
+          input.getOwnerId(),
+          input.getDataSetId()
+        ).map(dataSet -> dataSet.getImportManager().getDataSetImportStatus());
       })
-      .dataFetcher("collectionList", env -> getCollections(env.getSource()))
+      .dataFetcher("collectionList", env -> getCollections(env.getSource(), ((ContextData) env.getContext()).getUser()))
+
       .dataFetcher("collection", env -> {
         String collectionId = (String) env.getArguments().get("collectionId");
         if (collectionId != null && collectionId.endsWith("List")) {
           collectionId = collectionId.substring(0, collectionId.length() - "List".length());
         }
-        PromotedDataSet input = env.getSource();
-        final DataSet dataSet = dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId()).get();
+        DataSetMetaData input = env.getSource();
+        ContextData context = env.getContext();
+        final User user = context.getUser().orElse(null);
+
+        final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
         final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
         String collectionUri = typeNameStore.makeUri(collectionId);
         if (dataSet.getSchemaStore().getTypes() == null ||
@@ -151,9 +189,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return getCollection(dataSet, typeNameStore, dataSet.getSchemaStore().getTypes().get(collectionUri));
         }
       })
-      .dataFetcher("dataSetId", env -> ((PromotedDataSet) env.getSource()).getCombinedId())
-      .dataFetcher("dataSetName", env -> ((PromotedDataSet) env.getSource()).getDataSetId())
-      .dataFetcher("ownerId", env -> ((PromotedDataSet) env.getSource()).getOwnerId())
+      .dataFetcher("dataSetId", env -> ((DataSetMetaData) env.getSource()).getCombinedId())
+      .dataFetcher("dataSetName", env -> ((DataSetMetaData) env.getSource()).getDataSetId())
+      .dataFetcher("ownerId", env -> ((DataSetMetaData) env.getSource()).getOwnerId())
     );
     wiring.type("CurrentImportStatus", builder -> builder
       .dataFetcher("elapsedTime", env -> {
@@ -172,6 +210,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         final String timeUnit = env.getArgument("unit");
         return ((EntryImportStatus) env.getSource()).getElapsedTime(timeUnit);
       })
+
     );
     wiring.type("CollectionMetadata", builder -> builder
       .dataFetcher("indexConfig", env -> {
@@ -215,7 +254,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
     wiring.type("AboutMe", builder -> builder
       .dataFetcher("dataSets", env -> (Iterable) () -> dataSetRepository
-        .getDataSetsWithWriteAccess(((User) env.getSource()).getPersistentId())
+        .getDataSetsWithWriteAccess(env.getSource())
         .stream().map(DataSetWithDatabase::new).iterator()
       )
       .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
@@ -234,10 +273,14 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           throw new RuntimeException("User is not provided");
         }
 
-        String dataSetName   = environment.getArgument("dataSetName");
+        String dataSetName = environment.getArgument("dataSetName");
         try {
           Optional<DataSet> dataSetOpt =
-            dataSetRepository.getDataSet("u" + currentUser.get().getPersistentId(), dataSetName);
+            dataSetRepository.getDataSet(
+              currentUser.get(),
+              "u" + currentUser.get().getPersistentId(),
+              dataSetName
+            );
           if (dataSetOpt.isPresent()) {
             return dataSetOpt.get().getMetadata();
           }
@@ -250,15 +293,18 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           throw new RuntimeException("Data set id is not supported: " + e.getMessage());
         }
       }).dataFetcher("deleteDataSet", new DeleteDataSetDataFetcher(dataSetRepository))
+      .dataFetcher("publish",new MakePublicDataFetcher(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);
-    StringBuilder root = new StringBuilder("type DataSets {\n");
+    StringBuilder root = new StringBuilder("type DataSets {\n sillyWorkaroundWhenNoDataSetsAreVisible: Boolean\n");
 
-    boolean[] dataSetAvailable = new boolean[] {false};
+    boolean[] dataSetAvailable = new boolean[]{false};
+
+
     dataSetRepository.getDataSets().forEach(dataSet -> {
-      final PromotedDataSet promotedDataSet = dataSet.getMetadata();
-      final String name = promotedDataSet.getCombinedId();
+      final DataSetMetaData dataSetMetaData = dataSet.getMetadata();
+      final String name = dataSetMetaData.getCombinedId();
 
       final Map<String, Type> types = dataSet.getSchemaStore().getTypes();
       if (types != null) {
@@ -268,9 +314,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append(":")
           .append(name)
           .append(" @dataSet(userId:\"")
-          .append(promotedDataSet.getOwnerId())
+          .append(dataSetMetaData.getOwnerId())
           .append("\", dataSetId:\"")
-          .append(promotedDataSet.getDataSetId())
+          .append(dataSetMetaData.getDataSetId())
           .append("\")\n");
 
         wiring.type(name, c -> c
@@ -295,8 +341,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     return schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
   }
 
-  public CollectionMetadataList getCollections(PromotedDataSet input) {
-    final DataSet dataSet = dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId()).get();
+  public CollectionMetadataList getCollections(DataSetMetaData input, Optional<User> userOpt) {
+    final User user = userOpt.orElse(null);
+    final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
 
     final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
     final List<CollectionMetadata> colls = dataSet
@@ -329,7 +376,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .prevCursor(Optional.empty())
         .nextCursor(Optional.empty())
         .items(() -> collectionType.getPredicates().stream().map(pred -> {
-          return (Property) ImmutableProperty.builder()
+            return (Property) ImmutableProperty.builder()
               .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
               .isList(pred.isList())
               .uri(pred.getName())

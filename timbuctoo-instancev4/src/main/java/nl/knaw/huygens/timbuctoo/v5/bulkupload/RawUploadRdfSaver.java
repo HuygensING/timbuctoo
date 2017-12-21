@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.bulkupload;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescription;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.Saver;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class RawUploadRdfSaver implements Saver<String> {
   private int curCollection;
   private final String fileUri;
 
-  public RawUploadRdfSaver(PromotedDataSet dataSet, String fileName, MediaType mimeType,
+  public RawUploadRdfSaver(DataSetMetaData dataSet, String fileName, MediaType mimeType,
                            RdfSerializer saver)
     throws LogStorageFailedException {
     this.saver = saver;

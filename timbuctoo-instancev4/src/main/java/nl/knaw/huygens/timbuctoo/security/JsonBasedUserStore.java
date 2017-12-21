@@ -36,16 +36,16 @@ public class JsonBasedUserStore implements UserStore, UserCreator {
   }
 
   @Override
-  public String createUser(String pid, String email, String givenName, String surname, String organization)
+  public User createUser(String pid, String email, String givenName, String surname, String organization)
     throws UserCreationException {
     User user = User.create(String.format("%s %s", givenName, surname), pid);
     try {
       Optional<User> userForPid = userAccess.getUserForPid(pid);
       if (userForPid.isPresent()) {
-        return userForPid.get().getId();
+        return userForPid.get();
       } else {
         userAccess.addUser(user);
-        return user.getId();
+        return user;
       }
     } catch (AuthenticationUnavailableException e) {
       throw new UserCreationException(e);

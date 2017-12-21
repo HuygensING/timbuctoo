@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class JsonCrudService {
     jsonToEntityMapper = new JsonToEntityMapper();
   }
 
-  public UUID create(String collectionName, ObjectNode input, String userId)
+  public UUID create(String collectionName, ObjectNode input, User user)
     throws InvalidCollectionException, IOException, PermissionFetchingException {
 
     final Collection collection = mappings.getCollection(collectionName)
@@ -50,9 +51,9 @@ public class JsonCrudService {
 
     try {
       if (collection.isRelationCollection()) {
-        return createRelation(collection, input, userId);
+        return createRelation(collection, input, user);
       } else {
-        return createEntity(collection, input, userId);
+        return createEntity(collection, input, user);
       }
     } catch (PermissionFetchingException e) {
       throw new IOException(e.getMessage());
@@ -67,7 +68,7 @@ public class JsonCrudService {
     }
   }
 
-  private UUID createRelation(Collection collection, ObjectNode input, String userId)
+  private UUID createRelation(Collection collection, ObjectNode input, User user)
     throws IOException, PermissionFetchingException {
 
     UUID sourceId = asUuid(input, "^sourceId");
@@ -77,17 +78,17 @@ public class JsonCrudService {
 
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
 
-    return timDbAccess.createRelation(collection, createRelation, userId);
+    return timDbAccess.createRelation(collection, createRelation, user);
   }
 
-  private UUID createEntity(Collection collection, ObjectNode input, String userId)
+  private UUID createEntity(Collection collection, ObjectNode input, User user)
     throws IOException, PermissionFetchingException {
 
     List<TimProperty<?>> timProperties = jsonToEntityMapper.getDataProperties(collection, input);
 
     Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
 
-    UUID id = timDbAccess.createEntity(collection, baseCollection, timProperties, userId);
+    UUID id = timDbAccess.createEntity(collection, baseCollection, timProperties, user);
 
     return id;
   }
@@ -153,7 +154,7 @@ public class JsonCrudService {
   }
 
 
-  public void replace(String collectionName, UUID id, ObjectNode data, String userId)
+  public void replace(String collectionName, UUID id, ObjectNode data, User user)
     throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException,
     PermissionFetchingException {
 
@@ -162,13 +163,13 @@ public class JsonCrudService {
 
 
     if (collection.isRelationCollection()) {
-      replaceRelation(collection, id, data, userId);
+      replaceRelation(collection, id, data, user);
     } else {
-      replaceEntity(collection, id, data, userId);
+      replaceEntity(collection, id, data, user);
     }
   }
 
-  private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId)
+  private void replaceRelation(Collection collection, UUID id, ObjectNode data, User user)
     throws IOException, NotFoundException, PermissionFetchingException {
 
     JsonNode accepted = data.get("accepted");
@@ -189,25 +190,25 @@ public class JsonCrudService {
 
     UpdateRelation updateRelation = new UpdateRelation(id, rev.asInt(), accepted.asBoolean());
 
-    timDbAccess.replaceRelation(collection, updateRelation, userId);
+    timDbAccess.replaceRelation(collection, updateRelation, user);
 
   }
 
-  private void replaceEntity(Collection collection, UUID id, ObjectNode data, String userId)
+  private void replaceEntity(Collection collection, UUID id, ObjectNode data, User user)
     throws NotFoundException, IOException, AlreadyUpdatedException, PermissionFetchingException {
 
     UpdateEntity updateEntity = jsonToEntityMapper.newUpdateEntity(collection, id, data);
 
-    timDbAccess.replaceEntity(collection, updateEntity, userId);
+    timDbAccess.replaceEntity(collection, updateEntity, user);
   }
 
-  public void delete(String collectionName, UUID id, String userId)
+  public void delete(String collectionName, UUID id, User user)
     throws InvalidCollectionException, NotFoundException, PermissionFetchingException, IOException {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     try {
-      timDbAccess.deleteEntity(collection, id, userId);
+      timDbAccess.deleteEntity(collection, id, user);
     } catch (PermissionFetchingException e) {
       throw new IOException(e.getMessage());
     }

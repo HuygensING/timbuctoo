@@ -25,14 +25,23 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class LocalfileAccessFactory implements AccessFactory {
   private static final Logger LOG = getLogger(LocalfileAccessFactory.class);
 
-  public LocalfileAccessFactory(String authorizationsPath, String loginsFilePath, String usersFilePath) {
+  public LocalfileAccessFactory(
+    String authorizationsPath,
+    String oldAuthorizationsPath,
+    String loginsFilePath,
+    String usersFilePath
+  ) {
     this.authorizationsPath = authorizationsPath;
+    this.oldAuthorizationsPath = oldAuthorizationsPath;
     this.loginsFilePath = loginsFilePath;
     this.usersFilePath = usersFilePath;
   }
 
   public LocalfileAccessFactory() {
   }
+
+  @JsonProperty
+  private String oldAuthorizationsPath;
 
   @JsonProperty
   private String authorizationsPath;
@@ -82,5 +91,9 @@ public class LocalfileAccessFactory implements AccessFactory {
       }
     }
     return new LocalFileVreAuthorizationAccess(authorizationsFolder);
+  }
+
+  public String getAuthorizationsPathForMigration() {
+    return oldAuthorizationsPath;
   }
 }

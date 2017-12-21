@@ -11,8 +11,6 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.security.UserStore;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
@@ -153,7 +151,7 @@ public class EntityToJsonMapper {
     ObjectNode changeNode = new ObjectMapper().valueToTree(change);
 
     try {
-      userValidator.getUserFromId(userId).ifPresent(user -> changeNode.set("username", jsn(user.getDisplayName())));
+      userValidator.getUserFromUserId(userId).ifPresent(user -> changeNode.set("username", jsn(user.getDisplayName())));
     } catch (UserValidationException e) {
       LOG.error("Could not retrieve user store", e);
     }

@@ -34,6 +34,8 @@ import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.OldStyleSecurityFactory;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
@@ -68,7 +70,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Import;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.ListVres;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.SingleVre;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.LambdaHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
@@ -76,6 +77,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCh
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
+import nl.knaw.huygens.timbuctoo.server.security.OldStyleSecurityFactoryConfiguration;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
@@ -84,7 +86,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetFactoryManager;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetRepositoryManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
@@ -256,10 +258,30 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         } catch (IOException e) {
           LOG.error("Webhook call failed", e);
         }
-      })
+      }),
+      configuration.dataSetsArePublicByDefault()
     );
 
-    environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
+    if (configuration.getSecurityConfiguration() instanceof OldStyleSecurityFactoryConfiguration) {
+      AccessFactory localAuthenticationForMigration =
+        ((OldStyleSecurityFactoryConfiguration) configuration.getSecurityConfiguration())
+          .getLocalAuthenticationForMigration();
+      if (localAuthenticationForMigration instanceof LocalfileAccessFactory) {
+        String authorizationsPathForMigration =
+          ((LocalfileAccessFactory) localAuthenticationForMigration).getAuthorizationsPathForMigration();
+
+        environment.lifecycle().manage(new DataSetRepositoryManager(
+          dataSetRepository,
+          configuration.getDataSetConfiguration(),
+          authorizationsPathForMigration,
+          securityConfig.getUserValidator()
+        ));
+      } else {
+        throw new RuntimeException("Current authorization configuration of cannot be migrated");
+      }
+    } else {
+      throw new RuntimeException("Current security configuration of cannot be migrated");
+    }
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     AuthCheck authCheck = new AuthCheck(
@@ -278,12 +300,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new Rml(
       dataSetRepository,
-      errorResponseHelper
-    ));
-
-    register(environment, new Rml(
-      dataSetRepository,
-      errorResponseHelper
+      errorResponseHelper,
+      securityConfig.getUserValidator()
     ));
 
     SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(
@@ -305,7 +323,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       ),
       serializerWriterRegistry,
       securityConfig.getUserValidator(),
-      uriHelper
+      uriHelper,
+      securityConfig.getPermissionFetcher(),dataSetRepository
     );
     register(environment, graphQlEndpoint);
 
@@ -383,9 +402,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         uriHelper
       )
     );
-    register(environment, new SingleVre(permissionChecker, transactionEnforcer,
-      securityConfig.getPermissionFetcher()
-    ));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
 

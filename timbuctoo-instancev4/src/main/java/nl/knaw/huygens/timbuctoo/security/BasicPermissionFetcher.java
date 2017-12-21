@@ -3,44 +3,73 @@ package nl.knaw.huygens.timbuctoo.security;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
-import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCombinedId;
+
 public class BasicPermissionFetcher implements PermissionFetcher {
+  private static final Logger LOG = LoggerFactory.getLogger(BasicPermissionFetcher.class);
   private final VreAuthorizationCrud vreAuthorizationCrud;
-  private final UserValidator userValidator;
 
-  public BasicPermissionFetcher(VreAuthorizationCrud vreAuthorizationCrud, UserValidator userValidator) {
+  public BasicPermissionFetcher(VreAuthorizationCrud vreAuthorizationCrud) {
     this.vreAuthorizationCrud = vreAuthorizationCrud;
-    this.userValidator = userValidator;
   }
 
   @Override
-  public Set<Permission> getPermissions(String persistentId, String ownerId, String dataSetId)
+  public Set<Permission> getPermissions(User user, DataSetMetaData dataSetMetadata)
     throws PermissionFetchingException {
-    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
+    String ownerId = dataSetMetadata.getOwnerId();
+    String dataSetId = dataSetMetadata.getDataSetId();
 
-    return getPermissions(persistentId, vreId);
+    String vreId = createCombinedId(ownerId, dataSetId);
+    Set<Permission> permissions = new HashSet<>();
+
+    if (dataSetMetadata.isPublished()) {
+      permissions.add(Permission.READ);
+    }
+
+    try {
+      if (user != null) {
+        Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, user);
+        if (vreAuthorization.isPresent()) {
+          if (vreAuthorization.get().isAllowedToWrite()) {
+            permissions.add(Permission.WRITE);
+            permissions.add(Permission.READ);
+          }
+          if (vreAuthorization.get().hasAdminAccess()) {
+            permissions.add(Permission.ADMIN);
+            permissions.add(Permission.READ);
+          }
+        }
+      }
+      return permissions;
+    } catch (AuthorizationUnavailableException e) {
+      LOG.error("Authorizations unavailable", e);
+      return permissions;
+    }
   }
 
   @Override
-  public Set<Permission> getPermissions(String persistentId, String vreId)
+  @Deprecated
+  public Set<Permission> getOldPermissions(User user, String vreId)
     throws PermissionFetchingException {
     Set<Permission> permissions = new HashSet<>();
+
     permissions.add(Permission.READ);
 
     try {
-      Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, persistentId);
+      Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, user);
       if (vreAuthorization.isPresent()) {
         if (vreAuthorization.get().isAllowedToWrite()) {
           permissions.add(Permission.WRITE);
@@ -56,13 +85,13 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public void initializeOwnerAuthorization(String userId, String ownerId, String dataSetId)
+  public void initializeOwnerAuthorization(User user, String ownerId, String dataSetId)
     throws AuthorizationCreationException {
 
-    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
+    String vreId = createCombinedId(ownerId, dataSetId);
 
     try {
-      vreAuthorizationCrud.createAuthorization(vreId, userId, "ADMIN");
+      vreAuthorizationCrud.createAuthorization(vreId, user, "ADMIN");
     } catch (AuthorizationCreationException e) {
       throw e;
     }
@@ -70,24 +99,11 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public void removeAuthorizations(String ownerId, String vreId) throws PermissionFetchingException {
-    Optional<User> user;
-
+  public void removeAuthorizations(String vreId) throws PermissionFetchingException {
     try {
-      user = userValidator.getUserFromId(ownerId);
-    } catch (UserValidationException e) {
-      throw new PermissionFetchingException(String.format("Could not retrieve User for userId '%s'", ownerId));
-    }
-
-    try {
-      if (user.isPresent()) {
-        vreAuthorizationCrud.deleteVreAuthorizations(vreId, user.get());
-      } else {
-        throw new PermissionFetchingException(String.format("No User found for userId '%s'", ownerId));
-      }
-    } catch (AuthorizationException | AuthorizationUnavailableException e) {
-      throw new PermissionFetchingException(String.format("Authorization not available for" +
-        " userId '%s' .", ownerId));
+      vreAuthorizationCrud.deleteVreAuthorizations(vreId);
+    } catch (AuthorizationUnavailableException e) {
+      throw new PermissionFetchingException(String.format("Delete of authorizations failed for '%s'.", vreId));
     }
   }
 

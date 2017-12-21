@@ -4,6 +4,7 @@ URL="${2}/tasks/addusers"
 FILE=$1
 while read LINE;
 do
+  echo $LINE
   if [[ $LINE != --* ]] && [[ $LINE != "" ]];
   then
     VALUES=($(echo $LINE | tr ";" "\n"))
