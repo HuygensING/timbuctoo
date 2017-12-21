@@ -38,7 +38,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
     } else {
       try {
         synchronized (authorizationsFolder) {
-          File file = getFile(vreId);
+          File file = getFileOfVre(vreId);
           List<VreAuthorization> authorizations = Lists.newArrayList();
           if (file.exists()) {
             authorizations =
@@ -64,8 +64,22 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
 
     Optional<VreAuthorization> authorizationValue = Optional.empty();
 
-    File file = getFile(vreId);
+    File file = getFileOfVre(vreId);
 
+    authorizationValue = getAuthorization(userId, authorizationValue, file);
+
+    if (!authorizationValue.isPresent()) {
+      file = authorizationsFolder.resolve("authorizations.json").toFile();
+
+      authorizationValue = getAuthorization(userId, authorizationValue, file);
+
+    }
+
+    return authorizationValue;
+  }
+
+  private Optional<VreAuthorization> getAuthorization(String userId, Optional<VreAuthorization> authorizationValue,
+                                                      File file) throws AuthorizationUnavailableException {
     if (file.exists()) {
       try {
         List<VreAuthorization> authorizations;
@@ -74,46 +88,28 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
             objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
             });
         }
-        authorizationValue =  authorizations.stream()
-          .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
-          .findAny();
+        authorizationValue = authorizations.stream()
+                                           .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
+                                           .findAny();
       } catch (IOException e) {
         throw new AuthorizationUnavailableException(e.getMessage());
       }
     }
-
-    if (!authorizationValue.isPresent()) {
-      file = getFile("authorizations");
-
-      try {
-        List<VreAuthorization> authorizations;
-        synchronized (authorizationsFolder) {
-          authorizations =
-            objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
-            });
-        }
-        authorizationValue =  authorizations.stream()
-          .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
-          .findAny();
-      } catch (IOException e) {
-        return Optional.empty();
-      }
-
-    }
-
     return authorizationValue;
   }
 
   @Override
   public void deleteVreAuthorizations(String vreId) throws AuthorizationUnavailableException {
     synchronized (authorizationsFolder) {
-      if (!getFile(vreId).delete()) {
+      if (!getFileOfVre(vreId).delete()) {
         throw new AuthorizationUnavailableException("Failed to delete vre authorizations for vre '" + vreId + "'");
       }
     }
   }
 
-  private File getFile(String vreId) {
+
+
+  private File getFileOfVre(String vreId) {
 
     File directory;
     /*

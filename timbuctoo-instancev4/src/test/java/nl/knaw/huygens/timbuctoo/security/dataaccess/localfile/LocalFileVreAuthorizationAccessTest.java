@@ -145,7 +145,7 @@ public class LocalFileVreAuthorizationAccessTest {
 
 
   @Test
-  public void getAuthorizationReturnsAuthorizationFromAuthorizationsJsonFileIfDataSetNotPresent() throws Exception {
+  public void getAuthorizationCheckesTheGeneralAccessOfTheUserWhenHeHasNoAccessOnTheDataSet() throws Exception {
     File file = new File(authorizationsFolder.toFile(), "authorizations.json");
     file.createNewFile();
 
@@ -156,9 +156,10 @@ public class LocalFileVreAuthorizationAccessTest {
 
     String userId = "33707283d426f900d4d33707283d426f9testing";
 
-    Optional<VreAuthorization> authorization = instance.getAuthorization("", userId);
+    Optional<VreAuthorization> authorization = instance.getAuthorization(VRE, userId);
 
     assertThat(authorization, is(present()));
+    assertThat(authorization.get().hasAdminAccess(), is(true));
   }
 
   @Test
@@ -173,7 +174,7 @@ public class LocalFileVreAuthorizationAccessTest {
 
     String userId = "33707283d426f900d4d33707283d426f9testing";
 
-    Optional<VreAuthorization> authorization = instance.getAuthorization("", userId);
+    Optional<VreAuthorization> authorization = instance.getAuthorization(VRE, userId);
 
     assertThat(authorization, is(not(present())));
   }
