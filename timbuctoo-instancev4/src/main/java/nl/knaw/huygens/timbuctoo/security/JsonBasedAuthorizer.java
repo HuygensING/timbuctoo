@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
@@ -9,26 +8,12 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailable
 
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
-
-public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCrud {
+public class JsonBasedAuthorizer implements VreAuthorizationCrud {
 
   private VreAuthorizationAccess authorizationAccess;
 
   public JsonBasedAuthorizer(VreAuthorizationAccess authorizationAccess) {
     this.authorizationAccess = authorizationAccess;
-  }
-
-  @Override
-  public Authorization  authorizationFor(String vreId, String userId) throws AuthorizationUnavailableException {
-    //FIXME: based on a cursory glance at the code it seems that this get and the following if are redundant
-    Optional<VreAuthorization> vreAuthorization = authorizationAccess.getAuthorization(vreId, userId);
-
-    if (vreAuthorization.isPresent()) {
-      return vreAuthorization.get();
-    }
-
-    return authorizationAccess.getOrCreateAuthorization(vreId, userId, UNVERIFIED_USER_ROLE);
   }
 
   @Override

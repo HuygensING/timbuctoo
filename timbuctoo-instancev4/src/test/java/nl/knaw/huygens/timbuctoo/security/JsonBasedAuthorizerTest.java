@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
-import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorizationStubs;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
@@ -13,14 +11,9 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
-import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithPid;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,17 +28,6 @@ public class JsonBasedAuthorizerTest {
   public void setUp() throws Exception {
     authorizationAccess = mock(VreAuthorizationAccess.class);
     instance = new JsonBasedAuthorizer(authorizationAccess);
-  }
-
-  @Test
-  public void authorizationForReturnsTheFoundAuthorizationForTheVreIdAndTheUserId() throws Exception {
-    VreAuthorization vreAuthorization = VreAuthorization.create("", "");
-    when(authorizationAccess.getAuthorization(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
-
-    Authorization authorization = instance.authorizationFor(VRE_ID, USER_PID);
-
-    assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationAccess, never()).getOrCreateAuthorization(VRE_ID, USER_PID, UNVERIFIED_USER_ROLE);
   }
 
   @Test

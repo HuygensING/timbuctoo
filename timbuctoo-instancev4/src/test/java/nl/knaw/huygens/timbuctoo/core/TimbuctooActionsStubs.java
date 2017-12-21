@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.core;
 
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudServiceTest;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 
