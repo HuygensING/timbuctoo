@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailable
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
-import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.junit.Before;
 import org.junit.Test;
 

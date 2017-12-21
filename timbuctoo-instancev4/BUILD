@@ -1,45 +1,33 @@
 java_plugin(
     name = "immutables_processor",
+    processor_class = "org.immutables.processor.ProxyProcessor",
     deps = [
         "//third_party:org_immutables_value",
     ],
-    processor_class = "org.immutables.processor.ProxyProcessor",
 )
 
 java_binary(
-  name = "checkstyle",
-  runtime_deps = [
-    "//third_party:com_puppycrawl_tools_checkstyle"
-  ],
-  main_class = "com.puppycrawl.tools.checkstyle.Main"
+    name = "checkstyle",
+    main_class = "com.puppycrawl.tools.checkstyle.Main",
+    runtime_deps = [
+        "//third_party:com_puppycrawl_tools_checkstyle",
+    ],
 )
 
 java_binary(
     name = "everything",
-    plugins = [
-        ":immutables_processor"
-    ],
     srcs = glob([
         "src/main/java/**/*.java",
     ]),
+    main_class = "nl.knaw.huygens.timbuctoo.server.TimbuctooV4",
+    plugins = [
+        ":immutables_processor",
+    ],
     resources = glob([
         "src/main/resources/**/*",
     ]),
     deps = [
-        "//timbuctoo-test-services:timbuctoo-test-services",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/security/twitterexample",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/backupforstaging/azureblob/dropwizardconfiguration",
-        "//third_party:org_eclipse_rdf4j_rdf4j_model",
-        "//third_party:org_eclipse_rdf4j_rdf4j_rio_api",
-        "//third_party:com_sleepycat_je",
         "//security-client-agnostic",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/datasource/jexl",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5",
         "//third_party:com_fasterxml_jackson_core_jackson_annotations",
         "//third_party:com_fasterxml_jackson_core_jackson_core",
         "//third_party:com_fasterxml_jackson_core_jackson_databind",
@@ -52,6 +40,7 @@ java_binary(
         "//third_party:com_javaslang_javaslang",
         "//third_party:com_kjetland_dropwizard_dropwizard_activemq",
         "//third_party:com_microsoft_azure_azure_storage",
+        "//third_party:com_sleepycat_je",
         "//third_party:com_twitter_util_hashing_2_11",
         "//third_party:commons_configuration_commons_configuration",
         "//third_party:commons_io_commons_io",
@@ -95,6 +84,8 @@ java_binary(
         "//third_party:org_codehaus_groovy_groovy_swing",
         "//third_party:org_eclipse_jetty_jetty_server",
         "//third_party:org_eclipse_jetty_jetty_util",
+        "//third_party:org_eclipse_rdf4j_rdf4j_model",
+        "//third_party:org_eclipse_rdf4j_rdf4j_rio_api",
         "//third_party:org_glassfish_jersey_core_jersey_common",
         "//third_party:org_glassfish_jersey_core_jersey_server",
         "//third_party:org_glassfish_jersey_media_jersey_media_multipart",
@@ -110,9 +101,19 @@ java_binary(
         "//third_party:org_neo4j_neo4j_logging",
         "//third_party:org_neo4j_neo4j_resource",
         "//third_party:org_neo4j_neo4j_slf4j",
-        "//third_party:org_neo4j_neo4j_tinkerpop_api_impl",
         "//third_party:org_neo4j_neo4j_tinkerpop_api",
+        "//third_party:org_neo4j_neo4j_tinkerpop_api_impl",
         "//third_party:org_slf4j_slf4j_api",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/datasource/jexl",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/backupforstaging/azureblob/dropwizardconfiguration",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/filehelper",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/security/twitterexample",
+        "//timbuctoo-test-services",
     ],
-    main_class = "nl.knaw.huygens.timbuctoo.server.TimbuctooV4"
 )

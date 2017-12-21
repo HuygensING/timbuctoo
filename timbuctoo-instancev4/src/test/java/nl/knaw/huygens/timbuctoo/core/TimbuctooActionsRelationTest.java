@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.security.dto.UserStubs;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;

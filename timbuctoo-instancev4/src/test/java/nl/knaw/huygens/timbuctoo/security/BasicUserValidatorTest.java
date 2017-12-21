@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.hamcrest.OptionalPresentMatcher;
-import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.junit.Before;
 import org.junit.Test;

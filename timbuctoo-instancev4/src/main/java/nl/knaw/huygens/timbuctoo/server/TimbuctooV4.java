@@ -76,6 +76,8 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextInde
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
+import nl.knaw.huygens.timbuctoo.server.migration.AuthorizationMigration;
+import nl.knaw.huygens.timbuctoo.server.migration.MetaDataMigration;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.server.security.OldStyleSecurityFactoryConfiguration;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -184,11 +186,34 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       httpClient
     );
 
+    new MetaDataMigration(configuration.getDataSetConfiguration()).migrate();
+
+    if (configuration.getSecurityConfiguration() instanceof OldStyleSecurityFactoryConfiguration) {
+      AccessFactory localAuthenticationForMigration =
+        ((OldStyleSecurityFactoryConfiguration) configuration.getSecurityConfiguration())
+          .getLocalAuthenticationForMigration();
+      if (localAuthenticationForMigration instanceof LocalfileAccessFactory) {
+        String authorizationsPathForMigration =
+          ((LocalfileAccessFactory) localAuthenticationForMigration).getAuthorizationsPathForMigration();
+
+        new AuthorizationMigration(
+          authorizationsPathForMigration,
+          securityConfig.getUserValidator(),
+          configuration.getDataSetConfiguration().getDataSetMetadataLocation()
+        ).migrate();
+
+      } else {
+        throw new RuntimeException("Current authorization configuration of cannot be migrated");
+      }
+    } else {
+      throw new RuntimeException("Current security configuration of cannot be migrated");
+    }
+
     securityConfig.getHealthChecks().forEachRemaining(check -> {
       register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight()));
     });
 
-    // Database migrations
+    // Database migration
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
 
     migrations.put("fix-dcarkeywords-displayname-migration", new FixDcarKeywordDisplayNameMigration());
@@ -262,26 +287,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       configuration.dataSetsArePublicByDefault()
     );
 
-    if (configuration.getSecurityConfiguration() instanceof OldStyleSecurityFactoryConfiguration) {
-      AccessFactory localAuthenticationForMigration =
-        ((OldStyleSecurityFactoryConfiguration) configuration.getSecurityConfiguration())
-          .getLocalAuthenticationForMigration();
-      if (localAuthenticationForMigration instanceof LocalfileAccessFactory) {
-        String authorizationsPathForMigration =
-          ((LocalfileAccessFactory) localAuthenticationForMigration).getAuthorizationsPathForMigration();
 
-        environment.lifecycle().manage(new DataSetRepositoryManager(
-          dataSetRepository,
-          configuration.getDataSetConfiguration(),
-          authorizationsPathForMigration,
-          securityConfig.getUserValidator()
-        ));
-      } else {
-        throw new RuntimeException("Current authorization configuration of cannot be migrated");
-      }
-    } else {
-      throw new RuntimeException("Current security configuration of cannot be migrated");
-    }
+    environment.lifecycle().manage(new DataSetRepositoryManager(dataSetRepository));
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     AuthCheck authCheck = new AuthCheck(

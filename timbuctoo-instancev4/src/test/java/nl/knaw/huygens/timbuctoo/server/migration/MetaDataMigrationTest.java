@@ -1,6 +1,7 @@
-package nl.knaw.huygens.timbuctoo.v5.dropwizard;
+package nl.knaw.huygens.timbuctoo.server.migration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import nl.knaw.huygens.timbuctoo.server.migration.MetaDataMigration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;

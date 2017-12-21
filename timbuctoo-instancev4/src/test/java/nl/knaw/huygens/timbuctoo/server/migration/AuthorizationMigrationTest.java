@@ -1,9 +1,10 @@
-package nl.knaw.huygens.timbuctoo.v5.dropwizard;
+package nl.knaw.huygens.timbuctoo.server.migration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
+import nl.knaw.huygens.timbuctoo.server.migration.AuthorizationMigration;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import org.junit.Test;
 

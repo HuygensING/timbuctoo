@@ -27,7 +27,7 @@ public class ScaffoldMigrator {
 
   //FIXME move to DataAccess (allow ScaffoldVresConfig.mappings to be injected as an argument)
   public void execute() {
-    //The migrations are executed first, so those vertices _will_ be present, even on a new empty database
+    //The migration are executed first, so those vertices _will_ be present, even on a new empty database
     //The code below will add vertices, so a second launch will not run this code
     try (TinkerPopOperations db = forInitDb(graphManager)) {
 
