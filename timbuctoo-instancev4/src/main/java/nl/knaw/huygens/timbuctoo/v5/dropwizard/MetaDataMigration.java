@@ -48,11 +48,7 @@ public class MetaDataMigration {
         File metaDataFile = fileHelper.fileInDataSet(dataSetMetaData.getOwnerId(), dataSetMetaData.getDataSetId(),
           "/metaData.json");
 
-        try {
-          objectMapper.writeValue(metaDataFile, dataSetMetaData);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
+        objectMapper.writeValue(metaDataFile, dataSetMetaData);
       }
     }
   }

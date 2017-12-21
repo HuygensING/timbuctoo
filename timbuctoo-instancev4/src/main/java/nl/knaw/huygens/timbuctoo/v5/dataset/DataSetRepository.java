@@ -48,7 +48,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toSet;
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
 
 /**

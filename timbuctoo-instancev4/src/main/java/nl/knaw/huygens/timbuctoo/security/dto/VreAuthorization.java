@@ -39,4 +39,5 @@ public abstract class VreAuthorization implements Authorization {
   public boolean hasAdminAccess() {
     return getRoles().contains(UserRoles.ADMIN_ROLE);
   }
+
 }

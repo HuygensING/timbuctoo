@@ -34,14 +34,14 @@ public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCrud {
   @Override
   public Optional<VreAuthorization> getAuthorization(String vreId, User user)
     throws AuthorizationUnavailableException {
-    return authorizationAccess.getAuthorization(vreId, user.getId());
+    return authorizationAccess.getAuthorization(vreId, user.getPersistentId());
   }
 
 
   @Override
   public void createAuthorization(String vreId, User user, String vreRole) throws AuthorizationCreationException {
     try {
-      authorizationAccess.getOrCreateAuthorization(vreId, user.getId(), vreRole);
+      authorizationAccess.getOrCreateAuthorization(vreId, user.getPersistentId(), vreRole);
     } catch (AuthorizationUnavailableException e) {
       throw new AuthorizationCreationException(e);
     }

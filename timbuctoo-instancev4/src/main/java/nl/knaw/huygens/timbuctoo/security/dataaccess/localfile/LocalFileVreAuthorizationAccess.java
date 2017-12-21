@@ -5,18 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static nl.knaw.huygens.timbuctoo.util.EscapeFunnyCharacters.escapeFunnyCharacters;
 
 public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   private final ObjectMapper objectMapper;
@@ -114,7 +114,29 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   }
 
   private File getFile(String vreId) {
-    return authorizationsFolder.resolve(String.format("%s.json", escapeFunnyCharacters(vreId))).toFile();
+
+    File directory;
+    /*
+     * The authorizations of the specific data set are placed in the folder of the data set.
+     * For legacy data sets this means {dataSetsPath}/{dataSetName}.
+     * For new data sets this will be {dataSetsPath}/{ownerId}/{dataSetName}.
+     */
+    if (vreId.contains("__")) { // new style vre
+      Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(vreId);
+      directory = Paths.get(
+        authorizationsFolder.toString(),
+        ownerIdDataSetId.getLeft(),
+        ownerIdDataSetId.getRight().replace("__", "")
+      ).toFile();
+    } else {
+      directory = Paths.get( // old style vre
+        authorizationsFolder.toString(),
+        vreId
+      ).toFile();
+    }
+
+    directory.mkdirs();
+    return new File(directory, "authorizations.json");
   }
 
 }

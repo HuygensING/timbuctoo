@@ -34,6 +34,8 @@ import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.OldStyleSecurityFactory;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
@@ -75,6 +77,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCh
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
+import nl.knaw.huygens.timbuctoo.server.security.OldStyleSecurityFactoryConfiguration;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
@@ -83,7 +86,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetFactoryManager;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetRepositoryManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
@@ -259,7 +262,26 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       configuration.dataSetsArePublicByDefault()
     );
 
-    environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
+    if (configuration.getSecurityConfiguration() instanceof OldStyleSecurityFactoryConfiguration) {
+      AccessFactory localAuthenticationForMigration =
+        ((OldStyleSecurityFactoryConfiguration) configuration.getSecurityConfiguration())
+          .getLocalAuthenticationForMigration();
+      if (localAuthenticationForMigration instanceof LocalfileAccessFactory) {
+        String authorizationsPathForMigration =
+          ((LocalfileAccessFactory) localAuthenticationForMigration).getAuthorizationsPathForMigration();
+
+        environment.lifecycle().manage(new DataSetRepositoryManager(
+          dataSetRepository,
+          configuration.getDataSetConfiguration(),
+          authorizationsPathForMigration,
+          securityConfig.getUserValidator()
+        ));
+      } else {
+        throw new RuntimeException("Current authorization configuration of cannot be migrated");
+      }
+    } else {
+      throw new RuntimeException("Current security configuration of cannot be migrated");
+    }
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     AuthCheck authCheck = new AuthCheck(

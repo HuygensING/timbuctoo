@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorizationStubs;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +14,7 @@ import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
-import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.USER_ROLE;
-import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithId;
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithPid;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.core.Is.is;
@@ -29,7 +27,7 @@ import static org.mockito.Mockito.when;
 public class JsonBasedAuthorizerTest {
 
   public static final String VRE_ID = "vreId";
-  public static final String USER_ID = "userId";
+  public static final String USER_PID = "userPid";
   private VreAuthorizationAccess authorizationAccess;
   private JsonBasedAuthorizer instance;
 
@@ -44,18 +42,18 @@ public class JsonBasedAuthorizerTest {
     VreAuthorization vreAuthorization = VreAuthorization.create("", "");
     when(authorizationAccess.getAuthorization(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
 
-    Authorization authorization = instance.authorizationFor(VRE_ID, USER_ID);
+    Authorization authorization = instance.authorizationFor(VRE_ID, USER_PID);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationAccess, never()).getOrCreateAuthorization(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
+    verify(authorizationAccess, never()).getOrCreateAuthorization(VRE_ID, USER_PID, UNVERIFIED_USER_ROLE);
   }
 
   @Test
   public void createAuthorizationLetsCreatesANewAuthorizationForTheUserVreAndRole()
     throws Exception {
-    instance.createAuthorization(VRE_ID, userWithId(USER_ID), UserRoles.USER_ROLE);
+    instance.createAuthorization(VRE_ID, userWithPid(USER_PID), UserRoles.USER_ROLE);
 
-    verify(authorizationAccess).getOrCreateAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+    verify(authorizationAccess).getOrCreateAuthorization(VRE_ID, USER_PID, UserRoles.USER_ROLE);
   }
 
   @Test(expected = AuthorizationCreationException.class)
@@ -64,12 +62,12 @@ public class JsonBasedAuthorizerTest {
     when(authorizationAccess.getOrCreateAuthorization(anyString(), anyString(), anyString()))
       .thenThrow(new AuthorizationUnavailableException());
 
-    instance.createAuthorization(VRE_ID, userWithId(USER_ID), UserRoles.USER_ROLE);
+    instance.createAuthorization(VRE_ID, userWithPid(USER_PID), UserRoles.USER_ROLE);
   }
 
   @Test
   public void deleteVreAuthorizationsRemovesAllTheAuthorizationsOfTheVre() throws Exception {
-    when(authorizationAccess.getAuthorization(VRE_ID, USER_ID)).thenReturn(Optional.of(
+    when(authorizationAccess.getAuthorization(VRE_ID, USER_PID)).thenReturn(Optional.of(
       VreAuthorizationStubs.authorizationWithRole(ADMIN_ROLE)));
 
     instance.deleteVreAuthorizations(VRE_ID);

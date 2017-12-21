@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.contains;
 public class LocalFileVreAuthorizationAccessTest {
 
   public static final String VRE = "vre";
-  public static final String VRE_FILE = "vre.json";
+  public static final String AUTH_FILE = "authorizations.json";
   public static final String USER_ID = "USER000000000001";
   public static final String USER_ID_WITHOUT_WRITE_PERMISSIONS = "USER000000000002";
   private Path authorizationsFolder;
@@ -39,13 +39,14 @@ public class LocalFileVreAuthorizationAccessTest {
   @Before
   public void setup() throws Exception {
     authorizationsFolder = makeTempDir();
-    vreAuthPath = authorizationsFolder.resolve(VRE_FILE);
+    vreAuthPath = authorizationsFolder.resolve(VRE);
+    vreAuthPath.toFile().mkdirs();
 
     VreAuthorization[] authorizations = {
       VreAuthorization.create(VRE, USER_ID, "USER"),
       VreAuthorization.create(VRE, USER_ID_WITHOUT_WRITE_PERMISSIONS, UNVERIFIED_USER_ROLE)
     };
-    File file = vreAuthPath.toFile();
+    File file = vreAuthPath.resolve(AUTH_FILE).toFile();
     objectMapper = new ObjectMapper();
     objectMapper.writeValue(file, authorizations);
 
@@ -56,7 +57,7 @@ public class LocalFileVreAuthorizationAccessTest {
   public void teardown() throws Exception {
 
     if (new File(vreAuthPath.toString()).exists()) {
-      Files.delete(vreAuthPath);
+      FileUtils.deleteDirectory(vreAuthPath.toFile());
     }
   }
 
@@ -127,9 +128,6 @@ public class LocalFileVreAuthorizationAccessTest {
     assertThat(createAuthorization, is(not(nullValue())));
     Optional<VreAuthorization> authorization1 = instance.getAuthorization(newVre, USER_ID);
     assertThat(authorization1, is(present()));
-
-    // Teardown
-    Files.delete(authorizationsFolder.resolve(String.format("%s.json", newVre)));
   }
 
   @Test(expected = AuthorizationUnavailableException.class)
@@ -142,7 +140,7 @@ public class LocalFileVreAuthorizationAccessTest {
   @Test
   public void deleteVreAuthorizationsDeletesTheVreAuthorizationsFile() throws Exception {
     instance.deleteVreAuthorizations(VRE);
-    assertThat(new File(authorizationsFolder.resolve(VRE_FILE).toString()).exists(), equalTo(false));
+    assertThat(new File(authorizationsFolder.resolve(AUTH_FILE).toString()).exists(), equalTo(false));
   }
 
 
@@ -158,7 +156,7 @@ public class LocalFileVreAuthorizationAccessTest {
 
     String userId = "33707283d426f900d4d33707283d426f9testing";
 
-    Optional<VreAuthorization> authorization = instance.getAuthorization("",userId);
+    Optional<VreAuthorization> authorization = instance.getAuthorization("", userId);
 
     assertThat(authorization, is(present()));
   }
@@ -175,7 +173,7 @@ public class LocalFileVreAuthorizationAccessTest {
 
     String userId = "33707283d426f900d4d33707283d426f9testing";
 
-    Optional<VreAuthorization> authorization = instance.getAuthorization("",userId);
+    Optional<VreAuthorization> authorization = instance.getAuthorization("", userId);
 
     assertThat(authorization, is(not(present())));
   }
