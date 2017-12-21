@@ -2,8 +2,11 @@ package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 
@@ -12,12 +15,14 @@ import java.util.function.Supplier;
 public class TimRdfHandler extends AbstractRDFHandler {
   private static final int ADD = '+';
   private final RdfProcessor rdfProcessor;
-  private final String fileUri;
+  private final String defaultGraph;
   private Supplier<Integer> actionSupplier;
+  private String fileName;
 
-  public TimRdfHandler(RdfProcessor rdfProcessor, String fileUri) {
+  public TimRdfHandler(RdfProcessor rdfProcessor, String defaultGraph, String fileName) {
     this.rdfProcessor = rdfProcessor;
-    this.fileUri = fileUri;
+    this.defaultGraph = defaultGraph;
+    this.fileName = fileName;
   }
 
   public void registerActionSupplier(Supplier<Integer> actionSupplier) {
@@ -34,10 +39,12 @@ public class TimRdfHandler extends AbstractRDFHandler {
   }
 
   @Override
-  public void startRDF() throws RDFHandlerException {}
+  public void startRDF() throws RDFHandlerException {
+  }
 
   @Override
-  public void endRDF() throws RDFHandlerException {}
+  public void endRDF() throws RDFHandlerException {
+  }
 
   @Override
   public void handleStatement(Statement st) throws RDFHandlerException {
@@ -46,12 +53,12 @@ public class TimRdfHandler extends AbstractRDFHandler {
         rdfProcessor.commit();
         throw new RDFHandlerException("Interrupted");
       }
-      String graph = st.getContext() == null ? fileUri : st.getContext().stringValue();
+      String graph = st.getContext() == null ? defaultGraph : st.getContext().stringValue();
       rdfProcessor.onQuad(
         isAssertion(),
-        st.getSubject().stringValue(),
+        handleSubjectNode(st.getSubject()),
         st.getPredicate().stringValue(),
-        st.getObject().stringValue(),
+        handleObjectNode(st.getObject()),
         (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getDatatype().toString() : null,
         (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getLanguage().orElse(null) : null,
         graph
@@ -63,5 +70,25 @@ public class TimRdfHandler extends AbstractRDFHandler {
 
   private boolean isAssertion() {
     return actionSupplier == null || actionSupplier.get() == ADD;
+  }
+
+  private String handleSubjectNode(Resource resource) {
+    if (resource instanceof BNode) {
+      String nodeName = resource.toString();
+      String nodeId = nodeName.substring(nodeName.indexOf(":") + 1, nodeName.length());
+      return "BlankNode:" + fileName + "/" + nodeId;
+    } else {
+      return resource.stringValue();
+    }
+  }
+
+  private String handleObjectNode(Value value) {
+    if (value instanceof BNode) {
+      String nodeName = value.toString();
+      String nodeId = nodeName.substring(nodeName.indexOf(":") + 1, nodeName.length());
+      return "BlankNode:" + fileName + "/" + nodeId;
+    } else {
+      return value.stringValue();
+    }
   }
 }
