@@ -102,13 +102,13 @@ if [ "$CLEAN" = "true" ]; then
   echo "Removing database and auth dirs"
   [ -d ./"$timbuctoo_dataPath"/authorizations ] && rm -r ./"$timbuctoo_dataPath"/authorizations
   [ -d ./"$timbuctoo_dataPath"/datasets ] && rm -r ./"$timbuctoo_dataPath"/datasets
-  [ -d ./"$timbuctoo_dataPath"/database ] && rm -r ./"$timbuctoo_dataPath"/database
+  [ -d ./"$timbuctoo_dataPath"/neo4j ] && rm -r ./"$timbuctoo_dataPath"/neo4j
   [ -e ./"$timbuctoo_dataPath"/logins.json ] && rm ./"$timbuctoo_dataPath"/logins.json
   [ -e ./"$timbuctoo_dataPath"/users.json ] && rm ./"$timbuctoo_dataPath"/users.json
 fi
 
 [ -d ./"$timbuctoo_dataPath"/authorizations ] || mkdir -p ./"$timbuctoo_dataPath"/authorizations
-[ -d ./"$timbuctoo_dataPath"/database ] || mkdir -p ./"$timbuctoo_dataPath"/database
+[ -d ./"$timbuctoo_dataPath"/neo4j ] || mkdir -p ./"$timbuctoo_dataPath"/neo4j
 
 [ -e ./"$timbuctoo_dataPath"/logins.json ] || echo "[]" > ./"$timbuctoo_dataPath"/logins.json
 [ -e ./"$timbuctoo_dataPath"/users.json ] || echo "[]" > ./"$timbuctoo_dataPath"/users.json
