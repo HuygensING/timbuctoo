@@ -53,30 +53,37 @@ public class AuthorizationMigration {
                                .collect(toSet());
 
     for (Path authFile : authFiles) {
-      Set<VreAuthorization> oldAuths = OBJECT_MAPPER.readValue(
-        authFile.toFile(),
-        new TypeReference<Set<VreAuthorization>>() {
-        }
-      );
+      final File outputFile = createOutputFile(authFile);
+      if (!outputFile.exists()) {
+        LOG.info("Migrating " + authFile.toAbsolutePath().toString());
+        Set<VreAuthorization> oldAuths = OBJECT_MAPPER.readValue(
+          authFile.toFile(),
+          new TypeReference<Set<VreAuthorization>>() {
+          }
+        );
 
-      Set<VreAuthorization> newAuths = Sets.newHashSet();
-      for (VreAuthorization oldAuth : oldAuths) {
-        Optional<User> userFromPersistentId = userValidator.getUserFromUserId(oldAuth.getUserId());
-        String userId = oldAuth.getUserId();
-        if (userFromPersistentId.isPresent()) {
-          userId = userFromPersistentId.get().getPersistentId();
-        } else {
-          LOG.warn("No user found with id '{}'", oldAuth.getUserId());
+        Set<VreAuthorization> newAuths = Sets.newHashSet();
+        for (VreAuthorization oldAuth : oldAuths) {
+          final String oldUserId = oldAuth.getUserId();
+          String newUserId = oldUserId;
+          Optional<User> userFromOldUserId = userValidator.getUserFromUserId(oldUserId);
+          if (userFromOldUserId.isPresent()) {
+            newUserId = userFromOldUserId.get().getPersistentId();
+          } else {
+            LOG.warn("No user found with id '{}'", oldUserId);
+          }
+          newAuths.add(VreAuthorization.create(oldAuth.getVreId(), newUserId, oldAuth.getRoles().toArray(new String[]{})));
         }
-        newAuths.add(VreAuthorization.create(oldAuth.getVreId(), userId, oldAuth.getRoles().toArray(new String[]{})));
+
+        OBJECT_MAPPER.writeValue(outputFile, newAuths);
+      } else {
+        LOG.info("Skipping migration of " + authFile.toAbsolutePath().toString() + " because " + outputFile.getAbsolutePath() + " already exists");
       }
-
-      OBJECT_MAPPER.writeValue(createOuputFile(authFile), newAuths);
     }
 
   }
 
-  private File createOuputFile(Path authFile) {
+  private File createOutputFile(Path authFile) {
     String name = authFile.getName(authFile.getNameCount() - 1).toString();
     String fileWithoutExtension = name.substring(0, name.indexOf("."));
 
