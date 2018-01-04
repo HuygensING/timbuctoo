@@ -65,19 +65,20 @@ public class AuthorizationMigration {
         Set<VreAuthorization> newAuths = Sets.newHashSet();
         for (VreAuthorization oldAuth : oldAuths) {
           final String oldUserId = oldAuth.getUserId();
-          String newUserId = oldUserId;
+          String userId = oldUserId;
           Optional<User> userFromOldUserId = userValidator.getUserFromUserId(oldUserId);
           if (userFromOldUserId.isPresent()) {
-            newUserId = userFromOldUserId.get().getPersistentId();
+            userId = userFromOldUserId.get().getPersistentId();
           } else {
             LOG.warn("No user found with id '{}'", oldUserId);
           }
-          newAuths.add(VreAuthorization.create(oldAuth.getVreId(), newUserId, oldAuth.getRoles().toArray(new String[]{})));
+          newAuths.add(VreAuthorization.create(oldAuth.getVreId(), userId, oldAuth.getRoles().toArray(new String[]{})));
         }
 
         OBJECT_MAPPER.writeValue(outputFile, newAuths);
       } else {
-        LOG.info("Skipping migration of " + authFile.toAbsolutePath().toString() + " because " + outputFile.getAbsolutePath() + " already exists");
+        LOG.info("Skipping migration of " + authFile.toAbsolutePath().toString() + " because " +
+          outputFile.getAbsolutePath() + " already exists");
       }
     }
 
