@@ -19,6 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -46,6 +47,26 @@ public class JsonToEntityMapperTest {
       allOf(hasProperty("name", equalTo("name")), hasProperty("value", equalTo("Hans"))),
       allOf(hasProperty("name", equalTo("age")), hasProperty("value", equalTo("12")))
     ));
+  }
+
+  @Test
+  public void getDataPropertiesIgnoresPropertiesWithValueEmptyString() throws Exception {
+    Collection collection = new VresBuilder()
+      .withVre("WomenWriters", "ww", vre -> vre
+        .withCollection("wwpersons", c -> c
+          .withProperty("name", localProperty("wwname"))
+          .withProperty("age", localProperty("wwage"))
+        )
+      ).build().getCollection("wwpersons").get();
+    ObjectNode input = JsonBuilder.jsnO(
+      "name", jsn("Hans"),
+      "age", jsn("")
+    );
+    JsonToEntityMapper instance = new JsonToEntityMapper();
+
+    List<TimProperty<?>> properties = instance.getDataProperties(collection, input);
+
+    assertThat(properties, not(hasItem(hasProperty("name", equalTo("age")))));
   }
 
   @Test(expected = IOException.class)

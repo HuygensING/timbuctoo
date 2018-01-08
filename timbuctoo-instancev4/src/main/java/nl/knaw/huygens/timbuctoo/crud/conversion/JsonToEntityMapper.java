@@ -2,10 +2,11 @@ package nl.knaw.huygens.timbuctoo.crud.conversion;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.core.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.core.UnknownPropertyException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,12 @@ public class JsonToEntityMapper {
     List<TimProperty<?>> properties = Lists.newArrayList();
     for (String fieldName : fieldNames) {
       try {
-        properties.add(converter.from(fieldName, input.get(fieldName)));
+        TimProperty<?> property = converter.from(fieldName, input.get(fieldName));
+        // Empty strings for DatableProperties cause an exception, but should be ignored.
+        // This is the only place to filter the empty strings.
+        if (!(property.getValue() instanceof String) || !StringUtils.isBlank((String) property.getValue())) {
+          properties.add(property);
+        }
       } catch (UnknownPropertyException e) {
         LOG.error("Property with name '{}' is unknown for collection '{}'.", fieldName,
           collection.getCollectionName());
