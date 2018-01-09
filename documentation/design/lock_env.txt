@@ -1,0 +1,31 @@
+Lock the database environment when updating a dataSet
+=====================================================
+
+Problem
+=======
+There may be inconsistent reads of a dataSet while the dataSet is being updated or created. Updates should be isoleted.
+(The I in ASID)
+
+Intended result
+===============
+While creating/updating a dataset all other interaction with the dataset (read + write) should be temporarily blocked
+until finished.
+
+approach
+========
+existing:
+All interaction with de bdb takes place within a com.sleepycat.je.Environment.
+The nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator takes care of creating a
+nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper for each Store.
+
+
+1. Let the BdbEnvironmentCreator create a java.util.concurrent.locks.ReentrantReadWriteLock for each Environment
+2. Set the ReentrantReadWriteLock on each BdbWrapper that is given to each Store
+3. When a Store is used for writing lock the writeLock
+4. When a Store is used for reading lock the readLock
+5. Each read and write should be surrounded by a try/finally block
+
+read tasks can then execute parallel, write and read tasks have to wait until write lock is released.
+
+
+
