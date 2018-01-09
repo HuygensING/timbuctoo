@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
@@ -56,9 +55,9 @@ public class TimRdfHandler extends AbstractRDFHandler {
       String graph = st.getContext() == null ? defaultGraph : st.getContext().stringValue();
       rdfProcessor.onQuad(
         isAssertion(),
-        handleSubjectNode(st.getSubject()),
+        handleNode(st.getSubject()),
         st.getPredicate().stringValue(),
-        handleObjectNode(st.getObject()),
+        handleNode(st.getObject()),
         (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getDatatype().toString() : null,
         (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getLanguage().orElse(null) : null,
         graph
@@ -72,23 +71,13 @@ public class TimRdfHandler extends AbstractRDFHandler {
     return actionSupplier == null || actionSupplier.get() == ADD;
   }
 
-  private String handleSubjectNode(Resource resource) {
+  private String handleNode(Value resource) {
     if (resource instanceof BNode) {
       String nodeName = resource.toString();
       String nodeId = nodeName.substring(nodeName.indexOf(":") + 1, nodeName.length());
       return "BlankNode:" + fileName + "/" + nodeId;
     } else {
       return resource.stringValue();
-    }
-  }
-
-  private String handleObjectNode(Value value) {
-    if (value instanceof BNode) {
-      String nodeName = value.toString();
-      String nodeId = nodeName.substring(nodeName.indexOf(":") + 1, nodeName.length());
-      return "BlankNode:" + fileName + "/" + nodeId;
-    } else {
-      return value.stringValue();
     }
   }
 }
