@@ -1,0 +1,25 @@
+= Support for Custom Schema
+
+== The problem
+Currently, Timbuctoo only supports auto-generated Schema.
+Users do not have the ability to extend on the auto-generated schema for their datasets.
+
+== The result
+Users are able to add custom schema to the dataset's auto-generated schema
+via graphQL mutations.
+
+== The approach
+
+. Implement mergeSchema function to combine two given schemas.
+.. The merge function will accept two maps (type: Map<String,Type>) that will then
+be combined.
+.. A helper function mergePredicates will be implemented to handle the specific predicate cases:
+... maintaining 'List' property.
+... maintaining 'Public' property.
+... checking validity of 'Name', 'Direction' and 'Owner' properties.
+... Merging the 'Reference' and 'Value' types.
+.. The merge function will return  a new Map<String,Type> which will be the merged map.
+. Implement GraphQL mutation to merge schemas.
+.. This will be a GraphQL call that allows the User to specify the custom schema extension for the dataset.
+. Add a call to MergeSchema in the SchemaStore class.
+
