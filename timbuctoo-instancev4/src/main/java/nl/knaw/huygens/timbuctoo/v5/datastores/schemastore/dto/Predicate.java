@@ -12,10 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-@JsonIgnoreProperties(value = { "optional" }, allowGetters = true)
+@JsonIgnoreProperties(value = {"optional"}, allowGetters = true)
 public class Predicate {
-  private String name;
   private final Direction direction;
+  private String name;
   private Type owner;
   private Map<String, Long> valueTypes = new HashMap<>(10);
   private Map<String, Long> referenceTypes = new HashMap<>(10);
@@ -35,8 +35,16 @@ public class Predicate {
     return referenceTypes;
   }
 
+  public void setReferenceTypes(Map<String, Long> referenceTypes) {
+    this.referenceTypes = referenceTypes;
+  }
+
   public Map<String, Long> getValueTypes() {
     return valueTypes;
+  }
+
+  public void setValueTypes(Map<String, Long> valueTypes) {
+    this.valueTypes = valueTypes;
   }
 
   @JsonIgnore
@@ -66,17 +74,13 @@ public class Predicate {
     return subjectsWithThisPredicate > 0;
   }
 
-
   public String getName() {
     return name;
   }
 
-  protected void setValueTypes(Map<String, Long> valueTypes) {
-    this.valueTypes = valueTypes;
-  }
-
-  public void setReferenceTypes(Map<String, Long> referenceTypes) {
-    this.referenceTypes = referenceTypes;
+  @JsonIgnore
+  public Type getOwner() {
+    return this.owner;
   }
 
   public void setOwner(Type owner) {
@@ -141,11 +145,11 @@ public class Predicate {
     return direction;
   }
 
-  public void incValueType(String valueType, int mut) {
+  public void incValueType(String valueType, long mut) {
     this.valueTypes.compute(valueType, (type, cur) -> cur == null ? mut : cur + mut);
   }
 
-  public void incReferenceType(String referenceType, int mut) {
+  public void incReferenceType(String referenceType, long mut) {
     this.referenceTypes.compute(referenceType, (type, cur) -> cur == null ? mut : cur + mut);
   }
 
