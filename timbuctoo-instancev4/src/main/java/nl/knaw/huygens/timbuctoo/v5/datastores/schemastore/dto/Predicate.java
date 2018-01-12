@@ -61,10 +61,6 @@ public class Predicate {
     this.subjectsWithThisPredicate += occurrences;
   }
 
-  public boolean isOptional() {
-    return subjectsWithThisPredicate < owner.getSubjectsWithThisType();
-  }
-
   public long getSubjectsWithThisPredicate() {
     return subjectsWithThisPredicate;
   }

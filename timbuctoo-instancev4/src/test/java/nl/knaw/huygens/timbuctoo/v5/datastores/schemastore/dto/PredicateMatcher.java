@@ -32,4 +32,14 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
     });
     return this;
   }
+
+  public PredicateMatcher withWasList(Boolean wasList) {
+    this.addMatcher(new PropertyEqualityMatcher<Predicate, Boolean>("list", wasList) {
+      @Override
+      protected Boolean getItemValue(Predicate item) {
+        return item.hasBeenList();
+      }
+    });
+    return this;
+  }
 }

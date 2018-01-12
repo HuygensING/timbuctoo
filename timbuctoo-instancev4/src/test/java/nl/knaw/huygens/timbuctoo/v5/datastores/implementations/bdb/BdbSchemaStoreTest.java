@@ -47,7 +47,6 @@ public class BdbSchemaStoreTest {
       "      },\n" +
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"optional\" : false,\n" +
       "      \"hasBeenList\" : false,\n" +
       "      \"hasBeenSingular\" : true\n" +
       "    } ],\n" +
@@ -64,7 +63,6 @@ public class BdbSchemaStoreTest {
       "      },\n" +
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"optional\" : false,\n" +
       "      \"hasBeenList\" : false,\n" +
       "      \"hasBeenSingular\" : true\n" +
       "    }, {\n" +
@@ -76,7 +74,6 @@ public class BdbSchemaStoreTest {
       "      },\n" +
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"optional\" : false,\n" +
       "      \"hasBeenList\" : false,\n" +
       "      \"hasBeenSingular\" : true\n" +
       "    } ],\n" +
