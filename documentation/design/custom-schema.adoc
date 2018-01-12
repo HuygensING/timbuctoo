@@ -24,7 +24,14 @@ be combined.
 ... Deprecation is allowed
 .. The merge function will return  a new Map<String,Type> which will be the merged map.
 . Implement GraphQL mutation to merge schemas.
-.. This will be a GraphQL call that allows the User to specify the custom schema extension for the dataset.
+.. Allow GraphQL call (change graphql schema) that allows the User to specify the custom
+schema extension for the dataset.
+.. Implement Data Fetcher
+... converts data from mutation String to object maps to be used by MergeSchema class
+... call "merge"
+... store the resulting merged schema
+...  return the merged schema to user (use object mapper writer)
+..  Integration test to make sure the GraphQL call, Data Fetcher and the MergeSchema work properly together.
 . Add a call to MergeSchema in the SchemaStore class.
 . There will always be one generated schema and one custom schema i.e. further extensions will be added
 to the same custom schema.
