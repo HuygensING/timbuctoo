@@ -11,6 +11,8 @@ public interface BdbEnvironmentCreator {
 
   void removeDatabasesFor(String userId, String dataSetId);
 
+  void closeEnvironment(String userId, String dataSetId);
+
   void start();
 
   void stop();

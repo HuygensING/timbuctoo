@@ -151,6 +151,9 @@ public abstract class DataSet {
       );
       importManager.subscribeToRdf(storeUpdater);
       return ImmutableDataSet.builder()
+                             .ownerId(userId)
+                             .dataSetName(dataSetId)
+                             .bdbEnvironmentCreator(dataStoreFactory)
                              .metadata(metadata)
                              .quadStore(quadStore)
                              .typeNameStore(typeNameStore)
@@ -181,7 +184,16 @@ public abstract class DataSet {
     getRmlDataSourceStore().close();
     getVersionStore().close();
 
+    // close the database environment
+    getBdbEnvironmentCreator().closeEnvironment(getOwnerId(), getDataSetName());
+
   }
+
+  protected abstract String getOwnerId();
+
+  protected abstract String getDataSetName();
+
+  protected abstract BdbEnvironmentCreator getBdbEnvironmentCreator();
 
   protected abstract VersionStore getVersionStore();
 

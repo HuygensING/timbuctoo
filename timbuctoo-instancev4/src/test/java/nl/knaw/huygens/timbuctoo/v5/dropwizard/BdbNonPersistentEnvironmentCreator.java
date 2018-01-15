@@ -16,9 +16,11 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -85,6 +87,21 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
     if (environmentMap.containsKey(environmentKey)) {
       environmentMap.get(environmentKey).close();
       environmentMap.remove(environmentKey);
+    }
+  }
+
+  @Override
+  public void closeEnvironment(String userId, String dataSetId) {
+    String environmentKey = environmentKey(userId, dataSetId);
+    if (environmentMap.containsKey(environmentKey)) {
+      environmentMap.remove(environmentKey).close();
+
+      Set<String> keys = new HashSet<>(databases.keySet());
+      for (String key : keys) {
+        if (key.startsWith(environmentKey)) {
+          databases.remove(key);
+        }
+      }
     }
   }
 
