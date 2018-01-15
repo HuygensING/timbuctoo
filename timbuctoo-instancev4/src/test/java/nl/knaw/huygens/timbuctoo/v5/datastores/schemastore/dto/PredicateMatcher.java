@@ -42,4 +42,15 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
     });
     return this;
   }
+
+  public PredicateMatcher withIsExplicit(Boolean isExplicit) {
+    this.addMatcher(new PropertyEqualityMatcher<Predicate, Boolean>("isExplicit", isExplicit) {
+      @Override
+      protected Boolean getItemValue(Predicate item) {
+        return item.isExplicit();
+      }
+    });
+    return this;
+  }
 }
+

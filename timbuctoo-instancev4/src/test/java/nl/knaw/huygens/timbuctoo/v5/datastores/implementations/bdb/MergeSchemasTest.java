@@ -101,9 +101,34 @@ public class MergeSchemasTest {
     ))));
   }
 
+  @Test
+  public void explicitPropertyIsMaintainedInMergedPredicates() throws Exception {
+    final MergeSchemas mergeSchemas = new MergeSchemas();
+    Map<String, Type> generatedSchema = new HashMap<>();
+    Type predType1 = createTypeWithPredicate("generated", Direction.IN);
+    predType1.getPredicate("generated", Direction.IN).setHasBeenList(true);
+    predType1.getPredicate("generated", Direction.IN).setOwner(new Type("testOwner"));
+    generatedSchema.put("Type", predType1);
+    Map<String, Type> customSchema = new HashMap<>();
+    Type predType2 = createTypeWithPredicate("generated", Direction.IN);
+    predType2.getPredicate("generated", Direction.IN).setHasBeenList(false);
+    predType2.getPredicate("generated", Direction.IN).setOwner(new Type("testOwner"));
+    customSchema.put("Type", predType2);
+
+    Map<String, Type> mergedSchema = mergeSchemas.mergeSchema(generatedSchema, customSchema);
+
+    assertThat(mergedSchema, hasEntry(is("Type"), hasProperty("predicates", contains(
+      predicateMatcher().withName("generated").withDirection(Direction.IN).withWasList(true).withIsExplicit(true)
+    ))));
+    assertThat(mergedSchema, hasEntry(is("Type"), hasProperty("predicates", not(hasItem(
+      predicateMatcher().withName("generated").withDirection(Direction.IN).withWasList(false))
+    ))));
+  }
+
   private Type createTypeWithPredicate(String generated, Direction direction) {
     Type generatedType = new Type("");
     generatedType.getOrCreatePredicate(generated, direction);
+    generatedType.getPredicate(generated,direction).setIsExplicit(true);
     return generatedType;
   }
 

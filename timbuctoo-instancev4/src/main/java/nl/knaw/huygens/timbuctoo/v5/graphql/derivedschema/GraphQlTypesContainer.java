@@ -52,7 +52,7 @@ public class GraphQlTypesContainer {
 
   private void makeFieldAndDeprecations(String description, Predicate predicate, String targetType, boolean isValue,
                                         boolean isObject) {
-    if (predicate.inUse()) {
+    if (predicate.inUse() || predicate.isExplicit()) {
       //once a list, always a list
       if (predicate.isList() || predicate.hasBeenList()) {
         makeField(description, predicate, targetType, isValue, isObject, true);

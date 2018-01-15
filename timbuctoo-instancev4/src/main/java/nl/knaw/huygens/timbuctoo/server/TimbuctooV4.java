@@ -97,6 +97,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StagingBackup;
+import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
@@ -315,6 +316,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final GraphQl graphQlEndpoint = new GraphQl(
       new RootQuery(
         dataSetRepository,
+        new FileHelper(configuration.getDataSetConfiguration().getDataSetMetadataLocation()),
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
         new RdfWiringFactory(dataSetRepository, argHelper),

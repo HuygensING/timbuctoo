@@ -54,6 +54,7 @@ public class ViewConfigDataFetcher implements DataFetcher {
       dataSet.getQuadStore();
       try {
         final String baseUri = dataSet.getMetadata().getBaseUri();
+
         dataSet.getImportManager().generateLog(
           baseUri,
           baseUri,
