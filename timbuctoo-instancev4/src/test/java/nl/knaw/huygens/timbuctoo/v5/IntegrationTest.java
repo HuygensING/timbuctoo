@@ -24,6 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -65,6 +66,7 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 
 public class IntegrationTest {
@@ -255,9 +257,9 @@ public class IntegrationTest {
         PREFIX, vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     int elapsedTime = objectNode.get("data")
-                                .get("dataSetMetadata")
-                                .get(("currentImportStatus"))
-                                .get("elapsedTime").asInt();
+      .get("dataSetMetadata")
+      .get(("currentImportStatus"))
+      .get("elapsedTime").asInt();
     assertThat(elapsedTime > 0, is(true));
     
     graphqlCall = call("/v5/graphql")
@@ -752,6 +754,101 @@ public class IntegrationTest {
 
   }
 
+  @Test
+  public void schemaCanBeCustomizedWithGraphQl() throws Exception {
+    final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
+      "application/vnd.timbuctoo-rdf.nquads_unified_diff",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.nqud"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    ObjectNode customSchemaField = jsnO(
+      "name", jsn("test"),
+      "uri", jsn(""),
+      "shortenedUri", jsn(""),
+      "isList", jsn(false),
+      "values", jsnA(jsn("String")),
+      "type", jsnO("name", jsn("String"))
+    );
+
+    ObjectNode customSchemaField2 = jsnO(
+      "name", jsn("test2"),
+      "uri", jsn(""),
+      "shortenedUri", jsn(""),
+      "isList", jsn(false),
+      "values", jsnA(jsn("String")),
+      "type", jsnO("name", jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"))
+    );
+
+    ObjectNode customSchema = jsnO(
+      "name", jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"),
+      "fields", jsnA(customSchemaField, customSchemaField2)
+    );
+    Response graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation extendSchema($dataSet: String!, $customSchema: [CustomSchemaTypeInput!]!) { " +
+            "   extendSchema(dataSet:$dataSet,customSchema:$customSchema){\n" +
+            "    message\n" +
+            "   }" +
+            "}"),
+        "variables",
+        jsnO(
+          "dataSet", jsn(dataSetId),
+          "customSchema", customSchema
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(graphQlCall.getStatus(), is(200));
+
+    ObjectNode returnedData = graphQlCall.readEntity(ObjectNode.class);
+
+    assertThat(returnedData.get("data").get("extendSchema").get("message").toString(),
+      is("\"Schema extended successfully.\""));
+
+
+    Response retrieveExtendedSchema = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(String.format(
+          "query retrieveExtendedSchema  {\n" +
+            "  dataSets {\n" +
+            "    %s {\n" +
+            "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList {\n" +
+            "        items {\n" +
+            "          test {\n" +
+            "            type\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}", dataSetId))
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(retrieveExtendedSchema.getStatus(), is(200));
+
+    ObjectNode retrievedData = retrieveExtendedSchema.readEntity(ObjectNode.class);
+
+    // TODO: fix null check for added property value
+    //    assertThat(retrievedData.get("data").get("dataSets").get(dataSetId)
+    //        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
+    //        .get("items").get(0).get("test"),
+    //      is(nullValue()));
+
+  }
+
   private String createDataSetId(String dataSetName) {
     return PREFIX + "__" + dataSetName;
   }
@@ -920,10 +1017,10 @@ public class IntegrationTest {
         "query",
         jsn(
           "mutation CreateDataSet($dataSetName: String!) {" +
-          "  createDataSet(dataSetName: $dataSetName) {" +
-          "    dataSetId" +
-          "  }" +
-          "}"
+            "  createDataSet(dataSetName: $dataSetName) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
         ),
         "variables",
         jsnO(
@@ -1060,7 +1157,6 @@ public class IntegrationTest {
       )
     )));
 
-
     Response retrieveAfterDelete = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(jsnO(
@@ -1086,8 +1182,6 @@ public class IntegrationTest {
       ).collect(Collectors.toList()),
       not(hasItem((JsonNode) jsnO("dataSetId", jsn(dataSetId))))
     );
-
-
   }
 
   @Test

@@ -30,6 +30,7 @@ public class MergeSchemas {
             Predicate generatedPredicate = mergedSchema.get(entry.getKey())
               .getPredicate(customPredicate.getName(), customPredicate.getDirection());
             Predicate mergedPredicate = mergePredicates.merge(generatedPredicate, customPredicate);
+            mergedPredicate.setIsExplicit(true);
             mergedPredicates.add(mergedPredicate);
           } else {
             mergedPredicates.add(customPredicate);
