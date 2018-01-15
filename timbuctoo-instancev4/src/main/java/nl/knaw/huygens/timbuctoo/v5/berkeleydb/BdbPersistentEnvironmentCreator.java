@@ -102,17 +102,22 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     }
   }
 
-  public void closeEnvironment(String userId, String dataSetId) {
-    String environmentKey = environmentKey(userId, dataSetId);
-    if (environmentMap.containsKey(environmentKey)) {
-      environmentMap.remove(environmentKey).close();
+  public void closeEnvironment(String ownerId, String dataSetId) {
+    String environmentKey = environmentKey(ownerId, dataSetId);
 
-      Set<String> keys = new HashSet<>(databases.keySet());
-      for (String key : keys) {
-        if (key.startsWith(environmentKey)) {
-          databases.remove(key);
+    Set<String> keys = new HashSet<>(databases.keySet());
+    for (String key : keys) {
+      if (key.startsWith(environmentKey)) {
+        try {
+          databases.remove(key).close();
+        } catch (Throwable t) {
+          LOG.error("Could not close '" + key + "'", t);
         }
       }
+    }
+
+    if (environmentMap.containsKey(environmentKey)) {
+      environmentMap.remove(environmentKey).close();
     }
   }
 

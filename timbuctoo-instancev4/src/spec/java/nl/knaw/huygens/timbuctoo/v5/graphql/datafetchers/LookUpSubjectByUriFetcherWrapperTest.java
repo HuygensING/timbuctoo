@@ -164,26 +164,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             protected BdbEnvironmentCreator getBdbEnvironmentCreator() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
-
-            @Override
-            protected VersionStore getVersionStore() {
-              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-            }
-
-            @Override
-            protected BdbTruePatchStore getTruePatchStore() {
-              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-            }
-
-            @Override
-            protected UpdatedPerPatchStore getUpdatePerPatchStore() {
-              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-            }
-
-            @Override
-            protected RmlDataSourceStore getRmlDataSourceStore() {
-              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-            }
+            
           };
         }
       };
