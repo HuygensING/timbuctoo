@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Stopwatch;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
@@ -44,6 +45,7 @@ public class ImportStatus {
   private String methodName;
   private String baseUri;
   private String date;
+  private Throwable lastError;
 
   private LogEntry currentLogEntry;
   private long currentEntryStart;
@@ -94,6 +96,7 @@ public class ImportStatus {
     } else {
       logList.addListError(errorString);
     }
+    lastError = error;
     errors.add(errorString);
     messages.add("ERROR: " + errorString);
   }
@@ -160,6 +163,11 @@ public class ImportStatus {
     return !errors.isEmpty();
   }
 
+  @JsonIgnore
+  public Throwable getLastError() {
+    return lastError;
+  }
+
   public long getElapsedTime(String unit) {
     if (messages.isEmpty()) {
       return -1L;
@@ -183,6 +191,7 @@ public class ImportStatus {
   private void reset() {
     methodName = null;
     baseUri = null;
+    lastError = null;
     currentLogEntry = null;
     stopwatch.reset();
   }

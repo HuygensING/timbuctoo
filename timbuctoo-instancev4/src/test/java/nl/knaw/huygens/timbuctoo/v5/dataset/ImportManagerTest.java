@@ -5,12 +5,15 @@ import com.google.common.io.Files;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;
+import nl.knaw.huygens.timbuctoo.util.LambdaOriginatedException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorage;
+import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -25,6 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -295,6 +299,23 @@ public class ImportManagerTest {
     public void commit() throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
+  }
+
+  @Test
+  public void lambdaOriginatedExceptionsAreCaught() throws Exception {
+    String defaultGraph = "http://example.com/defaultGraph";
+    String baseUri = "http://example.com/baseUri";
+    String errorMsg = "OMG, concurrent update!";
+    final ConcurrentUpdateException cue = new ConcurrentUpdateException(errorMsg);
+    Supplier<RdfCreator> supplier = () -> {
+      throw new LambdaOriginatedException(cue);
+    };
+    Future<ImportStatus> promise = importManager.generateLog(baseUri, defaultGraph, supplier);
+    ImportStatus status = promise.get();
+    assertThat(status.getLastError(), is(cue));
+    assertThat(status.getMessages().size(), is(3));
+    assertThat(status.getMessages().get(1).contains(errorMsg), is(true));
+    assertThat(status.getStatus(), is("Finished import with 1 error"));
   }
 
 }

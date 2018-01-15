@@ -6,6 +6,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -28,11 +29,16 @@ public class ErrorResponseHelper {
   }
 
   public static Response handleImportManagerResult(Future<ImportStatus> promise) {
+    return handleImportManagerResult(promise, (is) -> Response.Status.BAD_REQUEST);
+  }
+
+  public static Response handleImportManagerResult(Future<ImportStatus> promise,
+                                                   Function<ImportStatus, Response.Status> errorStatusTranslator) {
     try {
       final ImportStatus status = promise.get();
       if (status.hasErrors()) {
         return Response
-          .status(Response.Status.BAD_REQUEST)
+          .status(errorStatusTranslator.apply(status))
           .type(MediaType.APPLICATION_JSON_TYPE)
           .entity(status)
           .build();

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
@@ -221,7 +222,7 @@ public class IntegrationTest {
   }
 
   @Test
-  public void asynchronousUnsuccessfulRdfUploadWithGraphql() throws Exception {
+  public void asynchronousUnsuccessfulRdfUpload() throws Exception {
     String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=true",
@@ -236,19 +237,7 @@ public class IntegrationTest {
     assertThat(uploadResponse.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
 
     Thread.sleep(100);
-    Response graphqlCall = call("/v5/graphql")
-      .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
-          "  {\n" +
-          "    currentImportStatus {\n" +
-          "      elapsedTime(unit: MILLISECONDS)\n" +
-          "      status\n" +
-          "    }\n" +
-          "  }\n" +
-          "}\n",
-        PREFIX, vreName), MediaType.valueOf("application/graphql")));
-    ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
+    ObjectNode objectNode = getCurrentImportStatus(vreName);
     int elapsedTime = objectNode.get("data")
                                 .get("dataSetMetadata")
                                 .get(("currentImportStatus"))
@@ -257,19 +246,17 @@ public class IntegrationTest {
 
     // Give asynchronous computations time to detect the error
     Thread.sleep(3000);
-    graphqlCall = call("/v5/graphql")
-      .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
-          "  {\n" +
-          "    currentImportStatus {\n" +
-          "      elapsedTime(unit: MILLISECONDS)\n" +
-          "      status\n" +
-          "    }\n" +
-          "  }\n" +
-          "}\n",
-        PREFIX, vreName), MediaType.valueOf("application/graphql")));
-    objectNode = graphqlCall.readEntity(ObjectNode.class);
+    objectNode = getCurrentImportStatus(vreName);
+
+    if (1 == 0) {
+      JsonNode msgs = objectNode.get("data")
+                                .get("dataSetMetadata")
+                                .get("currentImportStatus")
+                                .get("messages");
+      for (JsonNode msg : msgs) {
+        System.out.println(msg);
+      }
+    }
     String status = objectNode.get("data")
                               .get("dataSetMetadata")
                               .get(("currentImportStatus"))
@@ -645,6 +632,63 @@ public class IntegrationTest {
         "values"
       )
     );
+  }
+
+  @Test
+  public void checkJsonLdDeserializationWithIntentionallyWrongJson() {
+    final String wrongJson = "intentionallyWrongJson";
+
+    Client client = ClientBuilder.newBuilder().build();
+
+    String vreName = "ldtest" + UUID.randomUUID().toString().replace("-", "_");
+    Response graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation CreateDataSet($dataSetName: String!) {" +
+            "  createDataSet(dataSetName: $dataSetName) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetName", jsn(vreName)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(graphQlCall.getStatus(), is(200));
+
+    final WebTarget updateLoadJsonLdTarget =
+      client.target(String.format(
+        "http://localhost:%d/v5/" + PREFIX + "/" + vreName + "/upload/jsonld/",
+        APP.getLocalPort()
+      ));
+
+    Response createResponse = updateLoadJsonLdTarget.request()
+                                                    .header(HttpHeaders.AUTHORIZATION, "fake")
+                                                    .put(Entity.json(wrongJson));
+
+    if (createResponse.getStatus() != 400) {
+      System.out.println(createResponse.readEntity(String.class));
+    }
+    assertThat(createResponse.getStatus(), is(400));
+    ArrayNode msgs = ((ArrayNode)createResponse.readEntity(ObjectNode.class).get("messages"));
+    if (1 == 0) {
+      for (JsonNode msg : msgs) {
+        System.out.println(msg);
+      }
+    }
+    assertThat(msgs.get(1).asText().contains(wrongJson), is(true));
+    assertThat(msgs.get(2).asText().contains("Finished import with 1 error"), is(true));
+
+    ObjectNode objectNode = getCurrentImportStatus(vreName);
+    String status = objectNode.get("data")
+                              .get("dataSetMetadata")
+                              .get(("currentImportStatus"))
+                              .get("status").asText();
+    assertThat(status.contains("Finished import with 1 error"), is(true));
   }
 
   @Test
@@ -1118,5 +1162,30 @@ public class IntegrationTest {
       // .register(new LoggingFilter(Logger.getLogger(LoggingFilter.class.getName()), true))
       .request()
       .header("Authorization", AUTH);
+  }
+
+  private ObjectNode getCurrentImportStatus(String vreName) {
+    Response graphqlCall;
+    ObjectNode objectNode;
+    graphqlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(String.format("{\n" +
+          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
+          "  {\n" +
+          "    currentImportStatus {\n" +
+          "      date\n" +
+          "      methodName\n" +
+          "      baseUri\n" +
+          "      status\n" +
+          "      messages\n" +
+          "      errors\n" +
+          "      elapsedTime(unit: MILLISECONDS)\n" +
+          "      active\n" +
+          "    }\n" +
+          "  }\n" +
+          "}\n",
+        PREFIX, vreName), MediaType.valueOf("application/graphql")));
+    objectNode = graphqlCall.readEntity(ObjectNode.class);
+    return objectNode;
   }
 }

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
+import nl.knaw.huygens.timbuctoo.util.LambdaOriginatedException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
@@ -20,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfParser;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.slf4j.Logger;
 
 import javax.ws.rs.core.MediaType;
@@ -37,6 +39,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -56,6 +59,7 @@ public class ImportManager implements DataProvider {
   private final Runnable webhooks;
   private final ImportStatus importStatus;
   private final DataSetImportStatus dataSetImportStatus;
+  private final Object logMonitor;
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
                        ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList,
@@ -80,6 +84,7 @@ public class ImportManager implements DataProvider {
     subscribedProcessors = new ArrayList<>();
     importStatus = new ImportStatus(logListStore.getData());
     dataSetImportStatus = new DataSetImportStatus(logListStore.getData());
+    logMonitor = new Object();
   }
 
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
@@ -87,19 +92,21 @@ public class ImportManager implements DataProvider {
                                                    Optional<Charset> charset, MediaType mediaType)
     throws LogStorageFailedException {
 
-    importStatus.start(this.getClass().getSimpleName() + ".addLog", baseUri);
-    int[] index = new int[1];
-    try {
-      String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
-      logListStore.updateData(logList -> {
-        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
-        return logList;
-      });
-    } catch (IOException e) {
-      importStatus.addError("Could not save log", e);
-      throw new LogStorageFailedException(e);
+    synchronized (logMonitor) {
+      importStatus.start(this.getClass().getSimpleName() + ".addLog", baseUri);
+      try {
+        int[] index = new int[1];
+        String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
+        logListStore.updateData(logList -> {
+          index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
+          return logList;
+        });
+        return executorService.submit(() -> processLogsUntil(index[0]));
+      } catch (IOException e) {
+        importStatus.addError("Could not save log", e);
+        throw new LogStorageFailedException(e);
+      }
     }
-    return executorService.submit(() -> processLogsUntil(index[0]));
   }
 
   public String addFile(InputStream fileStream, String fileName, MediaType mediaType)
@@ -124,6 +131,7 @@ public class ImportManager implements DataProvider {
     }
   }
 
+  // @ToDo replace all calls to this method to the one that takes a Supplier<RdfCreator>
   public Future<ImportStatus> generateLog(String baseUri, String defaultGraph, RdfCreator creator)
     throws LogStorageFailedException {
 
@@ -143,12 +151,41 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  public Future<ImportStatus> processLogs() {
-    importStatus.start(this.getClass().getSimpleName() + ".processLogs", null);
-    return executorService.submit(() -> processLogsUntil(Integer.MAX_VALUE));
+  public Future<ImportStatus> generateLog(String baseUri, String defaultGraph,
+                                                       Supplier<RdfCreator> supplier)
+    throws LogStorageFailedException {
+
+    synchronized (logMonitor) {
+      importStatus.start(this.getClass().getSimpleName() + ".generateLog", baseUri);
+      try {
+        //add to the log structure
+        int[] index = new int[1];
+        logListStore.updateData(logList -> {
+          index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, supplier.get()));
+          return logList;
+        });
+        //schedule processing
+        return executorService.submit(() -> processLogsUntil(index[0]));
+      } catch (IOException e) {
+        importStatus.addError("Could not update logList", e);
+        throw new LogStorageFailedException(e);
+      } catch (LambdaOriginatedException e) {
+        importStatus.addError("Could not supply RdfCreator", e.getCause());
+        endImport();
+        return ConcurrentUtils.constantFuture(importStatus);
+      }
+    }
   }
 
-  private synchronized ImportStatus processLogsUntil(int maxIndex) {
+  public Future<ImportStatus> processLogs() {
+    synchronized (logMonitor) {
+      importStatus.start(this.getClass().getSimpleName() + ".processLogs", null);
+      return executorService.submit(() -> processLogsUntil(Integer.MAX_VALUE));
+    }
+  }
+
+  // All calls to this method should be synchronized on logMonitor
+  private ImportStatus processLogsUntil(int maxIndex) {
     ListIterator<LogEntry> unprocessed = logListStore.getData().getUnprocessed();
     boolean dataWasAdded = false;
     while (unprocessed.hasNext() && unprocessed.nextIndex() <= maxIndex) {
@@ -248,6 +285,11 @@ public class ImportManager implements DataProvider {
     if (dataWasAdded) {
       webhooks.run();
     }
+    endImport();
+    return importStatus;
+  }
+
+  private void endImport() {
     importStatus.finishList();
     // update log.json
     try {
@@ -256,8 +298,8 @@ public class ImportManager implements DataProvider {
       LOG.error("Updating the log failed", e);
       importStatus.addError("Updating log failed", e);
     }
-    return importStatus;
   }
+
 
   @Override
   public void subscribeToRdf(RdfProcessor processor) {

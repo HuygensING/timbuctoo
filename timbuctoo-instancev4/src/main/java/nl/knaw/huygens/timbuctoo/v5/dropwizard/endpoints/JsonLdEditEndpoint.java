@@ -8,6 +8,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
+import nl.knaw.huygens.timbuctoo.util.LambdaOriginatedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
@@ -29,6 +31,7 @@ import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
@@ -67,7 +70,8 @@ public class JsonLdEditEndpoint {
   public Response submitChanges(String jsonLdImport,
                                 @PathParam("user") String ownerId,
                                 @PathParam("dataset") String dataSetId,
-                                @HeaderParam("authorization") String authHeader) throws LogStorageFailedException {
+                                @HeaderParam("authorization") String authHeader)
+    throws LogStorageFailedException {
     Optional<User> user;
     try {
       user = userValidator.getUserFromAccessToken(authHeader);
@@ -84,31 +88,39 @@ public class JsonLdEditEndpoint {
     final QuadStore quadStore = dataSet.getQuadStore();
     final ImportManager importManager = dataSet.getImportManager();
 
-
     final Response response = checkWriteAccess(dataSet, user, permissionFetcher);
     if (response != null) {
       return response;
     }
-
-    try {
-      final Future<ImportStatus> promise = importManager.generateLog(
-        dataSet.getMetadata().getBaseUri(),
-        dataSet.getMetadata().getBaseUri(),
-        fromCurrentState(
+    // user is present after checkWriteAccess
+    final User currentUser = user.get();
+    Supplier<RdfCreator> supplier = () -> {
+      try {
+        return fromCurrentState(
           documentLoader,
           jsonLdImport,
           quadStore,
-          TIM_USERS + user.get().getPersistentId(),
+          TIM_USERS + currentUser.getPersistentId(),
           UUID.randomUUID().toString(),
           Clock.systemUTC()
-        )
-      );
-      return handleImportManagerResult(promise);
-    } catch (IOException e) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
-    } catch (ConcurrentUpdateException e) {
-      return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
-    }
+        );
+      } catch (IOException | ConcurrentUpdateException e) {
+        throw new LambdaOriginatedException(e);
+      }
+    };
+
+    final Future<ImportStatus> promise = importManager.generateLog(
+      dataSet.getMetadata().getBaseUri(),
+      dataSet.getMetadata().getBaseUri(),
+      supplier
+    );
+    return handleImportManagerResult(promise, (importStatus) -> {
+      if (importStatus.getLastError() instanceof ConcurrentUpdateException) {
+        return Response.Status.CONFLICT;
+      } else {
+        return Response.Status.BAD_REQUEST;
+      }
+    });
   }
 
 }

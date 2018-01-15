@@ -3,29 +3,73 @@ Lock the database environment when updating a dataSet
 
 Problem
 =======
-There may be inconsistent reads of a dataSet while the dataSet is being updated or created. Updates should be isoleted.
-(The I in ASID)
+The problem is best illustrated using the following example:
+
+At t=0 I have a dataset with one triple ex:1 ex:name "Jan Jansen".
+At t=1 I call generateLog with some code that will generate the mutations: - ex:1 ex:name "Jan Jansen" and + ex:1 ex:name "Jan Pieterson" i.e. change the name from Jansen to Pieterson. Even though I called generateLog at t=1, due to the timbuctoo process being busy the triples will not be inserted into berkeley db until t=3
+But in the meantime (at t=2) I call generateLogs with some code that retracts alle ex:name triples in the dataset. Since it executes immediately (unserialized) it will generate the mutation - ex:1 ex:name "Jan Jansen" This mutation will not be applied until t>3 though. because it's appended to the log.
+at t=3 the first mutation is applied the dataset now contains 1 triple ex:1 ex:name "Jan Pieterson"
+at t=4 the second mutation is applied. because ex:1 ex:name "Jan Jansen" is not in the dataset. This mutation has no visible effect and the dataset still contains the one triple: ex:1 ex:name "Jan Pieterson"
+However, if the mutations would have executed in order, the dataset would have been empty!
 
 Intended result
 ===============
-While creating/updating a dataset all other interaction with the dataset (read + write) should be temporarily blocked
-until finished.
+Processing mutations as described above may include quadstore reading and writing and in between the store should not be altered. We can consider a complete mutation as a Unit of Work (UoW). UoWs should be serialized, i.e. done as a whole and executed one after the other. We can distinguish UoW's in methods of classes that handle API calls. We only consider cases where the store will be mutated. Dirty reads can still take place.
 
-approach
+Approach
 ========
-existing:
-All interaction with de bdb takes place within a com.sleepycat.je.Environment.
-The nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator takes care of creating a
-nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper for each Store.
+A quick scan of the call hierarchy of BdbTripleStore.putQuad (as an indication) reveals that calls to this method stem from ImportManager.processLogsUntil and from classes in the package bulkupload. The readme in the last mentioned package says
+  || todo:bug["The data entered like this is not yet part of the changelog, but should be."]" ||
+So we assume that synchronizing calls to ImportManager.processLogsUntil and taking care that a UoW is processed as one unit will solve the problem. As an example where a UoW is defined we take JsonLdEditEndpoint.
 
+Changes in ImportManager
+------------------------
+- We introduce a logMonitor as the object on which to synchronize mutating access to the store. The 3 public methods in ImportManager that call the private processLogsUntil are being surrounded with a synchronized block on logMonitor. These 3 methods are addLog, generateLog and processLog.
+- We change the method signature of generateLog. Instead of taking an RdfCreator it will take a Supplier<RdfCreator>. Instantiating the RdfCreator fromCurrentState (which will read the store) is now taking place in a block that is synchronized on logMonitor.
 
-1. Let the BdbEnvironmentCreator create a java.util.concurrent.locks.ReentrantReadWriteLock for each Environment
-2. Set the ReentrantReadWriteLock on each BdbWrapper that is given to each Store
-3. When a Store is used for writing lock the writeLock
-4. When a Store is used for reading lock the readLock
-5. Each read and write should be surrounded by a try/finally block
+Introduction of LambdaOriginatedException
+-----------------------------------------
+The instantiation of RdfCreator, which is now taking place in a lambda in ImportManager.generateLog, throws checked Exceptions. Supplier.get() is not allowed to throw CE's, furthermore the CE's cannot traverse the lambda boundaries. Above all, ImportManager should not be bothered with exceptions it is not supposed to handle. So we wrap them in a LambdaOriginatedException, which is a RuntimeException.
 
-read tasks can then execute parallel, write and read tasks have to wait until write lock is released.
+By degrading checked exceptions to RuntimeExceptions we somehow obscure 'normal' program flow. Can we create an Annotation that says: this method handles LambdaOriginatedException?
+See also: ImportManagerTest.lambdaOriginatedExceptionsAreCaught
+
+Alternatives for LambdaOriginatedException
+------------------------------------------
+Alternatively we could sneakily throw CE's from lambda bodies and catch them as regular CE outside the lambda body by introducing two methods in LambdaExceptionUtil:
+
+  @SuppressWarnings("unchecked")
+  public static <E extends Exception> void sneakyThrow(Exception e) throws E {
+    throw (E) e;
+  }
+
+  public static <E extends Exception> E expectSneaky(Exception e) throws E {
+    return null;
+  }
+
+The first method will take the CE under the radar of the Java compiler, the second will put the CE back on the radar so we can catch it. But in the case at hand the IOException is prematurely caught in the try catch of generateLogs and rethrown as a LogStorageFailedException, effectively bypassing the catch in JsonLdEditEndpoint.
+
+Alternatively we could do away with exceptions as a way for starting alternative routes through code. Most exceptions cannot be handled anyway and can only be reported in the log, reported to the end user or both. The ImportStatus is a candidate for carrying messages of failure across. Code should be adapted for handling cases where 'normal' or success program flow is interrupted. Consequence of the latter is extensive rewriting of code to the extend of a paradigm change.
+
+Changes in JsonLdEditEndpoint
+-----------------------------
+In stead of creating and using the RdfCreator asynchronously the construction of RdfCreator (fromCurrentState) is now done by a Supplier, effectively placing the reading of current state of the store in the same UoW in which the writing is done. Exceptions in construction of the RdfCreator travel by means of the LambdaOriginatedException.cause to the lastError of importStatus. The special case where a ConcurrentUpdateException is causing mishap is reported to the user as Status.CONFLICT by the translateStatusError function.
+
+Changes in ErrorResponseHandler
+-------------------------------
+New method:
+  handleImportManagerResult(Future<ImportStatus> promise, Function<ImportStatus, Response.Status> errorStatusTranslator)
+
+Changes in IntegrationTest
+--------------------------
+New method:
+  checkJsonLdDeserializationWithIntentionallyWrongJson()
+
+Changes in ImportManagerTest
+----------------------------
+New method:
+  lambdaOriginatedExceptionsAreCaught
+
 
 
 
