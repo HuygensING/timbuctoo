@@ -151,16 +151,15 @@ public abstract class DataSet {
       );
       importManager.subscribeToRdf(storeUpdater);
       return ImmutableDataSet.builder()
+                             .ownerId(userId)
+                             .dataSetName(dataSetId)
+                             .bdbEnvironmentCreator(dataStoreFactory)
                              .metadata(metadata)
                              .quadStore(quadStore)
                              .typeNameStore(typeNameStore)
                              .schemaStore(schema)
                              .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
-                             .rmlDataSourceStore(rmlDataSourceStore)
                              .schemaStore(schema)
-                             .truePatchStore(truePatchStore)
-                             .updatePerPatchStore(updatedPerPatchStore)
-                             .versionStore(versionStore)
                              .importManager(importManager)
                              .build();
     } catch (BdbDbCreationException e) {
@@ -169,27 +168,16 @@ public abstract class DataSet {
   }
 
   public void stop() {
-    getQuadStore().close();
-    try {
-      getTypeNameStore().close();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    getSchemaStore().close();
-    getTruePatchStore().close();
-    getUpdatePerPatchStore().close();
-    getRmlDataSourceStore().close();
-    getVersionStore().close();
+    // close the database environment
+    getBdbEnvironmentCreator().closeEnvironment(getOwnerId(), getDataSetName());
 
   }
 
-  protected abstract VersionStore getVersionStore();
+  protected abstract String getOwnerId();
 
-  protected abstract BdbTruePatchStore getTruePatchStore();
+  protected abstract String getDataSetName();
 
-  protected abstract UpdatedPerPatchStore getUpdatePerPatchStore();
-
-  protected abstract RmlDataSourceStore getRmlDataSourceStore();
+  protected abstract BdbEnvironmentCreator getBdbEnvironmentCreator();
 
   public abstract SchemaStore getSchemaStore();
 

@@ -16,10 +16,10 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -70,21 +70,22 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
   }
 
   @Override
-  public void removeDatabasesFor(String userId, String dataSetId) {
-    String environmentKey = environmentKey(userId, dataSetId);
+  public void closeEnvironment(String ownerId, String dataSetId) {
+    String environmentKey = environmentKey(ownerId, dataSetId);
 
-    List<String> dbsToRemove = databases.keySet().stream()
-                                        .filter(dbName -> dbName.startsWith(environmentKey))
-                                        .collect(Collectors.toList());
-
-    for (String dbToRemove : dbsToRemove) {
-      databases.get(dbToRemove).close();
-      databases.remove(dbToRemove);
+    Set<String> keys = new HashSet<>(databases.keySet());
+    for (String key : keys) {
+      if (key.startsWith(environmentKey)) {
+        try {
+          databases.remove(key).close();
+        } catch (Throwable t) {
+          LOG.error("Could not close '" + key + "'", t);
+        }
+      }
     }
 
     if (environmentMap.containsKey(environmentKey)) {
-      environmentMap.get(environmentKey).close();
-      environmentMap.remove(environmentKey);
+      environmentMap.remove(environmentKey).close();
     }
   }
 

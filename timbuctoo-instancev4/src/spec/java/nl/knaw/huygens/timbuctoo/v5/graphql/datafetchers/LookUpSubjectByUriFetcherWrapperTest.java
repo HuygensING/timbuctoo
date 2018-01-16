@@ -10,6 +10,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -150,24 +151,20 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
-            protected VersionStore getVersionStore() {
+            protected String getOwnerId() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
 
             @Override
-            protected BdbTruePatchStore getTruePatchStore() {
+            protected String getDataSetName() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
 
             @Override
-            protected UpdatedPerPatchStore getUpdatePerPatchStore() {
+            protected BdbEnvironmentCreator getBdbEnvironmentCreator() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
-
-            @Override
-            protected RmlDataSourceStore getRmlDataSourceStore() {
-              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-            }
+            
           };
         }
       };

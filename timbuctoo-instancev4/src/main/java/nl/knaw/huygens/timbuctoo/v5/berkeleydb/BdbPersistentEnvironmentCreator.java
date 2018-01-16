@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   private static final Logger LOG = LoggerFactory.getLogger(BdbPersistentEnvironmentCreator.class);
@@ -81,22 +81,22 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     return userId + "_" + dataSetId;
   }
 
-  @Override
-  public void removeDatabasesFor(String userId, String dataSetId) {
-    String environmentKey = environmentKey(userId, dataSetId);
+  public void closeEnvironment(String ownerId, String dataSetId) {
+    String environmentKey = environmentKey(ownerId, dataSetId);
 
-    List<String> dbsToRemove = databases.keySet().stream()
-                                        .filter(dbName -> dbName.startsWith(environmentKey))
-                                        .collect(Collectors.toList());
-
-    for (String dbToRemove : dbsToRemove) {
-      databases.get(dbToRemove).close();
-      databases.remove(dbToRemove);
+    Set<String> keys = new HashSet<>(databases.keySet());
+    for (String key : keys) {
+      if (key.startsWith(environmentKey)) {
+        try {
+          databases.remove(key).close();
+        } catch (Throwable t) {
+          LOG.error("Could not close '" + key + "'", t);
+        }
+      }
     }
 
     if (environmentMap.containsKey(environmentKey)) {
-      environmentMap.get(environmentKey).close();
-      environmentMap.remove(environmentKey);
+      environmentMap.remove(environmentKey).close();
     }
   }
 
