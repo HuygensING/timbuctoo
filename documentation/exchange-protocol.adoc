@@ -1,0 +1,195 @@
+= Resource sync
+
+== Data model
+
+The http://www.openarchives.org/rs/1.1/resourcesync[resource sync specification] describes how various documents interlink in order to describe a set of resources and where the entrypoints should be placed.
+In it's simplest form it is just one file containing a directory listing with a predefined name.
+This is needed because the HTTP spec itself does not define a "list" command.
+Resourcesync is a set of embellishments on the sitemap.xml de-facto standard.
+Timbuctoo uses resourcesync to discover datasets at a source and to get the list of files that comprise the dataset.
+
+The document linked above provides the full spec, but we found it convenient to draw a picture of the various documents:
+
+[ditaa]
+--
+                                     +--------------------+
+                                     |                    |
+/.well-known/resourcesync  +-------> | Source description |
+                                     |                    |
+                                     +---------+----------+
+                                               |1
+                                               |
+                                               Vmany
+                                      +--------+--------+
+                                      |                 |
+                                      | Capability list | <--------+ Link header/Link tag
+                                      |                 |
+                                      +----+---------+--+
+                                           |1        |1
+                                           |         |
+                                           |         V1
+                                           |  +=--------------------+
+                                           |  |                     |
+                                           |  |(Resource index list)|
+                                           |  |                     |
+                                           |  +------+--------------+
+                                           |         |1
+                                           |         |
+                                           V1        Vmany
+                                       +---+-----------+
+                                       |               |
+                                       | Resource list | <--------+ robots.txt
+                                       |               |
+                                       +-------+-------+
+                                               |many
+                                               Vmany
+                                        +-------------+
+                                        |{d}          |
+                                        | Actual file |
+                                        |             |
+                                        +-------------+
+
+
+--
+
+The horizontal arrows indicate entrypoints.
+If you provide timbuctoo (or another resourcesync destination) with a url it may try to find a link header/link tag, a resourcesync file in the folder .well-known at the root of the server, or a robots.txt.
+Each file provides links downwards, optionally they might also provide a link upwards.
+A source description contains links to one or more capability lists, each list is considered to contain 1 dataset by timbuctoo.
+
+NOTE: each capabilitylist is treated as 1 "dataset". Another instance will import a whole dataset, not a part of it.
+
+A capability list will link to one or more files via a resource (index) list.
+All files in the resource list are considered to be part of the same dataset.
+A capability list may also point to a resource dump and/or changesets, these features are optional and should be provided in addition to the resource list.
+
+So to create a resourcesync capable server for timbuctoo you should:
+
+ 1. Put a http://www.openarchives.org/rs/1.0.9/resourcesync#ex_7[source description] at `/.well-known/resourcesync` on your server
+ 2. Fill it with links to http://www.openarchives.org/rs/1.0.9/resourcesync#ex_6[capability lists] (1 per dataset that you wish to publish)
+ 3. Fill them with links to http://www.openarchives.org/rs/1.0.9/resourcesync#ex_1[Resource lists]
+ 4. Fill those with links to the actual data files in one of the supported rdf formats (see below)
+
+You may use the `describedby` mechanism (see http://www.openarchives.org/rs/1.1/resourcesync#DocumentFormats[]) to point to documents that describe your datasets. 
+These description documents can be in any format, however, using one of the RDF-formats is recommended. 
+Timbuctoo interprets http://www.openarchives.org/rs/1.1/resourcesync#CapabilityList[capabilitylist's] as description of a dataset. 
+Therefore expects that the metadata of a `capabilitylist` will contain the `describedby` mechanism. 
+This `describedBy` item can either be added to a url in the sourcedescription or to the root item of the `capabilitylist`.
+
+=== Valid resources
+Timbuctoo cannot sync every filetype on the internet, only files containing rdf in several of the more well-known serialisation formats.
+To indicate the serialisation format you can specify the mimetype in the optional `md` field (meta data field) for each url from the resource list.
+Alternatively you can use a file extension to indicate the type of file.
+The explicit mimetype overrules the file extension.
+
+The filetypes that we can currently import are:
+
+ * text/turtle (.ttl)
+ * application/rdf+xml (.rdf)
+ * application/n-triples (.nt)
+ * application/ld+json (.jsonld)
+ * application/trig (.trig)
+ * application/n-quads (.nq)
+ * text/n3 (.n3)
+ * application/vnd.timbuctoo-rdf.nquads_unified_diff (.nqud)
+
+So we expect an item resource list will look like:
+
+```
+...
+<url>
+    <loc>http://localhost/.well-known/resourcesync/dataset1/resource2.nq</loc>
+    <rs:md type="application/n-quads"/> <!-- this line is optional, but can be used to override the extension -->
+</url>
+...
+```
+
+The resources will imported in order of appearance. It is not allowed to later change a resource. 
+If you simply want to add triples to the dataset you should append a new file with the new triples to the resource list.
+If you want to remove triples from the dataset you should append a new file in the nquads-ud format (see below)
+
+== N-Quads U.D.
+N-Quads U.D. stands for N-Quads Unified Diff.
+It is an extension on the RDF N-Quads notation.
+
+== Why another RDF notation?
+RDF data set notations are like snapshots.
+They have no visible history.
+Look at the example an n-triples data set:
+```
+<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/country> "The Netherlands" .
+<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/longitude> "436052"^^<http://schema.org/longitude> .
+<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places> .
+<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/latitude> "5200951"^^<http://schema.org/latitude> .
+<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/original_id> "PL00000029" .
+```
+How do know if one of these predicates has had a previous value?
+
+To facilitate sharing of datasets between two parties we need to make sure that a dataset does not change under your feet. 
+For Timbuctoo we needed a way to change a data without changing its history.
+So the first thing we did was looking at ideas that were already floating around on the internet.
+We found one called https://afs.github.io/rdf-patch/[RDF Patch] and another one called https://www.w3.org/TR/ldpatch/[Linked Data Patch Format].
+
+=== Why didn't we use RDF Patch?
+At first glance RDF Patch looks like the ideal solution for our problem.
+So we tried to write a piece of code that allowed us to import the notation.
+But we got stuck pretty quickly.
+The main reason is there are basically no libraries that parse RDF Patch.
+That is also true if you define you own standard.
+Another reason is that it was not simple to writer the parser ourselves.
+The next example will show the most complex form of RDF Patch:
+```
+@prefix  foaf: <http://xmlns.com/foaf/0.1/> .
+D <http://example/bob> foaf:name "bob" .
+A <http://example/bob> foaf:name "Bob" .
+A R foaf:knows <http://example/alice> .
+A R R <http://example/charlie> .
+```
+This is when we decided we should make a less complex notation.
+
+=== Why didn't we use Linked Data Patch Format?
+Linked Data Patch Format is very hard to generate automatically. 
+The patch statements are not about what changed, but more about the intent of the user.
+We wanted a format that people without much knowledge of RDF could generate with more-or-less standard tools.
+
+== Notation
+Because our notation should be simpler than RDF Patch we created an extension on N-Quads.
+N-Quads it self is an extension on N-Triples, so we support both.
+
+The format for the additions and deletions we decided to use http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html#Detailed-Unified[Unified].
+
+Here's an example:
+```
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/country> "The Netherland" .
+-<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/country> "The Netherlands" .
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/longitude> "436052"^^<http://schema.org/longitude> .
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places> .
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/latitude> "5200951"^^<http://schema.org/latitude> .
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/original_id> "PL00000029" .
+```
+
+A processor MUST ignore all lines that do not start with a single `+` or `-`.
+So the extra info that is often part of the unified diff format is also allowed:
+
+```
+--- my_datafile.nq    2017-08-18 12:08:18.772264550 +0200
++++ update.nq  2017-07-19 11:18:16.057104790 +0200
+@@ -0,0 +1,35652 @@
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/country> "The Netherland" .
+-<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/country> "The Netherlands" .
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/longitude> "436052"^^<http://schema.org/longitude> .
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places> .
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/latitude> "5200951"^^<http://schema.org/latitude> .
++<http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/original_id> "PL00000029" .
+```
+
+An advantage of choosing the unified format is that is easy to generate for people using N-Quads or N-Triples in combination with a Unix (Linux, Mac OS X) system:
+```
+sort prev.nq > prev_sorted.nq
+sort update.nq > update_sorted.nq
+diff --unified=0 prev_sorted.nq update_sorted.nq > updates.nqud
+```
+
+== Media type and file extension
+We chose to use the `application/vnd.timbuctoo-rdf.nquads_unified_diff` as media type.
+The file extension is `.nqud`.
