@@ -9,8 +9,6 @@ public interface BdbEnvironmentCreator {
                                                       EntryBinding<ValueT> valueBinder)
     throws BdbDbCreationException;
 
-  void removeDatabasesFor(String userId, String dataSetId);
-
   /**
    * Closes and remove all the databases for a data set
    */

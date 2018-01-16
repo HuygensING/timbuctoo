@@ -72,6 +72,7 @@ public class BdbWrapper<KeyT, ValueT> {
       transaction.commit();
     }
     database.sync();
+    dbEnvironment.sync(); // needed for better recoverability
   }
 
   public void replace(KeyT key, ValueT initialValue, Function<ValueT, ValueT> replacer) throws DatabaseWriteException {

@@ -17,11 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   private static final Logger LOG = LoggerFactory.getLogger(BdbPersistentEnvironmentCreator.class);
@@ -81,25 +79,6 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
 
   private String environmentKey(String userId, String dataSetId) {
     return userId + "_" + dataSetId;
-  }
-
-  @Override
-  public void removeDatabasesFor(String userId, String dataSetId) {
-    String environmentKey = environmentKey(userId, dataSetId);
-
-    List<String> dbsToRemove = databases.keySet().stream()
-                                        .filter(dbName -> dbName.startsWith(environmentKey))
-                                        .collect(Collectors.toList());
-
-    for (String dbToRemove : dbsToRemove) {
-      databases.get(dbToRemove).close();
-      databases.remove(dbToRemove);
-    }
-
-    if (environmentMap.containsKey(environmentKey)) {
-      environmentMap.get(environmentKey).close();
-      environmentMap.remove(environmentKey);
-    }
   }
 
   public void closeEnvironment(String ownerId, String dataSetId) {
