@@ -34,6 +34,11 @@ public class BdbTypeNameStoreTest {
         public void commit() {
 
         }
+
+        @Override
+        public void beginTransaction() {
+
+        }
       },
       "http://example.org"
     );

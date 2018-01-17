@@ -57,6 +57,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   @Override
   public void start() {
     importStatus.setStatus("Storing entities");
+    bdbWrapper.beginTransaction();
   }
 
   @Override

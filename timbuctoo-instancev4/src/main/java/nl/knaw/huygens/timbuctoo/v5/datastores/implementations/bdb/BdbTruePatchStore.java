@@ -92,4 +92,8 @@ public class BdbTruePatchStore {
   public void commit() {
     bdbWrapper.commit();
   }
+
+  public void start() {
+    bdbWrapper.beginTransaction();
+  }
 }

@@ -87,6 +87,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   public void start() {
     importStatus.setStatus("Processing entities");
     LOG.info("Processing entities");
+    dataStore.beginTransaction();
   }
 
   @Override

@@ -164,8 +164,17 @@ public class StoreUpdater implements RdfProcessor {
   public void start(int index) throws RdfProcessingFailedException {
     stopwatch = Stopwatch.createStarted();
     currentversion = index;
+    startTransactions();
     dbFactory.startTransaction();
     logString = "Processed {} triples ({} triples/s)";
+  }
+
+  private void startTransactions() {
+    versionStore.start();
+    typeNameStore.start();
+    tripleStore.start();
+    truePatchStore.start();
+    updatedPerPatchStore.start();
   }
 
   private boolean notifyUpdate() {

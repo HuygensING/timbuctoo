@@ -56,4 +56,9 @@ public class BdbBackedData implements DataStorage {
     bdbWrapper.commit();
   }
 
+  @Override
+  public void beginTransaction() {
+    bdbWrapper.beginTransaction();
+  }
+
 }

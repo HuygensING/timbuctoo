@@ -154,5 +154,8 @@ public class BdbTypeNameStore implements TypeNameStore {
     addPrefix("local_col", this.dataStoreRdfPrefix + "/collection/");
   }
 
+  public void start() {
+    dataStore.beginTransaction();
+  }
 }
 

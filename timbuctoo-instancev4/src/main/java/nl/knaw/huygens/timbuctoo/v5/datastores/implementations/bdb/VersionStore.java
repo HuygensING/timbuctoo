@@ -42,4 +42,8 @@ public class VersionStore {
   public void commit() {
     bdbWrapper.commit();
   }
+
+  public void start() {
+    bdbWrapper.beginTransaction();
+  }
 }

@@ -108,6 +108,11 @@ public class BdbSchemaStoreTest {
 
     }
 
+    @Override
+    public void beginTransaction() {
+
+    }
+
     public String getResult() {
       return result;
     }

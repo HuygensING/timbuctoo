@@ -10,4 +10,6 @@ public interface DataStorage {
   void close() throws Exception;
 
   void commit();
+
+  void beginTransaction();
 }
