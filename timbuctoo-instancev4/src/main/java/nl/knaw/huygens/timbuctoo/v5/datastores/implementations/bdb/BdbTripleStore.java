@@ -18,7 +18,7 @@ import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.FOR
 public class BdbTripleStore implements QuadStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(BdbTripleStore.class);
-  protected final BdbWrapper<String, String> bdbWrapper;
+  private final BdbWrapper<String, String> bdbWrapper;
 
   public BdbTripleStore(BdbWrapper<String, String> rdfData)
     throws DataStoreCreationException {
@@ -110,5 +110,10 @@ public class BdbTripleStore implements QuadStore {
     final String rightStr = formatKey(rightQ.getSubject(), rightQ.getPredicate(), rightQ.getDirection()) + "\n" +
       formatValue(rightQ.getObject(), rightQ.getValuetype().orElse(null), rightQ.getLanguage().orElse(null));
     return leftStr.compareTo(rightStr);
+  }
+
+  @Override
+  public void commit() {
+    bdbWrapper.commit();
   }
 }

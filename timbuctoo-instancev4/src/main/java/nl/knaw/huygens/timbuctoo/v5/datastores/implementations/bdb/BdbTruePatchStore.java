@@ -88,4 +88,8 @@ public class BdbTruePatchStore {
       LOG.error("Exception closing BdbTruePatchStore", e);
     }
   }
+
+  public void commit() {
+    bdbWrapper.commit();
+  }
 }

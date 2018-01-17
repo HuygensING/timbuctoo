@@ -34,4 +34,8 @@ public class UpdatedPerPatchStore {
       LOG.error("Exception closing UpdatedPerPatchStore", e);
     }
   }
+
+  public void commit() {
+    bdbWrapper.commit();
+  }
 }

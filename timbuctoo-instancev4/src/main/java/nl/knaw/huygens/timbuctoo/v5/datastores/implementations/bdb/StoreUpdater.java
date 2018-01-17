@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Stopwatch;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
@@ -202,13 +203,22 @@ public class StoreUpdater implements RdfProcessor {
       stopwatch.reset();
       stopwatch.start();
       versionStore.setVersion(currentversion);
+      commitChanges();
       dbFactory.commitTransaction();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.setStatus(msg);
-    } catch (DatabaseWriteException e) {
+    } catch (DatabaseWriteException | JsonProcessingException e) {
       throw new RdfProcessingFailedException(e);
     }
+  }
+
+  private void commitChanges() throws JsonProcessingException, DatabaseWriteException {
+    versionStore.commit();
+    typeNameStore.commit();
+    tripleStore.commit();
+    truePatchStore.commit();
+    updatedPerPatchStore.commit();
   }
 
 }

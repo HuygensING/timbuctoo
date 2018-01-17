@@ -38,4 +38,8 @@ public class VersionStore {
       LOG.error("Exception closing VersionStore", e);
     }
   }
+
+  public void commit() {
+    bdbWrapper.commit();
+  }
 }

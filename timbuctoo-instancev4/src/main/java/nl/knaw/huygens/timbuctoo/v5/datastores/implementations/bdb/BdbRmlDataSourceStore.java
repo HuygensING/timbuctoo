@@ -162,6 +162,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
 
   @Override
   public void finish() {
+    bdbWrapper.commit();
   }
 
   private class Property {

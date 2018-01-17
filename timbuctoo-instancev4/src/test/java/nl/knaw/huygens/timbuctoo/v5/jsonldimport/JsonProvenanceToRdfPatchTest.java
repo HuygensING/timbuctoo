@@ -465,6 +465,11 @@ public class JsonProvenanceToRdfPatchTest {
     public void close() {
 
     }
+
+    @Override
+    public void commit() {
+      
+    }
   }
 
 }
