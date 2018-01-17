@@ -120,6 +120,7 @@ public class BdbTypeNameStore implements TypeNameStore {
 
   public void commit() throws JsonProcessingException, DatabaseWriteException {
     dataStore.setValue(objectMapper.writeValueAsString(data));
+    dataStore.commit();
   }
 
   @Override

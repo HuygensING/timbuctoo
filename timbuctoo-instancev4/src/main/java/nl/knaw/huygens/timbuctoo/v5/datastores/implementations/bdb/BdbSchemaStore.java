@@ -341,12 +341,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       try {
         String serializedValue = objectMapper.writeValueAsString(types);
         dataStore.setValue(serializedValue);
+        dataStore.commit();
       } catch (IOException | DatabaseWriteException e) {
         throw new SchemaUpdateException(e);
       }
     } catch (SchemaUpdateException e) {
       e.printStackTrace();
     }
-
   }
 }

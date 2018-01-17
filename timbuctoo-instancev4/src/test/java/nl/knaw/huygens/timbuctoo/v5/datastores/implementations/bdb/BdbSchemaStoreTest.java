@@ -103,6 +103,11 @@ public class BdbSchemaStoreTest {
 
     }
 
+    @Override
+    public void commit() {
+
+    }
+
     public String getResult() {
       return result;
     }

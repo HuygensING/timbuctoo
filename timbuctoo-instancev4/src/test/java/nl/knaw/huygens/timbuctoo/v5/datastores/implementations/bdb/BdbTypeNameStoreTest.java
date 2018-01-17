@@ -25,6 +25,11 @@ public class BdbTypeNameStoreTest {
         @Override
         public void close() throws Exception {
         }
+
+        @Override
+        public void commit() {
+
+        }
       },
       "http://example.org"
     );

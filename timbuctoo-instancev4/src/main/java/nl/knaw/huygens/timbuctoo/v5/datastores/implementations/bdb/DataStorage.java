@@ -8,4 +8,6 @@ public interface DataStorage {
   void setValue(String newValue) throws DatabaseWriteException;
 
   void close() throws Exception;
+
+  void commit();
 }
