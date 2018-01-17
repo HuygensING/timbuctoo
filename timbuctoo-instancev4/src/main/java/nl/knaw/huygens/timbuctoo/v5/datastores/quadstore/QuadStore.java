@@ -13,4 +13,6 @@ public interface QuadStore {
   void close();
 
   void commit();
+
+  boolean isClean();
 }

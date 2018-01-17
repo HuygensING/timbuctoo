@@ -117,6 +117,11 @@ public class BdbTripleStore implements QuadStore {
     bdbWrapper.commit();
   }
 
+  @Override
+  public boolean isClean() {
+    return bdbWrapper.isClean();
+  }
+
   public void start() {
     bdbWrapper.beginTransaction();
   }

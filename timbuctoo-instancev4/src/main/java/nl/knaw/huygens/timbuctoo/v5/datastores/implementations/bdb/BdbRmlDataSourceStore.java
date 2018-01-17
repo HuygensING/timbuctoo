@@ -55,6 +55,11 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   }
 
   @Override
+  public boolean isClean() {
+    return bdbWrapper.isClean();
+  }
+
+  @Override
   public void start() {
     importStatus.setStatus("Storing entities");
     bdbWrapper.beginTransaction();

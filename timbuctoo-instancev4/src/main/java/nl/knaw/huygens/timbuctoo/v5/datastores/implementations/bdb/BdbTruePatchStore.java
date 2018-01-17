@@ -96,4 +96,8 @@ public class BdbTruePatchStore {
   public void start() {
     bdbWrapper.beginTransaction();
   }
+
+  public boolean isClean() {
+    return bdbWrapper.isClean();
+  }
 }

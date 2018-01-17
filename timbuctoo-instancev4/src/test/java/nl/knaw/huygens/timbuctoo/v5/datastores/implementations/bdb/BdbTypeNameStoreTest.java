@@ -39,6 +39,11 @@ public class BdbTypeNameStoreTest {
         public void beginTransaction() {
 
         }
+
+        @Override
+        public boolean isClean() {
+          return true;
+        }
       },
       "http://example.org"
     );

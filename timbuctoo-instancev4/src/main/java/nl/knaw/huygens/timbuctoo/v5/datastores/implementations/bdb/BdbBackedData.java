@@ -61,4 +61,9 @@ public class BdbBackedData implements DataStorage {
     bdbWrapper.beginTransaction();
   }
 
+  @Override
+  public boolean isClean() {
+    return bdbWrapper.isClean();
+  }
+
 }

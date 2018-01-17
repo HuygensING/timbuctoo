@@ -25,6 +25,7 @@ import static com.sleepycat.je.OperationStatus.SUCCESS;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BdbWrapper<KeyT, ValueT> {
+  private static final Logger LOG = getLogger(BdbWrapper.class);
   private final Environment dbEnvironment;
   private final Database database;
   private final DatabaseConfig databaseConfig;
@@ -32,9 +33,8 @@ public class BdbWrapper<KeyT, ValueT> {
   private final EntryBinding<ValueT> valueBinder;
   private final DatabaseEntry keyEntry = new DatabaseEntry();
   private final DatabaseEntry valueEntry = new DatabaseEntry();
-  private Transaction transaction;
-  private static final Logger LOG = getLogger(BdbWrapper.class);
   private final Map<Cursor, String> cursors = new HashMap<>();
+  private Transaction transaction;
 
   public BdbWrapper(Environment dbEnvironment, Database database, DatabaseConfig databaseConfig,
                     EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder) {
@@ -43,11 +43,25 @@ public class BdbWrapper<KeyT, ValueT> {
     this.databaseConfig = databaseConfig;
     this.keyBinder = keyBinder;
     this.valueBinder = valueBinder;
+
   }
 
   public void beginTransaction() {
     if (databaseConfig.getTransactional()) {
       transaction = dbEnvironment.beginTransaction(null, null);
+    }
+
+    synchronized (keyEntry) {
+      try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
+        TupleBinding.getPrimitiveBinding(String.class).objectToEntry("isClean", keyEntry);
+        TupleBinding.getPrimitiveBinding(Boolean.class).objectToEntry(true, valueEntry);
+        OperationStatus searchResult = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
+        if (!searchResult.equals(OperationStatus.SUCCESS)) {
+          LOG.error("Could not remove is clean property");
+        }
+      } catch (Exception e) {
+        LOG.error("Could not remove is clean property", e);
+      }
     }
   }
 
@@ -67,10 +81,40 @@ public class BdbWrapper<KeyT, ValueT> {
     return DatabaseGetter.databaseGetter(keyBinder, valueBinder, database, cursors);
   }
 
+  public boolean isClean() {
+    synchronized (keyEntry) {
+      try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
+        TupleBinding.getPrimitiveBinding(String.class).objectToEntry("isClean", keyEntry);
+        TupleBinding.getPrimitiveBinding(Boolean.class).objectToEntry(true, valueEntry);
+        OperationStatus searchResult = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
+        if (searchResult.equals(OperationStatus.SUCCESS)) {
+          return true;
+        }
+      } catch (Exception e) {
+        LOG.error("Could search for value is clean property", e);
+      }
+    }
+    return false;
+  }
+
   public void commit() {
     if (transaction != null) {
       transaction.commit();
     }
+
+    synchronized (keyEntry) {
+      try {
+        TupleBinding.getPrimitiveBinding(String.class).objectToEntry("isClean", keyEntry);
+
+        TupleBinding.getPrimitiveBinding(Boolean.class).objectToEntry(true, valueEntry);
+        if (database.putNoDupData(transaction, keyEntry, valueEntry) == null) {
+          LOG.error("Could not add 'isClean' property");
+        }
+      } catch (Exception e) {
+        LOG.error("Could not add 'isClean' property", e);
+      }
+    }
+
     database.sync();
     dbEnvironment.sync(); // needed for better recoverability
   }

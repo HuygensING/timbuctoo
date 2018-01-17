@@ -113,6 +113,11 @@ public class BdbSchemaStoreTest {
 
     }
 
+    @Override
+    public boolean isClean() {
+      return true;
+    }
+
     public String getResult() {
       return result;
     }

@@ -12,4 +12,6 @@ public interface DataStorage {
   void commit();
 
   void beginTransaction();
+
+  boolean isClean();
 }
