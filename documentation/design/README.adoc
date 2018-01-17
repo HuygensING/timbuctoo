@@ -2,7 +2,7 @@
 
 This document describes the workflow of the Huygens team for adding new functionality to Timbuctoo.
 
-. Write an ascii doc that contains the following parts:
+. Write an ascii (make sure it has the extension adoc) doc that contains the following parts:
 * What problem does the work solve?
 * What should be the result of the work?
 * What will be the approach?
