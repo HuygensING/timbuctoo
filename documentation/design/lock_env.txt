@@ -12,6 +12,13 @@ at t=3 the first mutation is applied the dataset now contains 1 triple ex:1 ex:n
 at t=4 the second mutation is applied. because ex:1 ex:name "Jan Jansen" is not in the dataset. This mutation has no visible effect and the dataset still contains the one triple: ex:1 ex:name "Jan Pieterson"
 However, if the mutations would have executed in order, the dataset would have been empty!
 
+The problem is further complicated in that the UoW is handled in spawn-of threads that are, or could be, left to their own. So the regular mechanism of
+- acquire a common lock
+- try process the UoW (in this thread or another)
+- wait for the UoW fully processed
+- finally release the lock
+is not going to work, because we do not (always) wait and the lock would be released to soon.
+
 Intended result
 ===============
 Processing mutations as described above may include quadstore reading and writing and in between the store should not be altered. We can consider a complete mutation as a Unit of Work (UoW). UoWs should be serialized, i.e. done as a whole and executed one after the other. We can distinguish UoW's in methods of classes that handle API calls. We only consider cases where the store will be mutated. Dirty reads can still take place.
@@ -24,8 +31,8 @@ So we assume that synchronizing calls to ImportManager.processLogsUntil and taki
 
 Changes in ImportManager
 ------------------------
-- We introduce a logMonitor as the object on which to synchronize mutating access to the store. The 3 public methods in ImportManager that call the private processLogsUntil are being surrounded with a synchronized block on logMonitor. These 3 methods are addLog, generateLog and processLog.
-- We change the method signature of generateLog. Instead of taking an RdfCreator it will take a Supplier<RdfCreator>. Instantiating the RdfCreator fromCurrentState (which will read the store) is now taking place in a block that is synchronized on logMonitor.
+- We introduce a lock mechanism on ImportStatus. The 3 public methods in ImportManager that call the private processLogsUntil acquire this lock. These 3 methods are addLog, generateLog and processLog.
+- We change the method signature of generateLog. Instead of taking an RdfCreator it will take a Supplier<RdfCreator>. Instantiating the RdfCreator fromCurrentState (which will read the store) is now taking place in a block that is synchronized on the lock in ImortStatus.
 
 Introduction of LambdaOriginatedException
 -----------------------------------------
@@ -54,6 +61,12 @@ Alternatively we could do away with exceptions as a way for starting alternative
 Changes in JsonLdEditEndpoint
 -----------------------------
 In stead of creating and using the RdfCreator asynchronously the construction of RdfCreator (fromCurrentState) is now done by a Supplier, effectively placing the reading of current state of the store in the same UoW in which the writing is done. Exceptions in construction of the RdfCreator travel by means of the LambdaOriginatedException.cause to the lastError of importStatus. The special case where a ConcurrentUpdateException is causing mishap is reported to the user as Status.CONFLICT by the translateStatusError function.
+
+Changes in ImportStatus
+-----------------------
+The start of an import cycle is now by means of method lock, which may block until ImportStatus lock has been released.
+
+The status after import cycle has been completed is reflected in ImportStatusReport, which is given to the API calls. ImportStatus itself can still be queried for all intermediate states.
 
 Changes in ErrorResponseHandler
 -------------------------------
