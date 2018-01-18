@@ -7,6 +7,8 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 import static java.util.Optional.ofNullable;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYDESCRIPTIONPREDICATE;
@@ -52,27 +55,22 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
       userPermissionCheck.getPermissions(dataSetRepository.getDataSet(user, ownerId, dataSetName).get()
         .getMetadata()).contains(Permission.ADMIN)) {
       DataSet dataSet = dataSetOpt.get();
-      dataSet.getQuadStore();
+      final QuadStore quadStore = dataSet.getQuadStore();
+      final String baseUri = dataSet.getMetadata().getBaseUri();
+      Supplier<RdfCreator> supplier = () -> new StringPredicatesRdfCreator(
+        dataSet.getQuadStore(),
+        ImmutableMap.of(
+          Tuple.tuple(collectionUri, TIM_SUMMARYTITLEPREDICATE),
+          ofNullable((String) viewConfig.get("title")),
+
+          Tuple.tuple(collectionUri, TIM_SUMMARYDESCRIPTIONPREDICATE),
+          ofNullable((String) viewConfig.get("description")),
+
+          Tuple.tuple(collectionUri, TIM_SUMMARYIMAGEPREDICATE),
+          ofNullable((String) viewConfig.get("image"))
+        ), baseUri);
       try {
-        final String baseUri = dataSet.getMetadata().getBaseUri();
-        dataSet.getImportManager().generateLog(
-          baseUri,
-          baseUri,
-          new StringPredicatesRdfCreator(
-            dataSet.getQuadStore(),
-            ImmutableMap.of(
-              Tuple.tuple(collectionUri, TIM_SUMMARYTITLEPREDICATE),
-              ofNullable((String) viewConfig.get("title")),
-
-              Tuple.tuple(collectionUri, TIM_SUMMARYDESCRIPTIONPREDICATE),
-              ofNullable((String) viewConfig.get("description")),
-
-              Tuple.tuple(collectionUri, TIM_SUMMARYIMAGEPREDICATE),
-              ofNullable((String) viewConfig.get("image"))
-            ),
-            baseUri
-          )
-        ).get();
+        dataSet.getImportManager().generateLog(baseUri, baseUri, supplier).get();
         return new LazyTypeSubjectReference(collectionUri, dataSet);
       } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
         throw new RuntimeException(e);

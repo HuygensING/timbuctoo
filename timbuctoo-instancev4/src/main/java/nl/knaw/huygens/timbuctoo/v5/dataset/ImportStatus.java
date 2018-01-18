@@ -15,11 +15,11 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Record current status of import on a dataSet.
+ * Record current status of import on a dataSet and provide lock mechanism for concurrent updates.
  * <p>
  * Import cycles follow steps of this pattern:
  * <ul>
- *   <li>{@link #start(String, String)} start the import process;</li>
+ *   <li>{@link #lock(String, String)} start the import process; set a lock on further imports</li>
  *   <li>repeat 0 or more times:
  *    <ul>
  *      <li>{@link #startEntry(LogEntry)} start the import of one logEntry;</li>
@@ -27,9 +27,12 @@ import java.util.concurrent.TimeUnit;
  *    </ul>
  *   </li>
  *   <li>{@link #finishList()} finish the import process.</li>
+ *   <li>{@link #unlock()} release the lock on imports</li>
  * </ul>
- * In between all steps methods {@link #setStatus(String)} and {@link #addError(String, Throwable)} can be called.
+ * In between {@link #lock(String, String)} and {@link #finishList()} the methods {@link #setStatus(String)}
+ * and {@link #addError(String, Throwable)} can be called.
  * The last status and all error messages will be persisted via {@link LogList} and {@link LogEntry} respectively.
+ * The {@link #finishList()} method returns an {@link ImportStatusReport} on the finished import.
  * </p>
  */
 @JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.NAME)
@@ -50,6 +53,8 @@ public class ImportStatus {
   private LogEntry currentLogEntry;
   private long currentEntryStart;
 
+  private boolean locked;
+
   public ImportStatus(LogList logList) {
     this.logList = logList;
     stopwatch = Stopwatch.createUnstarted();
@@ -57,7 +62,15 @@ public class ImportStatus {
     errors = new ConcurrentLinkedDeque<>();
   }
 
-  public void start(String methodName, String baseUri) {
+  protected synchronized void lock(String methodName, String baseUri) {
+    while (locked) {
+      try {
+        TimeUnit.MILLISECONDS.sleep(100);
+      } catch (InterruptedException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+    locked = true;
     reset();
     messages.clear();
     errors.clear();
@@ -65,6 +78,10 @@ public class ImportStatus {
     this.baseUri = baseUri;
     setStatus("Started " + this.methodName);
     stopwatch.start();
+  }
+
+  protected void unlock() {
+    locked = false;
   }
 
   public void startEntry(LogEntry logEntry) {
@@ -118,13 +135,16 @@ public class ImportStatus {
     });
   }
 
-  public void finishList() {
-    stopwatch.stop();
-    int errorCount = errors.size();
-    setStatus("Finished import with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
-    date = Instant.now().toString();
-    logList.setLastImportDate(date);
-    logList.setLastImportDuration(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT)));
+  public ImportStatusReport finishList() {
+    if (stopwatch.isRunning()) {
+      stopwatch.stop();
+      int errorCount = errors.size();
+      setStatus("Finished import with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
+      date = Instant.now().toString();
+      logList.setLastImportDate(date);
+      logList.setLastImportDuration(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT)));
+    }
+    return getImportStatusReport();
   }
 
   public String getMethodName() {
@@ -195,5 +215,22 @@ public class ImportStatus {
     currentLogEntry = null;
     stopwatch.reset();
   }
+
+  private ImportStatusReport getImportStatusReport() {
+    return ImmutableImportStatusReport.builder()
+      .baseUri(getBaseUri())
+      .status(getStatus())
+      .messages(getMessages())
+      .errors(getErrors())
+      .date(getDate())
+      .elapsedTime(getElapsedTime())
+      .errorCount(getErrorCount())
+      .hasErrors(hasErrors())
+      .lastError(getLastError())
+      .methodName(getMethodName())
+      .build();
+  }
+
+
 
 }

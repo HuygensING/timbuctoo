@@ -21,7 +21,7 @@ public class ImportStatusTest {
     logList.addEntry(entry);
     ImportStatus status = new ImportStatus(logList);
 
-    status.start("method", "baseUri");
+    status.lock("method", "baseUri");
     assertThat(status.getStatus(), is("Started method"));
 
     status.addError("This error is recorded in logList", new RuntimeException("list"));
@@ -37,13 +37,33 @@ public class ImportStatusTest {
       is(true));
 
     status.finishEntry();
-    status.finishList();
+    ImportStatusReport statusReport = status.finishList();
 
     String json = new ObjectMapper()
       .enable(SerializationFeature.INDENT_OUTPUT)
       .writeValueAsString(status);
     //System.out.println(json);
     assertThat(json.contains("\"@type\" : \"ImportStatus\""), is(true));
+
+    //ImportStatusReport statusReport = status.getImportStatusReport();
+    String jsonReport = new ObjectMapper()
+      .enable(SerializationFeature.INDENT_OUTPUT)
+      .writeValueAsString(statusReport);
+    //System.out.println(jsonReport);
+    assertThat(jsonReport.contains("\"@type\" : \"ImmutableImportStatusReport\""), is(true));
+  }
+
+  @Test
+  public void jsonSerializationWithNullValues() throws Exception {
+    ImportStatus status = new ImportStatus(null);
+    ImportStatusReport statusReport = status.finishList();
+
+    assertThat(status.hasErrors(), is(false));
+    String jsonReport = new ObjectMapper()
+      .enable(SerializationFeature.INDENT_OUTPUT)
+      .writeValueAsString(statusReport);
+    //System.out.println(jsonReport);
+    assertThat(jsonReport.contains("\"@type\" : \"ImmutableImportStatusReport\""), is(true));
   }
 
 }

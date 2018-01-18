@@ -7,9 +7,10 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatusReport;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
@@ -35,6 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
@@ -98,24 +100,25 @@ public class TabularUpload {
             fileInfo.getName(),
             mediaType
           );
-          Tuple<UUID, PlainRdfCreator> rdfCreator = dataSetRepository.registerRdfCreator(
-            (statusConsumer) -> new TabularRdfCreator(
-              importManager,
-              loader.get(),
-              dataSet.getMetadata(),
-              statusConsumer,
-              fileToken
-            )
-          );
-          Future<ImportStatus> promise = importManager.generateLog(
+          Supplier<RdfCreator> supplier = () -> {
+            Tuple<UUID, PlainRdfCreator> tuple = dataSetRepository.registerRdfCreator(
+              (statusConsumer) -> new TabularRdfCreator(
+                importManager,
+                loader.get(),
+                dataSet.getMetadata(),
+                statusConsumer,
+                fileToken
+              )
+            );
+            return tuple.getRight();
+          };
+          Future<ImportStatusReport> promise = importManager.generateLog(
             dataSet.getMetadata().getBaseUri(),
             dataSet.getMetadata().getBaseUri(),
-            rdfCreator.getRight()
+            supplier
           );
-
           return handleImportManagerResult(promise);
         } catch (FileStorageFailedException | LogStorageFailedException e) {
-
           return Response.serverError().build();
         }
       });

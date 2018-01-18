@@ -59,7 +59,6 @@ public class ImportManager implements DataProvider {
   private final Runnable webhooks;
   private final ImportStatus importStatus;
   private final DataSetImportStatus dataSetImportStatus;
-  private final Object logMonitor;
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
                        ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList,
@@ -84,28 +83,26 @@ public class ImportManager implements DataProvider {
     subscribedProcessors = new ArrayList<>();
     importStatus = new ImportStatus(logListStore.getData());
     dataSetImportStatus = new DataSetImportStatus(logListStore.getData());
-    logMonitor = new Object();
   }
 
-  public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
+  public Future<ImportStatusReport> addLog(String baseUri, String defaultGraph, String fileName,
                                                    InputStream rdfInputStream,
                                                    Optional<Charset> charset, MediaType mediaType)
     throws LogStorageFailedException {
 
-    synchronized (logMonitor) {
-      importStatus.start(this.getClass().getSimpleName() + ".addLog", baseUri);
-      try {
-        int[] index = new int[1];
-        String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
-        logListStore.updateData(logList -> {
-          index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
-          return logList;
-        });
-        return executorService.submit(() -> processLogsUntil(index[0]));
-      } catch (IOException e) {
-        importStatus.addError("Could not save log", e);
-        throw new LogStorageFailedException(e);
-      }
+    importStatus.lock(this.getClass().getSimpleName() + ".addLog", baseUri);
+    try {
+      int[] index = new int[1];
+      String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
+      logListStore.updateData(logList -> {
+        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
+        return logList;
+      });
+      return executorService.submit(() -> processLogsUntil(index[0]));
+    } catch (IOException e) {
+      importStatus.addError("Could not save log", e);
+      endImport();
+      throw new LogStorageFailedException(e);
     }
   }
 
@@ -131,173 +128,161 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  // @ToDo replace all calls to this method to the one that takes a Supplier<RdfCreator>
-  public Future<ImportStatus> generateLog(String baseUri, String defaultGraph, RdfCreator creator)
+  public Future<ImportStatusReport> generateLog(String baseUri, String defaultGraph,
+                                                       Supplier<RdfCreator> supplier)
     throws LogStorageFailedException {
 
-    importStatus.start(this.getClass().getSimpleName() + ".generateLog", baseUri);
+    importStatus.lock(this.getClass().getSimpleName() + ".generateLog", baseUri);
     try {
       //add to the log structure
       int[] index = new int[1];
       logListStore.updateData(logList -> {
-        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, creator));
+        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, supplier.get()));
         return logList;
       });
       //schedule processing
       return executorService.submit(() -> processLogsUntil(index[0]));
     } catch (IOException e) {
       importStatus.addError("Could not update logList", e);
+      endImport();
       throw new LogStorageFailedException(e);
+    } catch (LambdaOriginatedException e) {
+      importStatus.addError("Could not supply RdfCreator", e.getCause());
+      return ConcurrentUtils.constantFuture(endImport());
     }
   }
 
-  public Future<ImportStatus> generateLog(String baseUri, String defaultGraph,
-                                                       Supplier<RdfCreator> supplier)
-    throws LogStorageFailedException {
+  public Future<ImportStatusReport> processLogs() {
+    importStatus.lock(this.getClass().getSimpleName() + ".processLogs", null);
+    return executorService.submit(() -> processLogsUntil(Integer.MAX_VALUE));
+  }
 
-    synchronized (logMonitor) {
-      importStatus.start(this.getClass().getSimpleName() + ".generateLog", baseUri);
-      try {
-        //add to the log structure
-        int[] index = new int[1];
-        logListStore.updateData(logList -> {
-          index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, supplier.get()));
-          return logList;
-        });
-        //schedule processing
-        return executorService.submit(() -> processLogsUntil(index[0]));
-      } catch (IOException e) {
-        importStatus.addError("Could not update logList", e);
-        throw new LogStorageFailedException(e);
-      } catch (LambdaOriginatedException e) {
-        importStatus.addError("Could not supply RdfCreator", e.getCause());
-        endImport();
-        return ConcurrentUtils.constantFuture(importStatus);
+  // All calls to this method should acquire importStatus.lock
+  private ImportStatusReport processLogsUntil(int maxIndex) {
+    ImportStatusReport statusReport = null;
+    try {
+      ListIterator<LogEntry> unprocessed = logListStore.getData().getUnprocessed();
+      boolean dataWasAdded = false;
+      while (unprocessed.hasNext() && unprocessed.nextIndex() <= maxIndex) {
+        int index = unprocessed.nextIndex();
+        LogEntry entry = unprocessed.next();
+        importStatus.startEntry(entry);
+        if (entry.getLogToken().isPresent()) { // logToken
+          String logToken = entry.getLogToken().get();
+          try {
+            CachedLog log = logStorage.getLog(logToken);
+            final Stopwatch stopwatch = Stopwatch.createStarted();
+            for (RdfProcessor processor : subscribedProcessors) {
+              if (processor.getCurrentVersion() <= index) {
+                String msg = "******* " + processor.getClass().getSimpleName() + " Started importing full log...";
+                LOG.info(msg);
+                importStatus.setStatus(msg);
+                RdfParser rdfParser = serializerFactory.makeRdfParser(log);
+                processor.start(index);
+                rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
+                processor.commit();
+              }
+            }
+            long elapsedTime = stopwatch.elapsed(TimeUnit.SECONDS);
+            String msg = "Finished importing. Total import took " + elapsedTime + " seconds.";
+            LOG.info(msg);
+            importStatus.setStatus(msg);
+            dataWasAdded = true;
+          } catch (RdfProcessingFailedException | IOException e) {
+            LOG.error("Processing log failed", e);
+            importStatus.addError("Processing log failed", e);
+          }
+
+          // Update the log, even after RdfProcessingFailedException | IOException
+          try {
+            logListStore.updateData(logList -> {
+              logList.markAsProcessed(index);
+              return logList;
+            });
+          } catch (IOException e) {
+            LOG.error("Updating the log failed", e);
+            importStatus.addError("Updating log failed", e);
+          }
+        } else { // no logToken
+          RdfCreator creator = entry.getRdfCreator().get();
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();//FIXME: write to tempFile
+
+          String token = "";
+          MediaType mediaType;
+          Optional<Charset> charset;
+
+          if (creator instanceof PlainRdfCreator) {
+            try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(outputStream)) {
+              mediaType = serializer.getMediaType();
+              charset = Optional.of(serializer.getCharset());
+              ((PlainRdfCreator) creator).sendQuads(serializer);
+            } catch (Exception e) {
+              LOG.error("Log generation failed", e);
+              importStatus.addError("Log generation failed", e);
+              break;
+            }
+          } else {
+            try (
+              RdfPatchSerializer srlzr = serializerFactory.makeRdfPatchSerializer(outputStream, entry.getBaseUri())) {
+              mediaType = srlzr.getMediaType();
+              charset = Optional.of(srlzr.getCharset());
+              ((PatchRdfCreator) creator).sendQuads(srlzr);
+            } catch (Exception e) {
+              LOG.error("Log generation failed", e);
+              importStatus.addError("Log generation failed", e);
+              break;
+            }
+          }
+
+          try {
+            token = logStorage.saveLog(
+              new ByteArrayInputStream(outputStream.toByteArray()),
+              "log_generated_by_" + creator.getClass().getSimpleName(),
+              mediaType,
+              charset
+            );
+            LogEntry entryWithLog = LogEntry.addLogToEntry(entry, token);
+            unprocessed.set(entryWithLog);
+
+            token = "";
+            unprocessed.previous(); //move back to process this item again
+          } catch (Exception e) {
+            if (token.isEmpty()) {
+              LOG.error("Log processing failed", e);
+            } else {
+              LOG.error("Log processing failed. Log created but not added to the list!", e);
+            }
+            importStatus.addError("Log processing failed", e);
+            break;
+          }
+        } // end else with no condition
+        importStatus.finishEntry();
+      } // end main while loop
+      if (dataWasAdded) {
+        webhooks.run();
+      }
+      statusReport = endImport();
+      return statusReport;
+    } finally {
+      if (statusReport == null) {
+        importStatus.unlock();
+        LOG.warn("Unexpected program flow. Unlocked ImportStatus");
       }
     }
   }
 
-  public Future<ImportStatus> processLogs() {
-    synchronized (logMonitor) {
-      importStatus.start(this.getClass().getSimpleName() + ".processLogs", null);
-      return executorService.submit(() -> processLogsUntil(Integer.MAX_VALUE));
-    }
-  }
-
-  // All calls to this method should be synchronized on logMonitor
-  private ImportStatus processLogsUntil(int maxIndex) {
-    ListIterator<LogEntry> unprocessed = logListStore.getData().getUnprocessed();
-    boolean dataWasAdded = false;
-    while (unprocessed.hasNext() && unprocessed.nextIndex() <= maxIndex) {
-      int index = unprocessed.nextIndex();
-      LogEntry entry = unprocessed.next();
-      importStatus.startEntry(entry);
-      if (entry.getLogToken().isPresent()) { // logToken
-        String logToken = entry.getLogToken().get();
-        try {
-          CachedLog log = logStorage.getLog(logToken);
-          final Stopwatch stopwatch = Stopwatch.createStarted();
-          for (RdfProcessor processor : subscribedProcessors) {
-            if (processor.getCurrentVersion() <= index) {
-              String msg = "******* " + processor.getClass().getSimpleName() + " Started importing full log...";
-              LOG.info(msg);
-              importStatus.setStatus(msg);
-              RdfParser rdfParser = serializerFactory.makeRdfParser(log);
-              processor.start(index);
-              rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
-              processor.commit();
-            }
-          }
-          long elapsedTime = stopwatch.elapsed(TimeUnit.SECONDS);
-          String msg = "Finished importing. Total import took " + elapsedTime + " seconds.";
-          LOG.info(msg);
-          importStatus.setStatus(msg);
-          dataWasAdded = true;
-        } catch (RdfProcessingFailedException | IOException e) {
-          LOG.error("Processing log failed", e);
-          importStatus.addError("Processing log failed", e);
-        }
-
-        // Update the log, even after RdfProcessingFailedException | IOException
-        try {
-          logListStore.updateData(logList -> {
-            logList.markAsProcessed(index);
-            return logList;
-          });
-        } catch (IOException e) {
-          LOG.error("Updating the log failed", e);
-          importStatus.addError("Updating log failed", e);
-        }
-      } else { // no logToken
-        RdfCreator creator = entry.getRdfCreator().get();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();//FIXME: write to tempFile
-
-        String token = "";
-        MediaType mediaType;
-        Optional<Charset> charset;
-
-        if (creator instanceof PlainRdfCreator) {
-          try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(outputStream)) {
-            mediaType = serializer.getMediaType();
-            charset = Optional.of(serializer.getCharset());
-            ((PlainRdfCreator) creator).sendQuads(serializer);
-          } catch (Exception e) {
-            LOG.error("Log generation failed", e);
-            importStatus.addError("Log generation failed", e);
-            break;
-          }
-        } else {
-          try (RdfPatchSerializer srlzr = serializerFactory.makeRdfPatchSerializer(outputStream, entry.getBaseUri())) {
-            mediaType = srlzr.getMediaType();
-            charset = Optional.of(srlzr.getCharset());
-            ((PatchRdfCreator) creator).sendQuads(srlzr);
-          } catch (Exception e) {
-            LOG.error("Log generation failed", e);
-            importStatus.addError("Log generation failed", e);
-            break;
-          }
-        }
-
-        try {
-          token = logStorage.saveLog(
-            new ByteArrayInputStream(outputStream.toByteArray()),
-            "log_generated_by_" + creator.getClass().getSimpleName(),
-            mediaType,
-            charset
-          );
-          LogEntry entryWithLog = LogEntry.addLogToEntry(entry, token);
-          unprocessed.set(entryWithLog);
-
-          token = "";
-          unprocessed.previous(); //move back to process this item again
-        } catch (Exception e) {
-          if (token.isEmpty()) {
-            LOG.error("Log processing failed", e);
-          } else {
-            LOG.error("Log processing failed. Log created but not added to the list!", e);
-          }
-          importStatus.addError("Log processing failed", e);
-          break;
-        }
-      } // end else with no condition
-      importStatus.finishEntry();
-    } // end main while loop
-    if (dataWasAdded) {
-      webhooks.run();
-    }
-    endImport();
-    return importStatus;
-  }
-
-  private void endImport() {
-    importStatus.finishList();
+  private ImportStatusReport endImport() {
+    ImportStatusReport statusReport = importStatus.finishList();
     // update log.json
     try {
       logListStore.updateData(Function.identity());
     } catch (IOException e) {
       LOG.error("Updating the log failed", e);
       importStatus.addError("Updating log failed", e);
+    } finally {
+      importStatus.unlock();
     }
+    return statusReport;
   }
 
 

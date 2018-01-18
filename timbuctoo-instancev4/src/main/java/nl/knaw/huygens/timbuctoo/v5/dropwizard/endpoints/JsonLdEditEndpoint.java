@@ -4,12 +4,12 @@ import com.github.jsonldjava.core.DocumentLoader;
 import com.github.jsonldjava.core.JsonLdError;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import nl.knaw.huygens.timbuctoo.util.LambdaOriginatedException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatusReport;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
-import nl.knaw.huygens.timbuctoo.util.LambdaOriginatedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
@@ -109,13 +109,13 @@ public class JsonLdEditEndpoint {
       }
     };
 
-    final Future<ImportStatus> promise = importManager.generateLog(
+    final Future<ImportStatusReport> promise = importManager.generateLog(
       dataSet.getMetadata().getBaseUri(),
       dataSet.getMetadata().getBaseUri(),
       supplier
     );
-    return handleImportManagerResult(promise, (importStatus) -> {
-      if (importStatus.getLastError() instanceof ConcurrentUpdateException) {
+    return handleImportManagerResult(promise, (statusReport) -> {
+      if (statusReport.getLastError() instanceof ConcurrentUpdateException) {
         return Response.Status.CONFLICT;
       } else {
         return Response.Status.BAD_REQUEST;

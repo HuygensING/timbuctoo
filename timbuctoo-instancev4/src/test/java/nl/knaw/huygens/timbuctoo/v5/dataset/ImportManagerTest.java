@@ -18,17 +18,24 @@ import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -75,7 +82,7 @@ public class ImportManagerTest {
     String name = "http://example.com/clusius.ttl";
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
-    Future<ImportStatus> promise = importManager.addLog(
+    Future<ImportStatusReport> promise = importManager.addLog(
       baseUri,
       defaultGraph,
       name,
@@ -84,8 +91,8 @@ public class ImportManagerTest {
       MediaType.valueOf("text/turtle")
     );
 
-    ImportStatus status = promise.get();
-    assertThat(status.getErrorCount(), is((0)));
+    ImportStatusReport statusReport = promise.get();
+    assertThat(statusReport.getErrorCount(), is((0)));
 
     LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getBaseUri(), is(baseUri));
@@ -101,7 +108,7 @@ public class ImportManagerTest {
     String baseUri = "http://example.com/baseUri";
     File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
 
-    Future<ImportStatus> promise = importManager.addLog(
+    Future<ImportStatusReport> promise = importManager.addLog(
       baseUri,
       defaultGraph,
       name,
@@ -127,7 +134,7 @@ public class ImportManagerTest {
     importManager.subscribeToRdf(processor);
 
 
-    Future<ImportStatus> promise = importManager.addLog(
+    Future<ImportStatusReport> promise = importManager.addLog(
       baseUri,
       defaultGraph,
       name,
@@ -135,9 +142,9 @@ public class ImportManagerTest {
       Optional.of(Charsets.UTF_8),
       MediaType.valueOf("text/turtle")
     );
-    ImportStatus status = promise.get();
+    ImportStatusReport statusReport = promise.get();
     assertThat(processor.getCounter(), is(28));
-    assertThat(status.hasErrors(), is(false));
+    assertThat(statusReport.hasErrors(), is(false));
   }
 
   @Test
@@ -147,14 +154,14 @@ public class ImportManagerTest {
     CountingProcessor processor = new CountingProcessor();
     importManager.subscribeToRdf(processor);
 
-    Future<ImportStatus> promise = importManager.generateLog(
+    Future<ImportStatusReport> promise = importManager.generateLog(
       baseUri,
       defaultGraph,
-      new DummyRdfCreator()
+      DummyRdfCreator::new
     );
 
-    ImportStatus status = promise.get();
-    assertThat(status.hasErrors(), is(false));
+    ImportStatusReport statusReport = promise.get();
+    assertThat(statusReport.hasErrors(), is(false));
     assertThat(processor.getCounter(), is(3));
     LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getBaseUri(), is(baseUri));
@@ -225,7 +232,6 @@ public class ImportManagerTest {
 
 
   }
-
 
   private static class CountingProcessor implements RdfProcessor {
     private final AtomicInteger counter;
@@ -310,12 +316,79 @@ public class ImportManagerTest {
     Supplier<RdfCreator> supplier = () -> {
       throw new LambdaOriginatedException(cue);
     };
-    Future<ImportStatus> promise = importManager.generateLog(baseUri, defaultGraph, supplier);
-    ImportStatus status = promise.get();
-    assertThat(status.getLastError(), is(cue));
-    assertThat(status.getMessages().size(), is(3));
-    assertThat(status.getMessages().get(1).contains(errorMsg), is(true));
-    assertThat(status.getStatus(), is("Finished import with 1 error"));
+    Future<ImportStatusReport> promise = importManager.generateLog(baseUri, defaultGraph, supplier);
+    ImportStatusReport statusReport = promise.get();
+    assertThat(statusReport.getLastError(), is(cue));
+    assertThat(statusReport.getMessages().size(), is(3));
+    assertThat(statusReport.getMessages().get(1).contains(errorMsg), is(true));
+    assertThat(statusReport.getStatus(), is("Finished import with 1 error"));
   }
+
+  @Test
+  public void multipleUpdatesAreSerialized() throws  Exception {
+    long wait = 10;
+    int threads = 10;
+    final CountingProcessor processor = new CountingProcessor();
+    importManager.subscribeToRdf(processor);
+    String defaultGraph = "http://example.com/defaultGraph";
+    List<Callable<ImportStatusReport>> tasks = new ArrayList<>();
+
+    tasks.add(() -> importManager.generateLog("foo", "bar", () -> {
+      //System.out.println("I throw foo");
+      throw new LambdaOriginatedException(new Exception("foo"));
+    }).get());
+
+    for (int i = 0; i < threads; i ++) {
+      final int[] in = {i};
+      String baseUri = "http://example.com/baseUri/" + i;
+      Supplier<RdfCreator> supplier = () -> (PatchRdfCreator) saver -> {
+        try {
+          //System.out.println(processor.counter + " I am supplier " + in[0] + ". I wait " + wait + " msecs.");
+          Thread.sleep(wait);
+        } catch (InterruptedException e) {
+          throw new IllegalStateException(e);
+        }
+      };
+      tasks.add(() -> importManager.generateLog(baseUri, defaultGraph, supplier).get());
+    }
+
+    tasks.add(() -> importManager.generateLog("footoo", "bartoo", () -> {
+      //System.out.println("I throw bar");
+      throw new LambdaOriginatedException(new Exception("bar"));
+    }).get());
+
+    Collections.shuffle(tasks);
+
+    ExecutorService executor = Executors.newCachedThreadPool();
+    List<ImportStatusReport> statusReports = executor.invokeAll(tasks)
+      .stream()
+      .map(future -> {
+        try {
+          return future.get();
+        } catch (Exception e) {
+          throw new IllegalStateException(e);
+        }
+      })
+      .collect(Collectors.toList());
+
+    executor.shutdown();
+    assertThat(processor.counter.get(), is(2 * threads));
+
+  }
+
+  @Test
+  @Ignore("Endless test")
+  public void keepTesting() throws Exception {
+    // Stops after round ~92:
+    // java.io.FileNotFoundException:
+    // /var/folders/4r/07w38gh12d395r8s9n0pw30w0000gn/T/logList2627116416061327169.json (Too many open files)
+    int counter = 0;
+    while (1 == 1) {
+      multipleUpdatesAreSerialized();
+      System.out.println(counter++);
+      Thread.sleep(1);
+    }
+  }
+
 
 }

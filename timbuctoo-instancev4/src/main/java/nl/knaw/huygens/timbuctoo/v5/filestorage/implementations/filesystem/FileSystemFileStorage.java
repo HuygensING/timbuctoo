@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
@@ -10,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.dto.F
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.dto.FileInfoList;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.dto.FileSystemCachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.dto.FileSystemCachedLog;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -44,8 +44,14 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     String random = UUID.randomUUID().toString();
     String mnemonic = fileName.replaceAll("[^a-zA-Z0-9]", "_");
     String token = random + "-" + mnemonic;
-    Files.copy(stream, new File(dir, token).toPath());
-    fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, mediaType, charset)));
+
+    try {
+      // Gives (Too many open files) on Mac after ~1000 calls. commons.IOUtils.copy is no better.
+      Files.copy(stream, new File(dir, token).toPath());
+      fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, mediaType, charset)));
+    } finally {
+      stream.close();
+    }
 
     return token;
   }

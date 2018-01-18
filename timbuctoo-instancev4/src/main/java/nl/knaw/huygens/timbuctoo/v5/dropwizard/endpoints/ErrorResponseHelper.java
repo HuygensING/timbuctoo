@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatusReport;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -28,19 +28,20 @@ public class ErrorResponseHelper {
       .build();
   }
 
-  public static Response handleImportManagerResult(Future<ImportStatus> promise) {
-    return handleImportManagerResult(promise, (is) -> Response.Status.BAD_REQUEST);
+  public static Response handleImportManagerResult(Future<ImportStatusReport> promise) {
+    return handleImportManagerResult(promise, (isr) -> Response.Status.BAD_REQUEST);
   }
 
-  public static Response handleImportManagerResult(Future<ImportStatus> promise,
-                                                   Function<ImportStatus, Response.Status> errorStatusTranslator) {
+  public static Response handleImportManagerResult(Future<ImportStatusReport> promise,
+                                                   Function<ImportStatusReport, Response.Status>
+                                                     errorStatusTranslator) {
     try {
-      final ImportStatus status = promise.get();
-      if (status.hasErrors()) {
+      final ImportStatusReport statusReport = promise.get();
+      if (statusReport.hasErrors()) {
         return Response
-          .status(errorStatusTranslator.apply(status))
+          .status(errorStatusTranslator.apply(statusReport))
           .type(MediaType.APPLICATION_JSON_TYPE)
-          .entity(status)
+          .entity(statusReport)
           .build();
       } else {
         return Response
