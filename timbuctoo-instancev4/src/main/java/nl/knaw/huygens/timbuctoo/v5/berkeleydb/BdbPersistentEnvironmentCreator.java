@@ -10,6 +10,7 @@ import com.sleepycat.je.Durability;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,8 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   @Override
   public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
                                                              boolean allowDuplicates, EntryBinding<KeyT> keyBinder,
-                                                             EntryBinding<ValueT> valueBinder)
+                                                             EntryBinding<ValueT> valueBinder,
+                                                             IsCleanHandler<KeyT, ValueT> cleanHandler)
     throws BdbDbCreationException {
     DatabaseConfig config = new DatabaseConfig();
     config.setAllowCreate(true);
@@ -72,7 +74,8 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
       databases.get(databaseKey),
       config,
       keyBinder,
-      valueBinder
+      valueBinder,
+      cleanHandler
     );
   }
 

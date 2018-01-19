@@ -11,6 +11,7 @@ import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
@@ -44,7 +45,8 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
   @Override
   public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
                                                              boolean allowDuplicates, EntryBinding<KeyT> keyBinder,
-                                                             EntryBinding<ValueT> valueBinder)
+                                                             EntryBinding<ValueT> valueBinder,
+                                                             IsCleanHandler<KeyT, ValueT> isCleanHandler)
     throws BdbDbCreationException {
     try {
       DatabaseConfig config = new DatabaseConfig();
@@ -59,7 +61,7 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
       Database database = dataSetEnvironment.openDatabase(null, databaseName, config);
       databases.put(environmentKey + "_" + databaseName, database);
       environmentMap.put(environmentKey, dataSetEnvironment);
-      return new BdbWrapper<>(dataSetEnvironment, database, config, keyBinder, valueBinder);
+      return new BdbWrapper<>(dataSetEnvironment, database, config, keyBinder, valueBinder, isCleanHandler);
     } catch (DatabaseException e) {
       throw new BdbDbCreationException(e);
     }

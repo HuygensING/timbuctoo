@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.Test;
@@ -22,7 +23,8 @@ public class ChangeFetcherImplTest {
       "rdfData",
       true,
       TupleBinding.getPrimitiveBinding(String.class),
-      TupleBinding.getPrimitiveBinding(String.class)
+      TupleBinding.getPrimitiveBinding(String.class),
+      new StringStringIsCleanHandler()
     ));
     final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(databaseCreator.getDatabase(
       "a",
@@ -30,7 +32,8 @@ public class ChangeFetcherImplTest {
       "truePatch",
       true,
       TupleBinding.getPrimitiveBinding(String.class),
-      TupleBinding.getPrimitiveBinding(String.class)
+      TupleBinding.getPrimitiveBinding(String.class),
+      new StringStringIsCleanHandler()
     ));
 
     bdbTripleStore.putQuad("subj", "pred", OUT, "obj", null, null);

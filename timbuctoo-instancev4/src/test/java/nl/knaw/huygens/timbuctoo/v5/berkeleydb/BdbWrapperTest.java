@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.After;
 import org.junit.Before;
@@ -20,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 
 public class BdbWrapperTest {
 
+  private static final StringStringIsCleanHandler IS_CLEAN_HANDLER = new StringStringIsCleanHandler();
   private BdbNonPersistentEnvironmentCreator creator;
   private BdbWrapper<String, String> database;
   private static final TupleBinding<String> STRING_BINDER = getPrimitiveBinding(String.class);
@@ -29,7 +31,7 @@ public class BdbWrapperTest {
     creator = new BdbNonPersistentEnvironmentCreator();
     creator.start();
 
-    database = creator.getDatabase("a", "b", "test", true, STRING_BINDER, STRING_BINDER);
+    database = creator.getDatabase("a", "b", "test", true, STRING_BINDER, STRING_BINDER, IS_CLEAN_HANDLER);
 
     database.put("aa", "bb");
     database.put("ab", "ac");
@@ -55,7 +57,8 @@ public class BdbWrapperTest {
         "test",
         allowDuplicates,
         STRING_BINDER,
-        STRING_BINDER
+        STRING_BINDER,
+        IS_CLEAN_HANDLER
       );
 
       db.put("key", "value");
@@ -83,7 +86,8 @@ public class BdbWrapperTest {
         "test",
         allowDuplicates,
         STRING_BINDER,
-        STRING_BINDER
+        STRING_BINDER,
+        IS_CLEAN_HANDLER
       );
 
       db.put("key", "value");
@@ -181,7 +185,15 @@ public class BdbWrapperTest {
 
   @Test
   public void isCleanWhenTheDatabaseContainsNoData() throws Exception {
-    BdbWrapper emptyDatabase = creator.getDatabase("a", "b", "empty", true, STRING_BINDER, STRING_BINDER);
+    BdbWrapper emptyDatabase = creator.getDatabase(
+      "a",
+      "b",
+      "empty",
+      true,
+      STRING_BINDER,
+      STRING_BINDER,
+      IS_CLEAN_HANDLER
+    );
 
     assertThat(emptyDatabase.isClean(), is(true));
   }
