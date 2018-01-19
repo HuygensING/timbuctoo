@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.After;
 import org.junit.Before;
@@ -175,6 +177,40 @@ public class BdbWrapperTest {
       .count();
     stream.close();
     assertThat(count, is(2L));
+  }
+
+  @Test
+  public void isCleanWhenTheDatabaseContainsNoData() throws Exception {
+    BdbWrapper emptyDatabase = creator.getDatabase("a", "b", "empty", true, STRING_BINDER, STRING_BINDER);
+
+    assertThat(emptyDatabase.isClean(), is(true));
+  }
+
+  @Test
+  public void isCleanWhenTheChangeIsCommitted() throws Exception {
+    database.beginTransaction();
+    database.put("ab", "cd");
+    database.commit();
+
+    assertThat(database.isClean(), is(true));
+  }
+
+  @Test
+  public void isNotCleanWhenTheChangeNotIsCommitted() throws Exception {
+    database.beginTransaction();
+    database.put("ab", "cd");
+
+    assertThat(database.isClean(), is(false));
+  }
+
+  @Test
+  public void isNotCleanAfterANewTransactionHasBegun() throws Exception {
+    database.beginTransaction();
+    database.put("ab", "cd");
+    database.commit();
+    database.beginTransaction();
+
+    assertThat(database.isClean(), is(false));
   }
 
 }

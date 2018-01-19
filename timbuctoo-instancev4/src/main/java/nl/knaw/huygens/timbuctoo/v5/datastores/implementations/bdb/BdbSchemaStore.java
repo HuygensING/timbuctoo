@@ -362,4 +362,8 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       e.printStackTrace();
     }
   }
+
+  public boolean isClean() {
+    return dataStore.isClean();
+  }
 }

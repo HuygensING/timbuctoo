@@ -113,6 +113,11 @@ public class BdbTypeNameStore implements TypeNameStore {
     return prefixMapping.getNsPrefixMap();
   }
 
+  @Override
+  public boolean isClean() {
+    return dataStore.isClean();
+  }
+
   public void addPrefix(String prefix, String iri) {
     data.prefixes.put(prefix, iri);
     prefixMapping.setNsPrefix(prefix, iri); //idempotent

@@ -21,4 +21,6 @@ public interface BdbEnvironmentCreator {
   void startTransaction();
 
   void commitTransaction();
+
+  void cleanDatabases(String userId, String dataSetId);
 }

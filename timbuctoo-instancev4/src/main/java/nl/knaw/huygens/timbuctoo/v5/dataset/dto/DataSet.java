@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
@@ -149,6 +150,15 @@ public abstract class DataSet {
         importManager.getImportStatus()
       );
       importManager.subscribeToRdf(storeUpdater);
+
+      if (!quadStore.isClean() || !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
+        !updatedPerPatchStore.isClean() || !rmlDataSourceStore.isClean() || !versionStore.isClean()) {
+        LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId,dataSetId);
+        dataStoreFactory.cleanDatabases(userId, dataSetId);
+        importManager.processLogs();
+      }
+
+
       return ImmutableDataSet.builder()
                              .ownerId(userId)
                              .dataSetName(dataSetId)

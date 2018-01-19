@@ -25,4 +25,6 @@ public interface TypeNameStore extends AutoCloseable {
   String shorten(String uri);
 
   Map<String, String> getMappings();
+
+  boolean isClean();
 }

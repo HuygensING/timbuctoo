@@ -23,11 +23,10 @@ import java.util.Set;
 
 public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   private static final Logger LOG = LoggerFactory.getLogger(BdbPersistentEnvironmentCreator.class);
-
+  protected final EnvironmentConfig configuration;
   private final String databaseLocation;
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
-  protected final EnvironmentConfig configuration;
   private FileHelper fileHelper;
 
   @JsonCreator
@@ -125,5 +124,28 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
 
   @Override
   public void commitTransaction() {
+  }
+
+  @Override
+  public void cleanDatabases(String ownerId, String dataSetId) {
+    String environmentKey = environmentKey(ownerId, dataSetId);
+    Environment environment = environmentMap.get(environmentKey);
+
+
+    Set<String> keys = new HashSet<>(databases.keySet());
+    for (String key : keys) {
+      if (key.startsWith(environmentKey)) {
+        try {
+          environment.truncateDatabase(null, getDatabaseName(key), false);
+        } catch (Throwable t) {
+          LOG.error("Could not clear '" + key + "'", t);
+        }
+      }
+    }
+  }
+
+  private String getDatabaseName(String key) {
+    String[] split = key.split("_");
+    return split[split.length - 1];
   }
 }

@@ -51,16 +51,24 @@ public class BdbWrapper<KeyT, ValueT> {
       transaction = dbEnvironment.beginTransaction(null, null);
     }
 
-    synchronized (keyEntry) {
-      try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
-        TupleBinding.getPrimitiveBinding(String.class).objectToEntry("isClean", keyEntry);
-        TupleBinding.getPrimitiveBinding(Boolean.class).objectToEntry(true, valueEntry);
-        OperationStatus searchResult = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
-        if (!searchResult.equals(OperationStatus.SUCCESS)) {
-          LOG.error("Could not remove is clean property");
+    if (database.count() > 0) {
+      synchronized (keyEntry) {
+        try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
+          TupleBinding.getPrimitiveBinding(String.class).objectToEntry("isClean", keyEntry);
+          TupleBinding.getPrimitiveBinding(Boolean.class).objectToEntry(true, valueEntry);
+          OperationStatus searchResult = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
+          if (searchResult.equals(OperationStatus.SUCCESS)) {
+            OperationStatus delete = cursor.delete();
+            if (!delete.equals(OperationStatus.SUCCESS)) {
+              LOG.error("Could not remove 'isClean' property");
+            }
+          } else {
+            LOG.error("No property 'isClean' found");
+          }
+
+        } catch (Exception e) {
+          LOG.error("Could not remove 'isClean' property", e);
         }
-      } catch (Exception e) {
-        LOG.error("Could not remove is clean property", e);
       }
     }
   }
@@ -87,11 +95,11 @@ public class BdbWrapper<KeyT, ValueT> {
         TupleBinding.getPrimitiveBinding(String.class).objectToEntry("isClean", keyEntry);
         TupleBinding.getPrimitiveBinding(Boolean.class).objectToEntry(true, valueEntry);
         OperationStatus searchResult = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
-        if (searchResult.equals(OperationStatus.SUCCESS)) {
+        if (searchResult.equals(OperationStatus.SUCCESS) || database.count() <= 0) {
           return true;
         }
       } catch (Exception e) {
-        LOG.error("Could search for value is clean property", e);
+        LOG.error("Could search for value 'isClean' property", e);
       }
     }
     return false;
@@ -107,11 +115,17 @@ public class BdbWrapper<KeyT, ValueT> {
         TupleBinding.getPrimitiveBinding(String.class).objectToEntry("isClean", keyEntry);
 
         TupleBinding.getPrimitiveBinding(Boolean.class).objectToEntry(true, valueEntry);
-        if (database.putNoDupData(transaction, keyEntry, valueEntry) == null) {
-          LOG.error("Could not add 'isClean' property");
+        if (databaseConfig.getSortedDuplicates()) {
+          if (database.putNoDupData(transaction, keyEntry, valueEntry) == null) {
+            LOG.error("Could not add 'isClean' property");
+          }
+        } else {
+          if (database.put(transaction, keyEntry, valueEntry) == null) {
+            LOG.error("Could not add 'isClean' property");
+          }
         }
       } catch (Exception e) {
-        LOG.error("Could not add 'isClean' property", e);
+        LOG.error("Could not add 'isClean' property for database '" + database.getDatabaseName() + "'", e);
       }
     }
 
