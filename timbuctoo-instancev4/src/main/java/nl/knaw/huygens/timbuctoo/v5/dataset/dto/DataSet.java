@@ -185,9 +185,9 @@ public abstract class DataSet {
         !updatedPerPatchStore.isClean() || !rmlDataSourceStore.isClean() || !versionStore.isClean()) {
         LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId,dataSetId);
         dataStoreFactory.cleanDatabases(userId, dataSetId);
-        importManager.processLogs();
       }
 
+      importManager.processLogs(); // process unprocessed logs
 
       return ImmutableDataSet.builder()
                              .ownerId(userId)
