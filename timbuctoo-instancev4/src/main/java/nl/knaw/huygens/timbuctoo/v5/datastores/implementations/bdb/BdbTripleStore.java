@@ -125,4 +125,8 @@ public class BdbTripleStore implements QuadStore {
   public void start() {
     bdbWrapper.beginTransaction();
   }
+
+  public void empty() {
+    bdbWrapper.empty();
+  }
 }

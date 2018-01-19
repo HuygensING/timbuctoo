@@ -118,6 +118,11 @@ public class BdbSchemaStoreTest {
       return true;
     }
 
+    @Override
+    public void empty() {
+
+    }
+
     public String getResult() {
       return result;
     }

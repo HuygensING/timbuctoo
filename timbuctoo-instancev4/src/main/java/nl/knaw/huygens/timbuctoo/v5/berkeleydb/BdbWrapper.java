@@ -199,4 +199,13 @@ public class BdbWrapper<KeyT, ValueT> {
     return result;
   }
 
+  public void empty() {
+    synchronized (keyEntry) {
+      try (Cursor cursor = database.openCursor(null, null)) {
+        while (cursor.getNext(keyEntry, valueEntry, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+          cursor.delete();
+        }
+      }
+    }
+  }
 }

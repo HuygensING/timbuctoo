@@ -162,5 +162,9 @@ public class BdbTypeNameStore implements TypeNameStore {
   public void start() {
     dataStore.beginTransaction();
   }
+
+  public void empty() {
+    dataStore.empty();
+  }
 }
 

@@ -14,4 +14,6 @@ public interface DataStorage {
   void beginTransaction();
 
   boolean isClean();
+
+  void empty();
 }

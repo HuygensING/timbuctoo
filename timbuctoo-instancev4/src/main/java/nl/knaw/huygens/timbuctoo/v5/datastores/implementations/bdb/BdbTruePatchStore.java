@@ -100,4 +100,8 @@ public class BdbTruePatchStore {
   public boolean isClean() {
     return bdbWrapper.isClean();
   }
+
+  public void empty() {
+    bdbWrapper.empty();
+  }
 }

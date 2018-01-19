@@ -171,6 +171,10 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
     bdbWrapper.commit();
   }
 
+  public void empty() {
+    bdbWrapper.empty();
+  }
+
   private class Property {
     String oldName;
     String newName;

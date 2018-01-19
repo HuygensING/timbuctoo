@@ -143,6 +143,18 @@ public class ImportManager implements DataProvider {
     }
   }
 
+  public Future<ImportStatus> reprocessLogs() {
+    try {
+      logListStore.updateData(logList -> {
+        logList.markAsProcessed(-1);
+        return logList;
+      });
+    } catch (IOException e) {
+      LOG.error("Could not reset log list processed", e);
+    }
+    return processLogs();
+  }
+
   public Future<ImportStatus> processLogs() {
     importStatus.start(this.getClass().getSimpleName() + ".processLogs", null);
     return executorService.submit(() -> processLogsUntil(Integer.MAX_VALUE));

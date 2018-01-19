@@ -49,7 +49,7 @@ public class StoreUpdater implements RdfProcessor {
     this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
     this.versionStore = versionStore;
-    currentversion = versionStore.getVersion();
+    // currentversion = versionStore.getVersion();
     this.listeners = listeners;
     this.importStatus = importStatus;
   }

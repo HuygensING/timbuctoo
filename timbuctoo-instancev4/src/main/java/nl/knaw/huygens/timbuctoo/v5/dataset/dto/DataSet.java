@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
@@ -35,6 +34,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 @Value.Immutable
@@ -169,6 +169,7 @@ public abstract class DataSet {
           }
         }
       ));
+
       final StoreUpdater storeUpdater = new StoreUpdater(
         dataStoreFactory,
         quadStore,
@@ -181,13 +182,24 @@ public abstract class DataSet {
       );
       importManager.subscribeToRdf(storeUpdater);
 
+
       if (!quadStore.isClean() || !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
         !updatedPerPatchStore.isClean() || !rmlDataSourceStore.isClean() || !versionStore.isClean()) {
-        LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId,dataSetId);
-        dataStoreFactory.cleanDatabases(userId, dataSetId);
+        LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
+        quadStore.empty();
+        typeNameStore.empty();
+        schema.empty();
+        truePatchStore.empty();
+        updatedPerPatchStore.empty();
+        rmlDataSourceStore.empty();
+        versionStore.empty();
+
+        importManager.reprocessLogs();
+
+      } else {
+        importManager.processLogs(); // process unprocessed logs
       }
 
-      importManager.processLogs(); // process unprocessed logs
 
       return ImmutableDataSet.builder()
                              .ownerId(userId)

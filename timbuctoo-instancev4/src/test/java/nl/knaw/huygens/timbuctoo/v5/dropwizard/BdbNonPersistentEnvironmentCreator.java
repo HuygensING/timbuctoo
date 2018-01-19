@@ -113,11 +113,6 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
   public void commitTransaction() {
   }
 
-  @Override
-  public void cleanDatabases(String userId, String dataSetId) {
-
-  }
-
 
   public void close() throws DatabaseException, IOException {
     for (Database database : databases.values()) {
