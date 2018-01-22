@@ -45,7 +45,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     String date = Instant.now().toString();
     String random = UUID.randomUUID().toString();
     String mnemonic = fileName.replaceAll("[^a-zA-Z0-9]", "_");
-    String token = date.replaceAll(":", "-") + "-" + random + "-" + mnemonic;
+    String token = date.replaceAll("[:\\.TZ]", "-") + random + "-" + mnemonic;
 
     try {
       // Gives (Too many open files) on Mac after ~1000 calls. commons.IOUtils.copy is no better.
