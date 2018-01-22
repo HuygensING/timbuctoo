@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
 import java.util.Optional;
@@ -36,5 +37,6 @@ public interface FileInfo {
 
   Optional<Charset> getCharset();
 
+  @Nullable
   String getDateTime();
 }
