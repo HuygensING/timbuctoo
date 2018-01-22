@@ -12,17 +12,19 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableFileInfo.class)
 @JsonDeserialize(as = ImmutableFileInfo.class)
 public interface FileInfo {
-  static FileInfo create(String name, String mediatype, String charset) {
+  static FileInfo create(String name, String dateTime, String mediatype, String charset) {
     return ImmutableFileInfo.builder()
       .name(name)
+      .dateTime(dateTime)
       .mediaType(MediaType.valueOf(mediatype))
       .charset(Optional.ofNullable(charset).map(Charset::forName))
       .build();
   }
 
-  static FileInfo create(String name, MediaType mediatype, Optional<Charset> charset) {
+  static FileInfo create(String name, String dateTime, MediaType mediatype, Optional<Charset> charset) {
     return ImmutableFileInfo.builder()
       .name(name)
+      .dateTime(dateTime)
       .mediaType(mediatype)
       .charset(charset)
       .build();
@@ -33,4 +35,6 @@ public interface FileInfo {
   MediaType getMediaType();
 
   Optional<Charset> getCharset();
+
+  String getDateTime();
 }

@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -357,7 +356,7 @@ public class ImportManagerTest {
       throw new LambdaOriginatedException(new Exception("bar"));
     }).get());
 
-    Collections.shuffle(tasks);
+    //Collections.shuffle(tasks);
 
     ExecutorService executor = Executors.newCachedThreadPool();
     List<ImportStatusReport> statusReports = executor.invokeAll(tasks)
@@ -373,7 +372,6 @@ public class ImportManagerTest {
 
     executor.shutdown();
     assertThat(processor.counter.get(), is(2 * threads));
-
   }
 
   @Test

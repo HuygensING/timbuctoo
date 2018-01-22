@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,14 +42,15 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
 
   private String storeFile(InputStream stream, String fileName, MediaType mediaType,
                            Optional<Charset> charset) throws IOException {
+    String date = Instant.now().toString();
     String random = UUID.randomUUID().toString();
     String mnemonic = fileName.replaceAll("[^a-zA-Z0-9]", "_");
-    String token = random + "-" + mnemonic;
+    String token = date.replaceAll(":", "-") + "-" + random + "-" + mnemonic;
 
     try {
       // Gives (Too many open files) on Mac after ~1000 calls. commons.IOUtils.copy is no better.
       Files.copy(stream, new File(dir, token).toPath());
-      fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, mediaType, charset)));
+      fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, date, mediaType, charset)));
     } finally {
       stream.close();
     }

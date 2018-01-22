@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Record current status of import on a dataSet and provide lock mechanism for concurrent updates.
@@ -54,30 +55,37 @@ public class ImportStatus {
   private long currentEntryStart;
 
   private boolean locked;
+  private final ReentrantLock lock;
 
   public ImportStatus(LogList logList) {
     this.logList = logList;
     stopwatch = Stopwatch.createUnstarted();
     messages = new ConcurrentLinkedDeque<>();
     errors = new ConcurrentLinkedDeque<>();
+    lock = new ReentrantLock(true);
   }
 
-  protected synchronized void lock(String methodName, String baseUri) {
-    while (locked) {
-      try {
-        TimeUnit.MILLISECONDS.sleep(100);
-      } catch (InterruptedException e) {
-        throw new IllegalStateException(e);
+  protected void lock(String methodName, String baseUri) {
+    lock.lock();
+    try {
+      while (locked) {
+        try {
+          TimeUnit.MILLISECONDS.sleep(100);
+        } catch (InterruptedException e) {
+          throw new IllegalStateException(e);
+        }
       }
+      locked = true;
+      reset();
+      messages.clear();
+      errors.clear();
+      this.methodName = methodName;
+      this.baseUri = baseUri;
+      setStatus("Started " + this.methodName);
+      stopwatch.start();
+    } finally {
+      lock.unlock();
     }
-    locked = true;
-    reset();
-    messages.clear();
-    errors.clear();
-    this.methodName = methodName;
-    this.baseUri = baseUri;
-    setStatus("Started " + this.methodName);
-    stopwatch.start();
   }
 
   protected void unlock() {
