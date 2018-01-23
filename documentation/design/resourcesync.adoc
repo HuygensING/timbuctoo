@@ -16,8 +16,10 @@ downloaded by unauthorized agents, either with the help of the
 === What should be the result of the work?
 * The `sourceDescription.xml` should only include ``capabilityList``s for ``dataSet``s
 that are published.
-* The `ResourceSyncEndpoint.getFile` method should check the state of the
- `dataSet` and give `403 Forbidden` for non-published ``dataSet``s.
+* The `ResourceSyncEndpoint.getFile` method should check if the user is
+authorized and return a `403 Forbidden` if not. If the user does not provide
+any authentication information we return a `401 Unauthorized` for
+non-published ``dataSet``s.
 
 === What will be the approach?
 * When `ResourceSyncEndpoint.getSourceDescription` is requested, create
@@ -30,6 +32,9 @@ request.
 * When `ResourceSyncEndpoint.getFile` is requested, check `dataSet` published status.
 ** Use `unsafeGetDataSetWithoutCheckingPermissions` of `DataSetRepository` to
 obtain the `dataSet`.
-** Proceed if the `dataSet` is published.
-** Return Response `403 Forbidden` if not.
+** Proceed if the `dataSet` is published or user is authorized.
+** Return Response `403 Forbidden` if `dataSet` is not published and
+user is not authorized.
+** Return response `401 Unauthorized` if `dataSet` is not published and
+request has no header for authentication.
 
