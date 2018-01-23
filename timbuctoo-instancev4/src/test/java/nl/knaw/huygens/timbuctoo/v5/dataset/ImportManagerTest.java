@@ -376,7 +376,7 @@ public class ImportManagerTest {
   }
 
   @Test
-  //@Ignore("Endless test")
+  @Ignore("Endless test")
   public void keepTesting() throws Exception {
     for (int i = 0; i < 300; i++) {
       multipleUpdatesAreSerialized();
