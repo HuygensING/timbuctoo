@@ -55,6 +55,7 @@ public class ImportManagerTest {
     logListLocation = File.createTempFile("logList", ".json");
     logListLocation.delete();
     filesDir = Files.createTempDir();
+    filesDir.deleteOnExit();
     resourceList = mock(ResourceList.class);
     fileStorage = new FileSystemFileStorage(filesDir);
     this.importManager = new ImportManager(
@@ -375,16 +376,16 @@ public class ImportManagerTest {
   }
 
   @Test
-  @Ignore("Endless test")
+  //@Ignore("Endless test")
   public void keepTesting() throws Exception {
-    // Stops after round ~92:
-    // java.io.FileNotFoundException:
-    // /var/folders/4r/07w38gh12d395r8s9n0pw30w0000gn/T/logList2627116416061327169.json (Too many open files)
-    int counter = 0;
-    while (1 == 1) {
+    for (int i = 0; i < 300; i++) {
       multipleUpdatesAreSerialized();
-      System.out.println(counter++);
-      Thread.sleep(1);
+      System.out.println(i);
+      System.gc();
+      // Without gc ends with java.io.FileNotFoundException: ../loglist.json (Too many open files)
+      // test executed on mac, fails after ~1000 calls to ImportManager.generateLog.
+      // It makes no difference whether temp files or regular files are used.
+      // @ToDo: Close file handles or force gc at some point.
     }
   }
 

@@ -48,6 +48,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     String token = date.replaceAll("[:\\.TZ]", "-") + random + "-" + mnemonic;
 
     try {
+      // @ToDo: Close file handles or force gc at some point. See also ImportManagerTest.keepTesting()
       // Gives (Too many open files) on Mac after ~1000 calls. commons.IOUtils.copy is no better.
       Files.copy(stream, new File(dir, token).toPath());
       fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, date, mediaType, charset)));
