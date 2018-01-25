@@ -44,7 +44,8 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     .enable(SerializationFeature.INDENT_OUTPUT);
   private final DataStorage dataStore;
 
-  Map<String, Type> types = new HashMap<>();
+  private Map<String, Type> types = new HashMap<>();
+  private Map<String, Type> stableTypes = new HashMap<>();
   private ImportStatus importStatus;
 
   public BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
@@ -52,14 +53,24 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     this.dataStore = dataStore;
     final String storedValue = this.dataStore.getValue();
     if (storedValue != null) {
-      types = objectMapper.readValue(storedValue, new TypeReference<Map<String, Type>>() {});
+      types = readTypes(storedValue);
+      stableTypes = readTypes(storedValue);
     }
     this.importStatus = importStatus;
+  }
+
+  public Map<String, Type> readTypes(String storedValue) throws IOException {
+    return objectMapper.readValue(storedValue, new TypeReference<Map<String, Type>>() {});
   }
 
   @Override
   public Map<String, Type> getTypes() {
     return types;
+  }
+
+  @Override
+  public Map<String, Type> getStableTypes() {
+    return stableTypes;
   }
 
   @Override
@@ -342,6 +353,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         String serializedValue = objectMapper.writeValueAsString(types);
         dataStore.setValue(serializedValue);
         dataStore.commit();
+        stableTypes = readTypes(serializedValue);
       } catch (IOException | DatabaseWriteException e) {
         throw new SchemaUpdateException(e);
       }

@@ -182,11 +182,11 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
         final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
         String collectionUri = typeNameStore.makeUri(collectionId);
-        if (dataSet.getSchemaStore().getTypes() == null ||
-          dataSet.getSchemaStore().getTypes().get(collectionUri) == null) {
+        if (dataSet.getSchemaStore().getStableTypes() == null ||
+          dataSet.getSchemaStore().getStableTypes().get(collectionUri) == null) {
           return null;
         } else {
-          return getCollection(dataSet, typeNameStore, dataSet.getSchemaStore().getTypes().get(collectionUri));
+          return getCollection(dataSet, typeNameStore, dataSet.getSchemaStore().getStableTypes().get(collectionUri));
         }
       })
       .dataFetcher("dataSetId", env -> ((DataSetMetaData) env.getSource()).getCombinedId())
@@ -306,7 +306,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       final DataSetMetaData dataSetMetaData = dataSet.getMetadata();
       final String name = dataSetMetaData.getCombinedId();
 
-      final Map<String, Type> types = dataSet.getSchemaStore().getTypes();
+      final Map<String, Type> types = dataSet.getSchemaStore().getStableTypes();
       if (types != null) {
         dataSetAvailable[0] = true;
         root.append("  ")
@@ -348,7 +348,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
     final List<CollectionMetadata> colls = dataSet
       .getSchemaStore()
-      .getTypes().values().stream()
+      .getStableTypes().values().stream()
       .map(x -> {
         return getCollection(dataSet, typeNameStore, x);
       })
