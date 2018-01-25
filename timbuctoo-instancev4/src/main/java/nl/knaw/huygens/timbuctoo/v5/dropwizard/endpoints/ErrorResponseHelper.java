@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -11,6 +13,9 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class ErrorResponseHelper {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ErrorResponseHelper.class);
+
   public Response dataSetNotFound(String userId, String dataSetId) {
     return error(404, "No dataSet found for ownerId: '" + userId + "' and dataSetId: '" + dataSetId + "'.");
   }
@@ -42,6 +47,7 @@ public class ErrorResponseHelper {
           .build();
       }
     } catch (InterruptedException | ExecutionException e) {
+      LOG.error("import result failure", e);
       return Response.serverError().build();
     }
 
