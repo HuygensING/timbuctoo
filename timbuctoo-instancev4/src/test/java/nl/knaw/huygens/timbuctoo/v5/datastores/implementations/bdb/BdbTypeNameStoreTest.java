@@ -5,6 +5,10 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 public class BdbTypeNameStoreTest {
 
   @Test
@@ -30,6 +34,21 @@ public class BdbTypeNameStoreTest {
         public void commit() {
 
         }
+
+        @Override
+        public void beginTransaction() {
+
+        }
+
+        @Override
+        public boolean isClean() {
+          return true;
+        }
+
+        @Override
+        public void empty() {
+
+        }
       },
       "http://example.org"
     );
@@ -37,9 +56,8 @@ public class BdbTypeNameStoreTest {
     store.addPrefix("foo", "http://example.com/foo#");
 
     String graphQlname = store.makeGraphQlname("http://example.com/underscore#test");
-    if (!graphQlname.equals("__test")) {
-      throw new RuntimeException(graphQlname + " != prefix__test");
-    }
+
+    assertThat(graphQlname, is("__test"));
   }
 
 }

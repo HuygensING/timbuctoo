@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.stores;
 
 import com.sleepycat.bind.tuple.TupleBinding;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -38,7 +39,8 @@ public class BdbTripleStoreTest {
         "rdfData",
         true,
         TupleBinding.getPrimitiveBinding(String.class),
-        TupleBinding.getPrimitiveBinding(String.class)
+        TupleBinding.getPrimitiveBinding(String.class),
+        new StringStringIsCleanHandler()
       )
     );
     Thread.sleep(2000); // to make the test work on slow systems

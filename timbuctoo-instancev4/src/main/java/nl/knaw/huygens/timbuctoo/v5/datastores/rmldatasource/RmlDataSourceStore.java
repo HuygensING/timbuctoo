@@ -8,4 +8,6 @@ public interface RmlDataSourceStore extends OptimizedPatchListener {
   Stream<String> get(String collectionUri);
 
   void close();
+
+  boolean isClean();
 }

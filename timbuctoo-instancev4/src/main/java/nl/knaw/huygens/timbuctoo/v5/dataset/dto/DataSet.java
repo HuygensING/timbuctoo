@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -32,6 +34,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 @Value.Immutable
@@ -68,13 +71,15 @@ public abstract class DataSet {
 
     final TupleBinding<String> stringBinding = TupleBinding.getPrimitiveBinding(String.class);
     try {
+      StringStringIsCleanHandler stringStringIsCleanHandler = new StringStringIsCleanHandler();
       BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
         userId,
         dataSetId,
         "rdfData",
         true,
         stringBinding,
-        stringBinding
+        stringBinding,
+        stringStringIsCleanHandler
       ));
       final BdbTypeNameStore typeNameStore = new BdbTypeNameStore(
         new BdbBackedData(dataStoreFactory.getDatabase(
@@ -83,7 +88,8 @@ public abstract class DataSet {
           "typenames",
           false,
           stringBinding,
-          stringBinding
+          stringBinding,
+          stringStringIsCleanHandler
         )),
         rdfPrefix
       );
@@ -94,7 +100,8 @@ public abstract class DataSet {
           "schema",
           false,
           stringBinding,
-          stringBinding
+          stringBinding,
+          stringStringIsCleanHandler
         )),
         importManager.getImportStatus()
       );
@@ -105,7 +112,8 @@ public abstract class DataSet {
           "truePatch",
           true,
           stringBinding,
-          stringBinding
+          stringBinding,
+          stringStringIsCleanHandler
         )
       );
       final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
@@ -116,7 +124,18 @@ public abstract class DataSet {
           "updatedPerPatch",
           true,
           integerBinding,
-          stringBinding
+          stringBinding,
+          new IsCleanHandler<Integer, String>() {
+            @Override
+            public Integer getKey() {
+              return Integer.MAX_VALUE;
+            }
+
+            @Override
+            public String getValue() {
+              return "isClean";
+            }
+          }
         )
       );
       final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
@@ -126,7 +145,8 @@ public abstract class DataSet {
           "rmlSource",
           true,
           stringBinding,
-          stringBinding
+          stringBinding,
+          stringStringIsCleanHandler
         ),
         importManager.getImportStatus()
       );
@@ -136,8 +156,20 @@ public abstract class DataSet {
         "versions",
         false,
         stringBinding,
-        integerBinding
+        integerBinding,
+        new IsCleanHandler<String, Integer>() {
+          @Override
+          public String getKey() {
+            return "isClean";
+          }
+
+          @Override
+          public Integer getValue() {
+            return Integer.MAX_VALUE;
+          }
+        }
       ));
+
       final StoreUpdater storeUpdater = new StoreUpdater(
         dataStoreFactory,
         quadStore,
@@ -149,6 +181,26 @@ public abstract class DataSet {
         importManager.getImportStatus()
       );
       importManager.subscribeToRdf(storeUpdater);
+
+
+      if (!quadStore.isClean() || !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
+        !updatedPerPatchStore.isClean() || !rmlDataSourceStore.isClean() || !versionStore.isClean()) {
+        LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
+        quadStore.empty();
+        typeNameStore.empty();
+        schema.empty();
+        truePatchStore.empty();
+        updatedPerPatchStore.empty();
+        rmlDataSourceStore.empty();
+        versionStore.empty();
+
+        importManager.reprocessLogs();
+
+      } else {
+        importManager.processLogs(); // process unprocessed logs
+      }
+
+
       return ImmutableDataSet.builder()
                              .ownerId(userId)
                              .dataSetName(dataSetId)

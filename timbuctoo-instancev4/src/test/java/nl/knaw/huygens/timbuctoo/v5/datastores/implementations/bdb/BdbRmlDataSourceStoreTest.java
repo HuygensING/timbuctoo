@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.jexl.JexlRowFactory;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
@@ -62,7 +63,8 @@ public class BdbRmlDataSourceStoreTest {
         "rmlSource",
         true,
         TupleBinding.getPrimitiveBinding(String.class),
-        TupleBinding.getPrimitiveBinding(String.class)
+        TupleBinding.getPrimitiveBinding(String.class),
+        new StringStringIsCleanHandler()
       ),
       new ImportStatus(new LogList())
     );

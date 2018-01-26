@@ -7,6 +7,7 @@ import com.sleepycat.je.LockMode;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 
 import java.io.PrintWriter;
 import java.util.HashSet;
@@ -39,7 +40,8 @@ public class BdbDumpTask extends Task {
       getParam(parameters, DATABASE),
       true,
       STRING_BINDER,
-      STRING_BINDER
+      STRING_BINDER,
+      new StringStringIsCleanHandler()
     );
 
     String prefix = parameters.containsKey("prefix") ? getParam(parameters, "prefix") : "";
@@ -52,4 +54,5 @@ public class BdbDumpTask extends Task {
   private String getParam(ImmutableMultimap<String, String> parameters, String key) {
     return parameters.get(key).asList().get(0);
   }
+
 }

@@ -470,6 +470,11 @@ public class JsonProvenanceToRdfPatchTest {
     public void commit() {
       
     }
+
+    @Override
+    public boolean isClean() {
+      return true;
+    }
   }
 
 }

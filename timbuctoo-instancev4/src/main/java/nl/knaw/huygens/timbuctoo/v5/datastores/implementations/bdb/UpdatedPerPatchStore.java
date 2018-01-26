@@ -38,4 +38,16 @@ public class UpdatedPerPatchStore {
   public void commit() {
     bdbWrapper.commit();
   }
+
+  public void start() {
+    bdbWrapper.beginTransaction();
+  }
+
+  public boolean isClean() {
+    return bdbWrapper.isClean();
+  }
+
+  public void empty() {
+    bdbWrapper.empty();
+  }
 }

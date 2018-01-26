@@ -108,6 +108,21 @@ public class BdbSchemaStoreTest {
 
     }
 
+    @Override
+    public void beginTransaction() {
+
+    }
+
+    @Override
+    public boolean isClean() {
+      return true;
+    }
+
+    @Override
+    public void empty() {
+
+    }
+
     public String getResult() {
       return result;
     }

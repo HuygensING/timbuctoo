@@ -10,6 +10,7 @@ import com.sleepycat.je.Durability;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +24,10 @@ import java.util.Set;
 
 public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   private static final Logger LOG = LoggerFactory.getLogger(BdbPersistentEnvironmentCreator.class);
-
+  protected final EnvironmentConfig configuration;
   private final String databaseLocation;
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
-  protected final EnvironmentConfig configuration;
   private FileHelper fileHelper;
 
   @JsonCreator
@@ -43,7 +43,8 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   @Override
   public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
                                                              boolean allowDuplicates, EntryBinding<KeyT> keyBinder,
-                                                             EntryBinding<ValueT> valueBinder)
+                                                             EntryBinding<ValueT> valueBinder,
+                                                             IsCleanHandler<KeyT, ValueT> cleanHandler)
     throws BdbDbCreationException {
     DatabaseConfig config = new DatabaseConfig();
     config.setAllowCreate(true);
@@ -73,7 +74,8 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
       databases.get(databaseKey),
       config,
       keyBinder,
-      valueBinder
+      valueBinder,
+      cleanHandler
     );
   }
 
@@ -126,4 +128,5 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   @Override
   public void commitTransaction() {
   }
+
 }

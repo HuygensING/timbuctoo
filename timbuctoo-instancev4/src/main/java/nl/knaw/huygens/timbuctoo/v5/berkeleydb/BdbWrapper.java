@@ -12,6 +12,7 @@ import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -19,35 +20,51 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static com.sleepycat.je.OperationStatus.SUCCESS;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BdbWrapper<KeyT, ValueT> {
+  private static final Logger LOG = getLogger(BdbWrapper.class);
   private final Environment dbEnvironment;
   private final Database database;
   private final DatabaseConfig databaseConfig;
   private final EntryBinding<KeyT> keyBinder;
   private final EntryBinding<ValueT> valueBinder;
+  private final IsCleanHandler<KeyT, ValueT> isCleanHandler;
   private final DatabaseEntry keyEntry = new DatabaseEntry();
   private final DatabaseEntry valueEntry = new DatabaseEntry();
-  private Transaction transaction;
-  private static final Logger LOG = getLogger(BdbWrapper.class);
   private final Map<Cursor, String> cursors = new HashMap<>();
+  private Transaction transaction;
 
   public BdbWrapper(Environment dbEnvironment, Database database, DatabaseConfig databaseConfig,
-                    EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder) {
+                    EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder,
+                    IsCleanHandler<KeyT, ValueT> isCleanHandler) {
     this.dbEnvironment = dbEnvironment;
     this.database = database;
     this.databaseConfig = databaseConfig;
     this.keyBinder = keyBinder;
     this.valueBinder = valueBinder;
+    this.isCleanHandler = isCleanHandler;
   }
 
   public void beginTransaction() {
     if (databaseConfig.getTransactional()) {
       transaction = dbEnvironment.beginTransaction(null, null);
+    }
+
+    if (database.count() > 0) {
+      try {
+        boolean success = delete(isCleanHandler.getKey(), isCleanHandler.getValue());
+        if (!success) {
+          LOG.error("Could not remove 'isClean' property");
+        }
+      } catch (DatabaseWriteException e) {
+        LOG.error("Could not remove 'isClean' property", e);
+      }
     }
   }
 
@@ -67,10 +84,36 @@ public class BdbWrapper<KeyT, ValueT> {
     return DatabaseGetter.databaseGetter(keyBinder, valueBinder, database, cursors);
   }
 
+  public boolean isClean() {
+    if (database.count() == 0) {
+      return true;
+    }
+
+    try (Stream<ValueT> values = databaseGetter().key(isCleanHandler.getKey()).dontSkip().forwards().getValues()) {
+      Optional<ValueT> first = values.findFirst();
+      if (first.isPresent()) {
+        ValueT value = first.get();
+        return Objects.equals(value, isCleanHandler.getValue());
+      }
+
+    }
+    return false;
+  }
+
   public void commit() {
     if (transaction != null) {
       transaction.commit();
     }
+
+    try {
+      boolean success = this.put(isCleanHandler.getKey(), isCleanHandler.getValue());
+      if (!success) {
+        LOG.error("Could not add 'isClean' property");
+      }
+    } catch (DatabaseWriteException e) {
+      LOG.error("Could not add 'isClean' property for database '" + database.getDatabaseName() + "'", e);
+    }
+
     database.sync();
     dbEnvironment.sync(); // needed for better recoverability
   }
@@ -154,5 +197,15 @@ public class BdbWrapper<KeyT, ValueT> {
     }
     cursor.close();
     return result;
+  }
+
+  public void empty() {
+    synchronized (keyEntry) {
+      try (Cursor cursor = database.openCursor(null, null)) {
+        while (cursor.getNext(keyEntry, valueEntry, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+          cursor.delete();
+        }
+      }
+    }
   }
 }

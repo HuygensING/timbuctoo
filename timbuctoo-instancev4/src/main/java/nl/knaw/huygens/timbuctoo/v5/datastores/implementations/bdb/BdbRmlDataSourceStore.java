@@ -55,8 +55,14 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   }
 
   @Override
+  public boolean isClean() {
+    return bdbWrapper.isClean();
+  }
+
+  @Override
   public void start() {
     importStatus.setStatus("Storing entities");
+    bdbWrapper.beginTransaction();
   }
 
   @Override
@@ -163,6 +169,10 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   @Override
   public void finish() {
     bdbWrapper.commit();
+  }
+
+  public void empty() {
+    bdbWrapper.empty();
   }
 
   private class Property {
