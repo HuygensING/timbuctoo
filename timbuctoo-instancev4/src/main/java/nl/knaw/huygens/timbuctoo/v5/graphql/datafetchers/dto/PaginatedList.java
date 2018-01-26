@@ -19,20 +19,22 @@ public interface PaginatedList<T extends DatabaseResult> {
 
   List<T> getItems();
 
-  Optional<Integer> getTotal();
+  Optional<Long> getTotal();
 
   List<Facet> getFacets();
 
-  static <U extends DatabaseResult> PaginatedList<U> create(String prevCursor, String nextCursor, List<U> items) {
+  static <U extends DatabaseResult> PaginatedList<U> create(String prevCursor, String nextCursor, List<U> items,
+                                                            Optional<Long> total) {
     return ImmutablePaginatedList.<U>builder()
       .prevCursor(Optional.ofNullable(encode(prevCursor)))
       .nextCursor(Optional.ofNullable(encode(nextCursor)))
       .items(items)
+      .total(total)
       .build();
   }
 
   static <U extends DatabaseResult> PaginatedList<U> create(String prevCursor, String nextCursor, List<U> items,
-                                                            Optional<Integer> total, List<Facet> facets) {
+                                                            Optional<Long> total, List<Facet> facets) {
     return ImmutablePaginatedList.<U>builder()
       .prevCursor(Optional.ofNullable(encode(prevCursor)))
       .nextCursor(Optional.ofNullable(encode(nextCursor)))

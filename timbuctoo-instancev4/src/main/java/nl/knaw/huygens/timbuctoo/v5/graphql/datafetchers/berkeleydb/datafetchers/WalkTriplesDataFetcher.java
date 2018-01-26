@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper.getPaginatedList;
@@ -27,7 +28,7 @@ public abstract class WalkTriplesDataFetcher<T extends DatabaseResult> implement
   public PaginatedList<T> getList(SubjectReference source, PaginationArguments arguments, DataSet dataSet) {
     String cursor = arguments.getCursor();
     try (Stream<CursorQuad> q = dataSet.getQuadStore().getQuads(source.getSubjectUri(), predicate, direction, cursor)) {
-      return getPaginatedList(q, qd -> this.makeItem(qd, dataSet), arguments);
+      return getPaginatedList(q, qd -> this.makeItem(qd, dataSet), arguments, Optional.empty());
     }
   }
 

@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper
@@ -39,7 +40,8 @@ public class RelationsOfSubjectDataFetcher implements CollectionFetcher {
           );
           return lazyTypeSubjectReference;
         },
-        arguments
+        arguments,
+        Optional.empty()
       );
     }
 

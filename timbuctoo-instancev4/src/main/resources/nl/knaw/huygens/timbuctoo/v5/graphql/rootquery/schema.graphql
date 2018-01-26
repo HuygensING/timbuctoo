@@ -153,11 +153,19 @@ type CollectionMetadataList {
 
 type CollectionMetadata {
   uri: String! @uri
+
+  #the name of the property with which you can retrieve single items of this collection
   collectionId: ID!
+
+  #the name of the property with which you can retrieve this collection as list
   collectionListId: ID!
+
+  #The fully qualified graphql type name
   itemType: String!
 
   properties(count: Int = 20, cursor: ID = ""): PropertyList!
+
+  #The amount of items in this collection
   total: Int!
 
   title: Value @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#label", direction: "OUT", isList: false, isObject: false, isValue: true)

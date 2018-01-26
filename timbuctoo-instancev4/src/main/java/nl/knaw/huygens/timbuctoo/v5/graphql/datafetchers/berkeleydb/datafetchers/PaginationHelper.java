@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,7 +18,8 @@ public class PaginationHelper {
 
   static <U extends DatabaseResult> PaginatedList<U> getPaginatedList(Stream<CursorQuad> subjectStream,
                                                                       Function<CursorQuad, U> makeItem,
-                                                                      PaginationArguments arguments) {
+                                                                      PaginationArguments arguments,
+                                                                      Optional<Long> total) {
 
     String[] cursors = new String[3];
     int count = arguments.getCount();
@@ -42,7 +44,8 @@ public class PaginationHelper {
       return PaginatedList.create(
         null,
         null,
-        subjects
+        subjects,
+        total
       );
     } else {
 
@@ -67,7 +70,8 @@ public class PaginationHelper {
       return PaginatedList.create(
         prevCursor,
         nextCursor,
-        items
+        items,
+        total
       );
     }
   }

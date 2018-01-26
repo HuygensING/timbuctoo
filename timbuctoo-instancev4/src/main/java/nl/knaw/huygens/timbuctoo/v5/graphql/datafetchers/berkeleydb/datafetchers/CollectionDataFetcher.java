@@ -39,7 +39,7 @@ public class CollectionDataFetcher implements CollectionFetcher {
           null,
           result.getNextToken(),
           result.getUriList().stream().map(x -> new LazyTypeSubjectReference(x, dataSet)).collect(Collectors.toList()),
-          Optional.of(result.getTotal()),
+          Optional.of((long) result.getTotal()),
           result.getFacets()
         );
       } catch (IOException e) {
@@ -47,10 +47,19 @@ public class CollectionDataFetcher implements CollectionFetcher {
       }
     } else {
       try (Stream<CursorQuad> subjectStream = dataSet.getQuadStore().getQuads(collectionUri, RDF_TYPE, IN, cursor)) {
+        Optional<Long> total = Optional.empty();
+        if (dataSet.getSchemaStore().getStableTypes() != null &&
+          dataSet.getSchemaStore().getStableTypes().get(collectionUri) != null) {
+
+          total = Optional.of(
+            dataSet.getSchemaStore().getStableTypes().get(collectionUri).getSubjectsWithThisType()
+          );
+        }
         return getPaginatedList(
           subjectStream,
           cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), dataSet),
-          arguments
+          arguments,
+          total
         );
       }
     }

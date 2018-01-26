@@ -64,11 +64,6 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   }
 
   @Override
-  public Map<String, Type> getTypes() {
-    return types;
-  }
-
-  @Override
   public Map<String, Type> getStableTypes() {
     return stableTypes;
   }
