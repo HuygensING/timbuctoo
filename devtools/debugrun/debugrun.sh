@@ -91,14 +91,14 @@ fi
 [ -e "$timbuctoo_dataPath"/auth/users.json ] || echo "[]" > "$timbuctoo_dataPath"/auth/users.json
 
 if [ -n "$DEBUG_PORT" ]; then
-	JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_SUSPEND},address=${DEBUG_PORT}"
+	JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_SUSPEND},address=5005"
 fi
 
 export JAVA_OPTS
 echo "JAVA_OPTS=\"$JAVA_OPTS\""
 
 if [ -n "$USE_BAZEL" ]; then
-  export CMD="java -jar /app/bazel-bin/timbuctoo-instancev4/everything_deploy.jar server /app/example_config.yaml"
+  export CMD='sh -c "java $JAVA_OPTS -jar /app/bazel-bin/timbuctoo-instancev4/everything_deploy.jar server /app/example_config.yaml"'
 fi
 
 echo $PWD
