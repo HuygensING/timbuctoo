@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
@@ -20,9 +22,13 @@ import java.util.Map;
  */
 public class CsvLoader implements Loader {
   private final CSVFormat format;
+  @JsonProperty("config")
+  private final Map<String, String> config; // needed for serialization
 
-  public CsvLoader(Map<String, String> config) {
+  @JsonCreator
+  public CsvLoader(@JsonProperty("config") Map<String, String> config) {
     CSVFormat format = CSVFormat.EXCEL;
+    this.config = config;
     if (config.containsKey("delimiter")) {
       format = format.withDelimiter(onlyChar(config, "delimiter"));
     }

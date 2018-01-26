@@ -123,7 +123,7 @@ public class Rml {
     }
 
     @Override
-    public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
+    public void sendQuads(RdfSerializer saver, DataSet dataSet) throws LogStorageFailedException {
       Stream<Quad> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
       Iterator<Quad> iterator = triples.iterator();
       while (iterator.hasNext()) {

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.loaders;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -13,6 +14,7 @@ import java.util.List;
  * Specific Loader implementations know how to parse a file format and call the
  * required Importer methods.
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public interface Loader {
   /**
    * Loads data from a list of files.
