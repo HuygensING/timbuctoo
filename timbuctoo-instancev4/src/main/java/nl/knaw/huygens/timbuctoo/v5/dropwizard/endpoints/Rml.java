@@ -19,6 +19,8 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -38,6 +40,7 @@ import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHel
 
 @Path("/v5/{userId}/{dataSetId}/rml")
 public class Rml {
+  private static final Logger LOG = LoggerFactory.getLogger(Rml.class);
   private final DataSetRepository dataSetRepository;
   private final ErrorResponseHelper errorResponseHelper;
   private final JenaBasedReader rmlBuilder = new JenaBasedReader();
@@ -60,7 +63,8 @@ public class Rml {
     try {
       user = userValidator.getUserFromAccessToken(authHeader);
     } catch (UserValidationException e) {
-      user = Optional.empty();
+      LOG.error("Exception validating user", e);
+      return Response.status(Response.Status.FORBIDDEN).build();
     }
     final Optional<DataSet> dataSet = dataSetRepository.getDataSet(user.get(),ownerId, dataSetId);
     if (dataSet.isPresent()) {
