@@ -29,7 +29,7 @@ services:
       timbuctoo_elasticsearch_host: http://elasticsearch
       timbuctoo_elasticsearch_port: 9200
       base_uri: http://localhost:8080
-      JAVA_OPTS: ${JAVA_OPTS:-}
+      JAVA_OPTS: ${JAVA_OPTS}
       timbuctoo_dataPath: ${timbuctoo_dataPath:-/mapped-data}
       timbuctoo_authPath: ${timbuctoo_authPath:-/mapped-data/auth}
     volumes:
