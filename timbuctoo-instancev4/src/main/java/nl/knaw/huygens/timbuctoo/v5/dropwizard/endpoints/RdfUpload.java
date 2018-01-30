@@ -54,6 +54,8 @@ public class RdfUpload {
                          @QueryParam("async") final boolean async)
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
+    System.out.println(this.getClass().getSimpleName() + " >>>>>>>>>>>" + authHeader);
+
     final Either<Response, Response> result = authCheck
       .getOrCreate( authHeader, userId, dataSetId, forceCreation)
       .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
