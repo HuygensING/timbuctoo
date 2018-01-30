@@ -22,11 +22,12 @@ import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import org.slf4j.Logger;
 
 import javax.ws.rs.core.MediaType;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -203,42 +206,47 @@ public class ImportManager implements DataProvider {
         }
       } else { // no logToken
         RdfCreator creator = entry.getRdfCreator().get();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();//FIXME: write to tempFile
-
         String token = "";
         MediaType mediaType;
         Optional<Charset> charset;
 
-        if (creator instanceof PlainRdfCreator) {
-          try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(outputStream)) {
-            mediaType = serializer.getMediaType();
-            charset = Optional.of(serializer.getCharset());
-            ((PlainRdfCreator) creator).sendQuads(serializer);
-          } catch (Exception e) {
-            LOG.error("Log generation failed", e);
-            importStatus.addError("Log generation failed", e);
-            break;
-          }
-        } else {
-          try (RdfPatchSerializer srlzr = serializerFactory.makeRdfPatchSerializer(outputStream, entry.getBaseUri())) {
-            mediaType = srlzr.getMediaType();
-            charset = Optional.of(srlzr.getCharset());
-            ((PatchRdfCreator) creator).sendQuads(srlzr);
-          } catch (Exception e) {
-            LOG.error("Log generation failed", e);
-            importStatus.addError("Log generation failed", e);
-            break;
-          }
-        }
-
+        File tempFile = null;
         try {
-          token = logStorage.saveLog(
-            new ByteArrayInputStream(outputStream.toByteArray()),
-            "log_generated_by_" + creator.getClass().getSimpleName(),
-            mediaType,
-            charset
-          );
-          LogEntry entryWithLog = LogEntry.addLogToEntry(entry, token);
+          tempFile = File.createTempFile("log_to_generate", "nq");
+          try (OutputStream stream = new GZIPOutputStream(new FileOutputStream(tempFile))) {
+            if (creator instanceof PlainRdfCreator) {
+              try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(stream)) {
+                mediaType = serializer.getMediaType();
+                charset = Optional.of(serializer.getCharset());
+                ((PlainRdfCreator) creator).sendQuads(serializer);
+              } catch (Exception e) {
+                LOG.error("Log generation failed", e);
+                importStatus.addError("Log generation failed", e);
+                break;
+              }
+            } else {
+              try (RdfPatchSerializer srlzr = serializerFactory.makeRdfPatchSerializer(stream, entry.getBaseUri())) {
+                mediaType = srlzr.getMediaType();
+                charset = Optional.of(srlzr.getCharset());
+                ((PatchRdfCreator) creator).sendQuads(srlzr);
+              } catch (Exception e) {
+                LOG.error("Log generation failed", e);
+                importStatus.addError("Log generation failed", e);
+                break;
+              }
+            }
+          }
+
+          try (InputStream inputStream = new GZIPInputStream(new FileInputStream(tempFile))) {
+            token = logStorage.saveLog(
+              inputStream,
+              "log_generated_by_" + creator.getClass().getSimpleName(),
+              mediaType,
+              charset
+            );
+          }
+          LogEntry entryWithLog;
+          entryWithLog = LogEntry.addLogToEntry(entry, token);
           unprocessed.set(entryWithLog);
 
           token = "";
@@ -251,6 +259,10 @@ public class ImportManager implements DataProvider {
           }
           importStatus.addError("Log processing failed", e);
           break;
+        } finally {
+          if (tempFile != null) {
+            tempFile.delete();
+          }
         }
       } // end else with no condition
       importStatus.finishEntry();
