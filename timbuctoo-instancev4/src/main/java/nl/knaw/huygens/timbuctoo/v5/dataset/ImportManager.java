@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
@@ -169,8 +168,7 @@ public class ImportManager implements DataProvider {
       importStatus.startEntry(entry);
       if (entry.getLogToken().isPresent()) { // logToken
         String logToken = entry.getLogToken().get();
-        try {
-          CachedLog log = logStorage.getLog(logToken);
+        try (CachedLog log = logStorage.getLog(logToken)) {
           final Stopwatch stopwatch = Stopwatch.createStarted();
           for (RdfProcessor processor : subscribedProcessors) {
             if (processor.getCurrentVersion() <= index) {
@@ -188,7 +186,7 @@ public class ImportManager implements DataProvider {
           LOG.info(msg);
           importStatus.setStatus(msg);
           dataWasAdded = true;
-        } catch (RdfProcessingFailedException | IOException e) {
+        } catch (Exception e) {
           LOG.error("Processing log failed", e);
           importStatus.addError("Processing log failed", e);
         }
@@ -333,9 +331,9 @@ public class ImportManager implements DataProvider {
     public String saveLog(InputStream stream, String fileName, MediaType mediaType, Optional<Charset> charset)
       throws IOException {
       String token = logStorage.saveLog(stream, fileName, mediaType, charset);
-      try {
-        resourceList.addFile(getLog(token));
-      } catch (ResourceSyncException e) {
+      try (CachedLog log = getLog(token)) {
+        resourceList.addFile(log);
+      } catch (Exception e) {
         throw new IOException(e);
       }
       return token;
