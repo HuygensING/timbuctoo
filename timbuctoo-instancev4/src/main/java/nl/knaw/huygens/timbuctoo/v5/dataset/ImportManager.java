@@ -156,11 +156,11 @@ public class ImportManager implements DataProvider {
   }
 
   public Future<ImportStatus> processLogs() {
-    importStatus.start(this.getClass().getSimpleName() + ".processLogs", null);
     return executorService.submit(() -> processLogsUntil(Integer.MAX_VALUE));
   }
 
   private synchronized ImportStatus processLogsUntil(int maxIndex) {
+    importStatus.start(this.getClass().getSimpleName() + ".processLogs", null);
     ListIterator<LogEntry> unprocessed = logListStore.getData().getUnprocessed();
     boolean dataWasAdded = false;
     while (unprocessed.hasNext() && unprocessed.nextIndex() <= maxIndex) {
