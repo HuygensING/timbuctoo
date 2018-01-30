@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncExceptio
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
@@ -33,7 +34,8 @@ public class ResourceSyncEndpoint {
 
   @GET
   @Path(SOURCE_DESCRIPTION_PATH)
-  public Response getSourceDescription() throws FileNotFoundException {
+  public Response getSourceDescription(@HeaderParam("authorization") String authHeader) throws FileNotFoundException {
+
     return streamFile(resourceSync.getSourceDescriptionFile(), MediaType.APPLICATION_XML_TYPE);
   }
 
