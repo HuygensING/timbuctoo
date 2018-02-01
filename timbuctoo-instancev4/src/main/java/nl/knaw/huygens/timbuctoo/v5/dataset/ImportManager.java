@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImmutableDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
@@ -58,6 +60,7 @@ public class ImportManager implements DataProvider {
   private final Runnable webhooks;
   private final ImportStatus importStatus;
   private final DataSetImportStatus dataSetImportStatus;
+  private DataSet dataSet;
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
                        ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList,
@@ -218,7 +221,7 @@ public class ImportManager implements DataProvider {
               try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(stream)) {
                 mediaType = serializer.getMediaType();
                 charset = Optional.of(serializer.getCharset());
-                ((PlainRdfCreator) creator).sendQuads(serializer);
+                ((PlainRdfCreator) creator).sendQuads(serializer, dataSet);
               } catch (Exception e) {
                 LOG.error("Log generation failed", e);
                 importStatus.addError("Log generation failed", e);
@@ -300,6 +303,10 @@ public class ImportManager implements DataProvider {
 
   public DataSetImportStatus getDataSetImportStatus() {
     return dataSetImportStatus;
+  }
+
+  public void init(DataSet dataSet) {
+    this.dataSet = dataSet;
   }
 
   // wrapper class that makes sure all files are exposed by resource sync

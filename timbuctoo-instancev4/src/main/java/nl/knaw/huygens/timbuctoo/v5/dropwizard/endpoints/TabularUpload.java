@@ -19,6 +19,8 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.glassfish.jersey.message.internal.MediaTypes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
@@ -42,6 +44,7 @@ import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHel
 @Path("/v5/{userId}/{dataSetId}/upload/table")
 public class TabularUpload {
 
+  private static final Logger LOG = LoggerFactory.getLogger(TabularUpload.class);
   private final AuthCheck authCheck;
   private final DataSetRepository dataSetRepository;
   private final ErrorResponseHelper errorResponseHelper;
@@ -100,9 +103,7 @@ public class TabularUpload {
           );
           Tuple<UUID, PlainRdfCreator> rdfCreator = dataSetRepository.registerRdfCreator(
             (statusConsumer) -> new TabularRdfCreator(
-              importManager,
               loader.get(),
-              dataSet.getMetadata(),
               statusConsumer,
               fileToken
             )
@@ -115,7 +116,7 @@ public class TabularUpload {
 
           return handleImportManagerResult(promise);
         } catch (FileStorageFailedException | LogStorageFailedException e) {
-
+          LOG.error("Tabular upload failed", e);
           return Response.serverError().build();
         }
       });

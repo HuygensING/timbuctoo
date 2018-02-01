@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 
 @Value.Immutable
 public abstract class DataSet {
@@ -183,6 +184,21 @@ public abstract class DataSet {
       importManager.subscribeToRdf(storeUpdater);
 
 
+      ImmutableDataSet dataSet = ImmutableDataSet.builder()
+                                                 .ownerId(userId)
+                                                 .dataSetName(dataSetId)
+                                                 .bdbEnvironmentCreator(dataStoreFactory)
+                                                 .metadata(metadata)
+                                                 .quadStore(quadStore)
+                                                 .typeNameStore(typeNameStore)
+                                                 .schemaStore(schema)
+                                                 .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
+                                                 .schemaStore(schema)
+                                                 .importManager(importManager)
+                                                 .build();
+      importManager.init(dataSet);
+
+
       if (!quadStore.isClean() || !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
         !updatedPerPatchStore.isClean() || !rmlDataSourceStore.isClean() || !versionStore.isClean()) {
         LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
@@ -201,18 +217,7 @@ public abstract class DataSet {
       }
 
 
-      return ImmutableDataSet.builder()
-                             .ownerId(userId)
-                             .dataSetName(dataSetId)
-                             .bdbEnvironmentCreator(dataStoreFactory)
-                             .metadata(metadata)
-                             .quadStore(quadStore)
-                             .typeNameStore(typeNameStore)
-                             .schemaStore(schema)
-                             .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
-                             .schemaStore(schema)
-                             .importManager(importManager)
-                             .build();
+      return dataSet;
     } catch (BdbDbCreationException e) {
       throw new DataStoreCreationException(e.getCause());
     }
