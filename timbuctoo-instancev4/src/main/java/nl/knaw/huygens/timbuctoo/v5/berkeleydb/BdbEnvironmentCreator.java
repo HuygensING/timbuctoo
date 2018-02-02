@@ -20,8 +20,4 @@ public interface BdbEnvironmentCreator {
 
   void stop();
 
-  void startTransaction();
-
-  void commitTransaction();
-
 }
