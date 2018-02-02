@@ -74,7 +74,7 @@ public class HuygensAuthenticationHandler implements AuthenticationHandler {
 
         int statusType = response.getStatus();
         if (statusType == 200) {
-            // expected.
+            return response.getBody().get();
         }
         else if (statusType == 404) {
             throw new UnauthorizedException();
@@ -88,8 +88,6 @@ public class HuygensAuthenticationHandler implements AuthenticationHandler {
         else {
             throw new UnauthorizedException();
         }
-
-        return response.getBody();
     }
 
     private HttpRequest sessionRequest(String verb, String sessionToken) {
