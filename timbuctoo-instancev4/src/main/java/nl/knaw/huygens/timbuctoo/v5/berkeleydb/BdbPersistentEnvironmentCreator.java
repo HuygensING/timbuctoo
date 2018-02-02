@@ -121,12 +121,4 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
 
   }
 
-  @Override
-  public void startTransaction() {
-  }
-
-  @Override
-  public void commitTransaction() {
-  }
-
 }

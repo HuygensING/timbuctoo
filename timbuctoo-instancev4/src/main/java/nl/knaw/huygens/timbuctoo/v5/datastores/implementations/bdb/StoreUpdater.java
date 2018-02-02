@@ -24,7 +24,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class StoreUpdater implements RdfProcessor {
 
   private static final Logger LOG = getLogger(StoreUpdater.class);
-  private final BdbEnvironmentCreator dbFactory;
   private final BdbTripleStore tripleStore;
   private final BdbTypeNameStore typeNameStore;
   private final BdbTruePatchStore truePatchStore;
@@ -39,17 +38,15 @@ public class StoreUpdater implements RdfProcessor {
   private String logString;
   private ImportStatus importStatus;
 
-  public StoreUpdater(BdbEnvironmentCreator dbFactory, BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
+  public StoreUpdater(BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
                       BdbTruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
                       List<OptimizedPatchListener> listeners,
                       VersionStore versionStore, ImportStatus importStatus) {
-    this.dbFactory = dbFactory;
     this.tripleStore = tripleStore;
     this.typeNameStore = typeNameStore;
     this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
     this.versionStore = versionStore;
-    // currentversion = versionStore.getVersion();
     this.listeners = listeners;
     this.importStatus = importStatus;
   }
@@ -165,7 +162,6 @@ public class StoreUpdater implements RdfProcessor {
     stopwatch = Stopwatch.createStarted();
     currentversion = index;
     startTransactions();
-    dbFactory.startTransaction();
     logString = "Processed {} triples ({} triples/s)";
   }
 
@@ -213,7 +209,6 @@ public class StoreUpdater implements RdfProcessor {
       stopwatch.start();
       versionStore.setVersion(currentversion);
       commitChanges();
-      dbFactory.commitTransaction();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.setStatus(msg);
