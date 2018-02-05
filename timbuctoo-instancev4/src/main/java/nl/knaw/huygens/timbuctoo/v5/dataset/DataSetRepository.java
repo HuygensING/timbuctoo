@@ -29,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -326,6 +327,22 @@ public class DataSetRepository {
       }
     }
     return dataSetsWithWriteAccess;
+  }
+
+  public Collection<DataSet> getDataSetsWithReadAccess(@Nullable User user) {
+    List<DataSet> dataSetsWithReadAccess = new ArrayList<>();
+    for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
+      for (DataSet dataSet : userDataSets.values()) {
+        try {
+          if (permissionFetcher.getPermissions(user, dataSet.getMetadata()).contains(Permission.READ)) {
+            dataSetsWithReadAccess.add(dataSet);
+          }
+        } catch (PermissionFetchingException e) {
+          LOG.error("Could not fetch read permission", e);
+        }
+      }
+    }
+    return dataSetsWithReadAccess;
   }
 
   public void removeDataSet(String ownerId, String dataSetName, User user)
