@@ -80,6 +80,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.RsDocumentBuilder;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetRepositoryManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
@@ -92,6 +93,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RsEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
@@ -247,7 +249,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("remove-search-results", new RemoveSearchResultsMigration());
     migrations.put("move-indices-to-isLatest-vertex", new MoveIndicesToIsLatestVertexMigration(vres));
 
-    final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, new ResourceSyncContext());
+    final ResourceSyncContext resourceSyncContext = new ResourceSyncContext();
+    final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, resourceSyncContext);
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
 
     final AutocompleteService.AutocompleteServiceFactory autocompleteServiceFactory =
@@ -386,6 +389,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new WellKnown());
     register(environment, new ResourceSyncEndpoint(configuration.getResourceSync(), configuration.getUriHelper()));
+
+    RsDocumentBuilder rsDocumentBuilder =
+      new RsDocumentBuilder(dataSetRepository, configuration.getResourceSync(), configuration.getUriHelper());
+    register(environment, new RsEndpoint(rsDocumentBuilder, securityConfig.getUserValidator()));
 
     // Admin resources
     if (securityConfig instanceof OldStyleSecurityFactory) {
