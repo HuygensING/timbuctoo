@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import org.slf4j.Logger;
 

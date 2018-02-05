@@ -1,8 +1,11 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater.ChangeFetcherImpl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.Test;
 

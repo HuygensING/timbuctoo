@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 
 import java.util.Map;
@@ -27,4 +29,12 @@ public interface TypeNameStore extends AutoCloseable {
   Map<String, String> getMappings();
 
   boolean isClean();
+
+  void addPrefix(String prefix, String iri);
+
+  void commit() throws JsonProcessingException, DatabaseWriteException;
+
+  void start();
+
+  void empty();
 }

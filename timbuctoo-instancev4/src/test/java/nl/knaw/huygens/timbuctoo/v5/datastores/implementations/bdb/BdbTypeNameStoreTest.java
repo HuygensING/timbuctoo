@@ -1,11 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 

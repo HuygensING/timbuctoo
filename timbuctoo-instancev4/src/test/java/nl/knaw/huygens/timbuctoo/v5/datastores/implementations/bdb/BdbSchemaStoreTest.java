@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;

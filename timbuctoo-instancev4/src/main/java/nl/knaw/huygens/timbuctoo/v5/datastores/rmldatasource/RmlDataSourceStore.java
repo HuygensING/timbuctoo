@@ -10,4 +10,6 @@ public interface RmlDataSourceStore extends OptimizedPatchListener {
   void close();
 
   boolean isClean();
+
+  void empty();
 }

@@ -12,8 +12,11 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStor
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbUpdatedPerPatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbVersionStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.updatedperpatchstore.UpdatedPerPatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.versionstore.VersionStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore;
 
 import java.io.IOException;
 
@@ -84,7 +87,7 @@ public class BdbStoreProvider {
     }
   }
 
-  public BdbTruePatchStore createTruePatchStore(String userId, String dataSetId) throws DataStoreCreationException {
+  public TruePatchStore createTruePatchStore(String userId, String dataSetId) throws DataStoreCreationException {
     try {
       return new BdbTruePatchStore(
         dataStoreFactory.getDatabase(
@@ -105,7 +108,7 @@ public class BdbStoreProvider {
   public UpdatedPerPatchStore createUpdatePerPatchStore(String userId, String dataSetId)
     throws DataStoreCreationException {
     try {
-      return new UpdatedPerPatchStore(
+      return new BdbUpdatedPerPatchStore(
         dataStoreFactory.getDatabase(
           userId,
           dataSetId,
@@ -155,7 +158,7 @@ public class BdbStoreProvider {
 
   public VersionStore createVersionStore(String userId, String dataSetId) throws DataStoreCreationException {
     try {
-      return new VersionStore(dataStoreFactory.getDatabase(
+      return new BdbVersionStore(dataStoreFactory.getDatabase(
         userId,
         dataSetId,
         "versions",

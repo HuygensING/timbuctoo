@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -171,6 +171,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
     bdbWrapper.commit();
   }
 
+  @Override
   public void empty() {
     bdbWrapper.empty();
   }
