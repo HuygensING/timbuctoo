@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
@@ -118,13 +119,20 @@ public class BdbTypeNameStore implements TypeNameStore {
     return dataStore.isClean();
   }
 
+  @Override
   public void addPrefix(String prefix, String iri) {
     data.prefixes.put(prefix, iri);
     prefixMapping.setNsPrefix(prefix, iri); //idempotent
   }
 
-  public void commit() throws JsonProcessingException, DatabaseWriteException {
-    dataStore.setValue(objectMapper.writeValueAsString(data));
+  @Override
+  public void commit() throws RdfProcessingFailedException {
+
+    try {
+      dataStore.setValue(objectMapper.writeValueAsString(data));
+    } catch (DatabaseWriteException | JsonProcessingException e) {
+      throw new RdfProcessingFailedException(e);
+    }
     dataStore.commit();
   }
 
@@ -159,10 +167,12 @@ public class BdbTypeNameStore implements TypeNameStore {
     addPrefix("local_col", this.dataStoreRdfPrefix + "/collection/");
   }
 
+  @Override
   public void start() {
     dataStore.beginTransaction();
   }
 
+  @Override
   public void empty() {
     dataStore.empty();
   }

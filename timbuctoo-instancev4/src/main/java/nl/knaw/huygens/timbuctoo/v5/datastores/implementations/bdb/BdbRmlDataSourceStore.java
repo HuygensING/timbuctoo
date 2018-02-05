@@ -171,6 +171,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
     bdbWrapper.commit();
   }
 
+  @Override
   public void empty() {
     bdbWrapper.empty();
   }

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.quadstore;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 
@@ -12,7 +13,19 @@ public interface QuadStore {
 
   void close();
 
+  int compare(CursorQuad leftQ, CursorQuad rightQ);
+
   void commit();
 
   boolean isClean();
+
+  void start();
+
+  boolean putQuad(String subject, String predicate, Direction direction, String object, String dataType,
+                  String language) throws RdfProcessingFailedException;
+
+  boolean deleteQuad(String subject, String predicate, Direction direction, String object, String valueType,
+                     String language) throws RdfProcessingFailedException;
+
+  void empty();
 }

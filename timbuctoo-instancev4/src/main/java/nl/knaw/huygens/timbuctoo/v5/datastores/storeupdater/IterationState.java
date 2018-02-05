@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;

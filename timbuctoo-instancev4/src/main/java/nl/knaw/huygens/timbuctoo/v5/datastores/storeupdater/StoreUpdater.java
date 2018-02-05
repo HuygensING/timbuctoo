@@ -1,15 +1,17 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Stopwatch;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.updatedperpatchstore.UpdatedPerPatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.versionstore.VersionStore;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
@@ -24,9 +26,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class StoreUpdater implements RdfProcessor {
 
   private static final Logger LOG = getLogger(StoreUpdater.class);
-  private final BdbTripleStore tripleStore;
-  private final BdbTypeNameStore typeNameStore;
-  private final BdbTruePatchStore truePatchStore;
+  private final QuadStore tripleStore;
+  private final TypeNameStore typeNameStore;
+  private final TruePatchStore truePatchStore;
   private final UpdatedPerPatchStore updatedPerPatchStore;
   private final VersionStore versionStore;
   private int currentversion = -1;
@@ -38,8 +40,8 @@ public class StoreUpdater implements RdfProcessor {
   private String logString;
   private ImportStatus importStatus;
 
-  public StoreUpdater(BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
-                      BdbTruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
+  public StoreUpdater(QuadStore tripleStore, TypeNameStore typeNameStore,
+                      TruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
                       List<OptimizedPatchListener> listeners,
                       VersionStore versionStore, ImportStatus importStatus) {
     this.tripleStore = tripleStore;
@@ -88,28 +90,23 @@ public class StoreUpdater implements RdfProcessor {
 
   private void putQuad(String subject, String predicate, Direction direction, String object, String valueType,
                        String language) throws RdfProcessingFailedException {
-    try {
-      final boolean wasChanged = tripleStore.putQuad(subject, predicate, direction, object, valueType, language);
-      if (wasChanged && currentversion >= 0) {
-        truePatchStore.put(subject, currentversion, predicate, direction, true, object, valueType, language);
-        updatedPerPatchStore.put(currentversion, subject);
-      }
-    } catch (DatabaseWriteException e) {
-      throw new RdfProcessingFailedException(e);
+
+    final boolean wasChanged = tripleStore.putQuad(subject, predicate, direction, object, valueType, language);
+    if (wasChanged && currentversion >= 0) {
+      truePatchStore.put(subject, currentversion, predicate, direction, true, object, valueType, language);
+      updatedPerPatchStore.put(currentversion, subject);
     }
+
   }
 
   private void deleteQuad(String subject, String predicate, Direction direction, String object, String valueType,
                           String language) throws RdfProcessingFailedException {
-    try {
-      final boolean wasChanged = tripleStore.deleteQuad(subject, predicate, direction, object, valueType, language);
-      if (wasChanged && currentversion >= 0) {
-        truePatchStore.put(subject, currentversion, predicate, direction, false, object, valueType, language);
-        updatedPerPatchStore.put(currentversion, subject);
-      }
-    } catch (DatabaseWriteException e) {
-      throw new RdfProcessingFailedException(e);
+    final boolean wasChanged = tripleStore.deleteQuad(subject, predicate, direction, object, valueType, language);
+    if (wasChanged && currentversion >= 0) {
+      truePatchStore.put(subject, currentversion, predicate, direction, false, object, valueType, language);
+      updatedPerPatchStore.put(currentversion, subject);
     }
+
   }
 
   @Override
@@ -195,29 +192,25 @@ public class StoreUpdater implements RdfProcessor {
 
   @Override
   public void commit() throws RdfProcessingFailedException {
-    try {
-      String msg = "processing " + count + " triples took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
-      LOG.info(msg);
-      importStatus.setStatus(msg);
-      stopwatch.reset();
-      stopwatch.start();
-      updateListeners();
-      msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
-      LOG.info(msg);
-      importStatus.setStatus(msg);
-      stopwatch.reset();
-      stopwatch.start();
-      versionStore.setVersion(currentversion);
-      commitChanges();
-      msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
-      LOG.info(msg);
-      importStatus.setStatus(msg);
-    } catch (DatabaseWriteException | JsonProcessingException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+    String msg = "processing " + count + " triples took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
+    LOG.info(msg);
+    importStatus.setStatus(msg);
+    stopwatch.reset();
+    stopwatch.start();
+    updateListeners();
+    msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
+    LOG.info(msg);
+    importStatus.setStatus(msg);
+    stopwatch.reset();
+    stopwatch.start();
+    versionStore.setVersion(currentversion);
+    commitChanges();
+    msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
+    LOG.info(msg);
+    importStatus.setStatus(msg);
   }
 
-  private void commitChanges() throws JsonProcessingException, DatabaseWriteException {
+  private void commitChanges() throws RdfProcessingFailedException {
     versionStore.commit();
     typeNameStore.commit();
     tripleStore.commit();

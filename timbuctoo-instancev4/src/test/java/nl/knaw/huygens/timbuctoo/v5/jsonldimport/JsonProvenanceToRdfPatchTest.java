@@ -7,6 +7,8 @@ import com.github.jsonldjava.core.DocumentLoader;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -473,6 +475,11 @@ public class JsonProvenanceToRdfPatchTest {
     }
 
     @Override
+    public int compare(CursorQuad leftQ, CursorQuad rightQ) {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+    }
+
+    @Override
     public void commit() {
       
     }
@@ -480,6 +487,28 @@ public class JsonProvenanceToRdfPatchTest {
     @Override
     public boolean isClean() {
       return true;
+    }
+
+    @Override
+    public void start() {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+    }
+
+    @Override
+    public boolean putQuad(String subject, String predicate, Direction direction, String object, String dataType,
+                           String language) throws RdfProcessingFailedException {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+    }
+
+    @Override
+    public boolean deleteQuad(String subject, String predicate, Direction direction, String object, String valueType,
+                              String language) throws RdfProcessingFailedException {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+    }
+
+    @Override
+    public void empty() {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
     }
   }
 

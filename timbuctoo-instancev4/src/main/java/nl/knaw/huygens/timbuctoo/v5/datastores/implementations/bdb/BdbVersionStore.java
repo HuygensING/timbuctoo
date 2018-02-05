@@ -2,23 +2,26 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.versionstore.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.stream.Stream;
 
-public class VersionStore {
+public class BdbVersionStore implements VersionStore {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VersionStore.class);
+  private static final Logger LOG = LoggerFactory.getLogger(BdbVersionStore.class);
   private final BdbWrapper<String, Integer> bdbWrapper;
 
-  public VersionStore(BdbWrapper<String, Integer> bdbWrapper)
+  public BdbVersionStore(BdbWrapper<String, Integer> bdbWrapper)
     throws DataStoreCreationException {
 
     this.bdbWrapper = bdbWrapper;
   }
 
+  @Override
   public int getVersion() {
     try (Stream<Integer> values = bdbWrapper.databaseGetter()
       .getAll()
@@ -27,10 +30,16 @@ public class VersionStore {
     }
   }
 
-  public void setVersion(int version) throws DatabaseWriteException {
-    bdbWrapper.put("version", version);
+  @Override
+  public void setVersion(int version) throws RdfProcessingFailedException {
+    try {
+      bdbWrapper.put("version", version);
+    } catch (DatabaseWriteException e) {
+      throw new RdfProcessingFailedException(e);
+    }
   }
 
+  @Override
   public void close() {
     try {
       bdbWrapper.close();
@@ -39,18 +48,22 @@ public class VersionStore {
     }
   }
 
+  @Override
   public void commit() {
     bdbWrapper.commit();
   }
 
+  @Override
   public void start() {
     bdbWrapper.beginTransaction();
   }
 
+  @Override
   public boolean isClean() {
     return bdbWrapper.isClean();
   }
 
+  @Override
   public void empty() {
     bdbWrapper.empty();
   }

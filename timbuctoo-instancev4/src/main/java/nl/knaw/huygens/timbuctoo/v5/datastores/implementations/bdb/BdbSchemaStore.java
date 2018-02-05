@@ -358,10 +358,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     }
   }
 
+  @Override
   public boolean isClean() {
     return dataStore.isClean();
   }
 
+  @Override
   public void empty() {
     dataStore.empty();
   }

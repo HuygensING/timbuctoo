@@ -7,19 +7,16 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbRmlDataSourceStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater.StoreUpdater;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.updatedperpatchstore.UpdatedPerPatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.versionstore.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
@@ -67,12 +64,12 @@ public abstract class DataSet {
       LOG.error("Could not construct import manager of data set", e);
     }
 
-    final BdbTripleStore quadStore = storeProvider.createTripleStore(userId, dataSetId);
-    final BdbTypeNameStore typeNameStore = storeProvider.createTypeNameStore(userId, dataSetId, rdfPrefix);
-    final BdbSchemaStore schema = storeProvider.createSchemaStore(userId, dataSetId, importManager.getImportStatus());
-    final BdbTruePatchStore truePatchStore = storeProvider.createTruePatchStore(userId, dataSetId);
+    final QuadStore quadStore = storeProvider.createTripleStore(userId, dataSetId);
+    final TypeNameStore typeNameStore = storeProvider.createTypeNameStore(userId, dataSetId, rdfPrefix);
+    final SchemaStore schema = storeProvider.createSchemaStore(userId, dataSetId, importManager.getImportStatus());
+    final TruePatchStore truePatchStore = storeProvider.createTruePatchStore(userId, dataSetId);
     final UpdatedPerPatchStore updatedPerPatchStore = storeProvider.createUpdatePerPatchStore(userId, dataSetId);
-    final BdbRmlDataSourceStore rmlDataSourceStore = storeProvider.createRmlDataSourceStore(
+    final RmlDataSourceStore rmlDataSourceStore = storeProvider.createRmlDataSourceStore(
       userId,
       dataSetId,
       importManager.getImportStatus()

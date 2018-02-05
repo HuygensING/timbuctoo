@@ -1,12 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
-import nl.knaw.huygens.hamcrest.OptionalPresentMatcher;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +12,6 @@ import java.util.stream.Stream;
 
 import static com.sleepycat.bind.tuple.TupleBinding.getPrimitiveBinding;
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
