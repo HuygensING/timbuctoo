@@ -66,7 +66,6 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 
 public class IntegrationTest {
@@ -841,12 +840,10 @@ public class IntegrationTest {
 
     ObjectNode retrievedData = retrieveExtendedSchema.readEntity(ObjectNode.class);
 
-    // TODO: fix null check for added property value
-    //    assertThat(retrievedData.get("data").get("dataSets").get(dataSetId)
-    //        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
-    //        .get("items").get(0).get("test"),
-    //      is(nullValue()));
-
+    assertThat(retrievedData.get("data").get("dataSets").get(dataSetId)
+        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
+        .get("items").get(0).get("test").isNull(),
+      is(true));
   }
 
   private String createDataSetId(String dataSetName) {
