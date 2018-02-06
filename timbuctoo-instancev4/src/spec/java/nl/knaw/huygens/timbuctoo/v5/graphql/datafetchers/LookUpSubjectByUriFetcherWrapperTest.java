@@ -134,11 +134,6 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
-            public FileStorage getFileStorage() {
-              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-            }
-
-            @Override
             public DataSetMetaData getMetadata() {
               try {
                 return new BasicDataSetMetaData(

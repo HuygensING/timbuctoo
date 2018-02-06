@@ -52,11 +52,10 @@ public abstract class DataSet {
     String userId = metadata.getOwnerId();
     String dataSetId = metadata.getDataSetId();
     File descriptionFile = resourceSync.getDataSetDescriptionFile(userId, dataSetId);
-    FileStorage fileStorage = configuration.getFileStorage().makeFileStorage(userId, dataSetId);
 
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
-      fileStorage,
+      configuration.getFileStorage().makeFileStorage(userId, dataSetId),
       configuration.getFileStorage().makeFileStorage(userId, dataSetId),
       configuration.getFileStorage().makeLogStorage(userId, dataSetId),
       executorService,
@@ -197,7 +196,6 @@ public abstract class DataSet {
                                                  .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
                                                  .schemaStore(schema)
                                                  .importManager(importManager)
-                                                 .fileStorage(fileStorage)
                                                  .build();
       importManager.init(dataSet);
 
@@ -249,8 +247,5 @@ public abstract class DataSet {
   public abstract QuadStore getQuadStore();
 
   public abstract DataSetMetaData getMetadata();
-
-  public abstract FileStorage getFileStorage();
-
 
 }
