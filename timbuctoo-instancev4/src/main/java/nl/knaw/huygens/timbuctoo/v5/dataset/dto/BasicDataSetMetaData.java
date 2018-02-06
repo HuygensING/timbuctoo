@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameExcepti
 import org.immutables.value.Value;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCombinedId;
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.isValidId;
 
 
 public class BasicDataSetMetaData implements DataSetMetaData {
@@ -26,8 +27,8 @@ public class BasicDataSetMetaData implements DataSetMetaData {
                               @JsonProperty("uriPrefix") String uriPrefix,
                               @JsonProperty("promoted") boolean promoted,
                               @JsonProperty("published") boolean published) throws IllegalDataSetNameException {
-    if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
-      throw new IllegalDataSetNameException("Owner id and dataSet id should match " + VALID_ID);
+    if (!isValidId(ownerId) || !isValidId(dataSetId)) {
+      throw new IllegalDataSetNameException("Owner id and dataSet id should " + VALID_ID_DESCRIPTION);
     }
 
     this.dataSetId = dataSetId;

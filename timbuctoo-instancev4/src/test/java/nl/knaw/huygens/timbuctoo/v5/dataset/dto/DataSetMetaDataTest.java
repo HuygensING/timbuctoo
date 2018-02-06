@@ -37,11 +37,11 @@ public class DataSetMetaDataTest {
     );
 
     assertThat(
-      ok.stream().filter(x -> x.matches(BasicDataSetMetaData.VALID_ID)).collect(Collectors.toList()),
+      ok.stream().filter(DataSetMetaData::isValidId).collect(Collectors.toList()),
       is(ok)
     );
     assertThat(
-      notOk.stream().filter(x -> x.matches(BasicDataSetMetaData.VALID_ID)).collect(Collectors.toList()),
+      notOk.stream().filter(DataSetMetaData::isValidId).collect(Collectors.toList()),
       is(emptyIterable())
     );
   }

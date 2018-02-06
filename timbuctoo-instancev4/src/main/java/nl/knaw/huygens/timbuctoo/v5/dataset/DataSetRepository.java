@@ -372,9 +372,25 @@ public class DataSetRepository {
     }
 
     // remove folder
-    FileUtils.deleteDirectory(fileHelper.dataSetPath(ownerId, dataSetName));
+    deleteDirectoryAndRetryOnFailure(fileHelper.dataSetPath(ownerId, dataSetName), 5);
+  }
 
-
+  private void deleteDirectoryAndRetryOnFailure(File path, int retryCount) {
+    try {
+      FileUtils.deleteDirectory(path);
+    } catch (IOException e) {
+      if (retryCount > 0) {
+        LOG.warn("Deleting directory {}, failed, {} tries remaining.", path.getAbsolutePath(), retryCount);
+        try {
+          Thread.sleep(500);
+          deleteDirectoryAndRetryOnFailure(path, retryCount - 1);
+        } catch (InterruptedException e1) {
+          //ignore and stop trying
+        }
+      } else {
+        LOG.error("Deleting directory {}, failed! Manual cleanup necessary", path.getAbsolutePath());
+      }
+    }
   }
 
   public void stop() {
