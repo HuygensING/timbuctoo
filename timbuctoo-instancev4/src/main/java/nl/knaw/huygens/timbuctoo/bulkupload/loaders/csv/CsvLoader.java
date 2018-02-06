@@ -42,7 +42,7 @@ public class CsvLoader implements Loader {
       format = format.withCommentMarker(onlyChar(config, "commentStart"));
     }
     if (config.containsKey("escape")) {
-      format = format.withCommentMarker(onlyChar(config, "escape"));
+      format = format.withEscape(onlyChar(config, "escape"));
     }
     if (config.containsKey("ignoreSurroundingSpaces")) {
       format = format.withIgnoreSurroundingSpaces(config.get("ignoreSurroundingSpaces").equals("true"));
