@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 public interface FileStorage {
   /**
@@ -23,6 +24,6 @@ public interface FileStorage {
    * @param token the token that the saver returned while saving
    * @return A CachedFile for the file that was stored
    */
-  CachedFile getFile(String token) throws IOException;
+  Optional<CachedFile> getFile(String token) throws IOException;
 
 }

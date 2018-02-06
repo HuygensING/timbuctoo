@@ -51,9 +51,13 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
   }
 
   @Override
-  public CachedFile getFile(String token) throws IOException {
+  public Optional<CachedFile> getFile(String token) throws IOException {
+    CachedFile cachedFile = null;
     FileInfo fileInfo = this.fileInfo.getData().getItems().get(token);
-    return new FileSystemCachedFile(fileInfo.getMediaType(), fileInfo.getName(), new File(dir, token));
+    if (fileInfo != null) {
+      cachedFile = new FileSystemCachedFile(fileInfo.getMediaType(), fileInfo.getName(), new File(dir, token));
+    }
+    return Optional.ofNullable(cachedFile);
   }
 
   @Override

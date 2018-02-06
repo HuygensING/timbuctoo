@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 
 /**
@@ -58,8 +59,9 @@ public class ResourceSync {
     return fileHelper.fileInDataSet(user, dataSet, "resourceList.xml");
   }
 
-  public CachedFile getFile(String owner, String dataSet, String fileId) throws ResourceSyncException {
+  public Optional<CachedFile> getFile(String owner, String dataSet, String fileId) throws ResourceSyncException {
     try {
+      // DANGER! localhost../v5/resourcesync/foo/bar/files/hack-a-directory
       return fileStorageFactory.makeFileStorage(owner, dataSet).getFile(fileId);
     } catch (IOException e) {
       throw new ResourceSyncException(e);

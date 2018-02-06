@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -246,6 +247,5 @@ public abstract class DataSet {
   public abstract QuadStore getQuadStore();
 
   public abstract DataSetMetaData getMetadata();
-
 
 }
