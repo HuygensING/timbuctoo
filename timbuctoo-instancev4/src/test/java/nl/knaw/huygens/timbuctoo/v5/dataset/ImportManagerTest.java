@@ -170,7 +170,7 @@ public class ImportManagerTest {
       MediaType.valueOf("text/turtle")
     );
 
-    verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(fileStorage.getFile(fileToken).get());
+    verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(fileStorage.getFile(fileToken).get())));
   }
 
   private static class CachedFileMatcher extends CompositeMatcher<CachedFile> {
