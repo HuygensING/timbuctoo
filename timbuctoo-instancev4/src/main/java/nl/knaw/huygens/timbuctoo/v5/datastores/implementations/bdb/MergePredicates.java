@@ -48,5 +48,6 @@ public class MergePredicates {
     }
 
     return mergedPredicate;
+
   }
 }
