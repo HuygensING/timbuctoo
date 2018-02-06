@@ -12,23 +12,28 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.Clock;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.PROV_ATTIME;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.PROV_DERIVED_FROM;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIMBUCTOO_NEXT;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASCOLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_PROPERTY;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_MIMETYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_TABULAR_COLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_TABULAR_FILE;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.XSD_DATETIMESTAMP;
 
 public class RawUploadRdfSaver implements Saver<String> {
 
@@ -38,10 +43,11 @@ public class RawUploadRdfSaver implements Saver<String> {
   private String prevCollection;
   private int curEntity;
   private int curCollection;
+
   private final String fileUri;
 
   public RawUploadRdfSaver(DataSetMetaData dataSet, String fileName, MediaType mimeType,
-                           RdfSerializer saver, String origFilename)
+                           RdfSerializer saver, String origFilename, Clock clock)
     throws LogStorageFailedException {
     this.saver = saver;
     this.curEntity = 0;
@@ -54,6 +60,7 @@ public class RawUploadRdfSaver implements Saver<String> {
     this.saver.onRelation(this.dataSetUri, PROV_DERIVED_FROM, fileUri, this.dataSetUri);
     this.saver.onValue(fileUri, TIM_MIMETYPE, mimeType.toString(), STRING, this.dataSetUri);
     this.saver.onValue(fileUri, RDFS_LABEL, origFilename, STRING, this.dataSetUri);
+    this.saver.onValue(fileUri, PROV_ATTIME, clock.instant().toString(), XSD_DATETIMESTAMP, this.dataSetUri);
     this.prevCollection = fileUri;
   }
 
@@ -94,8 +101,10 @@ public class RawUploadRdfSaver implements Saver<String> {
 
     try {
       saver.onRelation(subject, RDF_TYPE, subject + "type", dataSetUri);
+      saver.onRelation(subject, RDF_TYPE, TIM_TABULAR_COLLECTION, dataSetUri);
       saver.onValue(subject, RDFS_LABEL, collectionName, STRING, dataSetUri);
-      saver.onRelation(prevCollection, TIMBUCTOO_NEXT, subject, dataSetUri);
+      saver.onRelation(fileUri, TIM_HASCOLLECTION, subject, dataSetUri); //for getting all collections in a file
+      saver.onRelation(prevCollection, TIMBUCTOO_NEXT, subject, dataSetUri); //for getting the ordered collections
       prevCollection = subject;
     } catch (LogStorageFailedException e) {
       LOG.error("Could not store value", e);

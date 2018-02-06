@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,8 @@ public class BdbRmlDataSourceStoreTest {
       "fileName",
       APPLICATION_OCTET_STREAM_TYPE,
       rdfSerializer,
-      "origFileName"
+      "origFileName",
+      Clock.systemUTC()
     );
     final String inputCol1 = rawUploadRdfSaver.addCollection("collection1");
     ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
