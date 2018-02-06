@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -51,10 +52,11 @@ public abstract class DataSet {
     String userId = metadata.getOwnerId();
     String dataSetId = metadata.getDataSetId();
     File descriptionFile = resourceSync.getDataSetDescriptionFile(userId, dataSetId);
+    FileStorage fileStorage = configuration.getFileStorage().makeFileStorage(userId, dataSetId);
 
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
-      configuration.getFileStorage().makeFileStorage(userId, dataSetId),
+      fileStorage,
       configuration.getFileStorage().makeFileStorage(userId, dataSetId),
       configuration.getFileStorage().makeLogStorage(userId, dataSetId),
       executorService,
@@ -195,6 +197,7 @@ public abstract class DataSet {
                                                  .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
                                                  .schemaStore(schema)
                                                  .importManager(importManager)
+                                                 .fileStorage(fileStorage)
                                                  .build();
       importManager.init(dataSet);
 
@@ -246,6 +249,8 @@ public abstract class DataSet {
   public abstract QuadStore getQuadStore();
 
   public abstract DataSetMetaData getMetadata();
+
+  public abstract FileStorage getFileStorage();
 
 
 }

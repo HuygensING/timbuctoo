@@ -109,7 +109,7 @@ public class ImportManagerTest {
     promise.get();
 
     LogEntry logEntry = importManager.getLogEntries().get(0);
-    CachedFile cachedFile = fileStorage.getFile(logEntry.getLogToken().get());
+    CachedFile cachedFile = fileStorage.getFile(logEntry.getLogToken().get()).orElseThrow(Exception::new);
     verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(cachedFile)));
   }
 
@@ -170,7 +170,8 @@ public class ImportManagerTest {
       MediaType.valueOf("text/turtle")
     );
 
-    verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(fileStorage.getFile(fileToken))));
+    verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(fileStorage.getFile(fileToken)
+                                                                                 .orElseThrow(Exception::new))));
   }
 
   private static class CachedFileMatcher extends CompositeMatcher<CachedFile> {

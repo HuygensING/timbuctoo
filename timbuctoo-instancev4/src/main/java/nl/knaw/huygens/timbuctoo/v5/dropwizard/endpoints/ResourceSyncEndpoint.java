@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
+import java.util.Optional;
 
 @Path("v5/resourcesync")
 public class ResourceSyncEndpoint {
@@ -63,12 +64,14 @@ public class ResourceSyncEndpoint {
                           @PathParam("dataSetName") String dataSet,
                           @PathParam("fileId") String fileId
   ) throws ResourceSyncException {
-    CachedFile file = resourceSync.getFile(owner, dataSet, fileId);
-    if (file == null || file.getFile() == null || !file.getFile().exists()) {
+    Optional<CachedFile> maybeCachedFile = resourceSync.getFile(owner, dataSet, fileId);
+    if (maybeCachedFile.isPresent()) {
+      CachedFile file = maybeCachedFile.get();
+      return Response.ok(file.getFile(), file.getMimeType()).build();
+
+    } else {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
-
-    return Response.ok(file.getFile(), file.getMimeType()).build();
   }
 
   private Response streamFile(File file, MediaType mediaType) throws FileNotFoundException {

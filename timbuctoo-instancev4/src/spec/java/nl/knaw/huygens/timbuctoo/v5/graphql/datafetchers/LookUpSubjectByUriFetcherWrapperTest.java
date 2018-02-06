@@ -24,6 +24,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
@@ -129,6 +130,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
             @Override
             public QuadStore getQuadStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public FileStorage getFileStorage() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
 

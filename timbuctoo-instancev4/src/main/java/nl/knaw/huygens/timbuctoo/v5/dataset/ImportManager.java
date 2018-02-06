@@ -117,7 +117,12 @@ public class ImportManager implements DataProvider {
   }
 
   public CachedFile getFile(String fileToken) throws IOException {
-    return fileStorage.getFile(fileToken);
+    Optional<CachedFile> maybeCacheFile = fileStorage.getFile(fileToken);
+    if (maybeCacheFile.isPresent()) {
+      return maybeCacheFile.get();
+    } else {
+      throw new IOException("No cached file for token " + fileToken);
+    }
   }
 
   public String addImage(InputStream imageStream, String imageName, MediaType mediaType)
@@ -323,7 +328,12 @@ public class ImportManager implements DataProvider {
     public String saveFile(InputStream stream, String fileName, MediaType mediaType) throws IOException {
       String token = fileStorage.saveFile(stream, fileName, mediaType);
       try {
-        resourceList.addFile(getFile(token));
+        Optional<CachedFile> maybeCachedFile = getFile(token);
+        if (maybeCachedFile.isPresent()) {
+          resourceList.addFile(maybeCachedFile.get());
+        } else {
+          throw new IOException("No cached file for token " + token);
+        }
       } catch (ResourceSyncException e) {
         throw new IOException(e);
       }
@@ -331,7 +341,7 @@ public class ImportManager implements DataProvider {
     }
 
     @Override
-    public CachedFile getFile(String token) throws IOException {
+    public Optional<CachedFile> getFile(String token) throws IOException {
       return fileStorage.getFile(token);
     }
   }
