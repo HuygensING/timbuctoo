@@ -74,7 +74,8 @@ public class BdbRmlDataSourceStoreTest {
       dataSetMetadata,
       "fileName",
       APPLICATION_OCTET_STREAM_TYPE,
-      rdfSerializer
+      rdfSerializer,
+      "origFileName"
     );
     final String inputCol1 = rawUploadRdfSaver.addCollection("collection1");
     ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();

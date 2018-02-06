@@ -41,7 +41,7 @@ public class RawUploadRdfSaver implements Saver<String> {
   private final String fileUri;
 
   public RawUploadRdfSaver(DataSetMetaData dataSet, String fileName, MediaType mimeType,
-                           RdfSerializer saver)
+                           RdfSerializer saver, String origFilename)
     throws LogStorageFailedException {
     this.saver = saver;
     this.curEntity = 0;
@@ -53,6 +53,7 @@ public class RawUploadRdfSaver implements Saver<String> {
     this.saver.onRelation(fileUri, RDF_TYPE, TIM_TABULAR_FILE, this.dataSetUri);
     this.saver.onRelation(this.dataSetUri, PROV_DERIVED_FROM, fileUri, this.dataSetUri);
     this.saver.onValue(fileUri, TIM_MIMETYPE, mimeType.toString(), STRING, this.dataSetUri);
+    this.saver.onValue(fileUri, RDFS_LABEL, origFilename, STRING, this.dataSetUri);
     this.prevCollection = fileUri;
   }
 

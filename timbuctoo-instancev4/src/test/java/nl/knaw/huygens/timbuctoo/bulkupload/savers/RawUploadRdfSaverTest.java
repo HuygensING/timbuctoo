@@ -43,6 +43,7 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 public class RawUploadRdfSaverTest {
 
   private static final String COLLECTION = "coll";
+  public static final String FILE_NAME = "origFileName";
   private RawUploadRdfSaver instance;
   private RdfSerializer rdfSerializer;
   private DataSetMetaData dataSetMetadata;
@@ -61,7 +62,9 @@ public class RawUploadRdfSaverTest {
 
   private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer, DataSetMetaData dataSetMetadata)
     throws LogStorageFailedException {
-    return new RawUploadRdfSaver(dataSetMetadata, "fileName", APPLICATION_OCTET_STREAM_TYPE, rdfSerializer);
+    return new RawUploadRdfSaver(dataSetMetadata, "fileName", APPLICATION_OCTET_STREAM_TYPE, rdfSerializer,
+      FILE_NAME
+    );
   }
 
   @Test
@@ -230,6 +233,7 @@ public class RawUploadRdfSaverTest {
       fileUri + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
         graphName + " "     + PROV_DERIVED_FROM  + " " + fileUri + " "                           + graphName + "\n" +
         fileUri + " "    + TIM_MIMETYPE + " " + "application/octet-stream" + "^^" + STRING + " " + graphName + "\n" +
+        fileUri + " "       + RDFS_LABEL         + " " + FILE_NAME + "^^" + STRING + " "         + graphName + "\n" +
         collection1 + " "   + RDF_TYPE           + " " + collection1 + "type "                   + graphName + "\n" +
         collection1 + " "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
         fileUri + " "       + TIMBUCTOO_NEXT     + " " + collection1                       + " " + graphName + "\n" +

@@ -98,14 +98,15 @@ public class TabularUpload {
         try {
           String fileToken = importManager.addFile(
             rdfInputStream,
-            fileInfo.getName(),
+            fileInfo.getFileName(),
             mediaType
           );
           Tuple<UUID, PlainRdfCreator> rdfCreator = dataSetRepository.registerRdfCreator(
             (statusConsumer) -> new TabularRdfCreator(
               loader.get(),
               statusConsumer,
-              fileToken
+              fileToken,
+              fileInfo.getFileName()
             )
           );
           Future<ImportStatus> promise = importManager.generateLog(

@@ -27,17 +27,21 @@ public class TabularRdfCreator implements PlainRdfCreator {
   private final Consumer<String> importStatusConsumer; // TODO hoe gaan we deze reconstrueren na deserialisatie
   @JsonProperty("fileToken")
   private final String fileToken;
+  @JsonProperty("fileName")
+  private final String fileName;
 
-  public TabularRdfCreator(Loader loader, Consumer<String> importStatusConsumer, String fileToken) {
+  public TabularRdfCreator(Loader loader, Consumer<String> importStatusConsumer, String fileToken, String fileName) {
     this.loader = loader;
     this.importStatusConsumer = importStatusConsumer;
     this.fileToken = fileToken;
+    this.fileName = fileName;
   }
 
   @JsonCreator
-  public TabularRdfCreator(@JsonProperty("loader") Loader loader, @JsonProperty("fileToken") String fileToken) {
+  public TabularRdfCreator(@JsonProperty("loader") Loader loader, @JsonProperty("fileToken") String fileToken,
+                           @JsonProperty("fileName") String fileName) {
     this(loader, s -> {
-    }, fileToken);
+    }, fileToken, fileName);
   }
 
 
@@ -45,13 +49,17 @@ public class TabularRdfCreator implements PlainRdfCreator {
   public void sendQuads(RdfSerializer saver, DataSet dataSet) throws LogStorageFailedException {
 
     try (CachedFile file = dataSet.getImportManager().getFile(fileToken)) {
-      loader.loadData(Lists.newArrayList(tuple(file.getName(), file.getFile())),
-        new Importer(
-          new StateMachine<>(
-            new RawUploadRdfSaver(dataSet.getMetadata(), file.getFile().getName(), file.getMimeType(), saver)
-          ),
-          new ResultReporter(importStatusConsumer)
-        )
+      final RawUploadRdfSaver rawUploadRdfSaver = new RawUploadRdfSaver(
+        dataSet.getMetadata(),
+        file.getFile().getName(),
+        file.getMimeType(),
+        saver,
+        fileName
+      );
+
+      loader.loadData(
+        Lists.newArrayList(tuple(fileName, file.getFile())),
+        new Importer(new StateMachine<>(rawUploadRdfSaver), new ResultReporter(importStatusConsumer))
       );
     } catch (Exception e) {
       throw new LogStorageFailedException(e);
