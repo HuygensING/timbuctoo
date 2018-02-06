@@ -53,7 +53,12 @@ public class MergeSchemaDataFetcher implements DataFetcher {
     Optional<DataSet> dataSet = dataSetRepository.getDataSet(user.get(),
       ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight());
 
+    if (!dataSet.isPresent()) {
+      throw new RuntimeException("Can't retrieve dataset.");
+    }
+
     final SchemaStore generatedSchema = dataSet.get().getSchemaStore();
+
     Map<String, Type> customTypes = new HashMap<>();
     List<ExplicitType> customSchema;
 
