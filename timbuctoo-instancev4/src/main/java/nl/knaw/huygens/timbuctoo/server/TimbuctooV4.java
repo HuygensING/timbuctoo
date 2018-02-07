@@ -91,7 +91,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RsEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
@@ -249,8 +248,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("remove-search-results", new RemoveSearchResultsMigration());
     migrations.put("move-indices-to-isLatest-vertex", new MoveIndicesToIsLatestVertexMigration(vres));
 
-    final ResourceSyncContext resourceSyncContext = new ResourceSyncContext();
-    final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, resourceSyncContext);
+    final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, new ResourceSyncContext());
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
 
     final AutocompleteService.AutocompleteServiceFactory autocompleteServiceFactory =
@@ -388,10 +386,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ));
 
     register(environment, new WellKnown());
-    register(environment, new ResourceSyncEndpoint(configuration.getResourceSync(), configuration.getUriHelper()));
-
     RsDocumentBuilder rsDocumentBuilder =
-      new RsDocumentBuilder(dataSetRepository, configuration.getResourceSync(), configuration.getUriHelper());
+      new RsDocumentBuilder(dataSetRepository, configuration.getUriHelper());
     register(environment, new RsEndpoint(rsDocumentBuilder, securityConfig.getUserValidator()));
 
     // Admin resources

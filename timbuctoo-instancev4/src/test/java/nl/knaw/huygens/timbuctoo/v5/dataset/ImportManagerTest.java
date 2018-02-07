@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory;
@@ -28,9 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class ImportManagerTest {
 
@@ -38,14 +34,12 @@ public class ImportManagerTest {
   protected ImportManager importManager;
   protected File filesDir;
   protected FileSystemFileStorage fileStorage;
-  private ResourceList resourceList;
 
   @Before
   public void makeSimpleDataSet() throws IOException, DataStoreCreationException {
     logListLocation = File.createTempFile("logList", ".json");
     logListLocation.delete();
     filesDir = Files.createTempDir();
-    resourceList = mock(ResourceList.class);
     fileStorage = new FileSystemFileStorage(filesDir);
     this.importManager = new ImportManager(
       logListLocation,
@@ -54,7 +48,6 @@ public class ImportManagerTest {
       fileStorage,
       Executors.newSingleThreadExecutor(),
       new Rdf4jIoFactory(),
-      resourceList,
       () -> { }
     );
   }
@@ -88,29 +81,6 @@ public class ImportManagerTest {
     assertThat(logEntry.getDefaultGraph(), is(defaultGraph));
     //The first character is an @. if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(64));
-  }
-
-  @Test
-  public void addLogsCallsTheResourceSyncResourceList() throws Exception {
-    String name = "http://example.com/clusius.ttl";
-    String defaultGraph = "http://example.com/defaultGraph";
-    String baseUri = "http://example.com/baseUri";
-    File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
-
-    Future<ImportStatus> promise = importManager.addLog(
-      baseUri,
-      defaultGraph,
-      name,
-      new FileInputStream(file),
-      Optional.of(Charsets.UTF_8),
-      MediaType.valueOf("text/turtle")
-    );
-
-    promise.get();
-
-    LogEntry logEntry = importManager.getLogEntries().get(0);
-    CachedFile cachedFile = fileStorage.getFile(logEntry.getLogToken().get()).get();
-    verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(cachedFile)));
   }
 
   @Test
@@ -157,20 +127,6 @@ public class ImportManagerTest {
     assertThat(logEntry.getDefaultGraph(), is(defaultGraph));
     //The first character is an < (start of a uri in nquads) if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(60));
-  }
-
-  @Test
-  public void addFileCallsTheResourceSyncResourceList() throws Exception {
-    String name = "http://example.com/clusius.ttl";
-    File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
-
-    String fileToken = importManager.addFile(
-      new FileInputStream(file),
-      name.toString(),
-      MediaType.valueOf("text/turtle")
-    );
-
-    verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(fileStorage.getFile(fileToken).get())));
   }
 
   private static class CachedFileMatcher extends CompositeMatcher<CachedFile> {
