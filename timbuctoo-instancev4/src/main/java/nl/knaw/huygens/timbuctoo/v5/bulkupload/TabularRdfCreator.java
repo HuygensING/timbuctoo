@@ -22,30 +22,23 @@ import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 public class TabularRdfCreator implements PlainRdfCreator {
   @JsonProperty("loader")
   private final Loader loader;
-  @JsonIgnore
-  private final Consumer<String> importStatusConsumer; // TODO hoe gaan we deze reconstrueren na deserialisatie
   @JsonProperty("fileToken")
   private final String fileToken;
   @JsonProperty("fileName")
   private final String fileName;
 
-  public TabularRdfCreator(Loader loader, Consumer<String> importStatusConsumer, String fileToken, String fileName) {
+  @JsonCreator
+  public TabularRdfCreator(@JsonProperty("loader") Loader loader, @JsonProperty("fileToken") String fileToken,
+                           @JsonProperty("fileName") String fileName) {
     this.loader = loader;
-    this.importStatusConsumer = importStatusConsumer;
     this.fileToken = fileToken;
     this.fileName = fileName;
   }
 
-  @JsonCreator
-  public TabularRdfCreator(@JsonProperty("loader") Loader loader, @JsonProperty("fileToken") String fileToken,
-                           @JsonProperty("fileName") String fileName) {
-    this(loader, s -> {
-    }, fileToken, fileName);
-  }
-
 
   @Override
-  public void sendQuads(RdfSerializer saver, DataSet dataSet) throws LogStorageFailedException {
+  public void sendQuads(RdfSerializer saver, DataSet dataSet, Consumer<String> statusConsumer)
+    throws LogStorageFailedException {
 
     try (CachedFile file = dataSet.getImportManager().getFile(fileToken)) {
       final RawUploadRdfSaver rawUploadRdfSaver = new RawUploadRdfSaver(
@@ -59,7 +52,7 @@ public class TabularRdfCreator implements PlainRdfCreator {
 
       loader.loadData(
         Lists.newArrayList(tuple(fileName, file.getFile())),
-        new Importer(new StateMachine<>(rawUploadRdfSaver), new ResultReporter(importStatusConsumer))
+        new Importer(new StateMachine<>(rawUploadRdfSaver), new ResultReporter(statusConsumer))
       );
     } catch (Exception e) {
       throw new LogStorageFailedException(e);

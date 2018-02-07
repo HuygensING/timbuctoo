@@ -47,7 +47,8 @@ public class StringPredicatesRdfCreatorTest {
     );
     RdfPatchSerializer rdfPatchSerializer = mock(RdfPatchSerializer.class);
 
-    instance.sendQuads(rdfPatchSerializer);
+    instance.sendQuads(rdfPatchSerializer, s -> {
+    });
 
     verify(rdfPatchSerializer).onQuad(COLLECTION_URI, HAS_VIEW_CONFIG, VIEW_CONFIG, STRING, null, BASE_URI);
   }
@@ -65,7 +66,8 @@ public class StringPredicatesRdfCreatorTest {
       BASE_URI
     );
 
-    instance.sendQuads(rdfPatchSerializer);
+    instance.sendQuads(rdfPatchSerializer, s -> {
+    });
 
     InOrder inOrder = inOrder(rdfPatchSerializer);
     inOrder.verify(rdfPatchSerializer).delQuad(COLLECTION_URI, HAS_VIEW_CONFIG, OLD_CONFIG, STRING, null, BASE_URI);

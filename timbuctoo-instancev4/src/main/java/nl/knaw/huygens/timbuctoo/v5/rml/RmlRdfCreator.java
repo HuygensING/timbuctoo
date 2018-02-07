@@ -16,6 +16,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class RmlRdfCreator implements PlainRdfCreator {
@@ -33,7 +34,8 @@ public class RmlRdfCreator implements PlainRdfCreator {
   }
 
   @Override
-  public void sendQuads(RdfSerializer saver, DataSet dataSet) throws LogStorageFailedException {
+  public void sendQuads(RdfSerializer saver, DataSet dataSet, Consumer<String> status)
+    throws LogStorageFailedException {
     RdfDataSourceFactory dataSourceFactory = dataSet.getDataSource();
 
     final Model model = ModelFactory.createDefaultModel();
@@ -51,7 +53,6 @@ public class RmlRdfCreator implements PlainRdfCreator {
     }
     //FIXME: trigger onprefix for all rml prefixes
     //FIXME: store rml and retrieve it from tripleStore when mapping
-
 
     Stream<Quad> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
     Iterator<Quad> iterator = triples.iterator();

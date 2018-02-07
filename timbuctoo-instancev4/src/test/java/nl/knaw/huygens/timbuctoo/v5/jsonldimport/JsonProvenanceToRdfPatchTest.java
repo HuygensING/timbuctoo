@@ -152,7 +152,8 @@ public class JsonProvenanceToRdfPatchTest {
       new DocumentLoader(), testAdditionWithType,
       new DummyQuadStore(), EDITOR_URI, "test", CLOCK);
 
-    creator.sendQuads(basicRdfPatchSerializer);
+    creator.sendQuads(basicRdfPatchSerializer, s -> {
+    });
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred2")));
@@ -197,7 +198,8 @@ public class JsonProvenanceToRdfPatchTest {
       new DocumentLoader(), testMultiAddition,
       new DummyQuadStore(), EDITOR_URI, "test", CLOCK);
 
-    creator.sendQuads(basicRdfPatchSerializer);
+    creator.sendQuads(basicRdfPatchSerializer, s -> {
+    });
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred")));
@@ -232,7 +234,8 @@ public class JsonProvenanceToRdfPatchTest {
     JsonProvenanceToRdfPatch creator = fromCurrentState(new DocumentLoader(),
       testMultiValueAdditions, new DummyQuadStore(), EDITOR_URI, "test", CLOCK);
 
-    creator.sendQuads(basicRdfPatchSerializer);
+    creator.sendQuads(basicRdfPatchSerializer, s -> {
+    });
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred")));
@@ -281,7 +284,8 @@ public class JsonProvenanceToRdfPatchTest {
     JsonProvenanceToRdfPatch creator = fromCurrentState(new DocumentLoader(), testDeletions,
       new DummyQuadStore(), EDITOR_URI, "test", CLOCK);
 
-    creator.sendQuads(basicRdfPatchSerializer);
+    creator.sendQuads(basicRdfPatchSerializer, s -> {
+    });
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred")));
@@ -321,7 +325,8 @@ public class JsonProvenanceToRdfPatchTest {
     JsonProvenanceToRdfPatch creator = fromCurrentState(new DocumentLoader(), testReplacement,
       testQuadStore, EDITOR_URI, "test", CLOCK);
 
-    creator.sendQuads(basicRdfPatchSerializer);
+    creator.sendQuads(basicRdfPatchSerializer, s -> {
+    });
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred")));
@@ -371,7 +376,8 @@ public class JsonProvenanceToRdfPatchTest {
     JsonProvenanceToRdfPatch creator = fromCurrentState(new DocumentLoader(), testRetractsRevision,
       testQuadStore, EDITOR_URI, "test", CLOCK);
 
-    creator.sendQuads(basicRdfPatchSerializer);
+    creator.sendQuads(basicRdfPatchSerializer, s -> {
+    });
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("latestRevision")));
