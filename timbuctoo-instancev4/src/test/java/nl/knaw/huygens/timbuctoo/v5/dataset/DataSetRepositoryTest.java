@@ -1,17 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
-import nl.knaw.huygens.timbuctoo.security.BasicPermissionFetcher;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
@@ -19,12 +12,10 @@ import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
-import org.apache.commons.compress.archivers.dump.DumpArchiveEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.naming.NoPermissionException;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -33,27 +24,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class DataSetRepositoryTest {
 
   protected File tempFile;
   private DataSetRepository dataSetRepository;
-  private ResourceSync resourceSync;
+  //private ResourceSync resourceSync;
   private File authDir;
   private PermissionFetcher permissionFetcher;
 
   @Before
   public void init() throws Exception {
     tempFile = Files.createTempDir();
-    resourceSync = mock(ResourceSync.class);
-    when(resourceSync.getDataSetDescriptionFile(anyString(), anyString())).thenReturn(new File(tempFile, "test.xml"));
+    //resourceSync = mock(ResourceSync.class);
+    //when(resourceSync.getDataSetDescriptionFile(anyString(), anyString())).thenReturn(new File(tempFile, "test.xml"));
     dataSetRepository = createDataSetRepo();
   }
 
@@ -67,7 +55,7 @@ public class DataSetRepositoryTest {
         .dataSetMetadataLocation(tempFile.getAbsolutePath())
         .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
         .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
-        .resourceSync(resourceSync)
+        //.resourceSync(resourceSync)
         .build(),
       new BdbNonPersistentEnvironmentCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
@@ -110,13 +98,13 @@ public class DataSetRepositoryTest {
     assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
 
-  @Test
-  public void createImportManagerOnlyAddsANewDataSetToResourceSync() throws Exception {
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-
-    verify(resourceSync, times(1)).resourceList("uuser", "dataset");
-  }
+  // @Test
+  // public void createImportManagerOnlyAddsANewDataSetToResourceSync() throws Exception {
+  //   dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+  //   dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+  //
+  //   verify(resourceSync, times(1)).resourceList("uuser", "dataset");
+  // }
 
   @Test
   public void dataSetExistsReturnsFalseIfTheUserIsNotKnown() {
@@ -158,16 +146,16 @@ public class DataSetRepositoryTest {
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(false));
   }
 
-  @Test
-  public void removeDataSetRemovesItFromResourceSync() throws Exception {
-    User user = User.create(null, "user");
-    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
-    given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(Sets.newHashSet(Permission.ADMIN));
-
-    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
-
-    verify(resourceSync).removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
-  }
+  // @Test
+  // public void removeDataSetRemovesItFromResourceSync() throws Exception {
+  //   User user = User.create(null, "user");
+  //   final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
+  //given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(Sets.newHashSet(Permission.ADMIN));
+  //
+  //   dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
+  //
+  //   verify(resourceSync).removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
+  // }
 
   @Test(expected = NotEnoughPermissionsException.class)
   public void removeDataSetThrowsAnExceptionWhenTheUserHasNoAdminPermissions() throws Exception {

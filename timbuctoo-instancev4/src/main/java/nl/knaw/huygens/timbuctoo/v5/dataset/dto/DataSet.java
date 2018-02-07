@@ -21,8 +21,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPat
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
@@ -35,9 +33,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Function;
 
 @Value.Immutable
 public abstract class DataSet {
@@ -46,12 +42,14 @@ public abstract class DataSet {
 
   public static DataSet dataSet(DataSetMetaData metadata, DataSetConfiguration configuration,
                          FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
-                         BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
-    throws IOException, DataStoreCreationException, ResourceSyncException {
+                         BdbEnvironmentCreator dataStoreFactory, Runnable onUpdated)
+    throws IOException, DataStoreCreationException {
 
     String userId = metadata.getOwnerId();
     String dataSetId = metadata.getDataSetId();
-    File descriptionFile = resourceSync.getDataSetDescriptionFile(userId, dataSetId);
+
+    File descriptionFile = fileHelper.fileInDataSet(userId, dataSetId, "description.xml");
+    FileStorage fileStorage = configuration.getFileStorage().makeFileStorage(userId, dataSetId);
 
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
@@ -60,7 +58,6 @@ public abstract class DataSet {
       configuration.getFileStorage().makeLogStorage(userId, dataSetId),
       executorService,
       configuration.getRdfIo(),
-      resourceSync.resourceList(userId, dataSetId),
       onUpdated
     );
 
@@ -196,6 +193,7 @@ public abstract class DataSet {
                                                  .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
                                                  .schemaStore(schema)
                                                  .importManager(importManager)
+                                                 .fileStorage(fileStorage)
                                                  .build();
       importManager.init(dataSet);
 
@@ -248,4 +246,5 @@ public abstract class DataSet {
 
   public abstract DataSetMetaData getMetadata();
 
+  public abstract FileStorage getFileStorage();
 }

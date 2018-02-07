@@ -19,11 +19,10 @@ import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
+import nl.knaw.huygens.timbuctoo.v5.backupforstaging.azureblob.dropwizardconfiguration.DatabaseBackupperFactory;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.config.SecurityFactoryConfiguration;
-import nl.knaw.huygens.timbuctoo.v5.backupforstaging.azureblob.dropwizardconfiguration.DatabaseBackupperFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
@@ -161,10 +160,5 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public MetricsFactory getMetricsFactory() {
     return new MetricsFactory();
   }
-
-  public ResourceSync getResourceSync() {
-    return getDataSetConfiguration().getResourceSync();
-  }
-
 
 }

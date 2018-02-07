@@ -3,9 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
-import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
@@ -26,7 +24,6 @@ public interface DataSetConfiguration {
       .dataSetMetadataLocation(dataSetMetadataLocation)
       .fileStorage(fileStorageFactory)
       .rdfIo(rdfIoFactory)
-      .resourceSync(new ResourceSync(new FileHelper(dataSetMetadataLocation), fileStorageFactory))
       .build();
   }
 
@@ -35,8 +32,6 @@ public interface DataSetConfiguration {
   FileStorageFactory getFileStorage();
 
   RdfIoFactory getRdfIo();
-
-  ResourceSync getResourceSync();
 
   default DataSetRepository createRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                                              BdbPersistentEnvironmentCreator databases,

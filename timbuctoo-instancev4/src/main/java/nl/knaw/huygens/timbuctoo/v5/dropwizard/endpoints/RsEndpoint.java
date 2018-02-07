@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.RsDocumentBuilder;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
@@ -17,16 +16,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.OutputStreamWriter;
+import java.io.IOException;
 import java.util.Optional;
 
-@Path("v5/rs")
+@Path("v5/resourcesync")
 public class RsEndpoint {
 
   private static final Logger LOG = LoggerFactory.getLogger(RsEndpoint.class);
@@ -51,7 +45,15 @@ public class RsEndpoint {
   public Response getCapabilityList(@HeaderParam("authorization") String authHeader,
                                     @PathParam("ownerId") String owner,
                                     @PathParam("dataSetName") String dataSetName) {
-    return Response.ok(rsDocumentBuilder.getCapabilityList(getUser(authHeader), owner, dataSetName)).build();
+    User user = getUser(authHeader);
+    Optional<Urlset> maybeCapabilityList = rsDocumentBuilder.getCapabilityList(user, owner, dataSetName);
+    if (maybeCapabilityList.isPresent()) {
+      return Response.ok(maybeCapabilityList.get()).build();
+    } else if (user != null) {
+      return Response.status(Response.Status.FORBIDDEN).build();
+    } else {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
   }
 
   @GET
@@ -59,12 +61,15 @@ public class RsEndpoint {
   @Produces(MediaType.APPLICATION_XML)
   public Response getResourceList(@HeaderParam("authorization") String authHeader,
                                   @PathParam("ownerId") String owner,
-                                  @PathParam("dataSetName") String dataSetName) throws FileNotFoundException {
-    Optional<File> maybeResourceList = rsDocumentBuilder.getResourceListFile(getUser(authHeader), owner, dataSetName);
+                                  @PathParam("dataSetName") String dataSetName) throws IOException {
+    User user = getUser(authHeader);
+    Optional<Urlset> maybeResourceList = rsDocumentBuilder.getResourceList(user, owner, dataSetName);
     if (maybeResourceList.isPresent()) {
-      return streamFile(maybeResourceList.get(), MediaType.APPLICATION_XML_TYPE);
+      return Response.ok(maybeResourceList.get()).build();
+    } else if (user != null) {
+      return Response.status(Response.Status.FORBIDDEN).build();
     } else {
-      return Response.status(Response.Status.NOT_FOUND).build();
+      return Response.status(Response.Status.UNAUTHORIZED).build();
     }
   }
 
@@ -74,7 +79,7 @@ public class RsEndpoint {
                           @PathParam("ownerId") String owner,
                           @PathParam("dataSetName") String dataSetName,
                           @PathParam("fileId") String fileId
-  ) throws ResourceSyncException {
+  ) throws IOException {
     User user = getUser(authHeader);
     Optional<CachedFile> maybeFile = rsDocumentBuilder.getCachedFile(user, owner, dataSetName, fileId);
     if (maybeFile.isPresent()) {
@@ -85,10 +90,30 @@ public class RsEndpoint {
       } else {
         return Response.status(Response.Status.NOT_FOUND).build();
       }
-    } else if (user == null) {
-      return Response.status(Response.Status.UNAUTHORIZED).build();
-    } else {
+    } else if (user != null) {
       return Response.status(Response.Status.FORBIDDEN).build();
+    } else {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+  }
+
+  @GET
+  @Path("{ownerId}/{dataSetName}/description.xml")
+  public Response getDescription(@HeaderParam("authorization") String authHeader,
+                                 @PathParam("ownerId") String owner,
+                                 @PathParam("dataSetName") String dataSetName) {
+    User user = getUser(authHeader);
+    Optional<File> maybeFile = rsDocumentBuilder.getDataSetDescription(user, owner, dataSetName);
+    if (maybeFile.isPresent()) {
+      if (maybeFile.get().exists()) {
+        return Response.ok(maybeFile.get(), MediaType.APPLICATION_XML_TYPE).build();
+      } else {
+        return Response.status(Response.Status.NOT_FOUND).build();
+      }
+    } else if (user != null) {
+      return Response.status(Response.Status.FORBIDDEN).build();
+    } else {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
     }
   }
 
@@ -100,27 +125,6 @@ public class RsEndpoint {
       LOG.error("Exception validating user", e);
     }
     return user;
-  }
-
-  // Can be dismissed on dynamic creation of resourcelist
-  private Response streamFile(File file, MediaType mediaType) throws FileNotFoundException {
-    if (!file.exists()) {
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
-    BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-
-    StreamingOutput output = output1 -> {
-      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output1));
-
-      for (String line; (line = bufferedReader.readLine()) != null; ) {
-        writer.write(
-          line.replace(ResourceSync.BASE_URI_PLACE_HOLDER, rsDocumentBuilder.getUriHelper().getBaseUri().toString()));
-      }
-
-      writer.flush();
-    };
-
-    return Response.ok(output, mediaType).build();
   }
 
 }

@@ -378,27 +378,45 @@ public class IntegrationTest {
     // TODO should be ends-with, but that is not supported in xpath v1
     assertThat(
       sourceDesc,
-      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/capabilityList.xml')]")
+      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/capabilitylist.xml')]")
     );
 
-    Response capabilityListResp = call("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/capabilityList.xml").get();
+    Response capabilityListResp = call("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/capabilitylist.xml").get();
     assertThat(capabilityListResp.getStatus(), is(200));
     Node capabilityList = streamToXml(capabilityListResp.readEntity(InputStream.class));
     // TODO should be ends-with, but that is not supported in xpath v1
     assertThat(
       capabilityList,
-      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/resourceList.xml')]")
+      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/resourcelist.xml')]")
     );
 
-    Response resourceListResp = call("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/resourceList.xml").get();
+    Response resourceListResp = call("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/resourcelist.xml")
+      .get();
     assertThat(resourceListResp.getStatus(), is(200));
     Node resourceList = streamToXml(resourceListResp.readEntity(InputStream.class));
-    // TODO should be ends-with, but that is not supported in xpath v1
     assertThat(
       resourceList,
       hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/files/')]")
     );
 
+    // call resourceSync without authorization
+    sourceDescResponse = callWithoutAuthentication("/v5/resourcesync/sourceDescription.xml").get();
+    assertThat(sourceDescResponse.getStatus(), is(200));
+    sourceDesc = streamToXml(sourceDescResponse.readEntity(InputStream.class));
+    // TODO should be ends-with, but that is not supported in xpath v1
+    assertThat(
+      sourceDesc, not(
+      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/capabilitylist.xml')]"))
+    );
+
+    capabilityListResp =
+      callWithoutAuthentication("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/capabilitylist.xml")
+        .get();
+    assertThat(capabilityListResp.getStatus(), is(Response.Status.UNAUTHORIZED.getStatusCode()));
+
+    resourceListResp =
+      callWithoutAuthentication("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/resourcelist.xml").get();
+    assertThat(resourceListResp.getStatus(), is(Response.Status.UNAUTHORIZED.getStatusCode()));
   }
 
   private Document streamToXml(InputStream is) throws ParserConfigurationException, IOException, SAXException {
@@ -1147,7 +1165,7 @@ public class IntegrationTest {
       dataSets.add(uriNodes.item(i).getTextContent());
     }
 
-    assertThat(dataSets, hasItem(endsWith(dataSetName + "/capabilityList.xml")));
+    assertThat(dataSets, hasItem(endsWith(dataSetName + "/capabilitylist.xml")));
   }
 
   private List<String> getDataSetNamesOfDummy() {
@@ -1201,20 +1219,19 @@ public class IntegrationTest {
       .header("Authorization", AUTH);
   }
 
+
   private Invocation.Builder callWithoutAuthentication(String path) {
     String server;
     if (path.startsWith("http://") || path.startsWith("https://")) {
       server = path;
     } else {
       int localPort = APP.getLocalPort();
-      // int localPort = 8080;
       server = format("http://localhost:%d" + path, localPort);
     }
     return client
       .target(server)
       .register(MultiPartFeature.class)
       // .register(new LoggingFilter(Logger.getLogger(LoggingFilter.class.getName()), true))
-      .request()
-      .header("Authorization", AUTH);
+      .request();
   }
 }
