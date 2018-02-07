@@ -120,6 +120,15 @@ public class JexlRowFactory implements RowFactory {
     }
 
     @Override
+    public String toString() {
+      return "MapBasedRow{" +
+        "data=" + data +
+        ", joinedData=" + joinedData +
+        ", expressions=" + expressions +
+        '}';
+    }
+
+    @Override
     public boolean equals(Object obj) {
       if (obj == null || getClass() != obj.getClass()) {
         return false;

@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.rml;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.knaw.huygens.timbuctoo.rml.LoggingErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
@@ -54,7 +53,7 @@ public class RmlRdfCreator implements PlainRdfCreator {
     //FIXME: trigger onprefix for all rml prefixes
     //FIXME: store rml and retrieve it from tripleStore when mapping
 
-    Stream<Quad> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
+    Stream<Quad> triples = rmlMappingDocument.execute(new ReportingErrorHandler(status));
     Iterator<Quad> iterator = triples.iterator();
     while (iterator.hasNext()) {
       Quad triple = iterator.next();

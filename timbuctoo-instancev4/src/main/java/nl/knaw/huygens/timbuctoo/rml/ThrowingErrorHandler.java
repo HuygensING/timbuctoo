@@ -12,4 +12,9 @@ public class ThrowingErrorHandler implements ErrorHandler {
   public void valueGenerateFailed(String key, String message) {
     throw new RuntimeException(key + ": " + message);
   }
+
+  @Override
+  public void subjectGenerationFailed(String uri, Row row) {
+    throw new RuntimeException("Could not generate subject for map " + uri + " using values: " + row);
+  }
 }
