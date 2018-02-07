@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import org.apache.jena.rdf.model.Model;
@@ -44,13 +43,7 @@ public class RmlRdfCreator implements PlainRdfCreator {
       throw new LogStorageFailedException(e);
     }
 
-    DataSetMetaData metadata = dataSet.getMetadata();
-
-    final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(
-      model,
-      //fixme remove vreName from here
-      rdfResource -> dataSourceFactory.apply(rdfResource, metadata.getDataSetId() + "_" + metadata.getOwnerId())
-    );
+    final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(model, dataSourceFactory::apply);
     if (rmlMappingDocument.getErrors().size() > 0) {
       throw new LogStorageFailedException(
         "failure: " + String.join("\nfailure: ", rmlMappingDocument.getErrors()) + "\n"

@@ -19,7 +19,7 @@ public class RdfDataSourceFactory {
     this.rmlDataSourceStore = rmlDataSourceStore;
   }
 
-  public Optional<DataSource> apply(RdfResource rdfResource, String vreName) {
+  public Optional<DataSource> apply(RdfResource rdfResource) {
     for (RdfResource resource : rdfResource.out(NS_RML + "source")) {
       Set<RdfResource> rawCollection = resource.out("http://timbuctoo.huygens.knaw.nl/mapping#rawCollectionUri");
       Set<RdfResource> customFields = resource.out("http://timbuctoo.huygens.knaw.nl/mapping#customField");
