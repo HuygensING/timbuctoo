@@ -47,13 +47,12 @@ public abstract class DataSet {
 
     String userId = metadata.getOwnerId();
     String dataSetId = metadata.getDataSetId();
-
     File descriptionFile = fileHelper.fileInDataSet(userId, dataSetId, "description.xml");
     FileStorage fileStorage = configuration.getFileStorage().makeFileStorage(userId, dataSetId);
 
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
-      configuration.getFileStorage().makeFileStorage(userId, dataSetId),
+      fileStorage,
       configuration.getFileStorage().makeFileStorage(userId, dataSetId),
       configuration.getFileStorage().makeLogStorage(userId, dataSetId),
       executorService,
@@ -247,4 +246,5 @@ public abstract class DataSet {
   public abstract DataSetMetaData getMetadata();
 
   public abstract FileStorage getFileStorage();
+
 }
