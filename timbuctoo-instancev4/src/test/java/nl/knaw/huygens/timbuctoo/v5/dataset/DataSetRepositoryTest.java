@@ -33,15 +33,12 @@ public class DataSetRepositoryTest {
 
   protected File tempFile;
   private DataSetRepository dataSetRepository;
-  //private ResourceSync resourceSync;
   private File authDir;
   private PermissionFetcher permissionFetcher;
 
   @Before
   public void init() throws Exception {
     tempFile = Files.createTempDir();
-    //resourceSync = mock(ResourceSync.class);
-    //when(resourceSync.getDataSetDescriptionFile(anyString(), anyString())).thenReturn(new File(tempFile, "test.xml"));
     dataSetRepository = createDataSetRepo();
   }
 
@@ -55,7 +52,6 @@ public class DataSetRepositoryTest {
         .dataSetMetadataLocation(tempFile.getAbsolutePath())
         .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
         .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
-        //.resourceSync(resourceSync)
         .build(),
       new BdbNonPersistentEnvironmentCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
@@ -98,14 +94,6 @@ public class DataSetRepositoryTest {
     assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
 
-  // @Test
-  // public void createImportManagerOnlyAddsANewDataSetToResourceSync() throws Exception {
-  //   dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-  //   dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-  //
-  //   verify(resourceSync, times(1)).resourceList("uuser", "dataset");
-  // }
-
   @Test
   public void dataSetExistsReturnsFalseIfTheUserIsNotKnown() {
     boolean dataSetExists = dataSetRepository.dataSetExists("ownerid", "dataset_id");
@@ -145,17 +133,6 @@ public class DataSetRepositoryTest {
 
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(false));
   }
-
-  // @Test
-  // public void removeDataSetRemovesItFromResourceSync() throws Exception {
-  //   User user = User.create(null, "user");
-  //   final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
-  //given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(Sets.newHashSet(Permission.ADMIN));
-  //
-  //   dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
-  //
-  //   verify(resourceSync).removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
-  // }
 
   @Test(expected = NotEnoughPermissionsException.class)
   public void removeDataSetThrowsAnExceptionWhenTheUserHasNoAdminPermissions() throws Exception {
