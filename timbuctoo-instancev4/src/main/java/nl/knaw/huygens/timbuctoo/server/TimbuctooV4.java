@@ -30,7 +30,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
-import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.OldStyleSecurityFactory;
@@ -55,12 +54,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUpload;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
@@ -80,7 +73,6 @@ import nl.knaw.huygens.timbuctoo.server.migration.AuthorizationMigration;
 import nl.knaw.huygens.timbuctoo.server.migration.MetaDataMigration;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.server.security.OldStyleSecurityFactoryConfiguration;
-import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
@@ -371,32 +363,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       register(environment, new Gremlin(graphManager));
     }
     register(environment, new Graph(graphManager, vres));
-    // Bulk upload
-    UserPermissionChecker permissionChecker = new UserPermissionChecker(
-      securityConfig.getUserValidator(),
-      securityConfig.getPermissionFetcher()
-    );
-    RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker, errorResponseHelper);
-    register(environment, rawCollection);
-    ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
-      new DataSourceFactory(graphManager), transactionEnforcer,
-      webhooks
-    );
-    register(environment, executeRml);
-    SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
-    register(environment, saveRml);
-
-    BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml,
-      permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024
-    );
-    register(environment, bulkUploadVre);
-    if (securityConfig instanceof OldStyleSecurityFactory) {
-      final OldStyleSecurityFactory oldStyleSecurityFactory = (OldStyleSecurityFactory) securityConfig;
-      register(environment, new BulkUpload(new BulkUploadService(vres, graphManager, 25_000), bulkUploadVre,
-        securityConfig.getUserValidator(), oldStyleSecurityFactory.getVreAuthorizationCreator(), 20 * 1024 * 1024,
-        permissionChecker, transactionEnforcer, 50
-      ));
-    }
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata());
@@ -404,8 +370,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new MyVres(
         securityConfig.getUserValidator(),
         securityConfig.getPermissionFetcher(),
-        bulkUploadVre,
-        transactionEnforcer,
+      transactionEnforcer,
         uriHelper
       )
     );

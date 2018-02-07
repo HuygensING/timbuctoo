@@ -5,13 +5,12 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
-import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 
@@ -36,15 +35,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class MyVres {
   private final UserValidator userValidator;
   private final PermissionFetcher permissionFetcher;
-  private final BulkUploadVre bulkUploadVre;
   private final TransactionEnforcer transactionEnforcer;
   private final UriHelper uriHelper;
 
-  public MyVres(UserValidator userValidator, PermissionFetcher permissionFetcher, BulkUploadVre bulkUploadVre,
+  public MyVres(UserValidator userValidator, PermissionFetcher permissionFetcher,
                 TransactionEnforcer transactionEnforcer, UriHelper uriHelper) {
     this.userValidator = userValidator;
     this.permissionFetcher = permissionFetcher;
-    this.bulkUploadVre = bulkUploadVre;
     this.transactionEnforcer = transactionEnforcer;
     this.uriHelper = uriHelper;
   }
@@ -91,10 +88,7 @@ public class MyVres {
                 "label", jsn(x.getLabel()),
                 "published", jsn(x.isPublished),
                 "vreMetadata", x.getMetadata(),
-                "publishState", jsn(x.getPublishState().toString()),
-                "rmlUri", jsn(
-                  bulkUploadVre.createUri(x.getVreName())
-                               .toASCIIString())
+                "publishState", jsn(x.getPublishState().toString())
               );
             } else {
               return jsnO(
