@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -39,14 +40,17 @@ public class DatabaseBackupper {
   }
 
   private void backupFolder(String folder, ZipOutputStream zos) throws IOException {
-    final Iterator<Path> pathStream = Files.walk(Paths.get(folder)).filter(Files::isRegularFile).iterator();
-    while (pathStream.hasNext()) {
-      String file = pathStream.next().toFile().getAbsolutePath();
-      zos.putNextEntry(new ZipEntry(file));
-      try (FileInputStream in = new FileInputStream(file)) {
-        IOUtils.copy(in,zos);
+    try (Stream<Path> fileStream = Files.walk(Paths.get(folder))) {
+
+      final Iterator<Path> pathStream = fileStream.filter(Files::isRegularFile).iterator();
+      while (pathStream.hasNext()) {
+        String file = pathStream.next().toFile().getAbsolutePath();
+        zos.putNextEntry(new ZipEntry(file));
+        try (FileInputStream in = new FileInputStream(file)) {
+          IOUtils.copy(in, zos);
+        }
+        zos.closeEntry();
       }
-      zos.closeEntry();
     }
   }
 }

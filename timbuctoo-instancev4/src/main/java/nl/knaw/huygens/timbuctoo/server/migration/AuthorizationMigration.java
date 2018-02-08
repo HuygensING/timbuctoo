@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -48,37 +49,40 @@ public class AuthorizationMigration {
       return;
     }
 
-    Set<Path> authFiles = Files.walk(path)
-                               .filter(file -> file.toFile().getName().endsWith(".json") && file.toFile().isFile())
-                               .collect(toSet());
+    try(Stream<Path> fileStream = Files.walk(path)) {
+      Set<Path> authFiles = fileStream
+        .filter(file -> file.toFile().getName().endsWith(".json") && file.toFile().isFile())
+        .collect(toSet());
 
-    for (Path authFile : authFiles) {
-      final File outputFile = createOutputFile(authFile);
-      if (!outputFile.exists()) {
-        LOG.info("Migrating " + authFile.toAbsolutePath().toString());
-        Set<VreAuthorization> oldAuths = OBJECT_MAPPER.readValue(
-          authFile.toFile(),
-          new TypeReference<Set<VreAuthorization>>() {
-          }
-        );
+      for (Path authFile : authFiles) {
+        final File outputFile = createOutputFile(authFile);
+        if (!outputFile.exists()) {
+          LOG.info("Migrating " + authFile.toAbsolutePath().toString());
+          Set<VreAuthorization> oldAuths = OBJECT_MAPPER.readValue(
+            authFile.toFile(),
+            new TypeReference<Set<VreAuthorization>>() {
+            }
+          );
 
-        Set<VreAuthorization> newAuths = Sets.newHashSet();
-        for (VreAuthorization oldAuth : oldAuths) {
-          final String oldUserId = oldAuth.getUserId();
-          String userId = oldUserId;
-          Optional<User> userFromOldUserId = userValidator.getUserFromUserId(oldUserId);
-          if (userFromOldUserId.isPresent()) {
-            userId = userFromOldUserId.get().getPersistentId();
-          } else {
-            LOG.warn("No user found with id '{}'", oldUserId);
+          Set<VreAuthorization> newAuths = Sets.newHashSet();
+          for (VreAuthorization oldAuth : oldAuths) {
+            final String oldUserId = oldAuth.getUserId();
+            String userId = oldUserId;
+            Optional<User> userFromOldUserId = userValidator.getUserFromUserId(oldUserId);
+            if (userFromOldUserId.isPresent()) {
+              userId = userFromOldUserId.get().getPersistentId();
+            } else {
+              LOG.warn("No user found with id '{}'", oldUserId);
+            }
+            newAuths
+              .add(VreAuthorization.create(oldAuth.getVreId(), userId, oldAuth.getRoles().toArray(new String[]{})));
           }
-          newAuths.add(VreAuthorization.create(oldAuth.getVreId(), userId, oldAuth.getRoles().toArray(new String[]{})));
+
+          OBJECT_MAPPER.writeValue(outputFile, newAuths);
+        } else {
+          LOG.info("Skipping migration of " + authFile.toAbsolutePath().toString() + " because " +
+            outputFile.getAbsolutePath() + " already exists");
         }
-
-        OBJECT_MAPPER.writeValue(outputFile, newAuths);
-      } else {
-        LOG.info("Skipping migration of " + authFile.toAbsolutePath().toString() + " because " +
-          outputFile.getAbsolutePath() + " already exists");
       }
     }
 

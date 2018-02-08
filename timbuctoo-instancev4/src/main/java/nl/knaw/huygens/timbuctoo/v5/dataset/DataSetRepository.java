@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
 
@@ -87,18 +88,20 @@ public class DataSetRepository {
       String dirName = directories[i].toString();
       String currentOwnerId = dirName.substring(dirName.lastIndexOf("/") + 1, dirName.length());
       Set<DataSetMetaData> tempMetaDataSet = new HashSet<>();
-      Set<Path> paths = Files.walk(directories[i].toPath())
-                             .filter(current -> Files.isDirectory(current)).collect(Collectors.toSet());
-      for (Path path : paths) {
-        File tempFile = new File(path.toString() + "/metaData.json");
-        if (tempFile.exists()) {
-          JsonFileBackedData<BasicDataSetMetaData> metaDataFromFile = null;
-          metaDataFromFile = JsonFileBackedData.getOrCreate(
-            tempFile,
-            null,
-            new TypeReference<BasicDataSetMetaData>() {
-            });
-          tempMetaDataSet.add(metaDataFromFile.getData());
+      try(Stream<Path> fileStream = Files.walk(directories[i].toPath())) {
+        Set<Path> paths = fileStream
+          .filter(current -> Files.isDirectory(current)).collect(Collectors.toSet());
+        for (Path path : paths) {
+          File tempFile = new File(path.toString() + "/metaData.json");
+          if (tempFile.exists()) {
+            JsonFileBackedData<BasicDataSetMetaData> metaDataFromFile = null;
+            metaDataFromFile = JsonFileBackedData.getOrCreate(
+              tempFile,
+              null,
+              new TypeReference<BasicDataSetMetaData>() {
+              });
+            tempMetaDataSet.add(metaDataFromFile.getData());
+          }
         }
       }
 
