@@ -18,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncExceptio
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -55,7 +54,7 @@ public abstract class DataSet {
       onUpdated
     );
 
-    BdbStoreProvider storeProvider = new BdbStoreProvider(dataStoreFactory);
+    BdbStoreProvider storeProvider = new BdbStoreProvider(userId, dataSetId, dataStoreFactory);
 
     try {
       importManager.subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri(),
@@ -64,17 +63,15 @@ public abstract class DataSet {
       LOG.error("Could not construct import manager of data set", e);
     }
 
-    final QuadStore quadStore = storeProvider.createTripleStore(userId, dataSetId);
-    final TypeNameStore typeNameStore = storeProvider.createTypeNameStore(userId, dataSetId, rdfPrefix);
-    final SchemaStore schema = storeProvider.createSchemaStore(userId, dataSetId, importManager.getImportStatus());
-    final TruePatchStore truePatchStore = storeProvider.createTruePatchStore(userId, dataSetId);
-    final UpdatedPerPatchStore updatedPerPatchStore = storeProvider.createUpdatePerPatchStore(userId, dataSetId);
+    final QuadStore quadStore = storeProvider.createTripleStore();
+    final TypeNameStore typeNameStore = storeProvider.createTypeNameStore(rdfPrefix);
+    final SchemaStore schema = storeProvider.createSchemaStore(importManager.getImportStatus());
+    final TruePatchStore truePatchStore = storeProvider.createTruePatchStore();
+    final UpdatedPerPatchStore updatedPerPatchStore = storeProvider.createUpdatePerPatchStore();
     final RmlDataSourceStore rmlDataSourceStore = storeProvider.createRmlDataSourceStore(
-      userId,
-      dataSetId,
       importManager.getImportStatus()
     );
-    final VersionStore versionStore = storeProvider.createVersionStore(userId, dataSetId);
+    final VersionStore versionStore = storeProvider.createVersionStore();
     final StoreUpdater storeUpdater = new StoreUpdater(
       quadStore,
       typeNameStore,
