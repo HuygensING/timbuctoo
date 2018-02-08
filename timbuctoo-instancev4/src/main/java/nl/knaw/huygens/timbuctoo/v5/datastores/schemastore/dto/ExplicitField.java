@@ -10,11 +10,11 @@ import java.util.Map;
 
 
 public class ExplicitField {
-  @JsonProperty("name")
+  @JsonProperty("name") //todo:remove this
   private String name;
   @JsonProperty("uri")
   private String uri;
-  @JsonProperty("shortenedUri")
+  @JsonProperty("shortenedUri") //todo:remove this
   private String shortenedUri;
   @JsonProperty("isList")
   private Boolean isList;
@@ -23,7 +23,7 @@ public class ExplicitField {
   @JsonProperty("reference")
   private List<String> references;
   @JsonProperty("type")
-  private ExplicitType explicitType;
+  private ExplicitType explicitType; //todo:remove this
 
   @JsonCreator
   public ExplicitField(@JsonProperty("name") String name,
