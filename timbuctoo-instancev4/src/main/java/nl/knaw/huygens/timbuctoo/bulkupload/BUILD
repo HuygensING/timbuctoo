@@ -16,6 +16,7 @@ java_library(
     ]),
     deps = [
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
+      "//third_party:com_fasterxml_jackson_core_jackson_annotations",
       "//third_party:org_apache_poi_poi_ooxml_schemas",
       "//third_party:org_apache_poi_poi_ooxml",
       "//third_party:org_apache_poi_poi",

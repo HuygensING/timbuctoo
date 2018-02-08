@@ -63,6 +63,7 @@ public class RrTriplesMap {
                                     .flatMap(predicateObjectMap -> predicateObjectMap.generateValue(subject, row));
 
         } else {
+          defaultErrorHandler.subjectGenerationFailed(uri, row);
           return Stream.empty();
         }
       });

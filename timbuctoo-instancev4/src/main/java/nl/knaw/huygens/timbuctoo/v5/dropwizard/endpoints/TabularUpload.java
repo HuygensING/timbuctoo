@@ -3,12 +3,10 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
@@ -98,20 +96,17 @@ public class TabularUpload {
         try {
           String fileToken = importManager.addFile(
             rdfInputStream,
-            fileInfo.getName(),
+            fileInfo.getFileName(),
             mediaType
-          );
-          Tuple<UUID, PlainRdfCreator> rdfCreator = dataSetRepository.registerRdfCreator(
-            (statusConsumer) -> new TabularRdfCreator(
-              loader.get(),
-              statusConsumer,
-              fileToken
-            )
           );
           Future<ImportStatus> promise = importManager.generateLog(
             dataSet.getMetadata().getBaseUri(),
             dataSet.getMetadata().getBaseUri(),
-            rdfCreator.getRight()
+            new TabularRdfCreator(
+              loader.get(),
+              fileToken,
+              fileInfo.getFileName()
+            )
           );
 
           return handleImportManagerResult(promise);

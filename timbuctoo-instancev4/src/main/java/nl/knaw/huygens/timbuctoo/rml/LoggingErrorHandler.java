@@ -28,4 +28,9 @@ public class LoggingErrorHandler implements ErrorHandler {
   public void valueGenerateFailed(String key, String message) {
     LOG.error(key + ": " + message);
   }
+
+  @Override
+  public void subjectGenerationFailed(String uri, Row row) {
+    LOG.error("Could not generate subject for map " + uri + " using values: " + row);
+  }
 }

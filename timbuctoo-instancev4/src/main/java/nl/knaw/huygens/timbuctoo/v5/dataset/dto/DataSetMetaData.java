@@ -6,15 +6,6 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 public interface DataSetMetaData {
-  /**
-   * DataSetId's must be Safe. Meaning that they can be used on the fileSystem, in queries, wherever.
-   * We implement that by making sure that the the owner and dataSetId contain only a-z (lowercase for case
-   * insensitive environments) and 0-9
-   * we also allow for an underscore. But only one, so that we can join the parts using 2 underscores
-   * finally, the id must start with a character because some environments (java variables, graphql, javascript, sql)
-   * don't allow an identifier to start with a number
-   */
-  String VALID_ID = "^[a-z](_?[a-z0-9]+)+$";
 
   String getDataSetId();
 
@@ -36,6 +27,21 @@ public interface DataSetMetaData {
   boolean isPromoted();
 
   Optional<String> role = Optional.empty();
+
+  /**
+   * DataSetId's must be Safe. Meaning that they can be used on the fileSystem, in queries, wherever.
+   * We implement that by making sure that the the owner and dataSetId contain only a-z (lowercase for case
+   * insensitive environments) and 0-9
+   * we also allow for an underscore. But only one, so that we can join the parts using 2 underscores
+   * finally, the id must start with a character because some environments (java variables, graphql, javascript, sql)
+   * don't allow an identifier to start with a number
+   */
+  static boolean isValidId(String id) {
+    return !id.contains("__") && id.matches("^[a-z][a-z0-9_]*[a-z0-9]$");
+  }
+
+  String VALID_ID_DESCRIPTION = "start with a-z and be followed by a-z0-9 or 1 consecutive underscore. It must not " +
+    "end in an underscore. It must be at least 2 characters long.";
 
   static Tuple<String, String> splitCombinedId(String combinedId) {
     String[] parts = combinedId.split("__", 2);

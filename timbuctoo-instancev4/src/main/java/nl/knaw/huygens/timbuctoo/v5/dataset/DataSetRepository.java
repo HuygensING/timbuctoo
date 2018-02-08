@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -42,10 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
@@ -68,7 +65,6 @@ public class DataSetRepository {
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
   private final boolean publicByDefault;
-  private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
   private final ResourceSync resourceSync;
   private Consumer<String> onUpdated;
@@ -114,7 +110,6 @@ public class DataSetRepository {
     this.rdfIdHelper = rdfIdHelper;
     this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
     this.publicByDefault = publicByDefault;
-    statusMap = new HashMap<>();
     resourceSync = configuration.getResourceSync();
 
     dataSetMap = new HashMap<>();
@@ -330,25 +325,6 @@ public class DataSetRepository {
     return dataSetsWithWriteAccess;
   }
 
-  public Optional<String> getStatus(UUID uuid) {
-    return statusMap.containsKey(uuid) ? Optional.of(statusMap.get(uuid).toString()) : Optional.empty();
-  }
-
-  public Tuple<UUID, PlainRdfCreator> registerRdfCreator(
-    Function<Consumer<String>, PlainRdfCreator> rdfCreatorBuilder) {
-    StringBuffer stringBuffer = new StringBuffer();
-    UUID uuid = UUID.randomUUID();
-    statusMap.put(uuid, stringBuffer);
-
-    PlainRdfCreator rdfCreator = rdfCreatorBuilder.apply((str) -> {
-      stringBuffer.setLength(0);
-      stringBuffer.append(str);
-    });
-
-    return Tuple.tuple(uuid, rdfCreator);
-  }
-
-
   public void removeDataSet(String ownerId, String dataSetName, User user)
     throws IOException, NotEnoughPermissionsException {
     try {
@@ -372,9 +348,25 @@ public class DataSetRepository {
     }
 
     // remove folder
-    FileUtils.deleteDirectory(fileHelper.dataSetPath(ownerId, dataSetName));
+    deleteDirectoryAndRetryOnFailure(fileHelper.dataSetPath(ownerId, dataSetName), 5);
+  }
 
-
+  private void deleteDirectoryAndRetryOnFailure(File path, int retryCount) {
+    try {
+      FileUtils.deleteDirectory(path);
+    } catch (IOException e) {
+      if (retryCount > 0) {
+        LOG.warn("Deleting directory {}, failed, {} tries remaining.", path.getAbsolutePath(), retryCount);
+        try {
+          Thread.sleep(500);
+          deleteDirectoryAndRetryOnFailure(path, retryCount - 1);
+        } catch (InterruptedException e1) {
+          //ignore and stop trying
+        }
+      } else {
+        LOG.error("Deleting directory {}, failed! Manual cleanup necessary", path.getAbsolutePath());
+      }
+    }
   }
 
   public void stop() {

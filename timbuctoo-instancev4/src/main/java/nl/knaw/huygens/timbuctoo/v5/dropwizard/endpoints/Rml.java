@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
-import io.dropwizard.jersey.params.UUIDParam;
-import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
@@ -15,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -32,7 +29,6 @@ public class Rml {
   private static final Logger LOG = LoggerFactory.getLogger(Rml.class);
   private final DataSetRepository dataSetRepository;
   private final ErrorResponseHelper errorResponseHelper;
-  private final JenaBasedReader rmlBuilder = new JenaBasedReader();
   private final UserValidator userValidator;
 
   public Rml(DataSetRepository dataSetRepository, ErrorResponseHelper errorResponseHelper,
@@ -69,18 +65,6 @@ public class Rml {
     } else {
       return errorResponseHelper.dataSetNotFound(ownerId, dataSetId);
     }
-  }
-
-  @GET
-  @Path("{importId}")
-  public Response getStatus(@PathParam("importId") final UUIDParam importId) {
-    Optional<String> status = dataSetRepository.getStatus(importId.get());
-
-    if (status.isPresent()) {
-      return Response.ok(status).build();
-    }
-
-    return Response.status(Response.Status.NOT_FOUND).build();
   }
 
 }

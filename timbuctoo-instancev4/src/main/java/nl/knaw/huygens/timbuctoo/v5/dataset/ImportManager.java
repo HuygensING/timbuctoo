@@ -226,7 +226,7 @@ public class ImportManager implements DataProvider {
               try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(stream)) {
                 mediaType = serializer.getMediaType();
                 charset = Optional.of(serializer.getCharset());
-                ((PlainRdfCreator) creator).sendQuads(serializer, dataSet);
+                ((PlainRdfCreator) creator).sendQuads(serializer, dataSet, importStatus::setStatus);
               } catch (Exception e) {
                 LOG.error("Log generation failed", e);
                 importStatus.addError("Log generation failed", e);
@@ -236,7 +236,7 @@ public class ImportManager implements DataProvider {
               try (RdfPatchSerializer srlzr = serializerFactory.makeRdfPatchSerializer(stream, entry.getBaseUri())) {
                 mediaType = srlzr.getMediaType();
                 charset = Optional.of(srlzr.getCharset());
-                ((PatchRdfCreator) creator).sendQuads(srlzr);
+                ((PatchRdfCreator) creator).sendQuads(srlzr, importStatus::setStatus);
               } catch (Exception e) {
                 LOG.error("Log generation failed", e);
                 importStatus.addError("Log generation failed", e);

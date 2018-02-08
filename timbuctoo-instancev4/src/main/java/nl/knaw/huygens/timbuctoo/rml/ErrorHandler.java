@@ -9,4 +9,6 @@ public interface ErrorHandler {
   void linkError(Map<String, String> rowData, String childField, String parentCollection, String parentField);
 
   void valueGenerateFailed(String key, String message);
+
+  void subjectGenerationFailed(String uri, Row row);
 }

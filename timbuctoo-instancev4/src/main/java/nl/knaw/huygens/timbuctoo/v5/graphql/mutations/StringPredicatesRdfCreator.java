@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 class StringPredicatesRdfCreator implements PatchRdfCreator {
@@ -55,7 +56,7 @@ class StringPredicatesRdfCreator implements PatchRdfCreator {
   }
 
   @Override
-  public void sendQuads(RdfPatchSerializer saver) throws LogStorageFailedException {
+  public void sendQuads(RdfPatchSerializer saver, Consumer<String> importStatus) throws LogStorageFailedException {
     for (CursorQuad oldValue : oldValues) {
       saver.delQuad(
         oldValue.getSubject(),

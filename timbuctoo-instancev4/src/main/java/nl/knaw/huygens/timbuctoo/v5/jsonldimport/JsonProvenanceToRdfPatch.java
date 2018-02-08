@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -226,7 +227,7 @@ public class JsonProvenanceToRdfPatch implements PatchRdfCreator {
   }
 
   @Override
-  public void sendQuads(RdfPatchSerializer saver) throws LogStorageFailedException {
+  public void sendQuads(RdfPatchSerializer saver, Consumer<String> importStatus) throws LogStorageFailedException {
     for (JsonNode revision : activity.get(PROV_GENERATES)) {
       final String entityUri = revision.get(PROV_SPECIALIZATION_OF).get(0).get("@id").asText();
 

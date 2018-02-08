@@ -2,13 +2,11 @@ package nl.knaw.huygens.timbuctoo.v5.rml;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.knaw.huygens.timbuctoo.rml.LoggingErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import org.apache.jena.rdf.model.Model;
@@ -17,6 +15,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class RmlRdfCreator implements PlainRdfCreator {
@@ -34,7 +33,8 @@ public class RmlRdfCreator implements PlainRdfCreator {
   }
 
   @Override
-  public void sendQuads(RdfSerializer saver, DataSet dataSet) throws LogStorageFailedException {
+  public void sendQuads(RdfSerializer saver, DataSet dataSet, Consumer<String> status)
+    throws LogStorageFailedException {
     RdfDataSourceFactory dataSourceFactory = dataSet.getDataSource();
 
     final Model model = ModelFactory.createDefaultModel();
@@ -44,13 +44,7 @@ public class RmlRdfCreator implements PlainRdfCreator {
       throw new LogStorageFailedException(e);
     }
 
-    DataSetMetaData metadata = dataSet.getMetadata();
-
-    final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(
-      model,
-      //fixme remove vreName from here
-      rdfResource -> dataSourceFactory.apply(rdfResource, metadata.getDataSetId() + "_" + metadata.getOwnerId())
-    );
+    final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(model, dataSourceFactory::apply);
     if (rmlMappingDocument.getErrors().size() > 0) {
       throw new LogStorageFailedException(
         "failure: " + String.join("\nfailure: ", rmlMappingDocument.getErrors()) + "\n"
@@ -59,8 +53,7 @@ public class RmlRdfCreator implements PlainRdfCreator {
     //FIXME: trigger onprefix for all rml prefixes
     //FIXME: store rml and retrieve it from tripleStore when mapping
 
-
-    Stream<Quad> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
+    Stream<Quad> triples = rmlMappingDocument.execute(new ReportingErrorHandler(status));
     Iterator<Quad> iterator = triples.iterator();
     while (iterator.hasNext()) {
       Quad triple = iterator.next();

@@ -13,21 +13,28 @@ import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Map;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.PROV_ATTIME;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.PROV_DERIVED_FROM;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIMBUCTOO_NEXT;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASCOLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_PROPERTY;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_MIMETYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_TABULAR_COLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_TABULAR_FILE;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.XSD_DATETIMESTAMP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -43,9 +50,12 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 public class RawUploadRdfSaverTest {
 
   private static final String COLLECTION = "coll";
+  public static final String FILE_NAME = "origFileName";
+  public static final String DATE = "2010-05-14T14:00:00Z";
   private RawUploadRdfSaver instance;
   private RdfSerializer rdfSerializer;
   private DataSetMetaData dataSetMetadata;
+  private Clock clock = Clock.fixed(Instant.parse(DATE), ZoneId.of("UTC"));
 
   @Before
   public void setUp() throws Exception {
@@ -61,7 +71,14 @@ public class RawUploadRdfSaverTest {
 
   private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer, DataSetMetaData dataSetMetadata)
     throws LogStorageFailedException {
-    return new RawUploadRdfSaver(dataSetMetadata, "fileName", APPLICATION_OCTET_STREAM_TYPE, rdfSerializer);
+    return new RawUploadRdfSaver(
+      dataSetMetadata,
+      "fileName",
+      APPLICATION_OCTET_STREAM_TYPE,
+      rdfSerializer,
+      FILE_NAME,
+      clock
+    );
   }
 
   @Test
@@ -230,8 +247,12 @@ public class RawUploadRdfSaverTest {
       fileUri + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
         graphName + " "     + PROV_DERIVED_FROM  + " " + fileUri + " "                           + graphName + "\n" +
         fileUri + " "    + TIM_MIMETYPE + " " + "application/octet-stream" + "^^" + STRING + " " + graphName + "\n" +
+        fileUri + " "       + RDFS_LABEL         + " " + FILE_NAME + "^^" + STRING + " "         + graphName + "\n" +
+        fileUri + " "       + PROV_ATTIME        + " " + DATE + "^^" + XSD_DATETIMESTAMP + " " + graphName + "\n" +
         collection1 + " "   + RDF_TYPE           + " " + collection1 + "type "                   + graphName + "\n" +
+        collection1 + " "   + RDF_TYPE           + " " + TIM_TABULAR_COLLECTION + " "            + graphName + "\n" +
         collection1 + " "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
+        fileUri + " "       + TIM_HASCOLLECTION  + " " + collection1 + " "                       + graphName + "\n" +
         fileUri + " "       + TIMBUCTOO_NEXT     + " " + collection1                       + " " + graphName + "\n" +
         prop + "tim_id "    + RDF_TYPE           + " " + TIM_PROP_DESC + " "                     + graphName + "\n" +
         collection1 + " "   + TIM_HAS_PROPERTY   + " " + prop + "tim_id "                        + graphName + "\n" +
@@ -258,7 +279,9 @@ public class RawUploadRdfSaverTest {
         rowData + "2 "      + prop + "propName2" + " entVal2" +             "^^" + STRING + " "  + graphName + "\n" +
         rowData + "2 "      + prop + "tim_id"    + " {UUID}" +              "^^" + STRING + " "  + graphName + "\n" +
         collection2 + " "   + RDF_TYPE           + " " + collection2 + "type "                   + graphName + "\n" +
+        collection2 + " "   + RDF_TYPE           + " " + TIM_TABULAR_COLLECTION + " "            + graphName + "\n" +
         collection2 + " "   + RDFS_LABEL         + " collection2" +         "^^" + STRING + " "  + graphName + "\n" +
+        fileUri + " "       + TIM_HASCOLLECTION  + " " + collection2 + " "                       + graphName + "\n" +
         collection1 + " "   + TIMBUCTOO_NEXT     + " " + collection2                       + " " + graphName + "\n" +
         prop + "tim_id "    + RDF_TYPE           + " " + TIM_PROP_DESC + " "                     + graphName + "\n" +
         collection2 + " "   + TIM_HAS_PROPERTY   + " " + prop + "tim_id "                        + graphName + "\n" +
