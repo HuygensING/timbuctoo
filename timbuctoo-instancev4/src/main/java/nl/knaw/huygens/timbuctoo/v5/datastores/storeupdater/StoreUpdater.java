@@ -1,15 +1,19 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Stopwatch;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
+import nl.knaw.huygens.timbuctoo.v5.datastores.updatedperpatchstore.UpdatedPerPatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.versionstore.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
@@ -24,10 +28,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class StoreUpdater implements RdfProcessor {
 
   private static final Logger LOG = getLogger(StoreUpdater.class);
-  private final BdbEnvironmentCreator dbFactory;
-  private final BdbTripleStore tripleStore;
-  private final BdbTypeNameStore typeNameStore;
-  private final BdbTruePatchStore truePatchStore;
+  private final QuadStore tripleStore;
+  private final TypeNameStore typeNameStore;
+  private final TruePatchStore truePatchStore;
   private final UpdatedPerPatchStore updatedPerPatchStore;
   private final VersionStore versionStore;
   private int currentversion = -1;
@@ -39,17 +42,15 @@ public class StoreUpdater implements RdfProcessor {
   private String logString;
   private ImportStatus importStatus;
 
-  public StoreUpdater(BdbEnvironmentCreator dbFactory, BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
-                      BdbTruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
+  public StoreUpdater(QuadStore tripleStore, TypeNameStore typeNameStore,
+                      TruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
                       List<OptimizedPatchListener> listeners,
                       VersionStore versionStore, ImportStatus importStatus) {
-    this.dbFactory = dbFactory;
     this.tripleStore = tripleStore;
     this.typeNameStore = typeNameStore;
     this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
     this.versionStore = versionStore;
-    // currentversion = versionStore.getVersion();
     this.listeners = listeners;
     this.importStatus = importStatus;
   }
@@ -165,7 +166,6 @@ public class StoreUpdater implements RdfProcessor {
     stopwatch = Stopwatch.createStarted();
     currentversion = index;
     startTransactions();
-    dbFactory.startTransaction();
     logString = "Processed {} triples ({} triples/s)";
   }
 
@@ -213,7 +213,6 @@ public class StoreUpdater implements RdfProcessor {
       stopwatch.start();
       versionStore.setVersion(currentversion);
       commitChanges();
-      dbFactory.commitTransaction();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.setStatus(msg);

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
@@ -32,7 +32,7 @@ import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OU
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
 
-public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
+class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   private static final Logger LOG = LoggerFactory.getLogger(BdbSchemaStore.class);
   private static final Function<String, Type> TYPE_MAKER = Type::new;
 
@@ -48,7 +48,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   private Map<String, Type> stableTypes = new HashMap<>();
   private ImportStatus importStatus;
 
-  public BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
+  BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
 
     this.dataStore = dataStore;
     final String storedValue = this.dataStore.getValue();
@@ -358,10 +358,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     }
   }
 
+  @Override
   public boolean isClean() {
     return dataStore.isClean();
   }
 
+  @Override
   public void empty() {
     dataStore.empty();
   }

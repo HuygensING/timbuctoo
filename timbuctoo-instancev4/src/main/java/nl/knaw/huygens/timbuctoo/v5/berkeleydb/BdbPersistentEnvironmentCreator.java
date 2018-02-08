@@ -11,6 +11,8 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
+import nl.knaw.huygens.timbuctoo.v5.dataset.StoreProvider;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbStoreProvider;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,11 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     configuration.setDurability(Durability.COMMIT_NO_SYNC);
     configuration.setAllowCreate(true);
     configuration.setSharedCache(true);
+  }
+
+  @Override
+  public StoreProvider createStoreProvider(String userId, String dataSetId) {
+    return new BdbStoreProvider(userId, dataSetId, this);
   }
 
   @Override
@@ -119,14 +126,6 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   @Override
   public void stop() {
 
-  }
-
-  @Override
-  public void startTransaction() {
-  }
-
-  @Override
-  public void commitTransaction() {
   }
 
 }

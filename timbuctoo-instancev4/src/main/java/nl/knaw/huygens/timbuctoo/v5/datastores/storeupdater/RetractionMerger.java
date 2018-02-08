@@ -1,7 +1,8 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import org.slf4j.Logger;
 
@@ -16,10 +17,10 @@ class RetractionMerger implements Iterator<CursorQuad> {
 
   private final PeekingIterator<CursorQuad> state;
   private final PeekingIterator<CursorQuad> retractions;
-  private final BdbTripleStore tripleStore;
+  private final QuadStore tripleStore;
   private final int version;
 
-  public RetractionMerger(Stream<CursorQuad> state, Stream<CursorQuad> retractions, BdbTripleStore tripleStore,
+  public RetractionMerger(Stream<CursorQuad> state, Stream<CursorQuad> retractions, QuadStore tripleStore,
                           int version) {
     this.state = Iterators.peekingIterator(state.iterator());
     this.retractions = Iterators.peekingIterator(retractions.iterator());

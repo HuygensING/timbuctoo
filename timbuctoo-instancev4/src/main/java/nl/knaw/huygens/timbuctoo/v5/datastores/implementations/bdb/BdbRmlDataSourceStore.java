@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -24,13 +24,13 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_PROPERTY;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
-public class BdbRmlDataSourceStore implements RmlDataSourceStore {
+class BdbRmlDataSourceStore implements RmlDataSourceStore {
   private static final Logger LOG = LoggerFactory.getLogger(BdbRmlDataSourceStore.class);
-  protected final BdbWrapper<String, String> bdbWrapper;
+  private final BdbWrapper<String, String> bdbWrapper;
   private final Map<String, Map<String, Property>> collectionProperties = new HashMap<>();
   private ImportStatus importStatus;
 
-  public BdbRmlDataSourceStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus)
+  BdbRmlDataSourceStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus)
     throws DataStoreCreationException {
     this.bdbWrapper = bdbWrapper;
     this.importStatus = importStatus;
@@ -171,6 +171,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
     bdbWrapper.commit();
   }
 
+  @Override
   public void empty() {
     bdbWrapper.empty();
   }

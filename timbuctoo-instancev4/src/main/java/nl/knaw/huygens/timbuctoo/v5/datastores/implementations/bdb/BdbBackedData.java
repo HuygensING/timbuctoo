@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import org.slf4j.Logger;
 
@@ -15,14 +15,14 @@ import static org.slf4j.LoggerFactory.getLogger;
  * A simple wrapper around serialized json so that we get the benefits of berkeley db for transactions
  * without having to change the code too much.
  */
-public class BdbBackedData implements DataStorage {
+class BdbBackedData implements DataStorage {
 
   private static final Logger LOG = getLogger(BdbBackedData.class);
 
   private final BdbWrapper<String, String> bdbWrapper;
   private String value;
 
-  public BdbBackedData(BdbWrapper<String, String> bdbWrapper)
+  BdbBackedData(BdbWrapper<String, String> bdbWrapper)
     throws DataStoreCreationException {
 
     this.bdbWrapper = bdbWrapper;

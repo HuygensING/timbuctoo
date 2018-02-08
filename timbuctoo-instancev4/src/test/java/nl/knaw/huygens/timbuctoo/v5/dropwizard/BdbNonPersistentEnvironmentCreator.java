@@ -9,9 +9,11 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbStoreProvider;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
+import nl.knaw.huygens.timbuctoo.v5.dataset.StoreProvider;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
@@ -40,6 +42,11 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
     dbHome = Files.createTempDir();
     databases = Maps.newHashMap();
     environmentMap = Maps.newHashMap();
+  }
+
+  @Override
+  public StoreProvider createStoreProvider(String userId, String dataSetId) {
+    return new BdbStoreProvider(userId, dataSetId, this);
   }
 
   @Override
@@ -104,15 +111,6 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
       throw new RuntimeException(e);
     }
   }
-
-  @Override
-  public void startTransaction() {
-  }
-
-  @Override
-  public void commitTransaction() {
-  }
-
 
   public void close() throws DatabaseException, IOException {
     for (Database database : databases.values()) {

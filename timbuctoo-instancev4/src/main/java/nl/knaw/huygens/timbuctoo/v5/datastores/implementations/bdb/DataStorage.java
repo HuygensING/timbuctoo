@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 
 public interface DataStorage {
   String getValue();

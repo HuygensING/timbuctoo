@@ -1,0 +1,22 @@
+= Refactor DataSet
+
+== Problem
+This proposed refactoring should solve several problems.
+
+. The responsibilities are not clearly divided.
+. The code is dependent on our Berkeley data store implementations.
+
+A combination of the problems above led to a bug that did not close the data stores correctly, when Timbuctoo was shutdown.
+
+== Result
+The responsibilities are moved to the right classes and packages.
+DataSet is not directly dependent on the Berkeley data stores
+
+
+== Approach
+. Remove the direct dependency on Berkeley data stores.
+.. Create a factory that has creation methods for all the data stores
+.. Extract missing interfaces for data stores
+. Make one class responsible for the lifecycle of the Berkeley data stores
+
+

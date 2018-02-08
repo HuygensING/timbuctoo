@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -15,12 +15,12 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.BACKWARDS;
 import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.FORWARDS;
 
-public class BdbTripleStore implements QuadStore {
+class BdbTripleStore implements QuadStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(BdbTripleStore.class);
   private final BdbWrapper<String, String> bdbWrapper;
 
-  public BdbTripleStore(BdbWrapper<String, String> rdfData)
+  BdbTripleStore(BdbWrapper<String, String> rdfData)
     throws DataStoreCreationException {
     this.bdbWrapper = rdfData;
   }
@@ -84,12 +84,14 @@ public class BdbTripleStore implements QuadStore {
     );
   }
 
+  @Override
   public boolean putQuad(String subject, String predicate, Direction direction, String object, String dataType,
                          String language) throws DatabaseWriteException {
     String value = formatValue(object, dataType, language);
     return bdbWrapper.put(formatKey(subject, predicate, direction), value);
   }
 
+  @Override
   public boolean deleteQuad(String subject, String predicate, Direction direction, String object, String dataType,
                          String language) throws DatabaseWriteException {
     String value = formatValue(object, dataType, language);
@@ -104,6 +106,7 @@ public class BdbTripleStore implements QuadStore {
     return (dataType == null ? "" : dataType) + "\n" + (language == null ? "" : language) + "\n" + object;
   }
 
+  @Override
   public int compare(CursorQuad leftQ, CursorQuad rightQ) {
     final String leftStr = formatKey(leftQ.getSubject(), leftQ.getPredicate(), leftQ.getDirection()) + "\n" +
       formatValue(leftQ.getObject(), leftQ.getValuetype().orElse(null), leftQ.getLanguage().orElse(null));
@@ -122,10 +125,12 @@ public class BdbTripleStore implements QuadStore {
     return bdbWrapper.isClean();
   }
 
+  @Override
   public void start() {
     bdbWrapper.beginTransaction();
   }
 
+  @Override
   public void empty() {
     bdbWrapper.empty();
   }
