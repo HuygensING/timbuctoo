@@ -20,7 +20,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore;
 
 import java.io.IOException;
 
-public class BdbStoreProvider {
+public class BdbStoreProvider implements nl.knaw.huygens.timbuctoo.v5.dataset.StoreProvider {
   private static final StringStringIsCleanHandler stringStringIsCleanHandler = new StringStringIsCleanHandler();
   private static final TupleBinding<String> stringBinding = TupleBinding.getPrimitiveBinding(String.class);
   private static final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
@@ -34,6 +34,7 @@ public class BdbStoreProvider {
     this.dataStoreFactory = dataStoreFactory;
   }
 
+  @Override
   public BdbTripleStore createTripleStore()
     throws DataStoreCreationException {
     try {
@@ -51,6 +52,7 @@ public class BdbStoreProvider {
     }
   }
 
+  @Override
   public BdbTypeNameStore createTypeNameStore(String rdfPrefix)
     throws DataStoreCreationException {
     try {
@@ -71,6 +73,7 @@ public class BdbStoreProvider {
     }
   }
 
+  @Override
   public BdbSchemaStore createSchemaStore(ImportStatus importStatus)
     throws DataStoreCreationException {
     try {
@@ -91,6 +94,7 @@ public class BdbStoreProvider {
     }
   }
 
+  @Override
   public TruePatchStore createTruePatchStore() throws DataStoreCreationException {
     try {
       return new BdbTruePatchStore(
@@ -109,6 +113,7 @@ public class BdbStoreProvider {
     }
   }
 
+  @Override
   public UpdatedPerPatchStore createUpdatePerPatchStore()
     throws DataStoreCreationException {
     try {
@@ -138,6 +143,7 @@ public class BdbStoreProvider {
     }
   }
 
+  @Override
   public BdbRmlDataSourceStore createRmlDataSourceStore(ImportStatus importStatus)
     throws DataStoreCreationException {
     try {
@@ -159,6 +165,7 @@ public class BdbStoreProvider {
   }
 
 
+  @Override
   public VersionStore createVersionStore() throws DataStoreCreationException {
     try {
       return new BdbVersionStore(dataStoreFactory.getDatabase(

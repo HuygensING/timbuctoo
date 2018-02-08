@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
@@ -60,7 +59,7 @@ public class DataSetRepository {
   private final ExecutorService executorService;
   private final PermissionFetcher permissionFetcher;
   private final DataSetConfiguration configuration;
-  private final BdbEnvironmentCreator dataStoreFactory;
+  private final EnvironmentCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final Map<String, Set<DataSetMetaData>> metaDataSet;
   private final TimbuctooRdfIdHelper rdfIdHelper;
@@ -72,7 +71,7 @@ public class DataSetRepository {
 
 
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
-                           DataSetConfiguration configuration, BdbEnvironmentCreator dataStoreFactory,
+                           DataSetConfiguration configuration, EnvironmentCreator dataStoreFactory,
                            TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated,
                            boolean publicByDefault) throws IOException {
     this.executorService = executorService;

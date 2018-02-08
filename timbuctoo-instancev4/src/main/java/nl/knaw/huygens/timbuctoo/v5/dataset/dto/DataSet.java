@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbStoreProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
+import nl.knaw.huygens.timbuctoo.v5.dataset.EnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.StoreProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
 import nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater.StoreUpdater;
@@ -35,8 +35,8 @@ public abstract class DataSet {
 
 
   public static DataSet dataSet(DataSetMetaData metadata, DataSetConfiguration configuration,
-                         FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
-                         BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
+                                FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
+                                EnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
 
     String userId = metadata.getOwnerId();
@@ -54,7 +54,7 @@ public abstract class DataSet {
       onUpdated
     );
 
-    BdbStoreProvider storeProvider = new BdbStoreProvider(userId, dataSetId, dataStoreFactory);
+    StoreProvider storeProvider = dataStoreFactory.createStoreProvider(userId, dataSetId);
 
     try {
       importManager.subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri(),
@@ -130,7 +130,7 @@ public abstract class DataSet {
 
   protected abstract String getDataSetName();
 
-  protected abstract BdbEnvironmentCreator getBdbEnvironmentCreator();
+  protected abstract EnvironmentCreator getBdbEnvironmentCreator();
 
   public abstract SchemaStore getSchemaStore();
 
