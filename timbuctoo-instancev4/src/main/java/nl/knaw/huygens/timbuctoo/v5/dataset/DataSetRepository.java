@@ -88,7 +88,7 @@ public class DataSetRepository {
       String dirName = directories[i].toString();
       String currentOwnerId = dirName.substring(dirName.lastIndexOf("/") + 1, dirName.length());
       Set<DataSetMetaData> tempMetaDataSet = new HashSet<>();
-      try(Stream<Path> fileStream = Files.walk(directories[i].toPath())) {
+      try (Stream<Path> fileStream = Files.walk(directories[i].toPath())) {
         Set<Path> paths = fileStream
           .filter(current -> Files.isDirectory(current)).collect(Collectors.toSet());
         for (Path path : paths) {

@@ -49,7 +49,7 @@ public class AuthorizationMigration {
       return;
     }
 
-    try(Stream<Path> fileStream = Files.walk(path)) {
+    try (Stream<Path> fileStream = Files.walk(path)) {
       Set<Path> authFiles = fileStream
         .filter(file -> file.toFile().getName().endsWith(".json") && file.toFile().isFile())
         .collect(toSet());
