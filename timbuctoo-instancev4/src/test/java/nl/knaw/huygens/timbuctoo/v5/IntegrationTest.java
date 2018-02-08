@@ -772,19 +772,15 @@ public class IntegrationTest {
     ObjectNode customSchemaField = jsnO(
       "name", jsn("test"),
       "uri", jsn(""),
-      "shortenedUri", jsn(""),
       "isList", jsn(false),
-      "values", jsnA(jsn("String")),
-      "type", jsnO("name", jsn("String"))
+      "values", jsnA(jsn("String"))
     );
 
     ObjectNode customSchemaField2 = jsnO(
       "name", jsn("test2"),
       "uri", jsn(""),
-      "shortenedUri", jsn(""),
       "isList", jsn(false),
-      "values", jsnA(jsn("String")),
-      "type", jsnO("name", jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"))
+      "values", jsnA(jsn("String"))
     );
 
     ObjectNode customSchema = jsnO(

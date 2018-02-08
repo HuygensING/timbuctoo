@@ -21,8 +21,8 @@ public class ExplicitTypeTest {
 
   @Test
   public void convertToTypeConvertsExplicitTypeWithFieldsToType() throws Exception {
-    ExplicitField title = new ExplicitField("title", "", "", false,
-      null,null, new ExplicitType("String", null));
+    ExplicitField title = new ExplicitField("title", "", false,
+      null,null);
     List<ExplicitField> fieldList = new ArrayList<>();
     fieldList.add(title);
     ExplicitType explicitType = new ExplicitType("TestType", fieldList);
