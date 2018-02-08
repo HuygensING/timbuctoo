@@ -23,6 +23,10 @@ public class ExplicitType {
     return this.name;
   }
 
+  public List<ExplicitField> getFields() {
+    return this.fields;
+  }
+
   public Type convertToType() {
     Type convertedType = new Type(name);
     Collection<Predicate> predicates = new HashSet<>();

@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
@@ -84,12 +85,25 @@ public class MergeSchemaDataFetcher implements DataFetcher {
     File customSchemaFile = fileHelper.fileInDataSet(ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight(),
       "customSchema.json");
 
+    Map<String, List<ExplicitField>> existingCustomSchema;
+
     try {
-      objectMapper.writeValue(customSchemaFile, customSchema);
+      existingCustomSchema = objectMapper.readValue(customSchemaFile,
+        new TypeReference<Map<String, List<ExplicitField>>>() {
+        });
+    } catch (IOException e) {
+      existingCustomSchema = new HashMap<>();
+    }
+
+    for (ExplicitType explicitType : customSchema) {
+      existingCustomSchema.put(explicitType.getName(), explicitType.getFields());
+    }
+
+    try {
+      objectMapper.writeValue(customSchemaFile, existingCustomSchema);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-
 
     MergeSchemas mergeSchemas = new MergeSchemas();
 
