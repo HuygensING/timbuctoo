@@ -18,8 +18,8 @@ public class ExplicitFieldTest {
     values.add("value2");
     values.add("value3");
 
-    ExplicitField title = new ExplicitField("title", "", "", false,
-      values, null, new ExplicitType("String", null));
+    ExplicitField title = new ExplicitField("title",  "", false,
+      values, null);
 
     Predicate predicate = title.convertToPredicate();
 
@@ -36,8 +36,8 @@ public class ExplicitFieldTest {
     references.add("reference2");
     references.add("reference3");
 
-    ExplicitField title = new ExplicitField("title", "", "", false,
-      null, references, new ExplicitType("String", null));
+    ExplicitField title = new ExplicitField("title", "", false,
+      null, references);
 
     Predicate predicate = title.convertToPredicate();
 

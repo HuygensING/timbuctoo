@@ -14,32 +14,24 @@ public class ExplicitField {
   private String name;
   @JsonProperty("uri")
   private String uri;
-  @JsonProperty("shortenedUri") //todo:remove this
-  private String shortenedUri;
   @JsonProperty("isList")
   private Boolean isList;
   @JsonProperty("values")
   private List<String> values;
   @JsonProperty("reference")
   private List<String> references;
-  @JsonProperty("type")
-  private ExplicitType explicitType; //todo:remove this
 
   @JsonCreator
   public ExplicitField(@JsonProperty("name") String name,
                        @JsonProperty("uri") String uri,
-                       @JsonProperty("shortenedUri") String shortenedUri,
                        @JsonProperty("isList") boolean isList,
                        @JsonProperty("values") List<String> values,
-                       @JsonProperty("references") List<String> references,
-                       @JsonProperty("type") ExplicitType explicitType) {
+                       @JsonProperty("references") List<String> references) {
     this.name = name;
     this.uri = uri;
-    this.shortenedUri = shortenedUri;
     this.isList = isList;
     this.values = values;
     this.references = references;
-    this.explicitType = explicitType;
   }
 
   public Predicate convertToPredicate() {

@@ -299,11 +299,9 @@ type RemovedDataSet {
 input CustomSchemaTypeInputField {
   name: String!
   uri: String!
-  shortenedUri: String!
   isList: Boolean!
   values: [String!]
   references: [String!]
-  type: CustomSchemaTypeInput!
 }
 
 input CustomSchemaTypeInput {
