@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
@@ -25,6 +24,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
@@ -51,25 +51,20 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStr
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
-import org.apache.jena.query.DatasetFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -326,7 +321,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
       Map<String, Type> types = dataSet.getSchemaStore().getStableTypes();
 
-      List<ExplicitType> customSchema;
+      Map<String, List<ExplicitField>> customSchema;
 
       final Map<String, Type> customTypes = new HashMap<>();
 
@@ -335,18 +330,21 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         "customSchema.json");
 
       try {
-        customSchema = objectMapper.readValue(customSchemaFile, new TypeReference<List<ExplicitType>>(){});
+        customSchema = objectMapper.readValue(customSchemaFile,
+          new TypeReference<Map<String, List<ExplicitField>>>() {
+          });
       } catch (IOException e) {
         customSchema = null;
       }
 
       if (customSchema != null && !customSchema.isEmpty()) {
-        for (ExplicitType explicitType : customSchema) {
-          customTypes.put(explicitType.getName(), explicitType.convertToType());
+        for (Map.Entry<String, List<ExplicitField>> entry : customSchema.entrySet()) {
+          ExplicitType explicitType = new ExplicitType(entry.getKey(), entry.getValue());
+          customTypes.put(entry.getKey(), explicitType.convertToType());
         }
 
         MergeSchemas mergeSchemas = new MergeSchemas();
-        types = mergeSchemas.mergeSchema(types,customTypes);
+        types = mergeSchemas.mergeSchema(types, customTypes);
       }
 
       if (types != null) {

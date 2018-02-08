@@ -96,7 +96,11 @@ public class MergeSchemaDataFetcher implements DataFetcher {
     }
 
     for (ExplicitType explicitType : customSchema) {
-      existingCustomSchema.put(explicitType.getName(), explicitType.getFields());
+      if (!existingCustomSchema.containsKey(explicitType.getName())) {
+        existingCustomSchema.put(explicitType.getName(), explicitType.getFields());
+      } else {
+        existingCustomSchema.get(explicitType.getName()).addAll(explicitType.getFields());
+      }
     }
 
     try {
