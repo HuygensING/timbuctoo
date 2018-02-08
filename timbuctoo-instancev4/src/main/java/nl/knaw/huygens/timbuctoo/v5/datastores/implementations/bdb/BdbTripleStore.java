@@ -16,12 +16,12 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.BACKWARDS;
 import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.FORWARDS;
 
-public class BdbTripleStore implements QuadStore {
+class BdbTripleStore implements QuadStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(BdbTripleStore.class);
   private final BdbWrapper<String, String> bdbWrapper;
 
-  public BdbTripleStore(BdbWrapper<String, String> rdfData)
+  BdbTripleStore(BdbWrapper<String, String> rdfData)
     throws DataStoreCreationException {
     this.bdbWrapper = rdfData;
   }

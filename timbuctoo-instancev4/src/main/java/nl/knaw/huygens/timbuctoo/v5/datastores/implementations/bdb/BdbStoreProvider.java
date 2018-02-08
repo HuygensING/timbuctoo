@@ -1,6 +1,7 @@
-package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
