@@ -14,12 +14,12 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 
-public class BdbTruePatchStore implements nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore {
+class BdbTruePatchStore implements nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(BdbTruePatchStore.class);
   private final BdbWrapper<String, String> bdbWrapper;
 
-  public BdbTruePatchStore(BdbWrapper<String, String> bdbWrapper)
+  BdbTruePatchStore(BdbWrapper<String, String> bdbWrapper)
     throws DataStoreCreationException {
     this.bdbWrapper = bdbWrapper;
   }

@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
-public class BdbTypeNameStore implements TypeNameStore {
+class BdbTypeNameStore implements TypeNameStore {
 
   private static ObjectMapper objectMapper = new ObjectMapper()
     .registerModule(new Jdk8Module())
@@ -27,12 +27,12 @@ public class BdbTypeNameStore implements TypeNameStore {
     .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);
 
-  protected final PrefixMapping prefixMapping;
+  private final PrefixMapping prefixMapping;
   protected final TypeNames data;
   private final DataStorage dataStore;
   private final String dataStoreRdfPrefix;
 
-  public BdbTypeNameStore(DataStorage dataStore, String dataStoreRdfPrefix) throws IOException {
+  BdbTypeNameStore(DataStorage dataStore, String dataStoreRdfPrefix) throws IOException {
     this.dataStoreRdfPrefix = dataStoreRdfPrefix;
     prefixMapping = new PrefixMappingImpl();
     final String storedValue = dataStore.getValue();

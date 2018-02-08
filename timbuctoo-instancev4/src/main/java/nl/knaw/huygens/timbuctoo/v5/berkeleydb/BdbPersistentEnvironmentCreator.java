@@ -12,6 +12,7 @@ import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.StoreProvider;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbStoreProvider;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

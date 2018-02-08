@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.stream.Stream;
 
-public class BdbVersionStore implements VersionStore {
+class BdbVersionStore implements VersionStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(BdbVersionStore.class);
   private final BdbWrapper<String, Integer> bdbWrapper;
 
-  public BdbVersionStore(BdbWrapper<String, Integer> bdbWrapper)
+  BdbVersionStore(BdbWrapper<String, Integer> bdbWrapper)
     throws DataStoreCreationException {
 
     this.bdbWrapper = bdbWrapper;

@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.stream.Stream;
 
-public class BdbUpdatedPerPatchStore implements UpdatedPerPatchStore {
+class BdbUpdatedPerPatchStore implements UpdatedPerPatchStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(BdbUpdatedPerPatchStore.class);
   private final BdbWrapper<Integer, String> bdbWrapper;
 
-  public BdbUpdatedPerPatchStore(BdbWrapper<Integer, String> bdbWrapper)
+  BdbUpdatedPerPatchStore(BdbWrapper<Integer, String> bdbWrapper)
     throws DataStoreCreationException {
 
     this.bdbWrapper = bdbWrapper;

@@ -1,11 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater;
 
-import com.sleepycat.bind.tuple.TupleBinding;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.dataset.StoreProvider;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.datastores.storeupdater.ChangeFetcherImpl;
+import nl.knaw.huygens.timbuctoo.v5.datastores.truepatch.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.Test;
 
@@ -20,24 +18,9 @@ public class ChangeFetcherImplTest {
   @Test
   public void showsAdditions() throws Exception {
     final BdbNonPersistentEnvironmentCreator databaseCreator = new BdbNonPersistentEnvironmentCreator();
-    final BdbTripleStore bdbTripleStore = new BdbTripleStore(databaseCreator.getDatabase(
-      "a",
-      "b",
-      "rdfData",
-      true,
-      TupleBinding.getPrimitiveBinding(String.class),
-      TupleBinding.getPrimitiveBinding(String.class),
-      new StringStringIsCleanHandler()
-    ));
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(databaseCreator.getDatabase(
-      "a",
-      "b",
-      "truePatch",
-      true,
-      TupleBinding.getPrimitiveBinding(String.class),
-      TupleBinding.getPrimitiveBinding(String.class),
-      new StringStringIsCleanHandler()
-    ));
+    StoreProvider storeProvider = databaseCreator.createStoreProvider("a", "b");
+    final QuadStore bdbTripleStore = storeProvider.createTripleStore();
+    final TruePatchStore truePatchStore = storeProvider.createTruePatchStore();
 
     bdbTripleStore.putQuad("subj", "pred", OUT, "obj", null, null);
     truePatchStore.put("subj", 0, "pred", OUT, true, "obj", null, null);

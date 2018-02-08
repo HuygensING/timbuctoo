@@ -32,7 +32,7 @@ import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OU
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
 
-public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
+class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   private static final Logger LOG = LoggerFactory.getLogger(BdbSchemaStore.class);
   private static final Function<String, Type> TYPE_MAKER = Type::new;
 
@@ -48,7 +48,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   private Map<String, Type> stableTypes = new HashMap<>();
   private ImportStatus importStatus;
 
-  public BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
+  BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
 
     this.dataStore = dataStore;
     final String storedValue = this.dataStore.getValue();
