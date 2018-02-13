@@ -22,7 +22,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
@@ -39,7 +38,8 @@ import java.util.concurrent.ExecutorService;
 public abstract class DataSet {
   private static final Logger LOG = LoggerFactory.getLogger(DataSet.class);
 
-  public static DataSet dataSet(DataSetMetaData metadata, FileHelper fileHelper, ExecutorService executorService,
+
+  public static DataSet dataSet(DataSetMetaData metadata, ExecutorService executorService,
                                 String rdfPrefix, BdbEnvironmentCreator dataStoreFactory,
                                 Runnable onUpdated, DataSetStorage dataSetStorage)
     throws IOException, DataStoreCreationException {
@@ -50,7 +50,7 @@ public abstract class DataSet {
     FileStorage fileStorage = dataSetStorage.getFileStorage();
 
     ImportManager importManager = new ImportManager(
-      fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
+      dataSetStorage.getLogList(),
       fileStorage,
       fileStorage,
       dataSetStorage.getLogStorage(),

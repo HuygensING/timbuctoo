@@ -1,17 +1,21 @@
 package nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 
 import java.io.File;
@@ -28,6 +32,7 @@ class FileSystemDataSetStorage implements DataSetStorage {
     .registerModule(new GuavaModule())
     .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);
+  private final File logFile;
 
   FileSystemDataSetStorage(String ownerId, String dataSetId, FileHelper fileHelper,
                            DataSetConfiguration configuration) {
@@ -35,6 +40,7 @@ class FileSystemDataSetStorage implements DataSetStorage {
     this.dataSetId = dataSetId;
     this.fileHelper = fileHelper;
     this.configuration = configuration;
+    logFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "log.json");
   }
 
   @Override
@@ -66,5 +72,10 @@ class FileSystemDataSetStorage implements DataSetStorage {
   @Override
   public File getResourceSyncDescriptionFile() {
     return fileHelper.fileInDataSet(ownerPrefix, dataSetId, "description.xml");
+  }
+
+  @Override
+  public JsonDataStore<LogList> getLogList() throws IOException {
+    return JsonFileBackedData.getOrCreate(logFile, LogList::new, new TypeReference<LogList>(){});
   }
 }

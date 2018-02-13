@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfParser;
@@ -52,36 +53,26 @@ public class ImportManager implements DataProvider {
   private final LogStorage logStorage;
   private final RdfIoFactory serializerFactory;
   private final ExecutorService executorService;
-  private final JsonFileBackedData<LogList> logListStore;
+  private final JsonDataStore<LogList> logListStore;
   private final List<RdfProcessor> subscribedProcessors;
   private final Runnable webhooks;
   private final ImportStatus importStatus;
   private final DataSetImportStatus dataSetImportStatus;
   private DataSet dataSet;
 
-  public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
-                       ExecutorService executorService, RdfIoFactory rdfIoFactory,
-                       Runnable onUpdated)
-    throws DataStoreCreationException {
+  public ImportManager( JsonDataStore<LogList> logListStore,FileStorage fileStorage, FileStorage imageStorage,
+                        LogStorage logStorage, ExecutorService executorService, RdfIoFactory rdfIoFactory,
+                        Runnable onUpdated) {
     this.webhooks = onUpdated;
     this.fileStorage = fileStorage;
     this.imageStorage = imageStorage;
     this.logStorage = logStorage;
     this.serializerFactory = rdfIoFactory;
     this.executorService = executorService;
-    try {
-      logListStore = JsonFileBackedData.getOrCreate(
-        logListLocation,
-        LogList::new,
-        new TypeReference<LogList>() {
-        }
-      );
-    } catch (IOException e) {
-      throw new DataStoreCreationException(e);
-    }
+    this.logListStore = logListStore;
     subscribedProcessors = new ArrayList<>();
-    importStatus = new ImportStatus(logListStore.getData());
-    dataSetImportStatus = new DataSetImportStatus(logListStore.getData());
+    importStatus = new ImportStatus(this.logListStore.getData());
+    dataSetImportStatus = new DataSetImportStatus(this.logListStore.getData());
   }
 
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,

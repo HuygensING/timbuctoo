@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class JsonFileBackedData<T> {
+public class JsonFileBackedData<T> implements JsonDataStore<T> {
   private static ObjectMapper objectMapper = new ObjectMapper()
     .registerModule(new Jdk8Module())
     .registerModule(new GuavaModule())
@@ -62,13 +62,15 @@ public class JsonFileBackedData<T> {
     existing.put(file.getCanonicalPath(), this);
   }
 
-  public void updateData(Function<T,T> mutator) throws IOException {
+  @Override
+  public void updateData(Function<T, T> mutator) throws IOException {
     synchronized (file) {
       value = mutator.apply(value);
       objectMapper.writeValue(file, value);
     }
   }
 
+  @Override
   public T getData() {
     return value;
   }

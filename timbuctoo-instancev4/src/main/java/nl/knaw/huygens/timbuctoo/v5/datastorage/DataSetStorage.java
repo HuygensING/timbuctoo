@@ -1,9 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.datastorage;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 
 import java.io.File;
@@ -19,4 +21,6 @@ public interface DataSetStorage {
   RdfIoFactory getRdfIo();
 
   File getResourceSyncDescriptionFile();
+
+  JsonDataStore<LogList> getLogList() throws IOException;
 }

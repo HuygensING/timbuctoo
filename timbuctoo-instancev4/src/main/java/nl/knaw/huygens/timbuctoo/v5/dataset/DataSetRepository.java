@@ -92,7 +92,6 @@ public class DataSetRepository {
               dataSetName,
               dataSet(
                 dataSetMetaData,
-                fileHelper,
                 executorService,
                 rdfBaseUri,
                 dataStoreFactory,
@@ -228,7 +227,6 @@ public class DataSetRepository {
             dataSetId,
             dataSet(
               dataSet,
-              fileHelper,
               executorService,
               rdfBaseUri,
               dataStoreFactory,

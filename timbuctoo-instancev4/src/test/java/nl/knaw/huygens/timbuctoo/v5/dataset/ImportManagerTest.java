@@ -1,15 +1,18 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorage;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -20,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,13 +40,14 @@ public class ImportManagerTest {
   protected FileSystemFileStorage fileStorage;
 
   @Before
-  public void makeSimpleDataSet() throws IOException, DataStoreCreationException {
+  public void makeSimpleDataSet() throws IOException {
     logListLocation = File.createTempFile("logList", ".json");
     logListLocation.delete();
     filesDir = Files.createTempDir();
     fileStorage = new FileSystemFileStorage(filesDir);
     this.importManager = new ImportManager(
-      logListLocation,
+      JsonFileBackedData.getOrCreate(logListLocation, LogList::new, new TypeReference<LogList>() {
+      }),
       fileStorage,
       fileStorage,
       fileStorage,
