@@ -315,7 +315,7 @@ public class DataSetRepository {
     for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
       for (DataSet dataSet : userDataSets.values()) {
         try {
-          boolean isAllowedToWrite = permissionFetcher.getOldPermissions(user, dataSet.getMetadata().getCombinedId())
+          boolean isAllowedToWrite = permissionFetcher.getPermissions(user, dataSet.getMetadata())
             .contains(Permission.WRITE);
           if (isAllowedToWrite) {
             dataSetsWithWriteAccess.add(dataSet);
