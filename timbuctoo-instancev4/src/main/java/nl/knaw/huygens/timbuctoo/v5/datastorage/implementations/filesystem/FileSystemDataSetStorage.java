@@ -17,22 +17,28 @@ import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializer
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 
 class FileSystemDataSetStorage implements DataSetStorage {
 
-  private final String ownerPrefix;
-  private final String dataSetId;
-  private final FileHelper fileHelper;
-  private final DataSetConfiguration configuration;
+  private static final Logger LOG = LoggerFactory.getLogger(FileSystemDataStorage.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .registerModule(new Jdk8Module())
     .registerModule(new GuavaModule())
     .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);
+
+  private final String ownerPrefix;
+  private final String dataSetId;
+  private final FileHelper fileHelper;
+  private final DataSetConfiguration configuration;
   private final File logFile;
+  private final File metaDataFile;
 
   FileSystemDataSetStorage(String ownerId, String dataSetId, FileHelper fileHelper,
                            DataSetConfiguration configuration) {
@@ -41,11 +47,11 @@ class FileSystemDataSetStorage implements DataSetStorage {
     this.fileHelper = fileHelper;
     this.configuration = configuration;
     logFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "log.json");
+    metaDataFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "metaData.json");
   }
 
   @Override
   public void saveMetaData(DataSetMetaData metaData) throws DataStorageSaveException {
-    File metaDataFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "metaData.json");
 
     try {
       OBJECT_MAPPER.writeValue(metaDataFile, metaData);
@@ -77,5 +83,32 @@ class FileSystemDataSetStorage implements DataSetStorage {
   @Override
   public JsonDataStore<LogList> getLogList() throws IOException {
     return JsonFileBackedData.getOrCreate(logFile, LogList::new, new TypeReference<LogList>(){});
+  }
+
+  @Override
+  public void clear() throws IOException {
+    JsonFileBackedData.remove(logFile);
+    JsonFileBackedData.remove(metaDataFile);
+    getFileStorage().clear();
+    this.deleteDataSetData(fileHelper.dataSetPath(ownerPrefix, dataSetId), 5);
+
+  }
+  
+  private void deleteDataSetData(File path, int retryCount) {
+    try {
+      FileUtils.deleteDirectory(path);
+    } catch (IOException e) {
+      if (retryCount > 0) {
+        LOG.warn("Deleting directory {}, failed, {} tries remaining.", path.getAbsolutePath(), retryCount);
+        try {
+          Thread.sleep(500);
+          deleteDataSetData(path, retryCount - 1);
+        } catch (InterruptedException e1) {
+          //ignore and stop trying
+        }
+      } else {
+        LOG.error("Deleting directory {}, failed! Manual cleanup necessary", path.getAbsolutePath());
+      }
+    }
   }
 }

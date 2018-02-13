@@ -70,27 +70,4 @@ public class FileSystemDataStorage implements DataStorage {
     }
     return metaDataSet;
   }
-
-  private void deleteDataSetData(File path, int retryCount) {
-    try {
-      FileUtils.deleteDirectory(path);
-    } catch (IOException e) {
-      if (retryCount > 0) {
-        LOG.warn("Deleting directory {}, failed, {} tries remaining.", path.getAbsolutePath(), retryCount);
-        try {
-          Thread.sleep(500);
-          deleteDataSetData(path, retryCount - 1);
-        } catch (InterruptedException e1) {
-          //ignore and stop trying
-        }
-      } else {
-        LOG.error("Deleting directory {}, failed! Manual cleanup necessary", path.getAbsolutePath());
-      }
-    }
-  }
-
-  @Override
-  public void deleteDataSetData(String ownerId, String dataSetName, int retryCount) {
-    this.deleteDataSetData(fileHelper.dataSetPath(ownerId, dataSetName), retryCount);
-  }
 }

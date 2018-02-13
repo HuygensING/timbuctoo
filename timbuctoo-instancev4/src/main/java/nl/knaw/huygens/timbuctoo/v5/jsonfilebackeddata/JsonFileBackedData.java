@@ -41,6 +41,12 @@ public class JsonFileBackedData<T> implements JsonDataStore<T> {
     }
   }
 
+  public static void remove(File file) throws IOException {
+    synchronized (existing) {
+      existing.remove(file.getCanonicalPath());
+    }
+  }
+
 
   private final File file;
   private T value;

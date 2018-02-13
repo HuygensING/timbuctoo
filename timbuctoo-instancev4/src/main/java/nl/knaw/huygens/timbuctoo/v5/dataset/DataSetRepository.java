@@ -340,7 +340,7 @@ public class DataSetRepository {
     }
 
     // remove folder
-    dataStorage.deleteDataSetData(ownerId, dataSetName, 5);
+    dataStorage.getDataSetStorage(ownerId, dataSetName).clear();
   }
 
   public void stop() {

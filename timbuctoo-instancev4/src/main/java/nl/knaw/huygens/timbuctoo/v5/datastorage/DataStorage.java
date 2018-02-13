@@ -11,5 +11,4 @@ public interface DataStorage {
 
   Map<String, Set<DataSetMetaData>> loadDataSetMetaData() throws IOException;
 
-  void deleteDataSetData(String ownerId, String dataSetName, int retryCount);
 }

@@ -23,4 +23,6 @@ public interface DataSetStorage {
   File getResourceSyncDescriptionFile();
 
   JsonDataStore<LogList> getLogList() throws IOException;
+
+  void clear() throws IOException;
 }
