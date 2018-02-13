@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
@@ -31,6 +32,11 @@ public class FileSystemDataStorage implements DataStorage {
   public FileSystemDataStorage(DataSetConfiguration configuration) {
     this.configuration = configuration;
     fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
+  }
+
+  @Override
+  public DataSetStorage getDataSetStorage(String ownerId, String dataSetName) {
+    return new FileSystemDataSetStorage(ownerId, dataSetName, fileHelper);
   }
 
   @Override

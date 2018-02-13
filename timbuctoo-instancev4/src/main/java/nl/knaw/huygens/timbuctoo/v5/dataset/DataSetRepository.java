@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameExcepti
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
 
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
@@ -217,18 +218,9 @@ public class DataSetRepository {
       publicByDefault
     );
 
-    ObjectMapper objectMapper = new ObjectMapper()
-      .registerModule(new Jdk8Module())
-      .registerModule(new GuavaModule())
-      .registerModule(new TimbuctooCustomSerializers())
-      .enable(SerializationFeature.INDENT_OUTPUT);
-
-    File metaDataFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "metaData.json");
-
-
     try {
-      objectMapper.writeValue(metaDataFile, dataSet);
-    } catch (IOException e) {
+      dataStorage.getDataSetStorage(ownerPrefix, dataSetId).saveMetaData(dataSet);
+    } catch (DataStorageSaveException e) {
       throw new DataStoreCreationException(e);
     }
 
@@ -274,17 +266,9 @@ public class DataSetRepository {
 
         dataSetMetaData.publish();
 
-        ObjectMapper objectMapper = new ObjectMapper()
-          .registerModule(new Jdk8Module())
-          .registerModule(new GuavaModule())
-          .registerModule(new TimbuctooCustomSerializers())
-          .enable(SerializationFeature.INDENT_OUTPUT);
-
-        File metaDataFile = fileHelper.fileInDataSet(ownerId, dataSetName, "metaData.json");
-
         try {
-          objectMapper.writeValue(metaDataFile, dataSetMetaData);
-        } catch (IOException e) {
+          dataStorage.getDataSetStorage(ownerId, dataSetName).saveMetaData(dataSetMetaData);
+        } catch (DataStorageSaveException e) {
           throw new DataSetPublishException(e);
         }
       }
