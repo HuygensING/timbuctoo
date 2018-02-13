@@ -1,9 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -17,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
-import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -54,7 +49,6 @@ public class DataSetRepository {
 
   private final ExecutorService executorService;
   private final PermissionFetcher permissionFetcher;
-  private final DataSetConfiguration configuration;
   private final BdbEnvironmentCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final TimbuctooRdfIdHelper rdfIdHelper;
@@ -71,7 +65,6 @@ public class DataSetRepository {
                            boolean publicByDefault) {
     this.executorService = executorService;
     this.permissionFetcher = permissionFetcher;
-    this.configuration = configuration;
     this.dataStoreFactory = dataStoreFactory;
 
     fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
@@ -99,12 +92,12 @@ public class DataSetRepository {
               dataSetName,
               dataSet(
                 dataSetMetaData,
-                configuration,
                 fileHelper,
                 executorService,
                 rdfBaseUri,
                 dataStoreFactory,
-                () -> onUpdated.accept(dataSetMetaData.getCombinedId())
+                () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
+                dataStorage.getDataSetStorage(ownerId, dataSetName)
               )
             );
           } catch (DataStoreCreationException e) {
@@ -235,13 +228,12 @@ public class DataSetRepository {
             dataSetId,
             dataSet(
               dataSet,
-              configuration,
               fileHelper,
               executorService,
               rdfBaseUri,
               dataStoreFactory,
-              () -> onUpdated.accept(dataSet.getCombinedId())
-            )
+              () -> onUpdated.accept(dataSet.getCombinedId()),
+              dataStorage.getDataSetStorage(ownerPrefix, dataSetId))
           );
         } catch (PermissionFetchingException | AuthorizationCreationException | IOException e) {
           throw new DataStoreCreationException(e);

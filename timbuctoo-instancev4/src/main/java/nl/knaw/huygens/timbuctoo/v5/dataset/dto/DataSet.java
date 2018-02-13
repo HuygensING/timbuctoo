@@ -6,9 +6,9 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbRmlDataSourceStore;
@@ -39,24 +39,23 @@ import java.util.concurrent.ExecutorService;
 public abstract class DataSet {
   private static final Logger LOG = LoggerFactory.getLogger(DataSet.class);
 
-
-  public static DataSet dataSet(DataSetMetaData metadata, DataSetConfiguration configuration,
-                         FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
-                         BdbEnvironmentCreator dataStoreFactory, Runnable onUpdated)
+  public static DataSet dataSet(DataSetMetaData metadata, FileHelper fileHelper, ExecutorService executorService,
+                                String rdfPrefix, BdbEnvironmentCreator dataStoreFactory,
+                                Runnable onUpdated, DataSetStorage dataSetStorage)
     throws IOException, DataStoreCreationException {
 
     String userId = metadata.getOwnerId();
     String dataSetId = metadata.getDataSetId();
-    File descriptionFile = fileHelper.fileInDataSet(userId, dataSetId, "description.xml");
-    FileStorage fileStorage = configuration.getFileStorage().makeFileStorage(userId, dataSetId);
+    File descriptionFile = dataSetStorage.getResourceSyncDescriptionFile();
+    FileStorage fileStorage = dataSetStorage.getFileStorage();
 
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
       fileStorage,
       fileStorage,
-      configuration.getFileStorage().makeLogStorage(userId, dataSetId),
+      dataSetStorage.getLogStorage(),
       executorService,
-      configuration.getRdfIo(),
+      dataSetStorage.getRdfIo(),
       onUpdated
     );
 

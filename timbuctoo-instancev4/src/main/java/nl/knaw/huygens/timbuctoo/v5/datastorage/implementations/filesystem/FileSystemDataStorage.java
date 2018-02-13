@@ -36,7 +36,7 @@ public class FileSystemDataStorage implements DataStorage {
 
   @Override
   public DataSetStorage getDataSetStorage(String ownerId, String dataSetName) {
-    return new FileSystemDataSetStorage(ownerId, dataSetName, fileHelper);
+    return new FileSystemDataSetStorage(ownerId, dataSetName, fileHelper, configuration);
   }
 
   @Override
