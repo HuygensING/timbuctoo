@@ -9,9 +9,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +22,6 @@ import java.util.stream.Stream;
 
 public class FileSystemDataStorage implements DataStorage {
 
-  private static final Logger LOG = LoggerFactory.getLogger(FileSystemDataStorage.class);
   private final DataSetConfiguration configuration;
   private final FileHelper fileHelper;
 
