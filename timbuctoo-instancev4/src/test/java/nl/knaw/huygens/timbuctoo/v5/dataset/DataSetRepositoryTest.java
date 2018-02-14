@@ -5,6 +5,7 @@ import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
@@ -57,7 +58,14 @@ public class DataSetRepositoryTest {
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
       combinedId -> {
       },
-      false
+      false, new FileSystemDataStorage(ImmutableDataSetConfiguration.builder()
+                                                                    .dataSetMetadataLocation(tempFile.getAbsolutePath())
+                                                                    .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
+                                                                    .fileStorage(mock(
+                                                                      FileStorageFactory.class,
+                                                                      RETURNS_DEEP_STUBS)
+                                                                    )
+                                                                    .build())
     );
   }
 

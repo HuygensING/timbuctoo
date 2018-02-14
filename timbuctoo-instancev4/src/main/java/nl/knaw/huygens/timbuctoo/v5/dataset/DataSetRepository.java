@@ -11,8 +11,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsExcep
 
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
-import nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage;
-import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -54,7 +52,6 @@ public class DataSetRepository {
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
   private final boolean publicByDefault;
-  private final FileHelper fileHelper;
   private Consumer<String> onUpdated;
   private final DataStorage dataStorage;
 
@@ -62,19 +59,17 @@ public class DataSetRepository {
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                            DataSetConfiguration configuration, BdbEnvironmentCreator dataStoreFactory,
                            TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated,
-                           boolean publicByDefault) {
+                           boolean publicByDefault, DataStorage dataStorage) {
     this.executorService = executorService;
     this.permissionFetcher = permissionFetcher;
     this.dataStoreFactory = dataStoreFactory;
-
-    fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
 
     this.rdfIdHelper = rdfIdHelper;
     this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
     this.publicByDefault = publicByDefault;
     dataSetMap = new HashMap<>();
     this.onUpdated = onUpdated;
-    dataStorage = new FileSystemDataStorage(configuration);
+    this.dataStorage = dataStorage;
   }
 
   private void loadDataSetsFromJson() throws IOException {
@@ -145,7 +140,7 @@ public class DataSetRepository {
         try {
           if (permissionFetcher.getPermissions(user, dataSetMap.get(ownerId).get(dataSetId).getMetadata()
           ).contains(Permission.READ)) {
-            File file = fileHelper.fileInDataSet(ownerId, dataSetId, "description.xml");
+            File file = dataStorage.getDataSetStorage(ownerId, dataSetId).getResourceSyncDescriptionFile();
             return Optional.of(file);
           }
         } catch (PermissionFetchingException e) {
