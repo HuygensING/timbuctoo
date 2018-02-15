@@ -7,6 +7,7 @@ import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.CleaningDropwizard;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
+import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -21,6 +22,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -33,14 +35,19 @@ import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -54,6 +61,7 @@ import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
@@ -1069,6 +1077,79 @@ public class IntegrationTest {
 
   }
 
+  @Test
+  public void resourceSyncShowsAllThePublicDataSets() throws Exception {
+    final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
+      "application/vnd.timbuctoo-rdf.nquads_unified_diff",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.nqud"
+      )
+    );
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Publish($dataSetId: String!) {" +
+            "  publish(dataSet: $dataSetId) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    Response checkPublishedCall = callWithoutAuthentication("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query MetaData($dataSetId: ID!) {" +
+            "  dataSetMetadata(dataSetId: $dataSetId) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(checkPublishedCall.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSetMetadata", jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      )
+    )));
+
+    Response resourceSyncCall = callWithoutAuthentication("/v5/resourcesync/sourceDescription.xml").get();
+
+    ByteArrayInputStream value = new ByteArrayInputStream(resourceSyncCall.readEntity(String.class).getBytes());
+    Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(value);
+    XPath xpath = XPathFactory.newInstance().newXPath();
+
+    NodeList uriNodes =  (NodeList) xpath.compile("/urlset/url/loc").evaluate(document, XPathConstants.NODESET);
+    Set<String> dataSets = new HashSet<>();
+    for (int i = 0; i < uriNodes.getLength(); i++) {
+      dataSets.add(uriNodes.item(i).getTextContent());
+    }
+
+    assertThat(dataSets, hasItem(endsWith(dataSetName + "/capabilityList.xml")));
+  }
+
   private List<String> getDataSetNamesOfDummy() {
     Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
@@ -1104,6 +1185,23 @@ public class IntegrationTest {
   }
 
   private Invocation.Builder call(String path) {
+    String server;
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+      server = path;
+    } else {
+      int localPort = APP.getLocalPort();
+      // int localPort = 8080;
+      server = format("http://localhost:%d" + path, localPort);
+    }
+    return client
+      .target(server)
+      .register(MultiPartFeature.class)
+      // .register(new LoggingFilter(Logger.getLogger(LoggingFilter.class.getName()), true))
+      .request()
+      .header("Authorization", AUTH);
+  }
+
+  private Invocation.Builder callWithoutAuthentication(String path) {
     String server;
     if (path.startsWith("http://") || path.startsWith("https://")) {
       server = path;
