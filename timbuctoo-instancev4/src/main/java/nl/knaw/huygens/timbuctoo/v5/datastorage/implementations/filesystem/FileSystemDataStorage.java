@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
@@ -9,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,24 +26,32 @@ import java.util.stream.Stream;
 
 public class FileSystemDataStorage implements DataStorage {
 
-  private final DataSetConfiguration configuration;
+  @JsonIgnore
   private final FileHelper fileHelper;
+  @JsonProperty("rootDir")
+  private final String dataSetMetadataLocation;
+  @JsonProperty("rdfIo")
+  private final RdfIoFactory rdfIo;
 
-  public FileSystemDataStorage(DataSetConfiguration configuration) {
-    this.configuration = configuration;
-    fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
+  @JsonCreator
+  public FileSystemDataStorage(
+    @JsonProperty("rootDir") String dataSetMetadataLocation,
+    @JsonProperty("rdfIo") RdfIoFactory rdfIo) {
+    fileHelper = new FileHelper(dataSetMetadataLocation);
+    this.dataSetMetadataLocation = dataSetMetadataLocation;
+    this.rdfIo = rdfIo;
   }
 
   @Override
   public DataSetStorage getDataSetStorage(String ownerId, String dataSetName) {
-    return new FileSystemDataSetStorage(ownerId, dataSetName, fileHelper, configuration);
+    return new FileSystemDataSetStorage(ownerId, dataSetName, fileHelper, rdfIo);
   }
 
   @Override
   public Map<String, Set<DataSetMetaData>> loadDataSetMetaData() throws IOException {
     Map<String, Set<DataSetMetaData>> metaDataSet = Maps.newHashMap();
 
-    File[] directories = new File(configuration.getDataSetMetadataLocation()).listFiles(File::isDirectory);
+    File[] directories = new File(dataSetMetadataLocation).listFiles(File::isDirectory);
 
     for (int i = 0; i < directories.length; i++) {
       String dirName = directories[i].toString();

@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveExcept
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorage;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
@@ -36,18 +37,17 @@ class FileSystemDataSetStorage implements DataSetStorage {
   private final String ownerPrefix;
   private final String dataSetId;
   private final FileHelper fileHelper;
-  private final DataSetConfiguration configuration;
   private final File logFile;
   private final File metaDataFile;
+  private final RdfIoFactory rdfIo;
 
-  FileSystemDataSetStorage(String ownerId, String dataSetId, FileHelper fileHelper,
-                           DataSetConfiguration configuration) {
+  FileSystemDataSetStorage(String ownerId, String dataSetId, FileHelper fileHelper, RdfIoFactory rdfIo) {
     this.ownerPrefix = ownerId;
     this.dataSetId = dataSetId;
     this.fileHelper = fileHelper;
-    this.configuration = configuration;
     logFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "log.json");
     metaDataFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "metaData.json");
+    this.rdfIo = rdfIo;
   }
 
   @Override
@@ -62,17 +62,19 @@ class FileSystemDataSetStorage implements DataSetStorage {
 
   @Override
   public FileStorage getFileStorage() throws IOException {
-    return configuration.getFileStorage().makeFileStorage(ownerPrefix, dataSetId);
+    File filePath = fileHelper.pathInDataSet(ownerPrefix, dataSetId, "files");
+    return new FileSystemFileStorage(filePath);
   }
 
   @Override
   public LogStorage getLogStorage() throws IOException {
-    return configuration.getFileStorage().makeLogStorage(ownerPrefix, dataSetId);
+    File filePath = fileHelper.pathInDataSet(ownerPrefix, dataSetId, "files");
+    return new FileSystemFileStorage(filePath);
   }
 
   @Override
   public RdfIoFactory getRdfIo() {
-    return configuration.getRdfIo();
+    return rdfIo;
   }
 
   @Override
