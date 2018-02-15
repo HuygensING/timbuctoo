@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.RsDocumentBuilder;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -12,8 +14,8 @@ public class WellKnown {
   @GET
   public Response resourceSync() {
     // Permanent redirect
-    return Response.seeOther(UriBuilder.fromResource(ResourceSyncEndpoint.class)
-                                       .path(ResourceSyncEndpoint.SOURCE_DESCRIPTION_PATH)
+    return Response.seeOther(UriBuilder.fromResource(RsEndpoint.class)
+                                       .path(RsDocumentBuilder.SOURCE_DESCRIPTION_PATH)
                                        .build()
     ).build();
   }

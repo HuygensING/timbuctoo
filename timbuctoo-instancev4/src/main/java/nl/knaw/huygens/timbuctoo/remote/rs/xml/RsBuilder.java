@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
@@ -32,6 +33,7 @@ public class RsBuilder {
   private URL url;
   private XMLEventReader xmlEventReader;
   private XMLStreamReader xmlStreamReader;
+  private String xmlString;
 
   private QName latestQName;
   private Urlset urlset;
@@ -77,6 +79,9 @@ public class RsBuilder {
     } else if (xmlStreamReader != null) {
       je = (JAXBElement<RsRoot>) unmarshaller.unmarshal(xmlStreamReader);
       xmlStreamReader = null;
+    } else if (xmlString != null) {
+      je = (JAXBElement<RsRoot>) unmarshaller.unmarshal(IOUtils.toInputStream(xmlString));
+      xmlString = null;
     }
 
     if (je != null) {
@@ -145,6 +150,11 @@ public class RsBuilder {
 
   public RsBuilder setXmlStreamReader(XMLStreamReader xmlStreamReader) {
     this.xmlStreamReader = xmlStreamReader;
+    return this;
+  }
+
+  public RsBuilder setXmlString(String xmlString) {
+    this.xmlString = xmlString;
     return this;
   }
 

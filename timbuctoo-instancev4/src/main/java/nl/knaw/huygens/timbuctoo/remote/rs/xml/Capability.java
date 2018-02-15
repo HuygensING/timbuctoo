@@ -49,6 +49,10 @@ public enum Capability {
     return level;
   }
 
+  public String getFilename() {
+    return String.format("%s.xml", xmlValue);
+  }
+
   /**
    * The capability of a parent document expressed with a link with relation type 'up'. Except for documents with
    * capability 'description' such a link is mandatory.

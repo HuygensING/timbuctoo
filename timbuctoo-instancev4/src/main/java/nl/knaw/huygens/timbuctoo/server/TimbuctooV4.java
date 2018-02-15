@@ -80,6 +80,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.RsDocumentBuilder;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetRepositoryManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
@@ -90,8 +91,8 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RsEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
@@ -385,7 +386,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ));
 
     register(environment, new WellKnown());
-    register(environment, new ResourceSyncEndpoint(configuration.getResourceSync(), configuration.getUriHelper()));
+    RsDocumentBuilder rsDocumentBuilder =
+      new RsDocumentBuilder(dataSetRepository, configuration.getUriHelper());
+    register(environment, new RsEndpoint(rsDocumentBuilder, securityConfig.getUserValidator()));
 
     // Admin resources
     if (securityConfig instanceof OldStyleSecurityFactory) {
