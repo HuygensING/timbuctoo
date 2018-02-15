@@ -282,8 +282,7 @@ public class DataSetRepository {
               () -> onUpdated.accept(dataSet.getCombinedId())
             )
           );
-        } catch (
-          PermissionFetchingException | AuthorizationCreationException | IOException e) {
+        } catch (PermissionFetchingException | AuthorizationCreationException | IOException e) {
           throw new DataStoreCreationException(e);
         }
       }
@@ -392,7 +391,6 @@ public class DataSetRepository {
       }
       dataSet.stop();
       dataSetMap.get(ownerId).remove(dataSetName);
-      //resourceSync.removeDataSet(ownerId, dataSetName);
       permissionFetcher.removeAuthorizations(combinedId);
     } catch (PermissionFetchingException e) {
       throw new IOException(e);

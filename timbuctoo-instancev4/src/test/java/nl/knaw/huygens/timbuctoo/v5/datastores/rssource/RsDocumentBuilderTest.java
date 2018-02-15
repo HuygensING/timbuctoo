@@ -59,8 +59,8 @@ public class RsDocumentBuilderTest {
     String xml = rsBuilder.toXml(sourceDescription, true);
     //System.out.println(xml);
     rsBuilder.setXmlString(xml).build();
-    Urlset sd = rsBuilder.getUrlset().orElseThrow(Exception::new);
-    assertThat(sd.getCapability().orElse(null), is(Capability.DESCRIPTION));
+    Urlset sd = rsBuilder.getUrlset().get();
+    assertThat(sd.getCapability().get(), is(Capability.DESCRIPTION));
     assertThat(sd.getItemList().size(), is(0));
   }
 
@@ -72,16 +72,16 @@ public class RsDocumentBuilderTest {
     String xml = rsBuilder.toXml(sourceDescription, true);
     //System.out.println(xml);
     rsBuilder.setXmlString(xml).build();
-    Urlset sd = rsBuilder.getUrlset().orElseThrow(Exception::new);
-    assertThat(sd.getCapability().orElse(null), is(Capability.DESCRIPTION));
+    Urlset sd = rsBuilder.getUrlset().get();
+    assertThat(sd.getCapability().get(), is(Capability.DESCRIPTION));
     assertThat(sd.getItemList().size(), is(2));
     assertThat(sd.getItemList().get(0).getLoc(), is("http://example.com/v5/resourcesync/u1/ds1/capabilitylist.xml"));
     assertThat(sd.getItemList().get(1).getLoc(), is("http://example.com/v5/resourcesync/u2/ds2/capabilitylist.xml"));
-    assertThat(sd.getItemList().get(0).getMetadata().orElseThrow(Exception::new).getCapability().orElse(null),
+    assertThat(sd.getItemList().get(0).getMetadata().get().getCapability().get(),
       is(Capability.CAPABILITYLIST.xmlValue));
-    assertThat(sd.getItemList().get(1).getLink("describedby").orElseThrow(Exception::new).getHref(),
+    assertThat(sd.getItemList().get(1).getLink("describedby").get().getHref(),
       is("http://example.com/v5/resourcesync/u2/ds2/description.xml"));
-    assertThat(sd.getItemList().get(1).getLink("describedby").orElseThrow(Exception::new).getType().orElse(null),
+    assertThat(sd.getItemList().get(1).getLink("describedby").get().getType().get(),
       is("application/rdf+xml"));
   }
 
@@ -93,17 +93,17 @@ public class RsDocumentBuilderTest {
     String xml = rsBuilder.toXml(capabilityList, true);
     //System.out.println(xml);
     rsBuilder.setXmlString(xml).build();
-    Urlset cl = rsBuilder.getUrlset().orElseThrow(Exception::new);
-    assertThat(cl.getCapability().orElse(null), is(Capability.CAPABILITYLIST));
-    assertThat(cl.getLink("up").orElseThrow(Exception::new).getHref(),
+    Urlset cl = rsBuilder.getUrlset().get();
+    assertThat(cl.getCapability().get(), is(Capability.CAPABILITYLIST));
+    assertThat(cl.getLink("up").get().getHref(),
       is("http://example.com/.well-known/resourcesync"));
-    assertThat(cl.getLink("describedby").orElseThrow(Exception::new).getHref(),
+    assertThat(cl.getLink("describedby").get().getHref(),
       is("http://example.com/v5/resourcesync/u1/ds1/description.xml"));
-    assertThat(cl.getLink("describedby").orElseThrow(Exception::new).getType().orElse(null),
+    assertThat(cl.getLink("describedby").get().getType().get(),
       is("application/rdf+xml"));
     assertThat(cl.getItemList().size(), is(1));
     assertThat(cl.getItemList().get(0).getLoc(), is("http://example.com/v5/resourcesync/u1/ds1/resourcelist.xml"));
-    assertThat(cl.getItemList().get(0).getMetadata().orElseThrow(Exception::new).getCapability().orElse(null),
+    assertThat(cl.getItemList().get(0).getMetadata().get().getCapability().get(),
       is(Capability.RESOURCELIST.xmlValue));
   }
 

@@ -53,7 +53,7 @@ public abstract class DataSet {
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
       fileStorage,
-      configuration.getFileStorage().makeFileStorage(userId, dataSetId),
+      fileStorage,
       configuration.getFileStorage().makeLogStorage(userId, dataSetId),
       executorService,
       configuration.getRdfIo(),
