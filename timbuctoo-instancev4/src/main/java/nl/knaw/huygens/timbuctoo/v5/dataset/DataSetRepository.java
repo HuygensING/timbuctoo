@@ -126,31 +126,6 @@ public class DataSetRepository {
     }
   }
 
-  /**
-   * Gets the description of the dataSet designated by <code>ownerId</code> and <code>dataSetId</code>
-   * but only if the given <code>user</code> has read-access to the dataSet.
-   * @param user the user that wants read-access, may be <code>null</code>
-   * @param ownerId ownerId
-   * @param dataSetId dataSetId
-   * @return the description of the dataSet designated by <code>ownerId</code> and <code>dataSetId</code>
-   */
-  public Optional<File> getDataSetDescription(User user, String ownerId, String dataSetId) {
-    synchronized (dataSetMap) {
-      if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
-        try {
-          if (permissionFetcher.getPermissions(user, dataSetMap.get(ownerId).get(dataSetId).getMetadata()
-          ).contains(Permission.READ)) {
-            File file = dataStorage.getDataSetStorage(ownerId, dataSetId).getResourceSyncDescriptionFile();
-            return Optional.of(file);
-          }
-        } catch (PermissionFetchingException e) {
-          return Optional.empty();
-        }
-      }
-      return Optional.empty();
-    }
-  }
-
   public Optional<DataSet> unsafeGetDataSetWithoutCheckingPermissions(String ownerId, String dataSetId) {
     synchronized (dataSetMap) {
       if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {

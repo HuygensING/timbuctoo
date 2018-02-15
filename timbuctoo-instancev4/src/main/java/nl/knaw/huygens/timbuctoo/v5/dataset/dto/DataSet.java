@@ -191,7 +191,7 @@ public abstract class DataSet {
                                                  .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
                                                  .schemaStore(schema)
                                                  .importManager(importManager)
-                                                 .fileStorage(fileStorage)
+                                                 .dataSetStorage(dataSetStorage)
                                                  .build();
       importManager.init(dataSet);
 
@@ -226,11 +226,21 @@ public abstract class DataSet {
 
   }
 
+  public File getResourceSyncDescription() {
+    return getDataSetStorage().getResourceSyncDescriptionFile();
+  }
+
+  public FileStorage getFileStorage() throws IOException {
+    return getDataSetStorage().getFileStorage();
+  }
+
   protected abstract String getOwnerId();
 
   protected abstract String getDataSetName();
 
   protected abstract BdbEnvironmentCreator getBdbEnvironmentCreator();
+
+  protected abstract DataSetStorage getDataSetStorage();
 
   public abstract SchemaStore getSchemaStore();
 
@@ -244,6 +254,5 @@ public abstract class DataSet {
 
   public abstract DataSetMetaData getMetadata();
 
-  public abstract FileStorage getFileStorage();
 
 }
