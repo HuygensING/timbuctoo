@@ -15,15 +15,11 @@ import java.util.function.Consumer;
 public interface DataSetConfiguration {
 
   @JsonCreator
-  static DataSetConfiguration create(@JsonProperty("dataSetMetadataLocation") String dataSetMetadataLocation,
-                                     @JsonProperty("dataStorage") DataStorage dataStorage) {
+  static DataSetConfiguration create(@JsonProperty("dataStorage") DataStorage dataStorage) {
     return ImmutableDataSetConfiguration.builder()
-                                        .dataSetMetadataLocation(dataSetMetadataLocation)
                                         .dataStorage(dataStorage)
                                         .build();
   }
-
-  String getDataSetMetadataLocation();
 
   DataStorage getDataStorage();
 

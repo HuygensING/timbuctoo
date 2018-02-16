@@ -50,7 +50,6 @@ databaseConfiguration:
   databasePath: ${timbuctoo_dataPath}/neo4j
 
 dataSet:
-  dataSetMetadataLocation: ${timbuctoo_dataPath}/datasets
   dataStorage:
     "@class": nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage
     rootDir: ${timbuctoo_dataPath}/datasets

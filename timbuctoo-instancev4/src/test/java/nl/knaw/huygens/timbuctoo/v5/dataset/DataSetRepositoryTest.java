@@ -48,7 +48,6 @@ public class DataSetRepositoryTest {
       Executors.newSingleThreadExecutor(),
       permissionFetcher,
       ImmutableDataSetConfiguration.builder()
-        .dataSetMetadataLocation(tempFile.getAbsolutePath())
         .dataStorage(mock(DataStorage.class, RETURNS_DEEP_STUBS))
         .build(),
       new BdbNonPersistentEnvironmentCreator(),
