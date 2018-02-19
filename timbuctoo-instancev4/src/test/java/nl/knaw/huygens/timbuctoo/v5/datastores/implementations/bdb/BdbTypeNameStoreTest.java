@@ -60,4 +60,5 @@ public class BdbTypeNameStoreTest {
     assertThat(graphQlname, is("__test"));
   }
 
+
 }

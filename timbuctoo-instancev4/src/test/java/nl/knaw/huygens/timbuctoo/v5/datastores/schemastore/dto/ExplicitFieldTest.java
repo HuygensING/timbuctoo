@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto;
 
-import com.google.common.collect.Lists;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.Test;
 
@@ -18,12 +17,12 @@ public class ExplicitFieldTest {
     values.add("value2");
     values.add("value3");
 
-    ExplicitField title = new ExplicitField("title",  "", false,
+    ExplicitField title = new ExplicitField("test:test", false,
       values, null);
 
     Predicate predicate = title.convertToPredicate();
 
-    assertThat(predicate.getName(),is("title"));
+    assertThat(predicate.getName(), is("test:test"));
     assertThat(predicate.getValueTypes(), IsMapContaining.hasEntry("value1", 0L));
     assertThat(predicate.getValueTypes(), IsMapContaining.hasEntry("value2", 0L));
     assertThat(predicate.getValueTypes(), IsMapContaining.hasEntry("value3", 0L));
@@ -36,12 +35,12 @@ public class ExplicitFieldTest {
     references.add("reference2");
     references.add("reference3");
 
-    ExplicitField title = new ExplicitField("title", "", false,
+    ExplicitField title = new ExplicitField("test:test", false,
       null, references);
 
     Predicate predicate = title.convertToPredicate();
 
-    assertThat(predicate.getName(),is("title"));
+    assertThat(predicate.getName(), is("test:test"));
     assertThat(predicate.getReferenceTypes(), IsMapContaining.hasEntry("reference1", 0L));
     assertThat(predicate.getReferenceTypes(), IsMapContaining.hasEntry("reference2", 0L));
     assertThat(predicate.getReferenceTypes(), IsMapContaining.hasEntry("reference3", 0L));

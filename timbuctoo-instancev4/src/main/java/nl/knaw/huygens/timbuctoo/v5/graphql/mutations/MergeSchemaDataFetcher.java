@@ -83,6 +83,7 @@ public class MergeSchemaDataFetcher implements DataFetcher {
 
     Map<String, List<ExplicitField>> existingCustomSchema;
 
+
     try {
       existingCustomSchema = objectMapper.readValue(customSchemaFile,
         new TypeReference<Map<String, List<ExplicitField>>>() {
@@ -91,21 +92,23 @@ public class MergeSchemaDataFetcher implements DataFetcher {
       existingCustomSchema = new HashMap<>();
     }
 
-    for (ExplicitType explicitType : customSchema) {
-      if (!existingCustomSchema.containsKey(explicitType.getName())) {
-        existingCustomSchema.put(explicitType.getName(), explicitType.getFields());
-      } else {
-        existingCustomSchema.get(explicitType.getName()).addAll(explicitType.getFields());
-      }
-    }
+    Map<String, Type> existingCustomSchemaTypes = new HashMap<>();
 
-    try {
-      objectMapper.writeValue(customSchemaFile, existingCustomSchema);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    for (Map.Entry<String, List<ExplicitField>> entry : existingCustomSchema.entrySet()) {
+      ExplicitType tempExplicitType = new ExplicitType(entry.getKey(), entry.getValue());
+
+      existingCustomSchemaTypes.put(entry.getKey(), tempExplicitType.convertToType());
     }
 
     MergeSchemas mergeSchemas = new MergeSchemas();
+
+    customTypes = mergeSchemas.mergeSchema(existingCustomSchemaTypes, customTypes);
+
+    try {
+      objectMapper.writeValue(customSchemaFile, customSchema);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     Map<String, Type> mergedSchema = mergeSchemas.mergeSchema(generatedSchema.getStableTypes(),
       customTypes);
