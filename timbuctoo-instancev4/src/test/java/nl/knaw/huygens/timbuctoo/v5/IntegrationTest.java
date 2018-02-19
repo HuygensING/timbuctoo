@@ -19,6 +19,7 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -717,7 +718,6 @@ public class IntegrationTest {
       )
     )));
 
-
     graphQlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(
@@ -750,7 +750,6 @@ public class IntegrationTest {
         )
       ))
     );
-
   }
 
   @Test
@@ -770,15 +769,13 @@ public class IntegrationTest {
     assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
 
     ObjectNode customSchemaField = jsnO(
-      "name", jsn("test"),
-      "uri", jsn(""),
+      "uri", jsn("test:test"),
       "isList", jsn(false),
       "values", jsnA(jsn("String"))
     );
 
     ObjectNode customSchemaField2 = jsnO(
-      "name", jsn("test2"),
-      "uri", jsn(""),
+      "uri", jsn("http://www.test2.com"),
       "isList", jsn(false),
       "values", jsnA(jsn("String"))
     );
@@ -822,7 +819,7 @@ public class IntegrationTest {
             "    %s {\n" +
             "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList {\n" +
             "        items {\n" +
-            "          test {\n" +
+            "          test_test {\n" +
             "            type\n" +
             "          }\n" +
             "        }\n" +
@@ -838,7 +835,7 @@ public class IntegrationTest {
 
     assertThat(retrievedData.get("data").get("dataSets").get(dataSetId)
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
-        .get("items").get(0).get("test").isNull(),
+        .get("items").get(0).get("test_test").isNull(),
       is(true));
   }
 
