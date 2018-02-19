@@ -79,7 +79,7 @@ public class ExplicitField {
     return convertedPredicate;
   }
 
-
+  @JsonProperty("isList")
   public boolean isList() {
     return isList;
   }

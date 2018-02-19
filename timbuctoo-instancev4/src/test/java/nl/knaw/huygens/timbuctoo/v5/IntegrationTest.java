@@ -837,6 +837,69 @@ public class IntegrationTest {
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
         .get("items").get(0).get("test_test").isNull(),
       is(true));
+
+    ObjectNode customSchemaField3 = jsnO(
+      "uri", jsn("test_test3"),
+      "isList", jsn(false),
+      "values", jsnA(jsn("String"))
+    );
+
+    ObjectNode customSchema2 = jsnO(
+      "name", jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"),
+      "fields", jsnA(customSchemaField3)
+    );
+
+    Response graphQlCall2 = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation extendSchema($dataSet: String!, $customSchema: [CustomSchemaTypeInput!]!) { " +
+            "   extendSchema(dataSet:$dataSet,customSchema:$customSchema){\n" +
+            "    message\n" +
+            "   }" +
+            "}"),
+        "variables",
+        jsnO(
+          "dataSet", jsn(dataSetId),
+          "customSchema", customSchema2
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(graphQlCall2.getStatus(), is(200));
+
+    Response retrieveExtendedSchema2 = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(String.format(
+          "query retrieveExtendedSchema  {\n" +
+            "  dataSets {\n" +
+            "    %s {\n" +
+            "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList {\n" +
+            "        items {\n" +
+            "          test_test {\n" +
+            "            type\n" +
+            "          },\n" +
+            "          test_test3 {\n" +
+            "            type\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}", dataSetId))
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(retrieveExtendedSchema2.getStatus(), is(200));
+
+    ObjectNode retrievedData2 = retrieveExtendedSchema2.readEntity(ObjectNode.class);
+
+    assertThat(retrievedData2.get("data").get("dataSets").get(dataSetId)
+        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
+        .get("items").get(0).get("test_test3").isNull(),
+      is(true));
+
   }
 
   private String createDataSetId(String dataSetName) {
