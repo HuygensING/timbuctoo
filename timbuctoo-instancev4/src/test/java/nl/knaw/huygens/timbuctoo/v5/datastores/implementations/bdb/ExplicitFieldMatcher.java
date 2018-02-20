@@ -5,6 +5,7 @@ import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 
 import java.util.List;
+import java.util.Set;
 
 public class ExplicitFieldMatcher extends CompositeMatcher<ExplicitField> {
   private ExplicitFieldMatcher() {
@@ -37,10 +38,10 @@ public class ExplicitFieldMatcher extends CompositeMatcher<ExplicitField> {
     return this;
   }
 
-  public ExplicitFieldMatcher withValues(List<String> values) {
-    this.addMatcher(new PropertyEqualityMatcher<ExplicitField, List<String>>("values", values) {
+  public ExplicitFieldMatcher withValues(Set<String> values) {
+    this.addMatcher(new PropertyEqualityMatcher<ExplicitField, Set<String>>("values", values) {
       @Override
-      protected List<String> getItemValue(ExplicitField item) {
+      protected Set<String> getItemValue(ExplicitField item) {
         return item.getValues();
       }
     });
@@ -48,10 +49,10 @@ public class ExplicitFieldMatcher extends CompositeMatcher<ExplicitField> {
     return this;
   }
 
-  public ExplicitFieldMatcher withReferences(List<String> references) {
-    this.addMatcher(new PropertyEqualityMatcher<ExplicitField, List<String>>("references", references) {
+  public ExplicitFieldMatcher withReferences(Set<String> references) {
+    this.addMatcher(new PropertyEqualityMatcher<ExplicitField, Set<String>>("references", references) {
       @Override
-      protected List<String> getItemValue(ExplicitField item) {
+      protected Set<String> getItemValue(ExplicitField item) {
         return item.getReferences();
       }
     });

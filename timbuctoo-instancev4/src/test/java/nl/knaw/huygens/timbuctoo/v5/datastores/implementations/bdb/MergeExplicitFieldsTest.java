@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
+import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 
 public class MergeExplicitFieldsTest {
@@ -33,23 +33,23 @@ public class MergeExplicitFieldsTest {
   public void mergeCombinesValuesList() throws Exception {
     final MergeExplicitFields mergeExplicitFields = new MergeExplicitFields();
 
-    ExplicitField explicitField1 = new ExplicitField("test:test", false, Lists.newArrayList("String"), null);
-    ExplicitField explicitField2 = new ExplicitField("test:test", false, Lists.newArrayList("Integer"), null);
+    ExplicitField explicitField1 = new ExplicitField("test:test", false, Sets.newHashSet("String"), null);
+    ExplicitField explicitField2 = new ExplicitField("test:test", false, Sets.newHashSet("Integer"), null);
 
     ExplicitField mergedExplicitField = mergeExplicitFields.mergeExplicitFields(explicitField1, explicitField2);
 
-    assertThat(mergedExplicitField.getValues(), is(contains("String", "Integer")));
+    assertThat(mergedExplicitField.getValues(), is(IsCollectionContaining.hasItems("String", "Integer")));
   }
 
   @Test
   public void mergeCombinesReferencesList() throws Exception {
     final MergeExplicitFields mergeExplicitFields = new MergeExplicitFields();
 
-    ExplicitField explicitField1 = new ExplicitField("test:test", false, null, Lists.newArrayList("Integer", "String"));
-    ExplicitField explicitField2 = new ExplicitField("test:test", false, null, Lists.newArrayList("String"));
+    ExplicitField explicitField1 = new ExplicitField("test:test", false, null, Sets.newHashSet("Integer", "String"));
+    ExplicitField explicitField2 = new ExplicitField("test:test", false, null, Sets.newHashSet("String"));
 
     ExplicitField mergedExplicitField = mergeExplicitFields.mergeExplicitFields(explicitField1, explicitField2);
 
-    assertThat(mergedExplicitField.getReferences(), is(contains("Integer", "String")));
+    assertThat(mergedExplicitField.getReferences(), is(IsCollectionContaining.hasItems("Integer", "String")));
   }
 }

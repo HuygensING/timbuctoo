@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ExplicitField {
   @JsonProperty("uri")
@@ -16,34 +16,34 @@ public class ExplicitField {
     isList = list;
   }
 
-  public List<String> getValues() {
+  public Set<String> getValues() {
     return values;
   }
 
-  public void setValues(List<String> values) {
+  public void setValues(Set<String> values) {
     this.values = values;
   }
 
-  public List<String> getReferences() {
+  public Set<String> getReferences() {
     return references;
   }
 
-  public void setReferences(List<String> references) {
+  public void setReferences(Set<String> references) {
     this.references = references;
   }
 
   @JsonProperty("isList")
   private boolean isList;
   @JsonProperty("values")
-  private List<String> values;
+  private Set<String> values;
   @JsonProperty("references")
-  private List<String> references;
+  private Set<String> references;
 
   @JsonCreator
   public ExplicitField(@JsonProperty("uri") String uri,
                        @JsonProperty("isList") boolean isList,
-                       @JsonProperty("values") List<String> values,
-                       @JsonProperty("references") List<String> references) {
+                       @JsonProperty("values") Set<String> values,
+                       @JsonProperty("references") Set<String> references) {
     this.uri = uri;
     this.isList = isList;
     this.values = values;

@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 
 import java.util.List;
+import java.util.Set;
 
 public class MergeExplicitFields {
   public ExplicitField mergeExplicitFields(ExplicitField explicitField1, ExplicitField explicitField2) {
@@ -18,7 +19,7 @@ public class MergeExplicitFields {
       mergedExplicitField.setList(false);
     }
 
-    List<String> values = explicitField1.getValues();
+    Set<String> values = explicitField1.getValues();
 
     if (explicitField2.getValues() != null) {
       for (String value : explicitField2.getValues()) {
@@ -30,7 +31,7 @@ public class MergeExplicitFields {
 
     mergedExplicitField.setValues(values);
 
-    List<String> references = explicitField1.getReferences();
+    Set<String> references = explicitField1.getReferences();
 
     if (explicitField2.getReferences() != null) {
       for (String reference : explicitField2.getReferences()) {
