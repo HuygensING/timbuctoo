@@ -7,7 +7,8 @@ import java.util.Set;
 
 public class MergeExplicitFields {
   public ExplicitField mergeExplicitFields(ExplicitField explicitField1, ExplicitField explicitField2) {
-    ExplicitField mergedExplicitField = explicitField1;
+    ExplicitField mergedExplicitField = new ExplicitField(explicitField1.getUri(),explicitField1.isList(),
+      null,null);
 
     if (!explicitField1.getUri().equals(explicitField2.getUri())) {
       throw new IllegalArgumentException("Explicit field URIs do not match.");
