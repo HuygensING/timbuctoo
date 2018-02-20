@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MergeExplicitSchemas {
-  private final MergeExplicitFields mergeExplicitFields;
-
   public MergeExplicitSchemas() {
-    mergeExplicitFields = new MergeExplicitFields();
+
   }
 
   public Map<String, List<ExplicitField>> mergeExplicitSchemas(Map<String, List<ExplicitField>> explicitSchema1,
@@ -69,7 +67,7 @@ public class MergeExplicitSchemas {
     }
 
     if (explicitField2 != null && explicitField1.getUri().equals(explicitField2.getUri())) {
-      mergedField = mergeExplicitFields.mergeExplicitFields(explicitField1, explicitField2);
+      mergedField = explicitField1.mergeWith(explicitField2);
     } else {
       mergedField = explicitField1;
     }
