@@ -4,7 +4,9 @@ import org.hamcrest.collection.IsMapContaining;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -12,7 +14,7 @@ import static org.hamcrest.Matchers.is;
 public class ExplicitFieldTest {
   @Test
   public void convertToPredicateTransformsExplicitFieldValuesToPredicate() throws Exception {
-    List<String> values = new ArrayList<>();
+    Set<String> values = new HashSet<>();
     values.add("value1");
     values.add("value2");
     values.add("value3");
@@ -30,7 +32,7 @@ public class ExplicitFieldTest {
 
   @Test
   public void convertToPredicateTransformsExplicitFieldReferencesToPredicate() throws Exception {
-    List<String> references = new ArrayList<>();
+    Set<String> references = new HashSet<>();
     references.add("reference1");
     references.add("reference2");
     references.add("reference3");

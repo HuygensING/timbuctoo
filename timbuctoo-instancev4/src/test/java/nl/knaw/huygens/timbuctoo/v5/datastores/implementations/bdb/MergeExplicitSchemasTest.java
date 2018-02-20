@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import org.junit.Test;
 
@@ -20,10 +21,10 @@ public class MergeExplicitSchemasTest {
   @Test
   public void mergeeExplicitSchemaMergesSchemasWithDifferentCollections() throws Exception {
     Map<String, List<ExplicitField>> explicitSchema1 = new HashMap<>();
-    ExplicitField explicitField1 = new ExplicitField("test:test1", false, Lists.newArrayList("String"), null);
+    ExplicitField explicitField1 = new ExplicitField("test:test1", false, Sets.newHashSet("String"), null);
     explicitSchema1.put("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places", Lists.newArrayList(explicitField1));
     Map<String, List<ExplicitField>> explicitSchema2 = new HashMap<>();
-    ExplicitField explicitField2 = new ExplicitField("test:test2", false, null, Lists.newArrayList("String"));
+    ExplicitField explicitField2 = new ExplicitField("test:test2", false, null, Sets.newHashSet("String"));
     explicitSchema2.put("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", Lists.newArrayList(explicitField2));
     MergeExplicitSchemas mergeExplicitSchemas = new MergeExplicitSchemas();
 
@@ -44,10 +45,10 @@ public class MergeExplicitSchemasTest {
   @Test
   public void mergeExplicitSchemaMergesFieldsForSameCollection() throws Exception {
     Map<String, List<ExplicitField>> explicitSchema1 = new HashMap<>();
-    ExplicitField explicitField1 = new ExplicitField("test:test1", false, Lists.newArrayList("String"), null);
+    ExplicitField explicitField1 = new ExplicitField("test:test1", false, Sets.newHashSet("String"), null);
     explicitSchema1.put("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places", Lists.newArrayList(explicitField1));
     Map<String, List<ExplicitField>> explicitSchema2 = new HashMap<>();
-    ExplicitField explicitField2 = new ExplicitField("test:test2", false, null, Lists.newArrayList("String"));
+    ExplicitField explicitField2 = new ExplicitField("test:test2", false, null, Sets.newHashSet("String"));
     explicitSchema2.put("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places", Lists.newArrayList(explicitField2));
     MergeExplicitSchemas mergeExplicitSchemas = new MergeExplicitSchemas();
 
@@ -64,10 +65,10 @@ public class MergeExplicitSchemasTest {
   @Test
   public void mergeExplicitSchemaMergesFieldWithSameUriForSameCollection() throws Exception {
     Map<String, List<ExplicitField>> explicitSchema1 = new HashMap<>();
-    ExplicitField explicitField1 = new ExplicitField("test:test1", false, Lists.newArrayList("String"), null);
+    ExplicitField explicitField1 = new ExplicitField("test:test1", false, Sets.newHashSet("String"), null);
     explicitSchema1.put("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places", Lists.newArrayList(explicitField1));
     Map<String, List<ExplicitField>> explicitSchema2 = new HashMap<>();
-    ExplicitField explicitField2 = new ExplicitField("test:test1", false, Lists.newArrayList("Integer"), null);
+    ExplicitField explicitField2 = new ExplicitField("test:test1", false, Sets.newHashSet("Integer"), null);
     explicitSchema2.put("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places", Lists.newArrayList(explicitField2));
     MergeExplicitSchemas mergeExplicitSchemas = new MergeExplicitSchemas();
 
@@ -78,6 +79,6 @@ public class MergeExplicitSchemasTest {
 
     assertThat(mergedExplicitSchema, hasKey("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places"));
     assertThat(mergedExplicitSchema.get("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places"),
-      contains(ExplicitFieldMatcher.explicitField().withValues(Lists.newArrayList("Integer", "String"))));
+      contains(ExplicitFieldMatcher.explicitField().withValues(Sets.newHashSet("Integer", "String"))));
   }
 }
