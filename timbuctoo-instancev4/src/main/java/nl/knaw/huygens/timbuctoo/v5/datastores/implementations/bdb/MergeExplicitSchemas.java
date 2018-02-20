@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +16,11 @@ public class MergeExplicitSchemas {
 
   public Map<String, List<ExplicitField>> mergeExplicitSchemas(Map<String, List<ExplicitField>> explicitSchema1,
                                                                Map<String, List<ExplicitField>> explicitSchema2) {
-    Map<String, List<ExplicitField>> mergedExplicitSchema = explicitSchema1;
+    Map<String, List<ExplicitField>> mergedExplicitSchema = new HashMap<>();
+
+    for (Map.Entry<String, List<ExplicitField>> entry : explicitSchema1.entrySet()) {
+      mergedExplicitSchema.put(entry.getKey(),entry.getValue());
+    }
 
     explicitSchema2.forEach((collection, values) -> {
       if (mergedExplicitSchema.containsKey(collection)) {
