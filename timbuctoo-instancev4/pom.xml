@@ -59,6 +59,12 @@
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
+      <id>RA</id>
+      <name>Henk van den Berg</name>
+      <organization>DANS</organization>
+      <organizationUrl>https://dans.knaw.nl/</organizationUrl>
+    </developer>
+    <developer>
       <id>RD</id>
       <name>Ronald Haentjens Dekker</name>
       <organization>Huygens ING</organization>
@@ -67,6 +73,12 @@
     <developer>
       <id>MK</id>
       <name>Meindert Kroese</name>
+      <organization>Huygens ING</organization>
+      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+    </developer>
+    <developer>
+      <id>PJ</id>
+      <name>Pratham Joshi</name>
       <organization>Huygens ING</organization>
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
