@@ -38,48 +38,61 @@ public class HttpCaller implements nl.knaw.huygens.security.client.HttpCaller {
 
   @Override
   public ActualResult call(HttpRequest value) throws IOException {
-    HttpResponse response = makeRequest(value);
+    return executeRequest(value, response -> {
+      LinkedListMultimap<String, String> headers = LinkedListMultimap.create();
+      for (Header header : response.getAllHeaders()) {
+        headers.put(header.getName(), header.getValue());
+      }
 
-    LinkedListMultimap<String, String> headers = LinkedListMultimap.create();
-    for (Header header : response.getAllHeaders()) {
-      headers.put(header.getName(), header.getValue());
-    }
-
-    return new ActualResult(
-      response.getStatusLine().getStatusCode(),
-      response.getStatusLine().getReasonPhrase(),
-      headers
-    );
+      return new ActualResult(
+        response.getStatusLine().getStatusCode(),
+        response.getStatusLine().getReasonPhrase(),
+        headers
+      );
+    });
   }
 
   @Override
   public <T> ActualResultWithBody<T> call(HttpRequest value, Class<? extends T> clazz) throws IOException {
-    HttpResponse response = makeRequest(value);
+    return executeRequest(value, response -> {
+      T body;
+      StatusLine statusLine = response.getStatusLine();
+      if (statusLine.getStatusCode() == 200) {
+        InputStream content = response.getEntity().getContent();
+        body = mapper.readValue(content, clazz);
+      } else {
+        LOG.warn("Repsonse was '{}' with reason '{}'", statusLine.getStatusCode(), statusLine.getReasonPhrase());
+        body = null;
+      }
 
-    T body;
-    StatusLine statusLine = response.getStatusLine();
-    if (statusLine.getStatusCode() == 200) {
-      InputStream content = response.getEntity().getContent();
-      body = mapper.readValue(content, clazz);
-    } else {
-      LOG.warn("Repsonse was '{}' with reason '{}'", statusLine.getStatusCode(), statusLine.getReasonPhrase());
-      body = null;
-    }
+      LinkedListMultimap<String, String> headers = LinkedListMultimap.create();
+      for (Header header : response.getAllHeaders()) {
+        headers.put(header.getName(), header.getValue());
+      }
 
-    LinkedListMultimap<String, String> headers = LinkedListMultimap.create();
-    for (Header header : response.getAllHeaders()) {
-      headers.put(header.getName(), header.getValue());
-    }
-
-    return new ActualResultWithBody<>(
-      statusLine.getStatusCode(),
-      statusLine.getReasonPhrase(),
-      headers,
-      Optional.ofNullable(body)
-    );
+      return new ActualResultWithBody<>(
+        statusLine.getStatusCode(),
+        statusLine.getReasonPhrase(),
+        headers,
+        Optional.ofNullable(body)
+      );
+    });
   }
 
-  private HttpResponse makeRequest(HttpRequest value) throws IOException {
+  private <T> T executeRequest(HttpRequest value, ValueTransformer<T> valueConverter) throws IOException {
+    HttpRequestBase request = createRequest(value);
+
+    try {
+      HttpResponse response = client.execute(request);
+      T returnValue = valueConverter.transform(response);
+      request.reset();
+      return returnValue;
+    } finally {
+      request.reset();
+    }
+  }
+
+  private HttpRequestBase createRequest(HttpRequest value) {
     HttpRequestBase request;
 
     switch (value.method) {
@@ -111,8 +124,11 @@ public class HttpCaller implements nl.knaw.huygens.security.client.HttpCaller {
     for (Map.Entry<String, String> header : value.headers.entries()) {
       request.setHeader(header.getKey(), header.getValue());
     }
+    return request;
+  }
 
-    return client.execute(request);
+  private interface ValueTransformer<T> {
+    T transform(HttpResponse response) throws IOException;
   }
 
 }
