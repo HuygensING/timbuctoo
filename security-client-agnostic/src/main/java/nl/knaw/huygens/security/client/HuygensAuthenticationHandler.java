@@ -67,7 +67,7 @@ public class HuygensAuthenticationHandler implements AuthenticationHandler {
 
     private HuygensSession doSessionDetailsRequest(String sessionToken) throws UnauthorizedException, IOException {
         if (authorizationUrl == null || authorizationUrl.equals("")) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("No authorization url specified");
         }
 
         ActualResultWithBody<HuygensSession> response = client.call(sessionRequest("GET", sessionToken), HuygensSessionImpl.class);
@@ -76,17 +76,8 @@ public class HuygensAuthenticationHandler implements AuthenticationHandler {
         if (statusType == 200) {
             return response.getBody().get();
         }
-        else if (statusType == 404) {
-            throw new UnauthorizedException();
-        }
-        else if (statusType == 410) {
-            throw new UnauthorizedException();
-        }
-        else if (statusType == 400) {
-            throw new UnauthorizedException();
-        }
         else {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("status was: " + statusType);
         }
     }
 
