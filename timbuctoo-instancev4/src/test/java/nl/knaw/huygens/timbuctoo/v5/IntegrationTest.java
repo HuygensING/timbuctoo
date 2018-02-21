@@ -229,10 +229,10 @@ public class IntegrationTest {
   }
 
   @Test
-  public void asynchronousUnsuccessfulRdfUploadWithGraphql() throws Exception {
+  public void synchronousUnsuccessfulRdfUploadWithGraphql() throws Exception {
     String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
-      "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=true",
+      "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "error1_bia_clusius.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
@@ -241,9 +241,6 @@ public class IntegrationTest {
       )
     );
 
-    assertThat(uploadResponse.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
-
-    Thread.sleep(100);
     Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(String.format("{\n" +
@@ -262,9 +259,7 @@ public class IntegrationTest {
                                 .get(("currentImportStatus"))
                                 .get("elapsedTime").asInt();
     assertThat(elapsedTime > 0, is(true));
-
-    // Give asynchronous computations time to detect the error
-    Thread.sleep(3000);
+    
     graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(String.format("{\n" +
@@ -282,7 +277,7 @@ public class IntegrationTest {
                               .get("dataSetMetadata")
                               .get(("currentImportStatus"))
                               .get("status").asText();
-    assertThat(status.contains("Finished import with 1 error"), is(true));
+    assertThat(status, status.contains("Finished import with 1 error"), is(true));
   }
 
   @Test
