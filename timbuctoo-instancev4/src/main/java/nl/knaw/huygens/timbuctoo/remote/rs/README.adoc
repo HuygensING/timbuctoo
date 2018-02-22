@@ -139,6 +139,22 @@ include::../../../../../../../../../../documentation/resourcesyncexample/README.
 - http://localhost:8080/v2.1/remote/rs/discover/tree?url=http%3A%2F%2Fyour%2Frdf%2Fserver - hierarchical representation of the ResourceSync Framework documents
 N.B. You can use `http%3A%2F%2Flocalhost%3A8080%2Fv5%2Fresourcesync%2FsourceDescription.xml` in stead of `http%3A%2F%2Fyour%2Frdf%2Fserver` to use the same Timbuctoo instance as client and server.
 
+=== Import data
+- http://localhost:8080/v2.1/remote/rs/import?forceCreation=true - `forceCreation` lets timbuctoo create the dataset if it does not exist.
+the body should look like this:
+```
+{
+	"source": "https://example.org/path/to/capabilitylist.xml",
+	"userId": "u33707283d426f900d4d33707283d426f900d4d0d", // u+fedarative id if used with fedarative login
+	"dataSetId": "name_of_the_dataset_to_import_to"
+}
+```
+The following headers are needed:
+```
+Content-Type: application/json
+Authorization:  
+
+
 == Working with the ../remote/rs/xml package
 When downloading a ResourceSync doument we do not always know whether we find a &lt;sitemapindex&gt; or a &lt;urlset&gt;. The two kinds of document are represented as java classes `Urlset` and `Sitemapindex`, both have a common superclass, `RsRoot`. The class `RsBuilder` in this package will take a variety of input types and produces an Optional of `RsRoot`. If the unmarshal operation succeeded then either one of the methods
 `Optional<Urlset> getUrlset()` or `Optional<Sitemapindex> getSitemapindex()` will yield.
