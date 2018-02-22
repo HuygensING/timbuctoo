@@ -152,8 +152,8 @@ the body should look like this:
 The following headers are needed:
 ```
 Content-Type: application/json
-Authorization:  
-
+Authorization:  any_for_local_use
+```
 
 == Working with the ../remote/rs/xml package
 When downloading a ResourceSync doument we do not always know whether we find a &lt;sitemapindex&gt; or a &lt;urlset&gt;. The two kinds of document are represented as java classes `Urlset` and `Sitemapindex`, both have a common superclass, `RsRoot`. The class `RsBuilder` in this package will take a variety of input types and produces an Optional of `RsRoot`. If the unmarshal operation succeeded then either one of the methods
