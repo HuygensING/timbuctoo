@@ -85,8 +85,10 @@ public class BdbWrapper<KeyT, ValueT> {
   }
 
   public boolean isClean() {
-    if (database.count() == 0) {
-      return true;
+    try (Stream<KeyT> keys = databaseGetter().getAll().getKeys()) {
+      if (!keys.findAny().isPresent()) { // database is empty so it is clean
+        return true;
+      }
     }
 
     try (Stream<ValueT> values = databaseGetter().key(isCleanHandler.getKey()).dontSkip().forwards().getValues()) {
