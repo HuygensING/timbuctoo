@@ -101,8 +101,7 @@ public class Predicate {
   public boolean hasBeenList() {
     return hasBeenList;
   }
-
-  @JsonProperty("isExplicit")
+  
   public void setIsExplicit(boolean isExplicit) {
     this.isExplicit = isExplicit;
   }
