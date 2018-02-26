@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MergeSchemaDataFetcher implements DataFetcher {
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final DataSetRepository dataSetRepository;
 
 
@@ -63,9 +62,15 @@ public class MergeSchemaDataFetcher implements DataFetcher {
     List<ExplicitType> customSchema;
     Map<String, List<ExplicitField>> newCustomSchema = new HashMap<>();
 
+    ObjectMapper objectMapper = new ObjectMapper()
+      .registerModule(new Jdk8Module())
+      .registerModule(new GuavaModule())
+      .registerModule(new TimbuctooCustomSerializers())
+      .enable(SerializationFeature.INDENT_OUTPUT);
+
     try {
-      String customSchemaString = OBJECT_MAPPER.writeValueAsString(env.getArgument("customSchema"));
-      customSchema = OBJECT_MAPPER.readValue(customSchemaString, new TypeReference<List<ExplicitType>>() {
+      String customSchemaString = objectMapper.writeValueAsString(env.getArgument("customSchema"));
+      customSchema = objectMapper.readValue(customSchemaString, new TypeReference<List<ExplicitType>>() {
       });
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -76,23 +81,19 @@ public class MergeSchemaDataFetcher implements DataFetcher {
       newCustomSchema.put(explicitType.getName(), explicitType.getFields());
     }
 
-    ObjectMapper objectMapper = new ObjectMapper()
-      .registerModule(new Jdk8Module())
-      .registerModule(new GuavaModule())
-      .registerModule(new TimbuctooCustomSerializers())
-      .enable(SerializationFeature.INDENT_OUTPUT);
-
     File customSchemaFile = dataSet.get().getCustomSchemaFile();
 
-    Map<String, List<ExplicitField>> existingCustomSchema;
 
+    Map<String, List<ExplicitField>> existingCustomSchema = new HashMap<>();
 
-    try {
-      existingCustomSchema = objectMapper.readValue(customSchemaFile,
-        new TypeReference<Map<String, List<ExplicitField>>>() {
-        });
-    } catch (IOException e) {
-      existingCustomSchema = new HashMap<>();
+    if (customSchemaFile.exists()) {
+      try {
+        existingCustomSchema = objectMapper.readValue(customSchemaFile,
+          new TypeReference<Map<String, List<ExplicitField>>>() {
+          });
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     Map<String, Type> existingCustomSchemaTypes = new HashMap<>();
