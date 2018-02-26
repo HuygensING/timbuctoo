@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailable
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -120,16 +119,12 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
      */
     if (vreId.contains("__")) { // new style vre
       Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(vreId);
-      directory = Paths.get(
-        authorizationsFolder.toString(),
-        ownerIdDataSetId.getLeft(),
-        ownerIdDataSetId.getRight().replace("__", "")
-      ).toFile();
+      directory = authorizationsFolder.resolve(ownerIdDataSetId.getLeft())
+                                      .resolve(ownerIdDataSetId.getRight().replace("__", ""))
+                                      .toFile();
     } else {
-      directory = Paths.get( // old style vre
-        authorizationsFolder.toString(),
-        vreId
-      ).toFile();
+      // old style vre
+      directory = authorizationsFolder.resolve(vreId).toFile();
     }
 
     directory.mkdirs();
