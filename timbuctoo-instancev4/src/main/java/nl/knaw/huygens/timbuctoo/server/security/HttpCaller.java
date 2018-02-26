@@ -85,7 +85,6 @@ public class HttpCaller implements nl.knaw.huygens.security.client.HttpCaller {
     try {
       HttpResponse response = client.execute(request);
       T returnValue = valueConverter.transform(response);
-      request.reset();
       return returnValue;
     } finally {
       request.reset();
