@@ -54,6 +54,7 @@ public class JsonFileBackedData<T> {
         value = hydrator.apply(value);
       }
     } else {
+      file.getParentFile().mkdirs(); // make sure the directories exist
       value = emptyValue.get();
       objectMapper.writeValue(file, value);
     }

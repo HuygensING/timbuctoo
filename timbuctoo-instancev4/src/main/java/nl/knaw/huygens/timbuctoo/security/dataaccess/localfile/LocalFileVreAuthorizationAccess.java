@@ -127,7 +127,6 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
       directory = authorizationsFolder.resolve(vreId).toFile();
     }
 
-    directory.mkdirs();
     return new File(directory, "authorizations.json");
   }
 
