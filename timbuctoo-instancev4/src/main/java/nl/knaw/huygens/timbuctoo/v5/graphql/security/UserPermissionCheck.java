@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
 
@@ -15,6 +16,7 @@ public class UserPermissionCheck {
   private final Optional<User> user;
   private final PermissionFetcher permissionFetcher;
   private final Set<Permission> defaultPermissions;
+  private final HashMap<String, Set<Permission>> dataSetPermissionMap = new HashMap<>();
 
   public UserPermissionCheck(Optional<User> user, PermissionFetcher permissionFetcher,
                              Set<Permission> defaultPermissions) {
@@ -27,7 +29,11 @@ public class UserPermissionCheck {
     Set<Permission> permissions = user
       .map(user -> {
         try {
-          return permissionFetcher.getPermissions(user, dataSetMetaData);
+          String dataSetId = dataSetMetaData.getDataSetId();
+          if (dataSetPermissionMap.containsKey(dataSetId)) {
+            return dataSetPermissionMap.get(dataSetId);
+          }
+          return dataSetPermissionMap.put(dataSetId, permissionFetcher.getPermissions(user, dataSetMetaData));
         } catch (PermissionFetchingException e) {
           return Collections.<Permission>emptySet();
         }
