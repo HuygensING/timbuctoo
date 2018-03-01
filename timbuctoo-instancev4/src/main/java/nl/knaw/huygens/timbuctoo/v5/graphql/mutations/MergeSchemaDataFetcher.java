@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.MergeExplicitSchemas;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.ReadExistingCustomSchema;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
@@ -83,21 +84,9 @@ public class MergeSchemaDataFetcher implements DataFetcher {
       newCustomSchema.put(explicitType.getName(), explicitType.getFields());
     }
 
+    ReadExistingCustomSchema readExistingCustomSchema = new ReadExistingCustomSchema(fileHelper);
 
-    File customSchemaFile = fileHelper.fileInDataSet(ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight(),
-      "customSchema.json");
-
-    Map<String, List<ExplicitField>> existingCustomSchema = new HashMap<>();
-
-    if (customSchemaFile.exists()) {
-      try {
-        existingCustomSchema = objectMapper.readValue(customSchemaFile,
-          new TypeReference<Map<String, List<ExplicitField>>>() {
-          });
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
+    Map<String, List<ExplicitField>> existingCustomSchema = readExistingCustomSchema.readExistingSchema(dataSet.get());
 
     Map<String, Type> existingCustomSchemaTypes = new HashMap<>();
 
@@ -116,6 +105,9 @@ public class MergeSchemaDataFetcher implements DataFetcher {
     Map<String, List<ExplicitField>> mergedExplicitSchema = mergeExplicitSchemas.mergeExplicitSchemas(
       existingCustomSchema,
       newCustomSchema);
+
+    File customSchemaFile = fileHelper.fileInDataSet(ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight(),
+      "customSchema.json");
 
     try {
       objectMapper.writeValue(customSchemaFile, mergedExplicitSchema);

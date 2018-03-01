@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.ReadAndMergeWithExistingSchema;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -321,31 +322,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
       Map<String, Type> types = dataSet.getSchemaStore().getStableTypes();
 
-      Map<String, List<ExplicitField>> customSchema;
+      ReadAndMergeWithExistingSchema readAndMergeWithExistingSchema = new ReadAndMergeWithExistingSchema(fileHelper);
 
-      final Map<String, Type> customTypes = new HashMap<>();
 
-      File customSchemaFile = fileHelper.fileInDataSet(dataSet.getMetadata().getOwnerId(),
-        dataSet.getMetadata().getDataSetId(),
-        "customSchema.json");
-
-      try {
-        customSchema = objectMapper.readValue(customSchemaFile,
-          new TypeReference<Map<String, List<ExplicitField>>>() {
-          });
-      } catch (IOException e) {
-        customSchema = null;
-      }
-
-      if (customSchema != null && !customSchema.isEmpty()) {
-        for (Map.Entry<String, List<ExplicitField>> entry : customSchema.entrySet()) {
-          ExplicitType explicitType = new ExplicitType(entry.getKey(), entry.getValue());
-          customTypes.put(entry.getKey(), explicitType.convertToType());
-        }
-
-        MergeSchemas mergeSchemas = new MergeSchemas();
-        types = mergeSchemas.mergeSchema(types, customTypes);
-      }
+      types = readAndMergeWithExistingSchema.readAndMergeExistingSchemas(dataSet, types);
 
       if (types != null) {
 
