@@ -191,7 +191,7 @@ public class RsDocumentBuilder {
    * @return the dataSet description for the dataSet denoted by <code>ownerId</code> and <code>dataSetId</code>
    */
   public Optional<File> getDataSetDescription(@Nullable User user, String ownerId, String dataSetId) {
-    return dataSetRepository.getDataSetDescription(user, ownerId, dataSetId);
+    return dataSetRepository.getDataSet(user, ownerId, dataSetId).map(DataSet::getResourceSyncDescription);
   }
 
 

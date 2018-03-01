@@ -33,8 +33,6 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.OldStyleSecurityFactory;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
@@ -69,10 +67,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextInde
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
-import nl.knaw.huygens.timbuctoo.server.migration.AuthorizationMigration;
-import nl.knaw.huygens.timbuctoo.server.migration.MetaDataMigration;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
-import nl.knaw.huygens.timbuctoo.server.security.OldStyleSecurityFactoryConfiguration;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
@@ -178,29 +173,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     SecurityFactory securityConfig = configuration.getSecurityConfiguration().createNewSecurityFactory(
       httpClient
     );
-
-    new MetaDataMigration(configuration.getDataSetConfiguration()).migrate();
-
-    if (configuration.getSecurityConfiguration() instanceof OldStyleSecurityFactoryConfiguration) {
-      AccessFactory localAuthenticationForMigration =
-        ((OldStyleSecurityFactoryConfiguration) configuration.getSecurityConfiguration())
-          .getLocalAuthenticationForMigration();
-      if (localAuthenticationForMigration instanceof LocalfileAccessFactory) {
-        String authorizationsPathForMigration =
-          ((LocalfileAccessFactory) localAuthenticationForMigration).getAuthorizationsPathForMigration();
-
-        new AuthorizationMigration(
-          authorizationsPathForMigration,
-          securityConfig.getUserValidator(),
-          configuration.getDataSetConfiguration().getDataSetMetadataLocation()
-        ).migrate();
-
-      } else {
-        throw new RuntimeException("Current authorization configuration of cannot be migrated");
-      }
-    } else {
-      throw new RuntimeException("Current security configuration of cannot be migrated");
-    }
 
     securityConfig.getHealthChecks().forEachRemaining(check -> {
       register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight()));

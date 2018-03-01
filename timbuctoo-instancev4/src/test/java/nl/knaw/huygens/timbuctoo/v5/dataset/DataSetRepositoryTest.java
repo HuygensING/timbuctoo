@@ -5,8 +5,9 @@ import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -33,7 +34,6 @@ public class DataSetRepositoryTest {
 
   protected File tempFile;
   private DataSetRepository dataSetRepository;
-  private File authDir;
   private PermissionFetcher permissionFetcher;
 
   @Before
@@ -43,21 +43,18 @@ public class DataSetRepositoryTest {
   }
 
   private DataSetRepository createDataSetRepo() throws IOException {
-    authDir = tempFile;
     permissionFetcher = mock(PermissionFetcher.class);
     return new DataSetRepository(
       Executors.newSingleThreadExecutor(),
       permissionFetcher,
       ImmutableDataSetConfiguration.builder()
-        .dataSetMetadataLocation(tempFile.getAbsolutePath())
-        .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
-        .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
+        .dataStorage(mock(DataStorage.class, RETURNS_DEEP_STUBS))
         .build(),
       new BdbNonPersistentEnvironmentCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
       combinedId -> {
       },
-      false
+      false, new FileSystemDataStorage(tempFile.getAbsolutePath(), mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
     );
   }
 

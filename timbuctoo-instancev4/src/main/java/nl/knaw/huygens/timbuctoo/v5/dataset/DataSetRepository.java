@@ -1,11 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -14,28 +8,24 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
-import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
-import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
+
+import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
 
@@ -58,66 +47,35 @@ public class DataSetRepository {
 
   private final ExecutorService executorService;
   private final PermissionFetcher permissionFetcher;
-  private final DataSetConfiguration configuration;
   private final BdbEnvironmentCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
-  private final Map<String, Set<DataSetMetaData>> metaDataSet;
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
   private final boolean publicByDefault;
-  private final FileHelper fileHelper;
   private Consumer<String> onUpdated;
+  private final DataStorage dataStorage;
 
 
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                            DataSetConfiguration configuration, BdbEnvironmentCreator dataStoreFactory,
                            TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated,
-                           boolean publicByDefault) throws IOException {
+                           boolean publicByDefault, DataStorage dataStorage) {
     this.executorService = executorService;
     this.permissionFetcher = permissionFetcher;
-    this.configuration = configuration;
     this.dataStoreFactory = dataStoreFactory;
-
-    metaDataSet = Maps.newHashMap();
-
-    File[] directories = new File(configuration.getDataSetMetadataLocation()).listFiles(File::isDirectory);
-
-    for (int i = 0; i < directories.length; i++) {
-      String dirName = directories[i].toString();
-      String currentOwnerId = dirName.substring(dirName.lastIndexOf("/") + 1, dirName.length());
-      Set<DataSetMetaData> tempMetaDataSet = new HashSet<>();
-      try (Stream<Path> fileStream = Files.walk(directories[i].toPath())) {
-        Set<Path> paths = fileStream
-          .filter(current -> Files.isDirectory(current)).collect(Collectors.toSet());
-        for (Path path : paths) {
-          File tempFile = new File(path.toString() + "/metaData.json");
-          if (tempFile.exists()) {
-            JsonFileBackedData<BasicDataSetMetaData> metaDataFromFile = null;
-            metaDataFromFile = JsonFileBackedData.getOrCreate(
-              tempFile,
-              null,
-              new TypeReference<BasicDataSetMetaData>() {
-              });
-            tempMetaDataSet.add(metaDataFromFile.getData());
-          }
-        }
-      }
-
-      metaDataSet.put(currentOwnerId, tempMetaDataSet);
-    }
-
-    fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
 
     this.rdfIdHelper = rdfIdHelper;
     this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
     this.publicByDefault = publicByDefault;
     dataSetMap = new HashMap<>();
     this.onUpdated = onUpdated;
+    this.dataStorage = dataStorage;
   }
 
   private void loadDataSetsFromJson() throws IOException {
+    Map<String, Set<DataSetMetaData>> ownerMetadataMap = dataStorage.loadDataSetMetaData();
     synchronized (dataSetMap) {
-      for (Map.Entry<String, Set<DataSetMetaData>> entry : metaDataSet.entrySet()) {
+      for (Map.Entry<String, Set<DataSetMetaData>> entry : ownerMetadataMap.entrySet()) {
         String ownerId = entry.getKey();
         Set<DataSetMetaData> ownerMetaDatas = entry.getValue();
         HashMap<String, DataSet> ownersSets = new HashMap<>();
@@ -129,12 +87,11 @@ public class DataSetRepository {
               dataSetName,
               dataSet(
                 dataSetMetaData,
-                configuration,
-                fileHelper,
                 executorService,
                 rdfBaseUri,
                 dataStoreFactory,
-                () -> onUpdated.accept(dataSetMetaData.getCombinedId())
+                () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
+                dataStorage.getDataSetStorage(ownerId, dataSetName)
               )
             );
           } catch (DataStoreCreationException e) {
@@ -160,31 +117,6 @@ public class DataSetRepository {
           if (permissionFetcher.getPermissions(user, dataSetMap.get(ownerId).get(dataSetId).getMetadata()
           ).contains(Permission.READ)) {
             return Optional.ofNullable(dataSetMap.get(ownerId).get(dataSetId));
-          }
-        } catch (PermissionFetchingException e) {
-          return Optional.empty();
-        }
-      }
-      return Optional.empty();
-    }
-  }
-
-  /**
-   * Gets the description of the dataSet designated by <code>ownerId</code> and <code>dataSetId</code>
-   * but only if the given <code>user</code> has read-access to the dataSet.
-   * @param user the user that wants read-access, may be <code>null</code>
-   * @param ownerId ownerId
-   * @param dataSetId dataSetId
-   * @return the description of the dataSet designated by <code>ownerId</code> and <code>dataSetId</code>
-   */
-  public Optional<File> getDataSetDescription(User user, String ownerId, String dataSetId) {
-    synchronized (dataSetMap) {
-      if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
-        try {
-          if (permissionFetcher.getPermissions(user, dataSetMap.get(ownerId).get(dataSetId).getMetadata()
-          ).contains(Permission.READ)) {
-            File file = fileHelper.fileInDataSet(ownerId, dataSetId, "description.xml");
-            return Optional.of(file);
           }
         } catch (PermissionFetchingException e) {
           return Optional.empty();
@@ -248,18 +180,9 @@ public class DataSetRepository {
       publicByDefault
     );
 
-    ObjectMapper objectMapper = new ObjectMapper()
-      .registerModule(new Jdk8Module())
-      .registerModule(new GuavaModule())
-      .registerModule(new TimbuctooCustomSerializers())
-      .enable(SerializationFeature.INDENT_OUTPUT);
-
-    File metaDataFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "metaData.json");
-
-
     try {
-      objectMapper.writeValue(metaDataFile, dataSet);
-    } catch (IOException e) {
+      dataStorage.getDataSetStorage(ownerPrefix, dataSetId).saveMetaData(dataSet);
+    } catch (DataStorageSaveException e) {
       throw new DataStoreCreationException(e);
     }
 
@@ -274,13 +197,11 @@ public class DataSetRepository {
             dataSetId,
             dataSet(
               dataSet,
-              configuration,
-              fileHelper,
               executorService,
               rdfBaseUri,
               dataStoreFactory,
-              () -> onUpdated.accept(dataSet.getCombinedId())
-            )
+              () -> onUpdated.accept(dataSet.getCombinedId()),
+              dataStorage.getDataSetStorage(ownerPrefix, dataSetId))
           );
         } catch (PermissionFetchingException | AuthorizationCreationException | IOException e) {
           throw new DataStoreCreationException(e);
@@ -305,17 +226,9 @@ public class DataSetRepository {
 
         dataSetMetaData.publish();
 
-        ObjectMapper objectMapper = new ObjectMapper()
-          .registerModule(new Jdk8Module())
-          .registerModule(new GuavaModule())
-          .registerModule(new TimbuctooCustomSerializers())
-          .enable(SerializationFeature.INDENT_OUTPUT);
-
-        File metaDataFile = fileHelper.fileInDataSet(ownerId, dataSetName, "metaData.json");
-
         try {
-          objectMapper.writeValue(metaDataFile, dataSetMetaData);
-        } catch (IOException e) {
+          dataStorage.getDataSetStorage(ownerId, dataSetName).saveMetaData(dataSetMetaData);
+        } catch (DataStorageSaveException e) {
           throw new DataSetPublishException(e);
         }
       }
@@ -397,25 +310,7 @@ public class DataSetRepository {
     }
 
     // remove folder
-    deleteDirectoryAndRetryOnFailure(fileHelper.dataSetPath(ownerId, dataSetName), 5);
-  }
-
-  private void deleteDirectoryAndRetryOnFailure(File path, int retryCount) {
-    try {
-      FileUtils.deleteDirectory(path);
-    } catch (IOException e) {
-      if (retryCount > 0) {
-        LOG.warn("Deleting directory {}, failed, {} tries remaining.", path.getAbsolutePath(), retryCount);
-        try {
-          Thread.sleep(500);
-          deleteDirectoryAndRetryOnFailure(path, retryCount - 1);
-        } catch (InterruptedException e1) {
-          //ignore and stop trying
-        }
-      } else {
-        LOG.error("Deleting directory {}, failed! Manual cleanup necessary", path.getAbsolutePath());
-      }
-    }
+    dataStorage.getDataSetStorage(ownerId, dataSetName).clear();
   }
 
   public void stop() {

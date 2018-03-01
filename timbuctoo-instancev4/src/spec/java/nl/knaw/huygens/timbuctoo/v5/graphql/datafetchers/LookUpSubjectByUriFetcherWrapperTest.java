@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
@@ -148,6 +149,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
+            public DataSetStorage getDataSetStorage() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
             public FileStorage getFileStorage() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
@@ -170,7 +176,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             protected BdbEnvironmentCreator getBdbEnvironmentCreator() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
-            
+
           };
         }
       };

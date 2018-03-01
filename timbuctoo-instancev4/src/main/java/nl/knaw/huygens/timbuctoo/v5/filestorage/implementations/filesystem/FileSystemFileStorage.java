@@ -23,12 +23,14 @@ import java.util.UUID;
 public class FileSystemFileStorage implements FileStorage, LogStorage {
   private final File dir;
   private final JsonFileBackedData<FileInfoList> fileInfo;
+  private final File fileList;
 
   public FileSystemFileStorage(File dir) throws IOException {
     this.dir = dir;
     dir.mkdirs();
+    fileList = new File(dir, "fileList.json");
     fileInfo = JsonFileBackedData.getOrCreate(
-      new File(dir, "fileList.json"),
+      fileList,
       FileInfoList::create,
       new TypeReference<FileInfoList>() {}
     );
@@ -58,6 +60,11 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
       cachedFile = new FileSystemCachedFile(fileInfo.getMediaType(), fileInfo.getName(), new File(dir, token));
     }
     return Optional.ofNullable(cachedFile);
+  }
+
+  @Override
+  public void clear() throws IOException {
+    JsonFileBackedData.remove(fileList);
   }
 
   @Override

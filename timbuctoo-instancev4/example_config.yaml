@@ -50,13 +50,12 @@ databaseConfiguration:
   databasePath: ${timbuctoo_dataPath}/neo4j
 
 dataSet:
-  dataSetMetadataLocation: ${timbuctoo_dataPath}/datasets
-  fileStorage:
-    "@class": nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorageFactory
+  dataStorage:
+    "@class": nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage
     rootDir: ${timbuctoo_dataPath}/datasets
-  rdfIo:
-    "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
-    rdfFormat: application/n-quads
+    rdfIo:
+      "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
+      rdfFormat: application/n-quads
 
 # The base uri will be the base uri for all the generated RDF by Timbuctoo.
 rdfUriHelper:

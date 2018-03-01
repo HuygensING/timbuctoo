@@ -6,9 +6,9 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbRmlDataSourceStore;
@@ -22,7 +22,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
@@ -40,23 +39,23 @@ public abstract class DataSet {
   private static final Logger LOG = LoggerFactory.getLogger(DataSet.class);
 
 
-  public static DataSet dataSet(DataSetMetaData metadata, DataSetConfiguration configuration,
-                         FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
-                         BdbEnvironmentCreator dataStoreFactory, Runnable onUpdated)
+  public static DataSet dataSet(DataSetMetaData metadata, ExecutorService executorService,
+                                String rdfPrefix, BdbEnvironmentCreator dataStoreFactory,
+                                Runnable onUpdated, DataSetStorage dataSetStorage)
     throws IOException, DataStoreCreationException {
 
     String userId = metadata.getOwnerId();
     String dataSetId = metadata.getDataSetId();
-    File descriptionFile = fileHelper.fileInDataSet(userId, dataSetId, "description.xml");
-    FileStorage fileStorage = configuration.getFileStorage().makeFileStorage(userId, dataSetId);
+    File descriptionFile = dataSetStorage.getResourceSyncDescriptionFile();
+    FileStorage fileStorage = dataSetStorage.getFileStorage();
 
     ImportManager importManager = new ImportManager(
-      fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
+      dataSetStorage.getLogList(),
       fileStorage,
       fileStorage,
-      configuration.getFileStorage().makeLogStorage(userId, dataSetId),
+      dataSetStorage.getLogStorage(),
       executorService,
-      configuration.getRdfIo(),
+      dataSetStorage.getRdfIo(),
       onUpdated
     );
 
@@ -192,7 +191,7 @@ public abstract class DataSet {
                                                  .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
                                                  .schemaStore(schema)
                                                  .importManager(importManager)
-                                                 .fileStorage(fileStorage)
+                                                 .dataSetStorage(dataSetStorage)
                                                  .build();
       importManager.init(dataSet);
 
@@ -227,11 +226,21 @@ public abstract class DataSet {
 
   }
 
+  public File getResourceSyncDescription() {
+    return getDataSetStorage().getResourceSyncDescriptionFile();
+  }
+
+  public FileStorage getFileStorage() throws IOException {
+    return getDataSetStorage().getFileStorage();
+  }
+
   protected abstract String getOwnerId();
 
   protected abstract String getDataSetName();
 
   protected abstract BdbEnvironmentCreator getBdbEnvironmentCreator();
+
+  protected abstract DataSetStorage getDataSetStorage();
 
   public abstract SchemaStore getSchemaStore();
 
@@ -245,6 +254,5 @@ public abstract class DataSet {
 
   public abstract DataSetMetaData getMetadata();
 
-  public abstract FileStorage getFileStorage();
 
 }
