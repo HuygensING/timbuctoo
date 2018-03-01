@@ -14,11 +14,11 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.MergeExplicitSchemas;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.ReadExistingCustomSchema;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
-import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -81,20 +81,11 @@ public class MergeSchemaDataFetcher implements DataFetcher {
       newCustomSchema.put(explicitType.getName(), explicitType.getFields());
     }
 
-    File customSchemaFile = dataSet.get().getCustomSchemaFile();
 
+    ReadExistingCustomSchema readExistingCustomSchema = new ReadExistingCustomSchema();
 
-    Map<String, List<ExplicitField>> existingCustomSchema = new HashMap<>();
+    Map<String, List<ExplicitField>> existingCustomSchema = readExistingCustomSchema.readExistingSchema(dataSet.get());
 
-    if (customSchemaFile.exists()) {
-      try {
-        existingCustomSchema = objectMapper.readValue(customSchemaFile,
-          new TypeReference<Map<String, List<ExplicitField>>>() {
-          });
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
 
     Map<String, Type> existingCustomSchemaTypes = new HashMap<>();
 
@@ -113,6 +104,8 @@ public class MergeSchemaDataFetcher implements DataFetcher {
     Map<String, List<ExplicitField>> mergedExplicitSchema = mergeExplicitSchemas.mergeExplicitSchemas(
       existingCustomSchema,
       newCustomSchema);
+
+    File customSchemaFile = dataSet.get().getCustomSchemaFile();
 
     try {
       objectMapper.writeValue(customSchemaFile, mergedExplicitSchema);
