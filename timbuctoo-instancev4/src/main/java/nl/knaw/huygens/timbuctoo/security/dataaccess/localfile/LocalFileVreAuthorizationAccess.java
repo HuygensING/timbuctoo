@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 
 import java.io.File;
@@ -39,14 +38,16 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
       try {
         synchronized (authorizationsFolder) {
           File file = getFileOfVre(vreId);
-          JsonFileBackedData<List<VreAuthorization>> authorizations =
-            JsonFileBackedData.getOrCreate(file, Lists::newArrayList, new TypeReference<List<VreAuthorization>>() {
-            });
+          List<VreAuthorization> authorizations = Lists.newArrayList();
+          if (file.exists()) {
+            authorizations =
+              objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
+              });
+          }
           VreAuthorization vreAuthorization = VreAuthorization.create(vreId, userId, userRole);
-          authorizations.updateData(auths -> {
-            auths.add(vreAuthorization);
-            return auths;
-          });
+          authorizations.add(vreAuthorization);
+
+          objectMapper.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
           return vreAuthorization;
         }
       } catch (IOException e) {
@@ -82,11 +83,9 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
       try {
         List<VreAuthorization> authorizations;
         synchronized (authorizationsFolder) {
-
-          JsonFileBackedData<List<VreAuthorization>> authorizationsJson =
-            JsonFileBackedData.getOrCreate(file, Lists::newArrayList, new TypeReference<List<VreAuthorization>>() {
+          authorizations =
+            objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
             });
-          authorizations = authorizationsJson.getData();
         }
         authorizationValue = authorizations.stream()
                                            .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
@@ -127,6 +126,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
       directory = authorizationsFolder.resolve(vreId).toFile();
     }
 
+    directory.mkdirs();
     return new File(directory, "authorizations.json");
   }
 
