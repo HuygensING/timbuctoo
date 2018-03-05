@@ -9,18 +9,19 @@ import java.util.List;
 
 public class ExplicitType {
 
-  private String name;
+  private String collectionId;
   @JsonProperty("fields")
   private List<ExplicitField> fields;
 
   @JsonCreator
-  public ExplicitType(@JsonProperty("name") String name, @JsonProperty("fields") List<ExplicitField> fields) {
-    this.name = name;
+  public ExplicitType(@JsonProperty("collectionId") String collectionId,
+                      @JsonProperty("fields") List<ExplicitField> fields) {
+    this.collectionId = collectionId;
     this.fields = fields;
   }
 
-  public String getName() {
-    return this.name;
+  public String getCollectionId() {
+    return this.collectionId;
   }
 
   public List<ExplicitField> getFields() {
@@ -28,11 +29,11 @@ public class ExplicitType {
   }
 
   public Type convertToType() {
-    if (this.name.endsWith("List")) {
+    if (this.collectionId.endsWith("List")) {
       throw new RuntimeException("Collection_id cannot end with 'List'");
     }
 
-    Type convertedType = new Type(name);
+    Type convertedType = new Type(collectionId);
     Collection<Predicate> predicates = new HashSet<>();
 
     if (fields == null || fields.isEmpty()) {

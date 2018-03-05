@@ -781,7 +781,7 @@ public class IntegrationTest {
     );
 
     ObjectNode customSchema = jsnO(
-      "name", jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"),
+      "collectionId", jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"),
       "fields", jsnA(customSchemaField, customSchemaField2)
     );
     Response graphQlCall = call("/v5/graphql")
@@ -845,7 +845,7 @@ public class IntegrationTest {
     );
 
     ObjectNode customSchema2 = jsnO(
-      "name", jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"),
+      "collectionId", jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"),
       "fields", jsnA(customSchemaField3)
     );
 

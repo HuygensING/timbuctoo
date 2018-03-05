@@ -77,8 +77,8 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
     }
 
     for (ExplicitType explicitType : customSchema) {
-      customTypes.put(explicitType.getName(), explicitType.convertToType());
-      newCustomSchema.put(explicitType.getName(), explicitType.getFields());
+      customTypes.put(explicitType.getCollectionId(), explicitType.convertToType());
+      newCustomSchema.put(explicitType.getCollectionId(), explicitType.getFields());
     }
 
 
