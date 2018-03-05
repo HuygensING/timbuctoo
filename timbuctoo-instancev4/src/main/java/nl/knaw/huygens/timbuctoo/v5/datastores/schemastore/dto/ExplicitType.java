@@ -28,6 +28,10 @@ public class ExplicitType {
   }
 
   public Type convertToType() {
+    if (this.name.endsWith("List")) {
+      throw new RuntimeException("Collection_id cannot end with 'List'");
+    }
+
     Type convertedType = new Type(name);
     Collection<Predicate> predicates = new HashSet<>();
 
