@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class MergeSchemaDataFetcher implements DataFetcher {
+public class ExtendSchemaDataFetcher implements DataFetcher {
   private final DataSetRepository dataSetRepository;
 
 
-  public MergeSchemaDataFetcher(DataSetRepository dataSetRepository) {
+  public ExtendSchemaDataFetcher(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
 

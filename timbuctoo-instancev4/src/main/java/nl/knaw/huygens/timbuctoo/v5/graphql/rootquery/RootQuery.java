@@ -34,7 +34,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGener
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MergeSchemaDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
@@ -298,7 +298,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         }
       }).dataFetcher("deleteDataSet", new DeleteDataSetDataFetcher(dataSetRepository))
       .dataFetcher("publish", new MakePublicDataFetcher(dataSetRepository))
-      .dataFetcher("extendSchema", new MergeSchemaDataFetcher(dataSetRepository))
+      .dataFetcher("extendSchema", new ExtendSchemaDataFetcher(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);
@@ -416,7 +416,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   }
 
   public long getDensity(long allOccurrences, long predOccurrences) {
-    final long percentage = (predOccurrences * 100) / allOccurrences;
+    final long percentage = allOccurrences > 0 ? (predOccurrences * 100) / allOccurrences : 0;
     if (percentage == 0 && predOccurrences > 0) {
       return 1;//don't return 0 unless it's actually an empty predicate
     } else if (percentage == 100 && predOccurrences < allOccurrences) {
