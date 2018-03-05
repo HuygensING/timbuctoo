@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -74,6 +75,12 @@ public class RdfUpload {
               "parameter " +
               "to override it: `formData.append(\"fileMimeTypeOverride\", \"<mimetype>\");`\"}")
             .build();
+        }
+
+        if (StringUtils.isBlank(encoding)) {
+          return Response.status(Response.Status.BAD_REQUEST)
+                  .entity("Please provide an 'encoding' parameter")
+                  .build();
         }
 
         Future<ImportStatus> promise = null;
