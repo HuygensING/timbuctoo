@@ -14,42 +14,45 @@ The document linked above provides the full spec, but we found it convenient to 
 --
                                      +--------------------+
                                      |                    |
-/.well-known/resourcesync  +-------> | Source description |
+/.well+known/resourcesync  +-------> | Source description |
                                      |                    |
-                                     +---------+----------+
+                                     +--------------------+
                                                |1
-                                               |
+                                               +
                                                Vmany
-                                      +--------+--------+
+                                      +-----------------+
                                       |                 |
                                       | Capability list | <--------+ Link header/Link tag
                                       |                 |
-                                      +----+---------+--+
+                                      +-----------------+
                                            |1        |1
-                                           |         |
+                                           |         +
                                            |         V1
-                                           |  +=--------------------+
+                                           |  +=+-------------------+
                                            |  |                     |
                                            |  |(Resource index list)|
                                            |  |                     |
-                                           |  +------+--------------+
+                                           |  +---------------------+
                                            |         |1
-                                           |         |
+                                           +         +
                                            V1        Vmany
-                                       +---+-----------+
+                                       +---------------+
                                        |               |
-                                       | Resource list | <--------+ robots.txt
-                                       |               |
-                                       +-------+-------+
-                                               |many
-                                               Vmany
-                                        +-------------+
-                                        |{d}          |
-                                        | Actual file |
-                                        |             |
-                                        +-------------+
-
-
+                        +--------------+ Resource list | <--------+ robots.txt
+                        |              |               |
+                        |              +---------------+
+                        |                      |+many
+                        |                      |Vmany
+              +---------+---------+    +---------------+
+              |                   |    |               |
+              |  Other files      |    | Dataset rdf   |
+              |  (A.nq, B.nq,...) |    | (actual file) |
+              |                   |    |               |
+              +-------------------+    +-------+-------+
+                                               |
+                                       +-------v---------+
+                                       | Changelist.nqud |
+                                       +-----------------+
 --
 
 The horizontal arrows indicate entrypoints.
@@ -93,20 +96,27 @@ The filetypes that we can currently import are:
  * text/n3 (.n3)
  * application/vnd.timbuctoo-rdf.nquads_unified_diff (.nqud)
 
+NOTE: We require now that every dataset to be imported into Timbuctoo have a file (in a supported rdf format) that is
+named "Dataset.<rdf extension>". After the dataset is imported into Timbuctoo every change done will
+be in a changelist (in nquads-ud format, described below) for this Dataset rdf file.
+The extra files that are uploaded along with the Dataset will simply be stored in the Timbuctoo
+filesystem.
+
 So we expect an item resource list will look like:
 
 ```
 ...
 <url>
-    <loc>http://localhost/.well-known/resourcesync/dataset1/resource2.nq</loc>
+    <loc>http://localhost/.well-known/resourcesync/dataset1/Dataset.nq</loc>
     <rs:md type="application/n-quads"/> <!-- this line is optional, but can be used to override the extension -->
 </url>
 ...
 ```
 
-The resources will imported in order of appearance. It is not allowed to later change a resource. 
-If you simply want to add triples to the dataset you should append a new file with the new triples to the resource list.
-If you want to remove triples from the dataset you should append a new file in the nquads-ud format (see below)
+The resources will imported in order of appearance. It is not allowed to later change a resource.
+
+Changes (additions and retractions) made in Timbuctoo will be stored in the changelist for Dataset.<rdf extension> file
+ that is in the nquads-ud format (see below)
 
 == N-Quads U.D.
 N-Quads U.D. stands for N-Quads Unified Diff.
