@@ -14,41 +14,42 @@ The document linked above provides the full spec, but we found it convenient to 
 --
                                      +--------------------+
                                      |                    |
-/.well-known/resourcesync  +-------> | Source description |
+/.well+known/resourcesync  +-------> | Source description |
                                      |                    |
-                                     +---------+----------+
+                                     +--------------------+
                                                |1
                                                |
                                                Vmany
-                                      +--------+--------+
+                                      +-----------------+
                                       |                 |
-                                      | Capability list | <--------+ Link header/Link tag
-                                      |                 |
-                                      +----+---------+--+
-                                           |1        |1
-                                           |         |
-                                           |         V1
-                                           |  +=--------------------+
-                                           |  |                     |
-                                           |  |(Resource index list)|
-                                           |  |                     |
-                                           |  +------+--------------+
-                                           |         |1
-                                           |         |
-                                           V1        Vmany
-                                       +---+-----------+
+                   +------------------+ Capability list | <--------+ Link header/Link tag
+                   |                  |                 |
+                   |                  +-----------------+
+                   |1                      |1        |1
+                   |                       |         |
+                   V1                      |         V1
+           +-----------------+             |  +---------------------+
+           |   Changelist    |             |  |                     |
+           +-----------------+             |  |(Resource index list)|
+                   |1                      |  |                     |
+                   |                       |  +---------------------+
+                   Vmany                   |         |1
+          +--------------------+           |         |
+          | [changelist].nqud  |           V1        Vmany
+          +--------------------+       +---------------+
                                        |               |
-                                       | Resource list | <--------+ robots.txt
-                                       |               |
-                                       +-------+-------+
-                                               |many
-                                               Vmany
-                                        +-------------+
-                                        |{d}          |
-                                        | Actual file |
-                                        |             |
-                                        +-------------+
-
+                        +--------------+ Resource list | <--------+ robots.txt
+                        |            1 |               |
+                        |              +---------------+
+                        |                      |1
+                        |                      |
+                        Vmany                  V1
+              +---------------------+    +---------------+
+              |                     |    |               |
+              |  Other files        |    |  dataset.*    |
+              |  (A.nq, B.jpg, ...) |    | (actual file) |
+              |                     |    |               |
+              +---------------------+    +---------------+
 
 --
 
@@ -61,14 +62,18 @@ NOTE: each capabilitylist is treated as 1 "dataset". Another instance will impor
 
 A capability list will link to one or more files via a resource (index) list.
 All files in the resource list are considered to be part of the same dataset.
-A capability list may also point to a resource dump and/or changesets, these features are optional and should be provided in addition to the resource list.
+The file `dataset.*` should contain the current version of the full rdf dataset.
+Besides the resourcelist, a capability list should also point to a changelist.
+The changelist should contain a list of files in the nqud format (see below) that when executed in serie construct the current dataset rdf file in the resourcelist.
+Finally, a capability list may also point to a resource dump, this is an optional feature and should be provided in addition to the resource list and the changelist.
 
 So to create a resourcesync capable server for timbuctoo you should:
 
  1. Put a http://www.openarchives.org/rs/1.0.9/resourcesync#ex_7[source description] at `/.well-known/resourcesync` on your server
  2. Fill it with links to http://www.openarchives.org/rs/1.0.9/resourcesync#ex_6[capability lists] (1 per dataset that you wish to publish)
- 3. Fill them with links to http://www.openarchives.org/rs/1.0.9/resourcesync#ex_1[Resource lists]
- 4. Fill those with links to the actual data files in one of the supported rdf formats (see below)
+ 3. Fill them with a link to a http://www.openarchives.org/rs/1.0.9/resourcesync#ex_1[Resource list] and a http://www.openarchives.org/rs/1.0.9/resourcesync#ex_3[Change list]
+ 4. Fill the resource list with links to the actual data files. There should be at least one file called `dataset.*` in one of the supported rdf formats (see below)
+ 5. Fill the changelist with the nqud files that together form dataset.*
 
 You may use the `describedby` mechanism (see http://www.openarchives.org/rs/1.1/resourcesync#DocumentFormats[]) to point to documents that describe your datasets. 
 These description documents can be in any format, however, using one of the RDF-formats is recommended. 
@@ -91,22 +96,23 @@ The filetypes that we can currently import are:
  * application/trig (.trig)
  * application/n-quads (.nq)
  * text/n3 (.n3)
- * application/vnd.timbuctoo-rdf.nquads_unified_diff (.nqud)
+
+The extra files that are uploaded along with the dataset will simply be stored in the Timbuctoo
+filesystem.
 
 So we expect an item resource list will look like:
 
 ```
 ...
 <url>
-    <loc>http://localhost/.well-known/resourcesync/dataset1/resource2.nq</loc>
+    <loc>http://localhost/.well-known/resourcesync/dataset1/dataset.nq</loc>
     <rs:md type="application/n-quads"/> <!-- this line is optional, but can be used to override the extension -->
 </url>
 ...
 ```
 
-The resources will imported in order of appearance. It is not allowed to later change a resource. 
-If you simply want to add triples to the dataset you should append a new file with the new triples to the resource list.
-If you want to remove triples from the dataset you should append a new file in the nquads-ud format (see below)
+Changes (additions and retractions) made in Timbuctoo will be stored in the changelist for dataset.<rdf extension> file
+ that is in the nquads-ud format (see below)
 
 == N-Quads U.D.
 N-Quads U.D. stands for N-Quads Unified Diff.
@@ -123,7 +129,7 @@ Look at the example an n-triples data set:
 <http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/latitude> "5200951"^^<http://schema.org/latitude> .
 <http://timbuctoo.huygens.knaw.nl/datasets/clusius/Place_PL00000029> <http://timbuctoo.huygens.knaw.nl/properties/original_id> "PL00000029" .
 ```
-How do know if one of these predicates has had a previous value?
+How would you know if one of these predicates is changed since the last time you viewed this file?
 
 To facilitate sharing of datasets between two parties we need to make sure that a dataset does not change under your feet. 
 For Timbuctoo we needed a way to change a data without changing its history.
