@@ -14,7 +14,7 @@ The document linked above provides the full spec, but we found it convenient to 
 --
                                      +--------------------+
                                      |                    |
-/.well-known/resourcesync  +-------> | Source description |
+/.well+known/resourcesync  +-------> | Source description |
                                      |                    |
                                      +--------------------+
                                                |1
@@ -22,52 +22,34 @@ The document linked above provides the full spec, but we found it convenient to 
                                                Vmany
                                       +-----------------+
                                       |                 |
-                                      | Capability list | <--------+ Link header/Link tag
-                                      |                 |
-                                      +-----------------+
-                                           |1        |1
-                                           |         |
-                                           |         V1
-                                           |  +---------------------+
-                                           |  |                     |
-                                           |  |(Resource index list)|
-                                           |  |                     |
-                                           |  +---------------------+
-                                           |         |1
-                                           |         |
-                                           V1        Vmany
-                                       +---------------+
+                   +------------------+ Capability list | <--------+ Link header/Link tag
+                   |                  |                 |
+                   |                  +-----------------+
+                   |1                      |1        |1
+                   |                       |         |
+                   V1                      |         V1
+           +-----------------+             |  +---------------------+
+           |   Changelist    |             |  |                     |
+           +-----------------+             |  |(Resource index list)|
+                   |1                      |  |                     |
+                   |                       |  +---------------------+
+                   Vmany                   |         |1
+          +--------------------+           |         |
+          | [changelist].nqud  |           V1        Vmany
+          +--------------------+       +---------------+
                                        |               |
-                        +--------------| Resource list | <--------+ robots.txt
-                        |              |               |
+                        +--------------+ Resource list | <--------+ robots.txt
+                        |            1 |               |
                         |              +---------------+
                         |                      |1
                         |                      |
-                        |                      V1
-              +---------+---------+    +---------------+
+                        Vmany                  V1
+              +-------------------+    +---------------+
               |                   |    |               |
               |  Other files      |    |  dataset rdf  |
               |  (A.nq, B.nq,...) |    | (actual file) |
               |                   |    |               |
-              +-------------------+    +-------+-------+
-                                               |1
-                                               |
-                                               V1
-                                     +--------------------+
-                                     |   Capability list  |
-                                     +--------------------+
-                                               |1
-                                               |
-                                               V1
-                                       +-----------------+
-                                       |   Changelist    |
-                                       +-----------------+
-                                               |1
-                                               |
-                                               Vmany
-                                      +--------------------+
-                                      | [changelist].nqud  |
-                                      +--------------------+
+              +-------------------+    +---------------+
 
 --
 
