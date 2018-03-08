@@ -123,13 +123,13 @@ So we expect an item resource list will look like:
 ```
 ...
 <url>
-    <loc>http://localhost/.well-known/resourcesync/dataset1/Dataset.nq</loc>
+    <loc>http://localhost/.well-known/resourcesync/dataset1/dataset.nq</loc>
     <rs:md type="application/n-quads"/> <!-- this line is optional, but can be used to override the extension -->
 </url>
 ...
 ```
 
-Changes (additions and retractions) made in Timbuctoo will be stored in the changelist for Dataset.<rdf extension> file
+Changes (additions and retractions) made in Timbuctoo will be stored in the changelist for dataset.<rdf extension> file
  that is in the nquads-ud format (see below)
 
 == N-Quads U.D.
