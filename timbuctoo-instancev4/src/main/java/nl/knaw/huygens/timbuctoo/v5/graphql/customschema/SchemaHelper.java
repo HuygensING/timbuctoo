@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.v5.graphql.customschema;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,26 +15,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReadExistingCustomSchema {
+public class SchemaHelper {
 
-  public ReadExistingCustomSchema() {
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+    .registerModule(new Jdk8Module())
+    .registerModule(new GuavaModule())
+    .registerModule(new TimbuctooCustomSerializers())
+    .enable(SerializationFeature.INDENT_OUTPUT);
+
+  private SchemaHelper() {
 
   }
 
-  public Map<String, List<ExplicitField>> readExistingSchema(DataSet dataSet) {
+  public static Map<String, List<ExplicitField>> readExistingSchema(DataSet dataSet) {
     File customSchemaFile = dataSet.getCustomSchemaFile();
-
-    ObjectMapper objectMapper = new ObjectMapper()
-      .registerModule(new Jdk8Module())
-      .registerModule(new GuavaModule())
-      .registerModule(new TimbuctooCustomSerializers())
-      .enable(SerializationFeature.INDENT_OUTPUT);
 
     Map<String, List<ExplicitField>> customSchema = new HashMap<>();
 
     if (customSchemaFile.exists()) {
       try {
-        customSchema = objectMapper.readValue(customSchemaFile,
+        customSchema = OBJECT_MAPPER.readValue(customSchemaFile,
           new TypeReference<Map<String, List<ExplicitField>>>() {
           });
       } catch (IOException e) {

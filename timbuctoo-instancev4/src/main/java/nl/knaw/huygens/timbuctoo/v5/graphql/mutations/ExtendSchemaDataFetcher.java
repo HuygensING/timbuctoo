@@ -12,9 +12,9 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.MergeExplicitSchemas;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.MergeSchemas;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.ReadExistingCustomSchema;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
@@ -32,6 +32,11 @@ import java.util.Optional;
 
 public class ExtendSchemaDataFetcher implements DataFetcher {
   private final DataSetRepository dataSetRepository;
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+    .registerModule(new Jdk8Module())
+    .registerModule(new GuavaModule())
+    .registerModule(new TimbuctooCustomSerializers())
+    .enable(SerializationFeature.INDENT_OUTPUT);
 
 
   public ExtendSchemaDataFetcher(DataSetRepository dataSetRepository) {
@@ -62,15 +67,9 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
     List<ExplicitType> customSchema;
     Map<String, List<ExplicitField>> newCustomSchema = new HashMap<>();
 
-    ObjectMapper objectMapper = new ObjectMapper()
-      .registerModule(new Jdk8Module())
-      .registerModule(new GuavaModule())
-      .registerModule(new TimbuctooCustomSerializers())
-      .enable(SerializationFeature.INDENT_OUTPUT);
-
     try {
-      String customSchemaString = objectMapper.writeValueAsString(env.getArgument("customSchema"));
-      customSchema = objectMapper.readValue(customSchemaString, new TypeReference<List<ExplicitType>>() {
+      String customSchemaString = OBJECT_MAPPER.writeValueAsString(env.getArgument("customSchema"));
+      customSchema = OBJECT_MAPPER.readValue(customSchemaString, new TypeReference<List<ExplicitType>>() {
       });
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -82,9 +81,7 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
     }
 
 
-    ReadExistingCustomSchema readExistingCustomSchema = new ReadExistingCustomSchema();
-
-    Map<String, List<ExplicitField>> existingCustomSchema = readExistingCustomSchema.readExistingSchema(dataSet.get());
+    Map<String, List<ExplicitField>> existingCustomSchema = SchemaHelper.readExistingSchema(dataSet.get());
 
 
     Map<String, Type> existingCustomSchemaTypes = new HashMap<>();
@@ -108,7 +105,7 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
     File customSchemaFile = dataSet.get().getCustomSchemaFile();
 
     try {
-      objectMapper.writeValue(customSchemaFile, mergedExplicitSchema);
+      OBJECT_MAPPER.writeValue(customSchemaFile, mergedExplicitSchema);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

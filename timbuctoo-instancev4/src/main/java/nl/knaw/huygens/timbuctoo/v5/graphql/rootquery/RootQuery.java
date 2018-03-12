@@ -18,11 +18,14 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.ReadAndMergeWithExistingSchema;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
@@ -314,9 +317,21 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
       Map<String, Type> types = dataSet.getSchemaStore().getStableTypes();
 
-      ReadAndMergeWithExistingSchema readAndMergeWithExistingSchema = new ReadAndMergeWithExistingSchema();
+      Map<String, List<ExplicitField>> customSchema = SchemaHelper.readExistingSchema(dataSet);
 
-      types = readAndMergeWithExistingSchema.readAndMergeExistingSchemas(dataSet, types);
+      final Map<String, Type> customTypes = new HashMap<>();
+
+      for (Map.Entry<String, List<ExplicitField>> entry : customSchema.entrySet()) {
+        ExplicitType explicitType = new ExplicitType(entry.getKey(), entry.getValue());
+        customTypes.put(entry.getKey(), explicitType.convertToType());
+      }
+
+      Map<String, Type> mergedTypes;
+
+      MergeSchemas mergeSchemas = new MergeSchemas();
+      mergedTypes = mergeSchemas.mergeSchema(types, customTypes);
+
+      types = mergedTypes;
 
       if (types != null) {
 

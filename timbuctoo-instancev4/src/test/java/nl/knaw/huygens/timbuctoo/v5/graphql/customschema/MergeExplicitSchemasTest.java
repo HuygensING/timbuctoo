@@ -1,9 +1,13 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.v5.graphql.customschema;
 
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.ExplicitFieldMatcher;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -78,7 +82,7 @@ public class MergeExplicitSchemasTest {
     );
 
     assertThat(mergedExplicitSchema, hasKey("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places"));
-    assertThat(mergedExplicitSchema.get("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places"),
-      contains(ExplicitFieldMatcher.explicitField().withValues(Sets.newHashSet("Integer", "String"))));
+    MatcherAssert.assertThat(mergedExplicitSchema.get("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Places"),
+      Matchers.contains(ExplicitFieldMatcher.explicitField().withValues(Sets.newHashSet("Integer", "String"))));
   }
 }
