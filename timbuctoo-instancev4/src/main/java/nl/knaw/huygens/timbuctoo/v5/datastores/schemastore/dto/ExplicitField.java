@@ -50,7 +50,7 @@ public class ExplicitField {
   }
 
   public Predicate convertToPredicate() {
-    Predicate convertedPredicate = new Predicate(uri, Direction.OUT);
+
     Map<String, Long> valueTypes = new HashMap<>();
     Map<String, Long> referenceTypes = new HashMap<>();
 
@@ -60,7 +60,6 @@ public class ExplicitField {
       }
     }
 
-    convertedPredicate.setValueTypes(valueTypes);
 
     if (references != null) {
       for (String reference : references) {
@@ -68,6 +67,10 @@ public class ExplicitField {
       }
     }
 
+    Predicate convertedPredicate = new Predicate(uri, Direction.OUT);
+    convertedPredicate.setIsExplicit(true);
+    convertedPredicate.setIsList(isList);
+    convertedPredicate.setValueTypes(valueTypes);
     convertedPredicate.setReferenceTypes(referenceTypes);
 
 

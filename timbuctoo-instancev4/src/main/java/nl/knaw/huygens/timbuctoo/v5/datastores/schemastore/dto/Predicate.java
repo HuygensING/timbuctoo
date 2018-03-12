@@ -25,6 +25,7 @@ public class Predicate {
   private boolean hasBeenList = false;
   private boolean hasBeenSingular = false;
   private boolean isExplicit = false;
+  private boolean isList;
 
   @JsonCreator
   public Predicate(@JsonProperty("name") String name, @JsonProperty("direction") Direction direction) {
@@ -123,7 +124,11 @@ public class Predicate {
 
   @JsonIgnore
   public boolean isList() {
-    return subjectsWithThisPredicateAsList > 0;
+    return isList || subjectsWithThisPredicateAsList > 0;
+  }
+
+  void setIsList(boolean isList) {
+    this.isList = isList;
   }
 
   @Override

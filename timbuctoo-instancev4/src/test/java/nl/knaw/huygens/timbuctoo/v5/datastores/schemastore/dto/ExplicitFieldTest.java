@@ -3,9 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,5 +44,23 @@ public class ExplicitFieldTest {
     assertThat(predicate.getReferenceTypes(), IsMapContaining.hasEntry("reference1", 0L));
     assertThat(predicate.getReferenceTypes(), IsMapContaining.hasEntry("reference2", 0L));
     assertThat(predicate.getReferenceTypes(), IsMapContaining.hasEntry("reference3", 0L));
+  }
+
+  @Test
+  public void convertMakesThePredicateAListPredicateIfTheExplicitFieldIs() {
+    ExplicitField field = new ExplicitField("test:test", true, null, null);
+
+    Predicate predicate = field.convertToPredicate();
+
+    assertThat(predicate.isList(), is(true));
+  }
+
+  @Test
+  public void convertMakesAnExplicitPredicate() {
+    ExplicitField field = new ExplicitField("test:test", false, null, null);
+
+    Predicate predicate = field.convertToPredicate();
+
+    assertThat(predicate.isExplicit(), is(true));
   }
 }
