@@ -22,7 +22,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -32,6 +34,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 @Value.Immutable
@@ -230,12 +234,20 @@ public abstract class DataSet {
     return getDataSetStorage().getResourceSyncDescriptionFile();
   }
 
-  public File getCustomSchemaFile() {
+  private File getCustomSchemaFile() {
     return getDataSetStorage().getCustomSchemaFile();
   }
 
   public FileStorage getFileStorage() throws IOException {
     return getDataSetStorage().getFileStorage();
+  }
+
+  public Map<String, List<ExplicitField>> getCustomSchema() {
+    return SchemaHelper.readExistingSchema(getCustomSchemaFile());
+  }
+
+  public void saveCustomSchema(Map<String, List<ExplicitField>> schema) throws IOException {
+    SchemaHelper.saveSchema(schema, getCustomSchemaFile());
   }
 
   protected abstract String getOwnerId();

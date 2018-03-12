@@ -317,7 +317,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
       Map<String, Type> types = dataSet.getSchemaStore().getStableTypes();
 
-      Map<String, List<ExplicitField>> customSchema = SchemaHelper.readExistingSchema(dataSet);
+      Map<String, List<ExplicitField>> customSchema = dataSet.getCustomSchema();
 
       final Map<String, Type> customTypes = new HashMap<>();
 

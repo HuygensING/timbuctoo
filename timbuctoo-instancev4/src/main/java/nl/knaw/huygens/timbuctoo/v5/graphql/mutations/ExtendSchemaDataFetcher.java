@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
-import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
@@ -54,14 +53,15 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
       throw new RuntimeException("User not present.");
     }
 
-    Optional<DataSet> dataSet = dataSetRepository.getDataSet(user.get(),
+    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user.get(),
       ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight());
 
-    if (!dataSet.isPresent()) {
+    if (!dataSetOpt.isPresent()) {
       throw new RuntimeException("Can't retrieve dataset.");
     }
 
-    final SchemaStore generatedSchema = dataSet.get().getSchemaStore();
+    final DataSet dataSet = dataSetOpt.get();
+    final SchemaStore generatedSchema = dataSet.getSchemaStore();
 
     Map<String, Type> customTypes = new HashMap<>();
     List<ExplicitType> customSchema;
@@ -81,7 +81,7 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
     }
 
 
-    Map<String, List<ExplicitField>> existingCustomSchema = SchemaHelper.readExistingSchema(dataSet.get());
+    Map<String, List<ExplicitField>> existingCustomSchema = dataSet.getCustomSchema();
 
 
     Map<String, Type> existingCustomSchemaTypes = new HashMap<>();
@@ -102,10 +102,8 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
       existingCustomSchema,
       newCustomSchema);
 
-    File customSchemaFile = dataSet.get().getCustomSchemaFile();
-
     try {
-      OBJECT_MAPPER.writeValue(customSchemaFile, mergedExplicitSchema);
+      dataSet.saveCustomSchema(mergedExplicitSchema);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

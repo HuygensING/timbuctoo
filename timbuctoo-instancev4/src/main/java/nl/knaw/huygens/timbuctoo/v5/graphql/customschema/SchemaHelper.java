@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 
@@ -27,14 +26,12 @@ public class SchemaHelper {
 
   }
 
-  public static Map<String, List<ExplicitField>> readExistingSchema(DataSet dataSet) {
-    File customSchemaFile = dataSet.getCustomSchemaFile();
-
+  public static Map<String, List<ExplicitField>> readExistingSchema(File schemaFile) {
     Map<String, List<ExplicitField>> customSchema = new HashMap<>();
 
-    if (customSchemaFile.exists()) {
+    if (schemaFile.exists()) {
       try {
-        customSchema = OBJECT_MAPPER.readValue(customSchemaFile,
+        customSchema = OBJECT_MAPPER.readValue(schemaFile,
           new TypeReference<Map<String, List<ExplicitField>>>() {
           });
       } catch (IOException e) {
@@ -46,4 +43,8 @@ public class SchemaHelper {
   }
 
 
+  public static void saveSchema(Map<String, List<ExplicitField>> schema, File schemaFile)
+    throws IOException {
+    OBJECT_MAPPER.writeValue(schemaFile, schema);
+  }
 }
