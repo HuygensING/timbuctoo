@@ -296,6 +296,22 @@ type RemovedDataSet {
   dataSetId: String!
 }
 
+input CustomSchemaTypeInputField {
+  uri: String!
+  isList: Boolean!
+  values: [String!]
+  references: [String!]
+}
+
+input CustomSchemaTypeInput {
+  collectionId: String!
+  fields: [CustomSchemaTypeInputField!]
+}
+
+type ExtendSchemaMessage {
+  message: String!
+}
+
 type Mutation {
   setViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
   setSummaryProperties(dataSet: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
@@ -303,4 +319,5 @@ type Mutation {
   createDataSet(dataSetName: String!): DataSetMetadata!
   deleteDataSet(dataSetId: String!): RemovedDataSet!
   publish(dataSet: String!): DataSetMetadata!
+  extendSchema(dataSet: String!, customSchema: [CustomSchemaTypeInput!]!): ExtendSchemaMessage!
 }

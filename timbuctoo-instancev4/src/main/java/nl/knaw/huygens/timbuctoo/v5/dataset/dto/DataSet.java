@@ -181,18 +181,18 @@ public abstract class DataSet {
 
 
       ImmutableDataSet dataSet = ImmutableDataSet.builder()
-                                                 .ownerId(userId)
-                                                 .dataSetName(dataSetId)
-                                                 .bdbEnvironmentCreator(dataStoreFactory)
-                                                 .metadata(metadata)
-                                                 .quadStore(quadStore)
-                                                 .typeNameStore(typeNameStore)
-                                                 .schemaStore(schema)
-                                                 .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
-                                                 .schemaStore(schema)
-                                                 .importManager(importManager)
-                                                 .dataSetStorage(dataSetStorage)
-                                                 .build();
+        .ownerId(userId)
+        .dataSetName(dataSetId)
+        .bdbEnvironmentCreator(dataStoreFactory)
+        .metadata(metadata)
+        .quadStore(quadStore)
+        .typeNameStore(typeNameStore)
+        .schemaStore(schema)
+        .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
+        .schemaStore(schema)
+        .importManager(importManager)
+        .dataSetStorage(dataSetStorage)
+        .build();
       importManager.init(dataSet);
 
 
@@ -228,6 +228,10 @@ public abstract class DataSet {
 
   public File getResourceSyncDescription() {
     return getDataSetStorage().getResourceSyncDescriptionFile();
+  }
+
+  public File getCustomSchemaFile() {
+    return getDataSetStorage().getCustomSchemaFile();
   }
 
   public FileStorage getFileStorage() throws IOException {

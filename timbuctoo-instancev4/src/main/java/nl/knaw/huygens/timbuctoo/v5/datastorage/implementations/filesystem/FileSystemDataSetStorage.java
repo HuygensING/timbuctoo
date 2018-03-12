@@ -83,6 +83,11 @@ class FileSystemDataSetStorage implements DataSetStorage {
   }
 
   @Override
+  public File getCustomSchemaFile() {
+    return fileHelper.fileInDataSet(ownerPrefix, dataSetId, "customSchema.json");
+  }
+
+  @Override
   public JsonDataStore<LogList> getLogList() throws IOException {
     return JsonFileBackedData.getOrCreate(logFile, LogList::new, new TypeReference<LogList>(){});
   }

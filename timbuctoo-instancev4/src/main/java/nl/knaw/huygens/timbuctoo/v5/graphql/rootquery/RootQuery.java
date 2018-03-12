@@ -14,14 +14,18 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
@@ -33,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGener
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
@@ -80,8 +85,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final SchemaParser schemaParser;
   private final String staticQuery;
 
-  public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats, String archetypes,
-                   RdfWiringFactory wiringFactory, DerivedSchemaTypeGenerator typeGenerator, ObjectMapper objectMapper)
+  public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
+                   String archetypes, RdfWiringFactory wiringFactory,
+                   DerivedSchemaTypeGenerator typeGenerator, ObjectMapper objectMapper)
     throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
@@ -106,6 +112,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     }
     TypeDefinitionRegistry registry = new TypeDefinitionRegistry();
     registry.merge(staticQuery);
+
     final RuntimeWiring.Builder wiring = RuntimeWiring.newRuntimeWiring();
 
     wiring.type("Query", builder -> builder
@@ -293,7 +300,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           throw new RuntimeException("Data set id is not supported: " + e.getMessage());
         }
       }).dataFetcher("deleteDataSet", new DeleteDataSetDataFetcher(dataSetRepository))
-      .dataFetcher("publish",new MakePublicDataFetcher(dataSetRepository))
+      .dataFetcher("publish", new MakePublicDataFetcher(dataSetRepository))
+      .dataFetcher("extendSchema", new ExtendSchemaDataFetcher(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);
@@ -306,8 +314,27 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       final DataSetMetaData dataSetMetaData = dataSet.getMetadata();
       final String name = dataSetMetaData.getCombinedId();
 
-      final Map<String, Type> types = dataSet.getSchemaStore().getStableTypes();
+
+      Map<String, Type> types = dataSet.getSchemaStore().getStableTypes();
+
+      Map<String, List<ExplicitField>> customSchema = SchemaHelper.readExistingSchema(dataSet);
+
+      final Map<String, Type> customTypes = new HashMap<>();
+
+      for (Map.Entry<String, List<ExplicitField>> entry : customSchema.entrySet()) {
+        ExplicitType explicitType = new ExplicitType(entry.getKey(), entry.getValue());
+        customTypes.put(entry.getKey(), explicitType.convertToType());
+      }
+
+      Map<String, Type> mergedTypes;
+
+      MergeSchemas mergeSchemas = new MergeSchemas();
+      mergedTypes = mergeSchemas.mergeSchema(types, customTypes);
+
+      types = mergedTypes;
+
       if (types != null) {
+
         dataSetAvailable[0] = true;
         root.append("  ")
           .append(name)
@@ -328,6 +355,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           types,
           dataSet.getTypeNameStore()
         );
+
         staticQuery.merge(schemaParser.parse(schema));
       }
     });
@@ -403,7 +431,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   }
 
   public long getDensity(long allOccurrences, long predOccurrences) {
-    final long percentage = (predOccurrences * 100) / allOccurrences;
+    final long percentage = allOccurrences > 0 ? (predOccurrences * 100) / allOccurrences : 0;
     if (percentage == 0 && predOccurrences > 0) {
       return 1;//don't return 0 unless it's actually an empty predicate
     } else if (percentage == 100 && predOccurrences < allOccurrences) {
