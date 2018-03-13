@@ -83,6 +83,10 @@ public class RdfUpload {
                   .build();
         }
 
+        if (StringUtils.isBlank(body.getContentDisposition().getFileName())) {
+          return Response.status(400).entity("filename cannot be empty.").build();
+        }
+
         Future<ImportStatus> promise = null;
         try {
           promise = importManager.addLog(

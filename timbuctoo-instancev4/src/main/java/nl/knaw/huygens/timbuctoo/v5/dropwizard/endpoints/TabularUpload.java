@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -32,7 +33,6 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -92,6 +92,10 @@ public class TabularUpload {
 
         final DataSet dataSet = userAndDs.getRight();
         ImportManager importManager = dataSet.getImportManager();
+
+        if (StringUtils.isBlank(fileInfo.getName())) {
+          return Response.status(400).entity("filename cannot be empty.").build();
+        }
 
         try {
           String fileToken = importManager.addFile(
