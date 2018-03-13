@@ -3,31 +3,27 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
-import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 public class GraphQlTypesContainer {
 
-  public static final String ENTITY_INTERFACE_NAME = "Entity";
-  public static final String VALUE_INTERFACE_NAME = "Value";
-  private static final Logger LOG = getLogger(GraphQlTypesContainer.class);
+  private static final String ENTITY_INTERFACE_NAME = "Entity";
+  private static final String VALUE_INTERFACE_NAME = "Value";
 
-  final Map<String, StringBuilder> types;
-  final Set<String> topLevelTypes;
-  StringBuilder currentType = null;
+  private final Map<String, StringBuilder> types;
+  private final Set<String> topLevelTypes;
+  private StringBuilder currentType = null;
 
   private final String rootType;
   private final TypeNameStore typeNameStore;
   private final PaginationArgumentsHelper argumentsHelper;
 
-  public GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore,
-                               PaginationArgumentsHelper argumentsHelper) {
+  GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore,
+                        PaginationArgumentsHelper argumentsHelper) {
     this.rootType = rootType;
     this.typeNameStore = typeNameStore;
     this.argumentsHelper = argumentsHelper;
