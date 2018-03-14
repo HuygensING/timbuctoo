@@ -1,0 +1,102 @@
+= Simplify the customization of the GraphQL schema
+
+== The problem
+=== Schema is hard to customize
+A large part of the current GraphQL schema is dynamically generated.
+Some generated parts like the data sets contain default recurring schema parts like _metadata_.
+Not all these default recurring parts are generated statically.
+These not statically generated recurring parts are therefore difficult to customize.
+
+This problem arose when we wanted to generalize the GraphQL schema for collections in tabular files.
+At this moment there is a big difference between _csv_- and _excel_-files.
+
+*example of an uploaded csv file*
+```
+...
+http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList {
+  items {
+    tim_hasCollection {
+      ... on u33707283d426f900d4d33707283d426f900d4d0d__voc_http___example_org_datasets_u33707283d426f900d4d33707283d426f900d4d0d_voc_rawData_a8afae5a_542a_47b8_aca9_bf3aa89510aa_vocopvarenden0_50000_csv_collections_1type {
+        uri
+        rdfs_label {
+          value
+        }
+        tim_hasPropertyList {
+          items {
+            rdfs_label {
+              value
+            }
+          }
+        }
+      }
+    }
+  }
+}
+...
+```
+
+*example of an uploaded excel file with two sheets*
+```
+...
+http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList {
+  items {
+    tim_hasCollectionList {
+      items {
+        ... on u33707283d426f900d4d33707283d426f900d4d0d__bioport3_http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularCollection {
+          uri
+          rdfs_label {
+            value
+          }
+          tim_hasPropertyList {
+            items {
+              rdfs_label {
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+...
+```
+
+== Expected result
+It should be possible to add static parts of the schema as a sub part of a dynamic part of the GraphQL schema.
+For the above problem a static part like the example below should be added to the data set schema:
+```
+...
+http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList {
+  items {
+    tim_hasCollectionList {
+      items {
+        ... on u33707283d426f900d4d33707283d426f900d4d0d__bioport3_http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularCollection {
+          uri
+          rdfs_label {
+            value
+          }
+          tim_hasPropertyList {
+            items {
+              rdfs_label {
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+...
+```
+Someone who sets up a Timbuctoo instance should be able to configure these changes in the configuration file of Timbuctoo.
+
+== The solution
+* Change RootQuery to accept more than one customization (at this moment only archetypes can be added.
+** Create a data structure that can contain multiple different schema modifications.
+*** Find a way to determine the place where to inject the parts.
+
+
+== To do after the fix
+. Make the timbuctoo-mapping tool support excel.
