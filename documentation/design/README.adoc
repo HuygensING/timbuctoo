@@ -12,6 +12,6 @@ This document describes the workflow of the Huygens team for adding new function
 . Create a pull request for the document.
 . Process the feedback of your peers.
 . When the document is approved you can start writing the code.
-* Write code on a separate branch.
+* Write code on the same branch you created for the document.
 * Keep the branch up-to-date with master.
 . When the code is complete create a pull request for the changed code.
