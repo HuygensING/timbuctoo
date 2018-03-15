@@ -1,13 +1,12 @@
-= Simplify the customization of the GraphQL schema
+= Make the tabular file list schema static
 
 == The problem
 === Schema is hard to customize
 A large part of the current GraphQL schema is dynamically generated.
 Some generated parts like the data sets contain default recurring schema parts like _metadata_.
 Not all these default recurring parts are generated statically.
-These not statically generated recurring parts are therefore difficult to customize.
 
-This problem arose when we wanted to generalize the GraphQL schema for collections in tabular files.
+The part that is causing problems is the link be tabular files and their raw collections.
 At this moment there is a big difference between _csv_- and _excel_-files.
 
 *example of an uploaded csv file*
@@ -63,24 +62,21 @@ http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList {
 ```
 
 == Expected result
-It should be possible to add static parts of the schema as a sub part of a dynamic part of the GraphQL schema.
-For the above problem a static part like the example below should be added to the data set schema:
+Each time the schema for a `tabularFileList` is created it should look like the schema below.
 ```
 ...
-http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList {
+tabularFileList {
   items {
-    tim_hasCollectionList {
+    fileName { value }
+    hasCollectionList {
       items {
-        ... on u33707283d426f900d4d33707283d426f900d4d0d__bioport3_http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularCollection {
-          uri
-          rdfs_label {
-            value
-          }
-          tim_hasPropertyList {
-            items {
-              rdfs_label {
-                value
-              }
+        name {
+          value
+        }
+        hasPropertyList {
+          items {
+            name {
+              value
             }
           }
         }
@@ -90,13 +86,16 @@ http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList {
 }
 ...
 ```
-Someone who sets up a Timbuctoo instance should be able to configure these changes in the configuration file of Timbuctoo.
 
 == The solution
-* Change RootQuery to accept more than one customization (at this moment only archetypes can be added.
-** Create a data structure that can contain multiple different schema modifications.
-*** Find a way to determine the place where to inject the parts.
+* Change `schema.graphql` to add a structure for `tabularFileList`.
+** Make sure the property does not contain any underscores in the name, because all the generated properties contain at least one underscore,
+* Create a `DataFetcher` for `tabularFileList`.
+* Change `RootQuery` to add the `tabularFileList` and its DataFetcher.
 
+== Possible improvements
+* Make the schema configurable in the Timbuctoo config.
 
 == To do after the fix
 . Make the timbuctoo-mapping tool support excel.
+

@@ -1,17 +1,17 @@
 = Remove raw collections from GraphQL schema
 
 == The problem
-Another problem is that much data is shown.
-There is no distinction between raw collections (created automatically from tabular uploads) and real collections (based RDF types).
+Currently too much collections are shown by the GraphQL api.
 This causes a lot of confusion by users of the GraphQL (via GraphiQL or Timbuctoo GUI) interface of Timbuctoo.
+This is extra problematic because there is no distinction between raw collections (created automatically from tabular uploads) and real collections (based RDF types).
 
 == Expected result
 * Less cluttered schema.
 * Clear distinction between raw collections and real collections.
 ** The raw collections should only be available in the schema as part of a tabular file representation.
 
-== Solution(s)
-=== Revise tabular import
+== Possible Solutions
+=== A. Revise tabular import
 At this moment Timbuctoo converts each tabular file to a tabular representation in RDF.
 Technically this is not needed, because the uploaded tabular data should be mapped to be useful.
 The only thing we need to know for the mapping is the collections in the tabular file and the properties of each collection.
@@ -24,25 +24,50 @@ The properties are the columns.
 
 To be able todo this the following changes should be made:
 
-* When a tabular file is uploaded only register the files with their collections and properties
-* When a tabular file mapped the data has to be retrieved right from the file.
-
+* When a tabular file is uploaded only register the files with their (raw) collections and properties.
+** The raw collections should be registered in a dedicated store.
+* When a tabular file mapped the data can to be retrieved right from the file.
 
 ==== Advantages
 * It solves several problems besides cleaning up the GraphQL schema:
-** It cleans up the import process
+** It cleans up the import process.
 ** It makes Timbuctoo use less disk space. (the tabular RDF-files take a lot of storage space)
 
 ==== Disadvantages
-* The biggest disadvantage is a rather large refactoring in a reasonably stable tabular import functionality.
+* The biggest disadvantage is a rather large refactoring in a reasonably stable tabular import and mapping functionality.
+* We need to add a whole new `DataFetcher`.
+* The raw data cannot be deep linked anymore (we can't link from the mapped data to the row in the raw data set)
 
-=== Hide all raw collections
+=== A-alt. Revise tabular import to store results in a different database
+Instead of reading from the file upon mapping, we might store the data in a different tabular storage system upon import.
+We can then retrieve it from there during mapping.
+
+==== Advantages
+* It mostly has the same advantages as solution A
+* It doesn't require a refactoring (just new code)
+** The parsing code can stay in the tabular upload package, and needs not to be duplicated in the `DataFetcher` and `DataSource`.
+** We simply add one new storage to that package.
+** We only need to add one new `DataSource` factory.
+*** We do not have to refactor any code.
+
+==== Disadvantages
+* It requires more disk space and more processing during upload than solution A.
+* The raw data cannot be deep linked anymore (we can't link from the mapped data to the row in the raw data set).
+
+=== B. Hide all raw collections
 Another solution is to hide all the raw collections by default.
 This means each time the GraphQL schema is generated the raw collections should be filtered.
 
 ==== Advantages
 * This change is solution is smaller than the other solution.
+* We can deep link directly to the raw data from the "mapped" data.
+** E.g. we can create a provenance record that links to the imported row.
+* We also might want to hide collections that are not tabular data.
+** This is then fixed in one go.
 
 ==== Disadvantages
 * Each time the GraphQL schema is regenerated the raw collections should be filtered.
+* Data processing during upload is significantly higher.
+* Data storage is significantly higher.
 * There is still no real distinction between raw collections and real collections.
+** The distinction is purely cosmetic.
