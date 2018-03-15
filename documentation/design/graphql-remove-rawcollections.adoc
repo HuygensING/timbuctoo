@@ -1,0 +1,48 @@
+= Remove raw collections from GraphQL schema
+
+== The problem
+Another problem is that much data is shown.
+There is no distinction between raw collections (created automatically from tabular uploads) and real collections (based RDF types).
+This causes a lot of confusion by users of the GraphQL (via GraphiQL or Timbuctoo GUI) interface of Timbuctoo.
+
+== Expected result
+* Less cluttered schema.
+* Clear distinction between raw collections and real collections.
+** The raw collections should only be available in the schema as part of a tabular file representation.
+
+== Solution(s)
+=== Revise tabular import
+At this moment Timbuctoo converts each tabular file to a tabular representation in RDF.
+Technically this is not needed, because the uploaded tabular data should be mapped to be useful.
+The only thing we need to know for the mapping is the collections in the tabular file and the properties of each collection.
+
+This means when a tabular file is uploaded the file has not to be fully converted at the time of uploading.
+It only needs to be scanned for collections and properties.
+The collections are the tabs in excel spreadsheet.
+For a csv-file the collection is the file.
+The properties are the columns.
+
+To be able todo this the following changes should be made:
+
+* When a tabular file is uploaded only register the files with their collections and properties
+* When a tabular file mapped the data has to be retrieved right from the file.
+
+
+==== Advantages
+* It solves several problems besides cleaning up the GraphQL schema:
+** It cleans up the import process
+** It makes Timbuctoo use less disk space. (the tabular RDF-files take a lot of storage space)
+
+==== Disadvantages
+* The biggest disadvantage is a rather large refactoring in a reasonably stable tabular import functionality.
+
+=== Hide all raw collections
+Another solution is to hide all the raw collections by default.
+This means each time the GraphQL schema is generated the raw collections should be filtered.
+
+==== Advantages
+* This change is solution is smaller than the other solution.
+
+==== Disadvantages
+* Each time the GraphQL schema is regenerated the raw collections should be filtered.
+* There is still no real distinction between raw collections and real collections.
