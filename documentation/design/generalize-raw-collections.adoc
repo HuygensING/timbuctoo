@@ -1,4 +1,4 @@
-= Make the tabular file list schema static
+= Make the link to the raw collections of a file the same for one and multiple collections per file
 
 == The problem
 === Schema is hard to customize
