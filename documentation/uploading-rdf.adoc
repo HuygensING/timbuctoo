@@ -33,7 +33,8 @@ HSID= # the session id you got from the url bar
 DATASETNAME= #whatever you want to call your dataset. This name must be all lowercase or numbers (i.e. [a-z0-9], may contain underscores, but at most one consecutive one and must start with a letter (i.e. [a-z])
 FILE= #The path to the file
 curl --request POST \
-  --url '${TIMBUCTOO_URI}/u${USERID}/${DATASETNAME}/upload/rdf?forceCreation=true' \ //(1)
+  --url '${TIMBUCTOO_URI}/u${USERID}/${DATASETNAME}/upload/rdf?forceCreation=true' \
+  --header 'Content-encoding: gzip' \
   --header 'authorization: ${HSID}' \
   --header 'content-type: multipart/form-data; boundary=---011000010111000001101001' \
   --form encoding=UTF-8 \
@@ -59,7 +60,7 @@ To check the upload progress you can execute the following graphql command
 }
 ```
 
-=== 2. Uploading an rdf patch
+=== 3. Uploading an rdf patch
 
 To upload an rdf patch you simply specify application/vnd.timbuctoo-rdf.nquads_unified_diff as the mimetype.
 In curl it would look the same as the above command, but you replace `text/turtle` with `application/vnd.timbuctoo-rdf.nquads_unified_diff`
