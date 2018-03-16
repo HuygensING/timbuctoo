@@ -14,7 +14,7 @@ The document linked above provides the full spec, but we found it convenient to 
 --
                                      +--------------------+
                                      |                    |
-/.well+known/resourcesync  +-------> | Source description |
+/.well-known/resourcesync  --------> | Source description |
                                      |                    |
                                      +--------------------+
                                                |1
@@ -38,7 +38,7 @@ The document linked above provides the full spec, but we found it convenient to 
           | [changelist].nqud  |           V1        Vmany
           +--------------------+       +---------------+
                                        |               |
-                        +--------------+ Resource list | <--------+ robots.txt
+                        +--------------+ Resource list | <--------- robots.txt
                         |            1 |               |
                         |              +---------------+
                         |                      |1
