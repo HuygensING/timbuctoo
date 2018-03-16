@@ -10,6 +10,9 @@ interface Value {
 
 interface Entity {
   uri: String!
+  title: Value
+  description: Value
+  image: Value
 }
 
 type Facet {
