@@ -43,9 +43,9 @@ curl --request POST \
 
 To check the upload progress you can execute the following graphql command
 
-```
+```graphql
 {
-	dataSets {
+  dataSets {
     uUSERID__DATASETNAME { #Replace userid and datasetname with the values you specified at the curl command
       metadata {
         currentImportStatus {
