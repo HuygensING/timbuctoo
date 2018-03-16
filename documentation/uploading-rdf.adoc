@@ -2,7 +2,7 @@
 
 === 1. Logging in
 To upload an rdf file, you must first retrieve an ssid.
-The easiest way to do so is to go to the graphiql interface and press the Login button (top left)
+The easiest way to do so is to go to the graphiql interface (which is available on the timbuctoo url, e.g. http://data.anansi.clariah.nl ) and press the Login button (top left)
 After you click it, you will be redirected a few times and eventually will be redirected back.
 You can then execute the following query to verify that you're actually logged in:
 
@@ -41,3 +41,25 @@ curl --request POST \
   --form fileMimeTypeOverride=text/turl
 ```
 
+To check the upload progress you can execute the following graphql command
+
+```
+{
+	dataSets {
+    uUSERID__DATASETNAME { #Replace userid and datasetname with the values you specified at the curl command
+      metadata {
+        currentImportStatus {
+          elapsedTime
+          active
+          messages
+        }
+      }
+    }
+  }
+}
+```
+
+=== 2. Uploading an rdf patch
+
+To upload an rdf patch you simply specify application/vnd.timbuctoo-rdf.nquads_unified_diff as the mimetype.
+In curl it would look the same as the above command, but you replace `text/turtle` with `application/vnd.timbuctoo-rdf.nquads_unified_diff`
