@@ -1,0 +1,43 @@
+== Uploading rdf by hand
+
+=== 1. Logging in
+To upload an rdf file, you must first retrieve an ssid.
+The easiest way to do so is to go to the graphiql interface and press the Login button (top left)
+After you click it, you will be redirected a few times and eventually will be redirected back.
+You can then execute the following query to verify that you're actually logged in:
+
+```graphql
+{
+  aboutMe {
+    id
+    canCreateDataSet
+  }
+}
+```
+
+If you're id is `null` you are not properly logged in.
+If canCreateDataSet is `false` but your id is not `null` then this timbuctoo instance does not allow you to create your own datasets and you should make sure you have access to an existing dataset were you have ADMIN rights.
+
+You can get you sessionid now by looking at the url and finding the `hsid` argument (e.g. `?hsid=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`)
+
+
+=== 2. Uploading the rdf
+
+To upload rdf you generate a HTTP multipart POST request that contains the file and some metadata.
+In curl it would look like:
+
+```sh
+TIMBUCTOO_URI= #here you put the uri to timbuctoo, e.g. https://data.anansi.clariah.nl
+USERID= #here you put the ID of the user that owns the dataset. If you are uploading to your own dataset you put the id here that you got back from the graphql query above.
+HSID= # the session id you got from the url bar
+DATASETNAME= #whatever you want to call your dataset. This name must be all lowercase or numbers (i.e. [a-z0-9], may contain underscores, but at most one consecutive one and must start with a letter (i.e. [a-z])
+FILE= #The path to the file
+curl --request POST \
+  --url '${TIMBUCTOO_URI}/u${USERID}/${DATASETNAME}/upload/rdf?forceCreation=true' \ //(1)
+  --header 'authorization: ${HSID}' \
+  --header 'content-type: multipart/form-data; boundary=---011000010111000001101001' \
+  --form encoding=UTF-8 \
+  --form file=@${FILE} \
+  --form fileMimeTypeOverride=text/turl
+```
+
