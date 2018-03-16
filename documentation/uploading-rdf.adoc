@@ -15,8 +15,8 @@ You can then execute the following query to verify that you're actually logged i
 }
 ```
 
-If you're id is `null` you are not properly logged in.
-If canCreateDataSet is `false` but your id is not `null` then this timbuctoo instance does not allow you to create your own datasets and you should make sure you have access to an existing dataset were you have ADMIN rights.
+* If your id is `null` you are not properly logged in.
+* If canCreateDataSet is `false` but your id is not `null` then this timbuctoo instance does not allow you to create your own datasets and you should make sure you have access to an existing dataset were you have ADMIN rights.
 
 You can get you sessionid now by looking at the url and finding the `hsid` argument (e.g. `?hsid=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`)
 
