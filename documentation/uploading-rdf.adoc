@@ -4,6 +4,9 @@
 To upload an rdf file, you must first retrieve an ssid.
 The easiest way to do so is to go to the graphiql interface (which is available on the timbuctoo url, e.g. http://data.anansi.clariah.nl ) and press the Login button (top left)
 After you click it, you will be redirected a few times and eventually will be redirected back.
+
+* You can get you session id (HSID) now by looking at the url and finding the `hsid` argument (e.g. `?hsid=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`)
+
 You can then execute the following query to verify that you're actually logged in:
 
 ```graphql
@@ -17,9 +20,6 @@ You can then execute the following query to verify that you're actually logged i
 
 * If your id is `null` you are not properly logged in.
 * If canCreateDataSet is `false` but your id is not `null` then this timbuctoo instance does not allow you to create your own datasets and you should make sure you have access to an existing dataset were you have ADMIN rights.
-
-You can get you sessionid now by looking at the url and finding the `hsid` argument (e.g. `?hsid=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`)
-
 
 === 2. Uploading the rdf
 
