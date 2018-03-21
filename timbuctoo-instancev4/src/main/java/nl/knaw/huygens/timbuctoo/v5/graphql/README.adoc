@@ -1,0 +1,17 @@
+= GraphQL
+
+== Working
+
+=== schema.graphql
+The explicit static schema.
+
+=== rootquery.RootQuery
+Merges the generated derived schema and the explicit schema's.
+
+Adds the DataFetchers to the static schema.
+
+=== derivedschema.GraphQlTypesContainer
+Contains the dynamically schema derived from the RDF data.
+
+=== datafetchers.RdfWiringFactory
+The place to add DataFetchers to the dynamically generated schema.
