@@ -51,4 +51,11 @@ public class RdfConstants {
   public static final String XSD_BOOLEAN = "http://www.w3.org/2001/XMLSchema#boolean";
   public static final String INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
 
+
+  // helper methods
+
+  public static String timPredicate(String name) {
+    return TIM_PRED + name;
+  }
+
 }

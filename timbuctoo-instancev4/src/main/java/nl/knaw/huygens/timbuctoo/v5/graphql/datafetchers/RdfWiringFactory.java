@@ -7,6 +7,7 @@ import graphql.language.Field;
 import graphql.language.InlineFragment;
 import graphql.language.Selection;
 import graphql.language.StringValue;
+import graphql.language.Value;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -19,6 +20,7 @@ import graphql.schema.idl.WiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.CollectionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
@@ -29,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +46,14 @@ public class RdfWiringFactory implements WiringFactory {
   private final ObjectTypeResolver objectTypeResolver;
   private final DataSetRepository dataSetRepository;
   private final PaginationArgumentsHelper argumentsHelper;
+  private final EntityTitleFetcher entityTitleFetcher;
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper) {
     this.dataSetRepository = dataSetRepository;
     this.argumentsHelper = argumentsHelper;
     objectTypeResolver = new ObjectTypeResolver();
     uriFetcher = new UriFetcher();
+    entityTitleFetcher = new EntityTitleFetcher();
     lookupFetcher = new LookUpSubjectByUriFetcherWrapper("uri", new QuadStoreLookUpSubjectByUriFetcher());
   }
 
@@ -79,7 +84,8 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("uri") != null ||
       environment.getFieldDefinition().getDirective("passThrough") != null ||
       environment.getFieldDefinition().getDirective("related") != null ||
-      environment.getFieldDefinition().getDirective("dataSet") != null;
+      environment.getFieldDefinition().getDirective("dataSet") != null ||
+      environment.getFieldDefinition().getDirective("entityTitle") != null;
   }
 
   @Override
@@ -135,6 +141,8 @@ public class RdfWiringFactory implements WiringFactory {
           return dataSet;
         }
       };
+    } else if (environment.getFieldDefinition().getDirective("entityTitle") != null) {
+      return entityTitleFetcher;
     }
     return null;
   }
@@ -152,20 +160,21 @@ public class RdfWiringFactory implements WiringFactory {
     public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
 
       String typeName;
-      if (environment.getObject() instanceof TypedValue) {
-        final TypedValue typedValue = (TypedValue) environment.getObject();
+      Object object = environment.getObject();
+      if (object instanceof TypedValue) {
+        final TypedValue typedValue = (TypedValue) object;
         final String typeUri = typedValue.getType();
         final String prefix = typedValue.getDataSet().getMetadata().getCombinedId();
         typeName =
           prefix +
           "_" +
           typedValue.getDataSet().getTypeNameStore().makeGraphQlValuename(typeUri);
-      } else {
+      } else if (object instanceof  SubjectReference) {
         //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
         //In rdf things can have more then one type though (types are like java interfaces)
         //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types
         //that the user actually requested
-        final SubjectReference subjectReference = (SubjectReference) environment.getObject();
+        final SubjectReference subjectReference = (SubjectReference) object;
         final String prefix = subjectReference.getDataSet().getMetadata().getCombinedId();
         Set<String> typeUris = subjectReference.getTypes();
         final TypeNameStore typeNameStore = subjectReference.getDataSet().getTypeNameStore();
@@ -199,6 +208,9 @@ public class RdfWiringFactory implements WiringFactory {
             );
           }
         }
+      } else {
+        throw new RuntimeException("Expected either  a  'TypedValue' or a 'SubjectReference', but was: " +
+          (object == null ? "null" : object.getClass()));
       }
       final GraphQLObjectType type = (GraphQLObjectType) environment.getSchema().getType(typeName);
       return type;

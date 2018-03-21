@@ -196,7 +196,7 @@ public class DerivedSchemaContainer {
         .append(typeUri.replace("\"", "")) //quotes are not allowed in uri's anyway so this shouldn't happen
         .append("\") {\n")
         .append("  uri: String! @uri\n")
-        .append("  title: Value\n")
+        .append("  title: Value @entityTitle\n")
         .append("  description: Value\n")
         .append("  image: Value\n");
     }
