@@ -19,6 +19,7 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -351,6 +352,58 @@ public class IntegrationTest {
         .count(),
       is(20L)
     );
+  }
+
+  @Ignore
+  @Test
+  public void resourcesyncImportsValidDatasets() throws Exception {
+    String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.rdfp"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Publish($dataSetId: String!) {" +
+            "  publish(dataSet: $dataSetId) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(PREFIX + "__" + dataSetName)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    String capabilityListUri = format("http://localhost:%d/v5/resourcesync/%s/%s/capabilitylist.xml" ,
+      APP.getLocalPort(),
+      PREFIX,
+      dataSetName
+    );
+
+    Response resourceSyncCall = call("/v2.1/remote/rs/import?forceCreation=true")
+      .accept(MediaType.APPLICATION_JSON)
+      .header("authorization", "fake")
+      .post(Entity.entity(jsnO(
+        "source", jsn(capabilityListUri),
+        "userId", jsn(PREFIX),
+        "dataSetId", jsn("datasettest")
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat("Successful resourcesync import", resourceSyncCall.getStatus(), is(200));
+    
   }
 
   @Test
