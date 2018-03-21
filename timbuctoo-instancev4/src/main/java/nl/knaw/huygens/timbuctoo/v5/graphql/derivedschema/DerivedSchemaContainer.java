@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class GraphQlTypesContainer {
+public class DerivedSchemaContainer {
 
   private static final String ENTITY_INTERFACE_NAME = "Entity";
   private static final String VALUE_INTERFACE_NAME = "Value";
@@ -22,8 +22,8 @@ public class GraphQlTypesContainer {
   private final TypeNameStore typeNameStore;
   private final PaginationArgumentsHelper argumentsHelper;
 
-  GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore,
-                        PaginationArgumentsHelper argumentsHelper) {
+  DerivedSchemaContainer(String rootType, TypeNameStore typeNameStore,
+                         PaginationArgumentsHelper argumentsHelper) {
     this.rootType = rootType;
     this.typeNameStore = typeNameStore;
     this.argumentsHelper = argumentsHelper;
