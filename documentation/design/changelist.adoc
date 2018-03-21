@@ -3,33 +3,35 @@
 . Problem:
 * Timbuctoo datasets currently have information in fileList.json and log.json that do contain enough information to generate proper changeLists according to the Resource Sync Specification. (we currently generate resourceLists only)
 * Issue 1: Instead of storing all changes in the resourceList we want to start using both the changeList and the resourceList. The resourcelist should contain all files except the ones that are used as rdf patches. It should also contain a resource that represents the dataset as is.
-* Issue 2: When we download an external resourcesync dataset it may contain multiple changeLists. The log.json contains 1 ordered list of changes. We need to be able to go from the multiple changelists to the one log.json and then make sure that our generated resourcesync sitemaps still contain separate changeLists (i.e. make them roundtrippable)
+* Issue 2: When we download an external resourcesync dataset it may contain multiple changeLists while our importmanager requires 1 ordered list of changes.
 
 . Result:
-* Timbuctoo properly adheres to the Changelist requirements stated in the
+* Timbuctoo properly generates a Changelist based on the log.json and according to the requirements stated in the
 http://www.openarchives.org/rs/1.1/resourcesync#ChangeList[ResourceSync Specification Documentation].
 * Resourcesync import is able to support seperate changelists. It will import from changelists if available and if not
 from the dataset.<rdf> file. Updates will be made using the changelists.
 * An endpoint that can be used to retrieve a resource list from Timbuctoo that no longer contains the patches but does include a resource representing the dataset as it is now.
-* Changelists maintained/combined properly when imported from documents, updated in Timbuctoo and exported.
+* We specify how timbuctoo will deal with datasets that contain multiple rdf files (and optionally changes for all these files): we require one of the files to be called `dataset` and ignore the others (i.e. we download them, but won't import them).
+* For now, we mark an imported dataset as "read-only" so that we won't have to solve all edge cases related to the merging of conflicting edits.
 
 . Approach:
 * Note the order of preference for importing nq, rdf, etc. in exchange-protocol.adoc (to avoid conflict in case of
     multiple rdf files named 'rdf').
+* We import changelists by default and only the dataset if no changelist is found. Because otherwise you might get a race condition when downloading the updates (you can fix that by requiring hashes, but that complicates the provider's implementation and we don't want to do that)
 
 Changes required to import code:
 
-* On first call to resourcesync import, we check for the existence of a changelist. If it does not exist, we import the dataset.* resource from the resourcelist.xml and we mark the dataset as "not updateable" (in the log.json)
-* If a changelist does exist. we loop over it, import all the patches.
+* On first call to resourcesync import, we check for the existence of a changelist. If it does not exist, we import the dataset.* resource from the resourcelist.xml and we mark the dataset as "DUMP_IMPORTED" (in the log.json).
+* If a changelist does exist, we loop over it and import all the patches.
 * We also store the address of the capabilityList in the log entries (log.json file).
-* On a secondary import call. We can find the capabilityList url and return 400 because we can only import 1 dataset at a time.
-* Note: We might also block any other edits if that's easy to do (in ImportManager)
+* If the user triggers an import from another dataset we check for the existence of a capabilityList url and return 400. A dataset can only contain 1 remote dataset (otherwise we have the merge conflict edge cases again).
+* If a dataset contains a capabilityList address then ImportManager only allows new changes that come from the sync. It blocks all other edits.
 
 Update feature:
 
-* we add an update graphql mutation
+* we add an update graphql mutation so that the user can trigger an update
 * when triggered it checks for the existence of a capabilityList url and otherwise returns that you can't update this dataset
-* when triggered it checks for the existence of a changelist on the remote
-  ** it then checks for the existence of a "not updateable" property
+* when triggered it checks for the existence of a changelist on the remote capabilitylist
+  ** it then checks for the existence of a "DUMP_IMPORTED" property
     *** if it exists it deletes the data and re-imports (this time using the changelist)
     *** if it does not exist it starts importing the changelist from the "processedUntil" prop from log.json onwards
