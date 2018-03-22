@@ -47,6 +47,7 @@ public class RdfWiringFactory implements WiringFactory {
   private final DataSetRepository dataSetRepository;
   private final PaginationArgumentsHelper argumentsHelper;
   private final EntityTitleFetcher entityTitleFetcher;
+  private final EntityDescriptionFetcher entityDescriptionFetcher;
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper) {
     this.dataSetRepository = dataSetRepository;
@@ -55,6 +56,7 @@ public class RdfWiringFactory implements WiringFactory {
     uriFetcher = new UriFetcher();
     entityTitleFetcher = new EntityTitleFetcher();
     lookupFetcher = new LookUpSubjectByUriFetcherWrapper("uri", new QuadStoreLookUpSubjectByUriFetcher());
+    entityDescriptionFetcher = new EntityDescriptionFetcher();
   }
 
   @Override
@@ -85,7 +87,8 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("passThrough") != null ||
       environment.getFieldDefinition().getDirective("related") != null ||
       environment.getFieldDefinition().getDirective("dataSet") != null ||
-      environment.getFieldDefinition().getDirective("entityTitle") != null;
+      environment.getFieldDefinition().getDirective("entityTitle") != null ||
+      environment.getFieldDefinition().getDirective("entityDescription") != null;
   }
 
   @Override
@@ -143,6 +146,8 @@ public class RdfWiringFactory implements WiringFactory {
       };
     } else if (environment.getFieldDefinition().getDirective("entityTitle") != null) {
       return entityTitleFetcher;
+    } else if (environment.getFieldDefinition().getDirective("entityDescription") != null) {
+      return entityDescriptionFetcher;
     }
     return null;
   }
