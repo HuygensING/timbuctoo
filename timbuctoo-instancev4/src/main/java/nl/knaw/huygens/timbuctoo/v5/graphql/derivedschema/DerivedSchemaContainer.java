@@ -198,7 +198,7 @@ public class DerivedSchemaContainer {
         .append("  uri: String! @uri\n")
         .append("  title: Value @entityTitle\n")
         .append("  description: Value @entityDescription\n")
-        .append("  image: Value\n");
+        .append("  image: Value @entityImage\n");
     }
   }
 
