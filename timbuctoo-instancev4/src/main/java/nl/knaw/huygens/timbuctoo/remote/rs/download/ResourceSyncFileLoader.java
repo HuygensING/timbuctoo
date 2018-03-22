@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
@@ -42,28 +44,21 @@ public class ResourceSyncFileLoader {
     .put("trdf", "application/rdf+thrift")
     .build();
   private static final Logger LOG = getLogger(ResourceSyncFileLoader.class);
-  protected final ObjectMapper objectMapper;
-  private final CloseableHttpClient httpClient;
+  private final RemoteFileRetriever remoteFileRetriever;
+  private final ObjectMapper objectMapper;
 
   public ResourceSyncFileLoader(CloseableHttpClient httpClient) {
-    this.httpClient = httpClient;
     objectMapper = new XmlMapper();
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    remoteFileRetriever = new RemoteFileRetriever(httpClient);
   }
 
-  private UrlSet getRsFile(String url) throws IOException {
-    LOG.info("getRsFile '{}'", url);
-    return objectMapper.readValue(IOUtils.toString(getFile(url)).replace("rs.md", "rs:md"), UrlSet.class);
+  public ResourceSyncFileLoader(RemoteFileRetriever remoteFileRetriever) {
+    objectMapper = new XmlMapper();
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    this.remoteFileRetriever = remoteFileRetriever;
   }
 
-  private InputStream getFile(String url) throws IOException {
-    InputStream content = httpClient.execute(new HttpGet(url)).getEntity().getContent();
-    if (content != null) {
-      return maybeDecompress(content);
-    } else {
-      return new ByteArrayInputStream(new byte[0]);
-    }
-  }
 
   //FIXME: maybe we should just store everything compressed
   public static InputStream maybeDecompress(InputStream input) throws IOException {
@@ -80,7 +75,7 @@ public class ResourceSyncFileLoader {
       return pb;
     }
 
-    pb.unread(new byte[]{(byte)header, (byte)firstByte});
+    pb.unread(new byte[]{(byte) header, (byte) firstByte});
 
     header = (firstByte << 8) | header;
 
@@ -92,8 +87,9 @@ public class ResourceSyncFileLoader {
   }
 
   public Stream<RemoteFile> loadFiles(String capabilityListUri) throws IOException {
-    Stream<RemoteFile> remoteFileStream = getRsFile(capabilityListUri)
-      .getItemList().stream()
+    List<UrlItem> itemList = getRsFile(capabilityListUri).getItemList();
+
+    Stream<RemoteFile> remoteFileStream = itemList.stream()
       .filter(url -> url
         .getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())
       )
@@ -108,6 +104,10 @@ public class ResourceSyncFileLoader {
         LOG.info("map resource list");
         return resourceList.getItemList().stream();
       })
+      .filter(item -> {
+        String datasetNamePattern = ".*dataset.(nq|rdf)";
+        return item.getLoc().matches(datasetNamePattern);
+      })
       .map(item -> tuple(item.getLoc(), item.getMetadata()))
       .map(item -> {
         if (item.getRight() != null) {
@@ -119,13 +119,39 @@ public class ResourceSyncFileLoader {
       })
       .map(resource -> {
         try {
-          return RemoteFile.create(resource.getLeft(), getFile(resource.getLeft()), resource.getRight());
+          return RemoteFile.create(resource.getLeft(), remoteFileRetriever.getFile(
+            resource.getLeft()),
+            resource.getRight()
+          );
         } catch (IOException e) {
           throw new RuntimeUpgrader(e);
         }
       });
     LOG.info("Resources found");
     return remoteFileStream;
+  }
+
+  private UrlSet getRsFile(String url) throws IOException {
+    LOG.info("getRsFile '{}'", url);
+    return objectMapper.readValue(IOUtils.toString(remoteFileRetriever.getFile(url))
+      .replace("rs.md", "rs:md"), UrlSet.class);
+  }
+
+  static class RemoteFileRetriever {
+    private final HttpClient httpClient;
+
+    private RemoteFileRetriever(HttpClient httpClient) {
+      this.httpClient = httpClient;
+    }
+
+    public InputStream getFile(String url) throws IOException {
+      InputStream content = httpClient.execute(new HttpGet(url)).getEntity().getContent();
+      if (content != null) {
+        return maybeDecompress(content);
+      } else {
+        return new ByteArrayInputStream(new byte[0]);
+      }
+    }
   }
 
   private class RuntimeUpgrader extends RuntimeException {
