@@ -3,9 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
@@ -13,15 +10,13 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import java.util.List;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYIMAGEPREDICATE;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timPredicate;
 
 public class EntityImageFetcher implements DataFetcher<TypedValue> {
-  private final DefaultSummaryPropDataRetriever summaryPropDataRetriever;
+  private final SummaryPropDataRetriever summaryPropDataRetriever;
 
   public EntityImageFetcher(List<SummaryProp> defaultImages) {
-    summaryPropDataRetriever = new DefaultSummaryPropDataRetriever(defaultImages);
+    summaryPropDataRetriever = new SummaryPropDataRetriever(TIM_SUMMARYIMAGEPREDICATE, defaultImages);
   }
 
   @Override
@@ -29,26 +24,13 @@ public class EntityImageFetcher implements DataFetcher<TypedValue> {
     if (env.getSource() instanceof SubjectReference) {
       SubjectReference source = env.getSource();
       DataSet dataSet = source.getDataSet();
+      Optional<TypedValue> summaryProperty = summaryPropDataRetriever.createSummaryProperty(source, dataSet);
 
-      QuadStore quadStore = dataSet.getQuadStore();
-      Optional<CursorQuad> image = quadStore.getQuads(source.getSubjectUri(),
-        timPredicate(TIM_SUMMARYIMAGEPREDICATE), Direction.OUT, "").findFirst();
-
-      if (image.isPresent()) {
-        return createTypedValue(image.get(), dataSet);
-      } else { // fallback to default summary props
-        Optional<CursorQuad> foundData = summaryPropDataRetriever.retrieveDefaultProperty(source, quadStore);
-        if (foundData.isPresent()) {
-          return createTypedValue(foundData.get(), dataSet);
-        }
+      if (summaryProperty.isPresent()) {
+        return summaryProperty.get();
       }
-
     }
     return null;
   }
 
-  private TypedValue createTypedValue(CursorQuad cursorQuad, DataSet dataSet) {
-    String type = cursorQuad.getValuetype().isPresent() ? cursorQuad.getValuetype().get() : STRING;
-    return TypedValue.create(cursorQuad.getObject(), type, dataSet);
-  }
 }
