@@ -35,15 +35,20 @@ public class EntityImageFetcher implements DataFetcher<TypedValue> {
         timPredicate(TIM_SUMMARYIMAGEPREDICATE), Direction.OUT, "").findFirst();
 
       if (image.isPresent()) {
-        return TypedValue.create(image.get().getObject(), STRING, dataSet);
+        return createTypedValue(image.get(), dataSet);
       } else { // fallback to default summary props
         Optional<CursorQuad> foundData = summaryPropDataRetriever.retrieveDefaultProperty(source, quadStore);
         if (foundData.isPresent()) {
-          return TypedValue.create(foundData.get().getObject(), STRING, dataSet);
+          return createTypedValue(foundData.get(), dataSet);
         }
       }
 
     }
     return null;
+  }
+
+  private TypedValue createTypedValue(CursorQuad cursorQuad, DataSet dataSet) {
+    String type = cursorQuad.getValuetype().isPresent() ? cursorQuad.getValuetype().get() : STRING;
+    return TypedValue.create(cursorQuad.getObject(), type, dataSet);
   }
 }

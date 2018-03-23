@@ -36,11 +36,11 @@ public class EntityTitleFetcher implements DataFetcher<TypedValue> {
         timPredicate(TIM_SUMMARYTITLEPREDICATE), Direction.OUT, "").findFirst();
 
       if (title.isPresent()) {
-        return TypedValue.create(title.get().getObject(), STRING, dataSet);
+        return createTypedValue(dataSet, title.get());
       } else { // fallback to default summary props
         Optional<CursorQuad> foundData = summaryPropDataRetriever.retrieveDefaultProperty(source, quadStore);
         if (foundData.isPresent()) {
-          return TypedValue.create(foundData.get().getObject(), STRING, dataSet);
+          return createTypedValue(dataSet, foundData.get());
         }
       }
 
@@ -49,5 +49,10 @@ public class EntityTitleFetcher implements DataFetcher<TypedValue> {
 
     }
     return null;
+  }
+
+  private TypedValue createTypedValue(DataSet dataSet, CursorQuad cursorQuad) {
+    String type = cursorQuad.getValuetype().isPresent() ? cursorQuad.getValuetype().get() : STRING;
+    return TypedValue.create(cursorQuad.getObject(), type, dataSet);
   }
 }
