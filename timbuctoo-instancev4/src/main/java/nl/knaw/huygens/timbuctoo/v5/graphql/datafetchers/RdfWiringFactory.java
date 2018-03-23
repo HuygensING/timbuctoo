@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DefaultSummaryProps;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,15 +51,16 @@ public class RdfWiringFactory implements WiringFactory {
   private final EntityDescriptionFetcher entityDescriptionFetcher;
   private final EntityImageFetcher entityImageFetcher;
 
-  public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper) {
+  public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
+                          DefaultSummaryProps defaultSummaryProps) {
     this.dataSetRepository = dataSetRepository;
     this.argumentsHelper = argumentsHelper;
     objectTypeResolver = new ObjectTypeResolver();
     uriFetcher = new UriFetcher();
-    entityTitleFetcher = new EntityTitleFetcher();
     lookupFetcher = new LookUpSubjectByUriFetcherWrapper("uri", new QuadStoreLookUpSubjectByUriFetcher());
-    entityDescriptionFetcher = new EntityDescriptionFetcher();
-    entityImageFetcher = new EntityImageFetcher();
+    entityTitleFetcher = new EntityTitleFetcher(defaultSummaryProps.getDefaultTitles());
+    entityDescriptionFetcher = new EntityDescriptionFetcher(defaultSummaryProps.getDefaultDescriptions());
+    entityImageFetcher = new EntityImageFetcher(defaultSummaryProps.getDefaultImages());
   }
 
   @Override

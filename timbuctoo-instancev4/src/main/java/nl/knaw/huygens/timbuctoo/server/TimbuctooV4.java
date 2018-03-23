@@ -289,7 +289,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetRepository,
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
-        new RdfWiringFactory(dataSetRepository, argHelper),
+        new RdfWiringFactory(dataSetRepository, argHelper, configuration.getDefaultSummaryProps()),
         new DerivedSchemaTypeGenerator(argHelper),
         environment.getObjectMapper()
       ),
