@@ -89,7 +89,51 @@ public class ResourceSyncFileLoader {
   public Stream<RemoteFile> loadFiles(String capabilityListUri) throws IOException {
     List<UrlItem> itemList = getRsFile(capabilityListUri).getItemList();
 
-    Stream<RemoteFile> remoteFileStream = itemList.stream()
+
+    boolean hasCapabilityList = hasCapabilityList(itemList);
+
+    Stream<RemoteFile> remoteFileStream;
+
+    if (hasCapabilityList) {
+      remoteFileStream = itemList.stream()
+        .filter(url -> url
+          .getMetadata().getCapability().equals(Capability.CHANGELIST.getXmlValue())
+        )
+        .map(resourceListUrl -> {
+          try {
+            return getRsFile(resourceListUrl.getLoc());
+          } catch (IOException e) {
+            throw new RuntimeUpgrader(e);
+          }
+        })
+        .flatMap(resourceList -> {
+          LOG.info("map change list");
+          return resourceList.getItemList().stream();
+        })
+        .map(item -> tuple(item.getLoc(), item.getMetadata()))
+        .map(item -> {
+          if (item.getRight() != null) {
+            return tuple(item.getLeft(), item.getRight().getMimeType());
+          } else {
+            String extension = item.getLeft().substring(item.getLeft().lastIndexOf(".") + 1);
+            return tuple(item.getLeft(), MIME_TYPE_FOR_EXTENSION.get(extension));
+          }
+        })
+        .map(resource -> {
+          try {
+            return RemoteFile.create(resource.getLeft(), remoteFileRetriever.getFile(
+              resource.getLeft()),
+              resource.getRight()
+            );
+          } catch (IOException e) {
+            throw new RuntimeUpgrader(e);
+          }
+        });
+      LOG.info("Resources found");
+      return remoteFileStream;
+    }
+
+    remoteFileStream = itemList.stream()
       .filter(url -> url
         .getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())
       )
@@ -105,7 +149,7 @@ public class ResourceSyncFileLoader {
         return resourceList.getItemList().stream();
       })
       .filter(item -> {
-        String datasetNamePattern = ".*dataset.(nq|rdf)";
+        String datasetNamePattern = ".*dataset.(nq|nqud|rdf|ttt|jsonld|trig|nt|n3)";
         return item.getLoc().matches(datasetNamePattern);
       })
       .map(item -> tuple(item.getLoc(), item.getMetadata()))
@@ -129,6 +173,16 @@ public class ResourceSyncFileLoader {
       });
     LOG.info("Resources found");
     return remoteFileStream;
+  }
+
+  private boolean hasCapabilityList(List<UrlItem> itemList) {
+    for (UrlItem urlItem : itemList) {
+      if (urlItem.getMetadata().getCapability().contains(Capability.CHANGELIST.getXmlValue())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private UrlSet getRsFile(String url) throws IOException {
