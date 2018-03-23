@@ -57,7 +57,13 @@ public class SummaryPropDataRetriever {
   }
 
   private TypedValue createTypedValue(CursorQuad cursorQuad, DataSet dataSet) {
-    String type = cursorQuad.getValuetype().isPresent() ? cursorQuad.getValuetype().get() : RdfConstants.STRING;
+
+    /*
+     * URI's do not have a value type.
+     * So we expect each object without a value type to be a URI.
+     * To make a URI a TypedValue we use a "fake" value type for URI's.
+     */
+    String type = cursorQuad.getValuetype().isPresent() ? cursorQuad.getValuetype().get() : RdfConstants.URI;
     return TypedValue.create(cursorQuad.getObject(), type, dataSet);
   }
 }
