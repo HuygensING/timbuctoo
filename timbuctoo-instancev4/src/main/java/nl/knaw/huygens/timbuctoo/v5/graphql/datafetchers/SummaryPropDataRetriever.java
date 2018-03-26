@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -8,11 +10,16 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 public class SummaryPropDataRetriever {
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
+  private static final Logger LOG = LoggerFactory.getLogger(SummaryPropDataRetriever.class);
   private final String userConfiguredPredicate;
   private final List<SummaryProp> defaultProperties;
 
@@ -23,23 +30,44 @@ public class SummaryPropDataRetriever {
 
   Optional<TypedValue> createSummaryProperty(SubjectReference source, DataSet dataSet) {
     QuadStore quadStore = dataSet.getQuadStore();
-    Optional<CursorQuad> userConfigured = quadStore.getQuads(
+
+     Optional<CursorQuad> collection = quadStore.getQuads(
       source.getSubjectUri(),
-      userConfiguredPredicate,
+      RdfConstants.RDF_TYPE,
       Direction.OUT,
       ""
     ).findFirst();
 
+
+    Optional<CursorQuad> userConfigured = Optional.empty();
+    if (collection.isPresent()) {
+      userConfigured = quadStore.getQuads(
+        collection.get().getObject(),
+        userConfiguredPredicate,
+        Direction.OUT,
+        ""
+      ).findFirst();
+    }
+
     if (userConfigured.isPresent()) {
-      return Optional.of(createTypedValue(userConfigured.get(), dataSet));
-    } else { // fallback to default summary props
-      for (SummaryProp prop : defaultProperties) {
-        Optional<CursorQuad> quad = getQuad(prop.getPath(), source.getSubjectUri(), quadStore);
+      try {
+        SummaryProp summaryProp = OBJECT_MAPPER.readValue(userConfigured.get().getObject(), SummaryProp.class);
+        Optional<CursorQuad> quad = getQuad(summaryProp.getPath(), source.getSubjectUri(), quadStore);
         if (quad.isPresent()) {
           return Optional.of(createTypedValue(quad.get(), dataSet));
         }
+      } catch (IOException e) {
+        LOG.error("Cannot parse SummaryProp: '{}'", userConfigured.get().getObject());
       }
     }
+    // fallback to default summary props
+    for (SummaryProp prop : defaultProperties) {
+      Optional<CursorQuad> quad = getQuad(prop.getPath(), source.getSubjectUri(), quadStore);
+      if (quad.isPresent()) {
+        return Optional.of(createTypedValue(quad.get(), dataSet));
+      }
+    }
+
     return Optional.empty();
   }
 
