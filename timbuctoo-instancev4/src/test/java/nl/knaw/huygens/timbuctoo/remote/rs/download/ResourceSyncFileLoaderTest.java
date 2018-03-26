@@ -100,7 +100,7 @@ public class ResourceSyncFileLoaderTest {
       "  <rs:ln rel=\"up\" href=\"" + baseUrl + "capabilitylist.xml\"/>\n" +
       "  <url>\n" +
       "    <loc>" + baseUrl + "files/dataset.nq</loc>\n" +
-      "    <rs:md type=\"application/vnd.timbuctoo-rdf.nquads_unified_diff\"/>\n" +
+      "    <rs:md type=\"application/n-quads\"/>\n" +
       "  </url>\n" +
       "</urlset>\n";
 
@@ -132,6 +132,68 @@ public class ResourceSyncFileLoaderTest {
   }
 
   @Test
+  public void loadFilesPrioritizesNqDatasetFile() throws Exception {
+
+    String capabilityList = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+      "<urlset xmlns:rs=\"http://www.openarchives.org/rs/terms/\" " +
+      "xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+      "  <rs:md capability=\"capabilitylist\"/>\n" +
+      "  <rs:ln rel=\"up\" href=\"http://127.0.0.1:8080/.well-known/resourcesync\"/>\n" +
+      "  <rs:ln rel=\"describedby\" href=\"" + baseUrl + "description.xml\" type=\"application/rdf+xml\"/>\n" +
+      "  <url>\n" +
+      "    <loc>" + baseUrl + "resourcelist.xml</loc>\n" +
+      "    <rs:md capability=\"resourcelist\"/>\n" +
+      "  </url>\n" +
+      "</urlset>\n";
+
+    String resourceList = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+      "<urlset xmlns:rs=\"http://www.openarchives.org/rs/terms/\" " +
+      "xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+      "  <rs:md capability=\"resourcelist\" at=\"2018-03-21T10:55:07.907Z\" " +
+      "completed=\"2018-03-21T10:56:39.551Z\"/>\n" +
+      "  <rs:ln rel=\"up\" href=\"" + baseUrl + "capabilitylist.xml\"/>\n" +
+      "  <url>\n" +
+      "    <loc>" + baseUrl + "files/dataset.rdf</loc>\n" +
+      "    <rs:md type=\" application/rdf+xml\"/>\n" +
+      "  </url>\n" +
+      "  <url>\n" +
+      "    <loc>" + baseUrl + "files/dataset.nq</loc>\n" +
+      "    <rs:md type=\"application/n-quads\"/>\n" +
+      "  </url>\n" +
+      "</urlset>\n";
+
+
+    InputStream capabilityListStream = new ByteArrayInputStream(capabilityList.getBytes());
+
+    InputStream resourceListStream = new ByteArrayInputStream(resourceList.getBytes());
+
+    InputStream clusiusStream = new FileInputStream(
+      new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI())
+    );
+
+    ResourceSyncFileLoader.RemoteFileRetriever remoteFileRetriever = mock(
+      ResourceSyncFileLoader.RemoteFileRetriever.class
+    );
+
+    given(remoteFileRetriever.getFile(baseUrl + "capabilitylist.xml")).willReturn(capabilityListStream);
+
+    given(remoteFileRetriever.getFile(baseUrl + "resourcelist.xml")).willReturn(resourceListStream);
+
+    given(remoteFileRetriever.getFile(baseUrl + "files/dataset.nq")
+    ).willReturn(clusiusStream);
+
+    given(remoteFileRetriever.getFile(baseUrl + "files/dataset.rdf")
+    ).willReturn(clusiusStream);
+
+    ResourceSyncFileLoader resourceSyncFileLoader = new ResourceSyncFileLoader(remoteFileRetriever);
+
+    Stream<RemoteFile> remoteFileStream = resourceSyncFileLoader.loadFiles(baseUrl + "capabilitylist.xml");
+
+    assertThat(remoteFileStream.map(file -> file.getUrl()).collect(Collectors.toList()),
+      contains(baseUrl + "files/dataset.nq"));
+  }
+
+  @Test
   public void loadFilesLoadsFromChangePatchesIfChangeListIsPresent() throws Exception {
 
     String capabilityList = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
@@ -158,7 +220,7 @@ public class ResourceSyncFileLoaderTest {
       "  <rs:ln rel=\"up\" href=\"" + baseUrl + "capabilitylist.xml\"/>\n" +
       "  <url>\n" +
       "    <loc>" + baseUrl + "files/dataset.nq</loc>\n" +
-      "    <rs:md type=\"application/vnd.timbuctoo-rdf.nquads_unified_diff\"/>\n" +
+      "    <rs:md type=\"application/n-quads\"/>\n" +
       "  </url>\n" +
       "</urlset>\n";
 

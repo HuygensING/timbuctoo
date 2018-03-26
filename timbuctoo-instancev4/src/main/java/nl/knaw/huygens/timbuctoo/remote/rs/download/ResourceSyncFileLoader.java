@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -15,8 +16,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
@@ -99,41 +102,29 @@ public class ResourceSyncFileLoader {
         .filter(url -> url
           .getMetadata().getCapability().equals(Capability.CHANGELIST.getXmlValue())
         )
-        .map(resourceListUrl -> {
+        .map(changeListUrl -> {
           try {
-            return getRsFile(resourceListUrl.getLoc());
+            return getRsFile(changeListUrl.getLoc());
           } catch (IOException e) {
             throw new RuntimeUpgrader(e);
           }
         })
-        .flatMap(resourceList -> {
+        .flatMap(changeList -> {
           LOG.info("map change list");
-          return resourceList.getItemList().stream();
+          return changeList.getItemList().stream();
+        })
+        .filter(item -> {
+          String datasetNamePattern = ".*.nqud";
+          return item.getLoc().matches(datasetNamePattern);
         })
         .map(item -> tuple(item.getLoc(), item.getMetadata()))
-        .map(item -> {
-          if (item.getRight() != null) {
-            return tuple(item.getLeft(), item.getRight().getMimeType());
-          } else {
-            String extension = item.getLeft().substring(item.getLeft().lastIndexOf(".") + 1);
-            return tuple(item.getLeft(), MIME_TYPE_FOR_EXTENSION.get(extension));
-          }
-        })
-        .map(resource -> {
-          try {
-            return RemoteFile.create(resource.getLeft(), remoteFileRetriever.getFile(
-              resource.getLeft()),
-              resource.getRight()
-            );
-          } catch (IOException e) {
-            throw new RuntimeUpgrader(e);
-          }
-        });
+        .map(this::getUrlAndMimeType)
+        .map(this::getRemoteFile);
       LOG.info("Resources found");
       return remoteFileStream;
     }
 
-    remoteFileStream = itemList.stream()
+    Optional<RemoteFile> remoteFile = itemList.stream()
       .filter(url -> url
         .getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())
       )
@@ -148,31 +139,39 @@ public class ResourceSyncFileLoader {
         LOG.info("map resource list");
         return resourceList.getItemList().stream();
       })
-      .filter(item -> {
-        String datasetNamePattern = ".*dataset.(nq|nqud|rdf|ttt|jsonld|trig|nt|n3)";
-        return item.getLoc().matches(datasetNamePattern);
-      })
+      .filter(item -> RdfExtensions.createFromFile(item.getLoc()) != null)
+      .sorted(Comparator.comparing(item2 -> RdfExtensions.createFromFile(item2.getLoc())))
+      .findFirst()
       .map(item -> tuple(item.getLoc(), item.getMetadata()))
-      .map(item -> {
-        if (item.getRight() != null) {
-          return tuple(item.getLeft(), item.getRight().getMimeType());
-        } else {
-          String extension = item.getLeft().substring(item.getLeft().lastIndexOf(".") + 1);
-          return tuple(item.getLeft(), MIME_TYPE_FOR_EXTENSION.get(extension));
-        }
-      })
-      .map(resource -> {
-        try {
-          return RemoteFile.create(resource.getLeft(), remoteFileRetriever.getFile(
-            resource.getLeft()),
-            resource.getRight()
-          );
-        } catch (IOException e) {
-          throw new RuntimeUpgrader(e);
-        }
-      });
-    LOG.info("Resources found");
-    return remoteFileStream;
+      .map(this::getUrlAndMimeType)
+      .map(this::getRemoteFile);
+
+    if (remoteFile.isPresent()) {
+      LOG.info("Resources found");
+      return Stream.of(remoteFile.get());
+    }
+    LOG.info("No valid resources found.");
+    return Stream.empty();
+  }
+
+  private RemoteFile getRemoteFile(Tuple<String, String> resource) {
+    try {
+      return RemoteFile.create(resource.getLeft(), remoteFileRetriever.getFile(
+        resource.getLeft()),
+        resource.getRight()
+      );
+    } catch (IOException e) {
+      throw new RuntimeUpgrader(e);
+    }
+  }
+
+  private Tuple<String, String> getUrlAndMimeType(Tuple<String, Metadata> item) {
+    if (item.getRight() != null) {
+      return tuple(item.getLeft(), item.getRight().getMimeType());
+    } else {
+      String extension = item.getLeft().substring(item.getLeft().lastIndexOf(".") + 1);
+      return tuple(item.getLeft(), MIME_TYPE_FOR_EXTENSION.get(extension));
+    }
   }
 
   private boolean hasCapabilityList(List<UrlItem> itemList) {
@@ -189,6 +188,35 @@ public class ResourceSyncFileLoader {
     LOG.info("getRsFile '{}'", url);
     return objectMapper.readValue(IOUtils.toString(remoteFileRetriever.getFile(url))
       .replace("rs.md", "rs:md"), UrlSet.class);
+  }
+
+  private enum RdfExtensions {
+    NQ("nq"),
+    TRIG("trig"),
+    NT("nt"),
+    TTL("ttl"),
+    N3("n3"),
+    RDF("rdf"),
+    JSONLD("jsonld");
+
+    private final String extension;
+
+    RdfExtensions(String extension) {
+      this.extension = extension;
+    }
+
+    public static RdfExtensions createFromFile(String fileName) {
+      for (RdfExtensions rdfExtensions : RdfExtensions.values()) {
+        if (fileName.endsWith("." + rdfExtensions.getExtension())) {
+          return rdfExtensions;
+        }
+      }
+      return null;
+    }
+
+    public String getExtension() {
+      return extension;
+    }
   }
 
   static class RemoteFileRetriever {
@@ -214,3 +242,4 @@ public class ResourceSyncFileLoader {
     }
   }
 }
+

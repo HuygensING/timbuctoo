@@ -137,6 +137,16 @@ Alternatively you can use a file extension to indicate the type of file.
 The explicit mimetype overrules the file extension.
 Look add <<Valid types, Valid types>> for more information.
 
+The filetypes that we can currently import are, in order of decreasing priority (i.e. if there is a dataset.nq and dataset.rdf
+the dataset.nq file gets priority and is read), as follows:
+
+ * application/n-quads (.nq)
+ * application/trig (.trig)
+ * application/n-triples (.nt)
+ * text/turtle (.ttl)
+ * text/n3 (.n3)
+ * application/rdf+xml (.rdf)
+ * application/ld+json (.jsonld)
 
 The other files that are uploaded along with the dataset will simply be stored in the Timbuctoo filesystem.
 
