@@ -31,29 +31,31 @@ public class SummaryPropDataRetriever {
     ).findFirst();
 
     if (userConfigured.isPresent()) {
-      return Optional.ofNullable(createTypedValue(userConfigured.get(), dataSet));
+      return Optional.of(createTypedValue(userConfigured.get(), dataSet));
     } else { // fallback to default summary props
-      Optional<CursorQuad> quad = Optional.empty();
       for (SummaryProp prop : defaultProperties) {
-        for (String path : prop.getPath()) {
-          String uri = quad.isPresent() ? quad.get().getObject() : source.getSubjectUri();
-          quad = quadStore.getQuads(uri, path, Direction.OUT, "").findAny();
-
-          if (!quad.isPresent()) {
-            break;
-          }
-        }
+        Optional<CursorQuad> quad = getQuad(prop.getPath(), source.getSubjectUri(), quadStore);
         if (quad.isPresent()) {
-          break;
+          return Optional.of(createTypedValue(quad.get(), dataSet));
         }
-      }
-
-      Optional<CursorQuad> foundData = quad;
-      if (foundData.isPresent()) {
-        return Optional.ofNullable(createTypedValue(foundData.get(), dataSet));
       }
     }
     return Optional.empty();
+  }
+
+  private Optional<CursorQuad> getQuad(List<String> path, String uri, QuadStore quadStore) {
+    /*
+     * A collect of the data might look a bit nicer, but that will cause all the data to be loaded from the database.
+     * This way only the data needed is retrieved.
+     * See https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html#StreamOps for more info.
+     */
+    return quadStore.getQuads(uri, path.get(0), Direction.OUT, "").map(quad -> {
+      if (path.size() > 1) {
+        return getQuad(path.subList(1, path.size()), quad.getObject(), quadStore);
+      } else {
+        return Optional.of(quad);
+      }
+    }).filter(Optional::isPresent).findFirst().map(Optional::get);
   }
 
   private TypedValue createTypedValue(CursorQuad cursorQuad, DataSet dataSet) {
