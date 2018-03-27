@@ -83,6 +83,13 @@ public class SummaryPropDataRetriever {
     try (Stream<CursorQuad> quads = quadStore.getQuads(uri, path.get(0), Direction.OUT, "")) {
       foundQuad = quads.map(quad -> {
         if (path.size() > 1) {
+          /*
+           * make sure paths are not further retrieved, when the object has a value type
+           * this could lead to false positives if the value of the property is a uri used as part of the path
+           */
+          if (quad.getValuetype().isPresent()) {
+            return Optional.<CursorQuad>empty();
+          }
           return getQuad(path.subList(1, path.size()), quad.getObject(), quadStore);
         } else {
           return Optional.of(quad);

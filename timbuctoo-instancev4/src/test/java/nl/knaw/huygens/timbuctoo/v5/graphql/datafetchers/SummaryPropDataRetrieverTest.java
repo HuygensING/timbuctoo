@@ -45,8 +45,9 @@ public class SummaryPropDataRetrieverTest {
       defaultProperties
     );
     SummaryProp summaryProp = summaryPropertyWithPath("http://example.org/userPath");
-    CursorQuad collectionQuad = quadWithObject("http://example.org/collection");
-    CursorQuad userConfiguredSummaryProp = quadWithObject(OBJECT_MAPPER.writeValueAsString(summaryProp));
+    CursorQuad collectionQuad = quadWithObject("http://example.org/collection", Optional.empty());
+    CursorQuad userConfiguredSummaryProp = quadWithObject(OBJECT_MAPPER.writeValueAsString(summaryProp),
+      Optional.empty());
     QuadStore quadStore = mock(QuadStore.class);
     given(quadStore.getQuads("http://example.org/source", RdfConstants.RDF_TYPE, Direction.OUT, ""))
       .willReturn(Stream.of(collectionQuad));
@@ -72,11 +73,11 @@ public class SummaryPropDataRetrieverTest {
       defaultProperties
     );
     QuadStore quadStore = mock(QuadStore.class);
-    CursorQuad foundQuad1 = quadWithObject("http://example.org/objectFound1");
-    CursorQuad foundQuad2 = quadWithObject("http://example.org/objectFound2");
+    CursorQuad foundQuad1 = quadWithObject("http://example.org/objectFound1", Optional.empty());
+    CursorQuad foundQuad2 = quadWithObject("http://example.org/objectFound2", Optional.empty());
     given(quadStore.getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, ""))
       .willReturn(Stream.of(foundQuad1, foundQuad2));
-    CursorQuad quadWithObjectUriOfPath2 = quadWithObject("http://example.org/objectOfPath2");
+    CursorQuad quadWithObjectUriOfPath2 = quadWithObject("http://example.org/objectOfPath2", Optional.empty());
     given(quadStore.getQuads("http://example.org/objectFound1", "http://example.org/path2", Direction.OUT, ""))
       .willReturn(Stream.of(quadWithObjectUriOfPath2));
 
@@ -88,7 +89,7 @@ public class SummaryPropDataRetrieverTest {
   }
 
   @Test
-  public void retrieveDefaultPropertyWalksTheSecondPathIfTheFirstGivesNoValue() {
+  public void createSummaryPropertyWalksTheSecondPathIfTheFirstGivesNoValue() {
     List<SummaryProp> defaultProperties = Lists.newArrayList(
       summaryPropertyWithPath("http://example.org/path", "http://example.org/path2")
     );
@@ -97,11 +98,11 @@ public class SummaryPropDataRetrieverTest {
       defaultProperties
     );
     QuadStore quadStore = mock(QuadStore.class);
-    CursorQuad foundQuad1 = quadWithObject("http://example.org/objectFound1");
-    CursorQuad foundQuad2 = quadWithObject("http://example.org/objectFound2");
+    CursorQuad foundQuad1 = quadWithObject("http://example.org/objectFound1", Optional.empty());
+    CursorQuad foundQuad2 = quadWithObject("http://example.org/objectFound2", Optional.empty());
     given(quadStore.getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, ""))
       .willReturn(Stream.of(foundQuad1, foundQuad2));
-    CursorQuad quadWithObjectUriOfPath2 = quadWithObject("http://example.org/objectOfPath2");
+    CursorQuad quadWithObjectUriOfPath2 = quadWithObject("http://example.org/objectOfPath2", Optional.empty());
     given(quadStore.getQuads("http://example.org/objectFound2", "http://example.org/path2", Direction.OUT, ""))
       .willReturn(Stream.of(quadWithObjectUriOfPath2));
 
@@ -117,6 +118,40 @@ public class SummaryPropDataRetrieverTest {
   }
 
   @Test
+  public void createSummaryPropertyIgnoresValueTypesIfThePathIsLongerThanOne() {
+    List<SummaryProp> defaultProperties = Lists.newArrayList(
+      summaryPropertyWithPath("http://example.org/path", "http://example.org/path2")
+    );
+    SummaryPropDataRetriever instance = new SummaryPropDataRetriever(
+      "http://example.org/userConfigured",
+      defaultProperties
+    );
+    QuadStore quadStore = mock(QuadStore.class);
+    CursorQuad foundQuad1 = quadWithObject("http://example.org/objectFound1", Optional.of(RdfConstants.STRING));
+    CursorQuad foundQuad2 = quadWithObject("http://example.org/objectFound2", Optional.empty());
+    given(quadStore.getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, ""))
+      .willReturn(Stream.of(foundQuad1, foundQuad2));
+    CursorQuad quadThatShouldNotBeFound = quadWithObject(
+      "http://example.org/objectThatShouldNotBeRetrieved",
+      Optional.empty()
+    );
+    given(quadStore.getQuads("http://example.org/objectFound1", "http://example.org/path2", Direction.OUT, ""))
+      .willReturn(Stream.of(quadThatShouldNotBeFound));
+    CursorQuad quadWithObjectUriOfPath2 = quadWithObject("http://example.org/objectOfPath2", Optional.empty());
+    given(quadStore.getQuads("http://example.org/objectFound2", "http://example.org/path2", Direction.OUT, ""))
+      .willReturn(Stream.of(quadWithObjectUriOfPath2));
+
+    Optional<TypedValue> summaryProperty =
+      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+
+    assertThat(summaryProperty, is(present()));
+    assertThat(summaryProperty.get(), hasProperty("value", is("http://example.org/objectOfPath2")));
+
+    verify(quadStore).getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, "");
+    verify(quadStore).getQuads("http://example.org/objectFound2", "http://example.org/path2", Direction.OUT, "");
+  }
+
+  @Test
   public void createSummaryPropertyWalksTheWholePathOfTheConfiguredDefaultProperty() {
     List<SummaryProp> defaultProperties = Lists.newArrayList(
       summaryPropertyWithPath("http://example.org/path", "http://example.org/path2")
@@ -125,7 +160,7 @@ public class SummaryPropDataRetrieverTest {
       "http://example.org/userConfigured",
       defaultProperties
     );
-    CursorQuad foundQuad = quadWithObject("http://example.org/objectFound");
+    CursorQuad foundQuad = quadWithObject("http://example.org/objectFound", Optional.empty());
     QuadStore quadStore = mock(QuadStore.class);
     given(quadStore.getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, ""))
       .willReturn(Stream.of(foundQuad));
@@ -168,7 +203,7 @@ public class SummaryPropDataRetrieverTest {
       defaultProperties
     );
     QuadStore quadStore = mock(QuadStore.class);
-    CursorQuad foundQuad = quadWithObject("http://example.org/objectFound1");
+    CursorQuad foundQuad = quadWithObject("http://example.org/objectFound1", Optional.empty());
     given(foundQuad.getObject()).willReturn("http://example.org/value");
     given(quadStore.getQuads("http://example.org/source", "http://example.org/prop2", Direction.OUT, ""))
       .willReturn(Stream.of(foundQuad));
@@ -205,9 +240,10 @@ public class SummaryPropDataRetrieverTest {
     return dataSet;
   }
 
-  private CursorQuad quadWithObject(String object) {
+  private CursorQuad quadWithObject(String object, Optional<String> valueType) {
     CursorQuad foundQuad = mock(CursorQuad.class);
     given(foundQuad.getObject()).willReturn(object);
+    given(foundQuad.getValuetype()).willReturn(valueType);
     return foundQuad;
   }
 
