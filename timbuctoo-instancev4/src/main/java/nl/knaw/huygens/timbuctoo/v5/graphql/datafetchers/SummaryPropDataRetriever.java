@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class SummaryPropDataRetriever {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
@@ -31,22 +32,27 @@ public class SummaryPropDataRetriever {
   Optional<TypedValue> createSummaryProperty(SubjectReference source, DataSet dataSet) {
     QuadStore quadStore = dataSet.getQuadStore();
 
-     Optional<CursorQuad> collection = quadStore.getQuads(
+    Optional<CursorQuad> collection;
+    try (Stream<CursorQuad> possibleCollections = quadStore.getQuads(
       source.getSubjectUri(),
       RdfConstants.RDF_TYPE,
       Direction.OUT,
       ""
-    ).findFirst();
+    )) {
+      collection = possibleCollections.findFirst();
+    }
 
 
     Optional<CursorQuad> userConfigured = Optional.empty();
     if (collection.isPresent()) {
-      userConfigured = quadStore.getQuads(
+      try (Stream<CursorQuad> possibleUserConfigured = quadStore.getQuads(
         collection.get().getObject(),
         userConfiguredPredicate,
         Direction.OUT,
         ""
-      ).findFirst();
+      )) {
+        userConfigured = possibleUserConfigured.findFirst();
+      }
     }
 
     if (userConfigured.isPresent()) {
@@ -77,13 +83,17 @@ public class SummaryPropDataRetriever {
      * This way only the data needed is retrieved.
      * See https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html#StreamOps for more info.
      */
-    return quadStore.getQuads(uri, path.get(0), Direction.OUT, "").map(quad -> {
-      if (path.size() > 1) {
-        return getQuad(path.subList(1, path.size()), quad.getObject(), quadStore);
-      } else {
-        return Optional.of(quad);
-      }
-    }).filter(Optional::isPresent).findFirst().map(Optional::get);
+    Optional<CursorQuad> foundQuad;
+    try (Stream<CursorQuad> quads = quadStore.getQuads(uri, path.get(0), Direction.OUT, "")) {
+      foundQuad = quads.map(quad -> {
+        if (path.size() > 1) {
+          return getQuad(path.subList(1, path.size()), quad.getObject(), quadStore);
+        } else {
+          return Optional.of(quad);
+        }
+      }).filter(Optional::isPresent).findFirst().map(Optional::get);
+    }
+    return foundQuad;
   }
 
   private TypedValue createTypedValue(CursorQuad cursorQuad, DataSet dataSet) {

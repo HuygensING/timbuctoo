@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.junit.Test;
 import org.mockito.InOrder;
 
@@ -44,16 +45,17 @@ public class SummaryPropDataRetrieverTest {
       defaultProperties
     );
     SummaryProp summaryProp = summaryPropertyWithPath("http://example.org/userPath");
+    CursorQuad collectionQuad = quadWithObject("http://example.org/collection");
     CursorQuad userConfiguredSummaryProp = quadWithObject(OBJECT_MAPPER.writeValueAsString(summaryProp));
     QuadStore quadStore = mock(QuadStore.class);
-    given(quadStore.getQuads("http://example.org/source", "http://example.org/userConfigured", Direction.OUT, ""))
+    given(quadStore.getQuads("http://example.org/source", RdfConstants.RDF_TYPE, Direction.OUT, ""))
+      .willReturn(Stream.of(collectionQuad));
+    given(quadStore.getQuads("http://example.org/collection", "http://example.org/userConfigured", Direction.OUT, ""))
       .willReturn(Stream.of(userConfiguredSummaryProp));
 
     instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
 
     InOrder inOrder = inOrder(quadStore);
-    // retrieve the user configured SummaryProp
-    inOrder.verify(quadStore).getQuads("http://example.org/source", "http://example.org/userConfigured", Direction.OUT, "");
     // walk the path of the user configured SummaryProp
     inOrder.verify(quadStore).getQuads("http://example.org/source", "http://example.org/userPath", Direction.OUT, "");
     // walk the path of the default SummaryProp
