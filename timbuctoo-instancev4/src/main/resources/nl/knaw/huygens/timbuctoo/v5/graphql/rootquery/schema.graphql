@@ -10,6 +10,9 @@ interface Value {
 
 interface Entity {
   uri: String!
+  title: Value
+  description: Value
+  image: Value
 }
 
 type Facet {
@@ -176,15 +179,25 @@ type CollectionMetadata {
 }
 
 type SummaryProperties {
-  title: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
-  description: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryDescriptionPredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
-  image: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+  title: SummaryProperty @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+  description: SummaryProperty @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryDescriptionPredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+  image: SummaryProperty @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+}
+
+type SummaryProperty {
+  path: [String]
+  type: String
 }
 
 input SummaryPropertiesInput {
-  title: String
-  description: String
-  image: String
+  title: SummaryPropertyInput
+  description: SummaryPropertyInput
+  image: SummaryPropertyInput
+}
+
+input SummaryPropertyInput {
+  path: [String!]!
+  type: String!
 }
 
 

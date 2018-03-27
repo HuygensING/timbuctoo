@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class GraphQlTypesContainer {
+public class DerivedSchemaContainer {
 
   private static final String ENTITY_INTERFACE_NAME = "Entity";
   private static final String VALUE_INTERFACE_NAME = "Value";
@@ -22,8 +22,8 @@ public class GraphQlTypesContainer {
   private final TypeNameStore typeNameStore;
   private final PaginationArgumentsHelper argumentsHelper;
 
-  GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore,
-                        PaginationArgumentsHelper argumentsHelper) {
+  DerivedSchemaContainer(String rootType, TypeNameStore typeNameStore,
+                         PaginationArgumentsHelper argumentsHelper) {
     this.rootType = rootType;
     this.typeNameStore = typeNameStore;
     this.argumentsHelper = argumentsHelper;
@@ -195,7 +195,10 @@ public class GraphQlTypesContainer {
         .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME).append(" @rdfType(uri: \"")
         .append(typeUri.replace("\"", "")) //quotes are not allowed in uri's anyway so this shouldn't happen
         .append("\") {\n")
-        .append("  uri: String! @uri\n");
+        .append("  uri: String! @uri\n")
+        .append("  title: Value @entityTitle\n")
+        .append("  description: Value @entityDescription\n")
+        .append("  image: Value @entityImage\n");
     }
   }
 

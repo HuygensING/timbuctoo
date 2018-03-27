@@ -43,6 +43,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -1308,6 +1309,107 @@ public class IntegrationTest {
     }
 
     assertThat(dataSets, hasItem(endsWith(dataSetName + "/capabilitylist.xml")));
+  }
+
+  @Test
+  public void summaryPropertiesCanBeOverriddenWithGraphQl() throws Exception {
+    final String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.nqud"
+      )
+    );
+
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    Response setTitleForPersons = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation SetSummaryProps($dataSetId:String! $collectionUri: String! $data:SummaryPropertiesInput!) {\n" +
+          "  setSummaryProperties(dataSet:$dataSetId, collectionUri: $collectionUri, summaryProperties: $data){ \n" +
+          "    title {\n" +
+          "      type\n" +
+          "    }\n" +
+          "  }\n" +
+          "}\n"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId",
+          jsn(dataSetId),
+          "collectionUri",
+          jsn("http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons"),
+          "data",
+          jsnO(
+            "title",
+            jsnO(
+              "path",
+              jsnA(
+                jsn("http://timbuctoo.huygens.knaw.nl/properties/birthDate")
+              ),
+              "type",
+              jsn("SimplePath")
+            )
+          )
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(setTitleForPersons.getStatus(), is(200));
+
+    // we know the birth date (therefore we also know the title) of the person used in the query beneath
+    Response queryData = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query bia_clusius {\n" +
+          "  dataSets {\n" +
+          "    " + dataSetId + "{\n" +
+          "      clusius_Persons(uri: \"http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons_PE00002125\") {\n" +
+          "        tim_birthDate {\n" +
+          "          value\n" +
+          "        }\n" +
+          "        title {\n" +
+          "          value\n" +
+          "        }\n" +
+          "      }\n" +
+          "    }\n" +
+          "  }\n" +
+          "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryData.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "clusius_Persons",
+            jsnO(
+              "tim_birthDate",
+              jsnO(
+                "value",
+                jsn("1538")
+              ),
+              "title",
+              jsnO(
+                "value",
+                jsn("1538")
+              )
+            )
+          )
+        )
+      )
+    )));
   }
 
   private List<String> getDataSetNamesOfDummy() {

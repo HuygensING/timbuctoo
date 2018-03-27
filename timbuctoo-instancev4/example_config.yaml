@@ -43,6 +43,41 @@ archetypesSchema: |
     names: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/properties/names", direction: "OUT", isValue: true, isObject: false, isList: false)
   }
 
+defaultSummaryProps:
+  defaultTitles:
+  - path:
+    - http://timbuctoo.huygens.knaw.nl/static/v5/predicate/names
+    type: SimplePath
+  - path:
+    - http://schema.org/name
+    type: SimplePath
+  - path:
+    - http://schema.org/title
+    type: SimplePath
+  - path:
+    - http://www.w3.org/2000/01/rdf-schema#label
+    type: SimplePath
+  - path:
+    - http://www.w3.org/2004/02/skos/core#prefLabel
+    type: SimplePath
+  - path:
+    - http://www.w3.org/2004/02/skos/core#altLabel
+    type: SimplePath
+  defaultDescriptions:
+  - path:
+    - http://schema.org/description
+    type: SimplePath
+  defaultImages:
+  - path:
+    - http://xmlns.com/foaf/0.1/img
+    type: SimplePath
+  - path:
+    - http://xmlns.com/foaf/0.1/depiction
+    type: SimplePath
+  - path:
+    - http://schema.org/image
+    type: SimplePath
+
 databases:
   databaseLocation: ${timbuctoo_dataPath}/datasets
 

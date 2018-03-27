@@ -22,7 +22,7 @@ public class DerivedSchemaTypeGenerator {
   }
 
   public String makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore) {
-    GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(rootType, nameStore, this.argumentsHelper);
+    DerivedSchemaContainer typesContainer = new DerivedSchemaContainer(rootType, nameStore, this.argumentsHelper);
 
     for (Type type : types.values()) {
       typesContainer.openObjectType(type.getName());
@@ -34,7 +34,7 @@ public class DerivedSchemaTypeGenerator {
     return typesContainer.getSchema();
   }
 
-  private static void fieldForDerivedType(Predicate pred, GraphQlTypesContainer typesContainer) {
+  private static void fieldForDerivedType(Predicate pred, DerivedSchemaContainer typesContainer) {
     if (pred.getReferenceTypes().size() == 0) {
       if (pred.getValueTypes().size() == 0) {
         LOG.error(
