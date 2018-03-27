@@ -326,11 +326,11 @@ type ExtendSchemaMessage {
 }
 
 type Mutation {
-  setViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
-  setSummaryProperties(dataSet: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
-  setIndexConfig(dataSet: ID!, collectionUri: String!, indexConfig: IndexConfigInput!): IndexConfig!
+  setViewConfig(dataSetId: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
+  setSummaryProperties(dataSetId: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
+  setIndexConfig(dataSetId: String!, collectionUri: String!, indexConfig: IndexConfigInput!): IndexConfig!
   createDataSet(dataSetName: String!): DataSetMetadata!
   deleteDataSet(dataSetId: String!): RemovedDataSet!
-  publish(dataSet: String!): DataSetMetadata!
-  extendSchema(dataSet: String!, customSchema: [CustomSchemaTypeInput!]!): ExtendSchemaMessage!
+  publish(dataSetId: String!): DataSetMetadata!
+  extendSchema(dataSetId: String!, customSchema: [CustomSchemaTypeInput!]!): ExtendSchemaMessage!
 }

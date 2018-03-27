@@ -12,17 +12,16 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
-import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +45,7 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
   public Object get(DataFetchingEnvironment env) {
     ContextData contextData = env.getContext();
     Optional<User> user = contextData.getUser();
-    String dataSetId = env.getArgument("dataSet");
+    String dataSetId = env.getArgument("dataSetId");
     Tuple<String, String> ownerIdDataSetName = DataSetMetaData.splitCombinedId(dataSetId);
 
     if (!user.isPresent()) {

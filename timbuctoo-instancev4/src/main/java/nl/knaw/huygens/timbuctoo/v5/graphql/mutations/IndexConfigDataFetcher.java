@@ -30,7 +30,7 @@ public class IndexConfigDataFetcher implements DataFetcher {
 
   @Override
   public Object get(DataFetchingEnvironment env) {
-    String dataSetId = env.getArgument("dataSet");
+    String dataSetId = env.getArgument("dataSetId");
     String collectionUri = env.getArgument("collectionUri");
     Object viewConfig = env.getArgument("indexConfig");
 
