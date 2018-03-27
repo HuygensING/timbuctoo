@@ -21,60 +21,56 @@ import java.util.stream.Stream;
 public class SummaryPropDataRetriever {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
   private static final Logger LOG = LoggerFactory.getLogger(SummaryPropDataRetriever.class);
-  private final String userConfiguredPredicate;
+  private final String summaryPropConfigPredicate;
   private final List<SummaryProp> defaultProperties;
 
-  public SummaryPropDataRetriever(String userConfiguredPredicate, List<SummaryProp> defaultProperties) {
+  public SummaryPropDataRetriever(String summaryPropConfigPredicate, List<SummaryProp> defaultProperties) {
     this.defaultProperties = defaultProperties;
-    this.userConfiguredPredicate = userConfiguredPredicate;
+    this.summaryPropConfigPredicate = summaryPropConfigPredicate;
   }
 
-  Optional<TypedValue> createSummaryProperty(SubjectReference source, DataSet dataSet) {
+
+  public Optional<TypedValue> createSummaryProperty(SubjectReference source, DataSet dataSet) {
     QuadStore quadStore = dataSet.getQuadStore();
 
-    Optional<CursorQuad> collection;
-    try (Stream<CursorQuad> possibleCollections = quadStore.getQuads(
-      source.getSubjectUri(),
-      RdfConstants.RDF_TYPE,
-      Direction.OUT,
-      ""
-    )) {
-      collection = possibleCollections.findFirst();
-    }
+    final Optional<TypedValue> localConfiguredSummaryProp =
+      getQuad(quadStore, source.getSubjectUri(), RdfConstants.RDF_TYPE)
+        .flatMap(collection -> getQuad(quadStore, collection.getObject(), summaryPropConfigPredicate))
+        .flatMap(userConfigured -> {
+          try {
+            SummaryProp summaryProp = OBJECT_MAPPER.readValue(userConfigured.getObject(), SummaryProp.class);
+            return getQuad(summaryProp.getPath(), source.getSubjectUri(), quadStore)
+              .map(quad -> createTypedValue(quad, dataSet));
+          } catch (IOException e) {
+            LOG.error("Cannot parse SummaryProp: '{}'", userConfigured.getObject());
+          }
+          return Optional.empty();
+        });
 
-
-    Optional<CursorQuad> userConfigured = Optional.empty();
-    if (collection.isPresent()) {
-      try (Stream<CursorQuad> possibleUserConfigured = quadStore.getQuads(
-        collection.get().getObject(),
-        userConfiguredPredicate,
-        Direction.OUT,
-        ""
-      )) {
-        userConfigured = possibleUserConfigured.findFirst();
-      }
-    }
-
-    if (userConfigured.isPresent()) {
-      try {
-        SummaryProp summaryProp = OBJECT_MAPPER.readValue(userConfigured.get().getObject(), SummaryProp.class);
-        Optional<CursorQuad> quad = getQuad(summaryProp.getPath(), source.getSubjectUri(), quadStore);
+    if (localConfiguredSummaryProp.isPresent()) {
+      return localConfiguredSummaryProp;
+    } else {
+      // fallback to default summary props
+      for (SummaryProp prop : defaultProperties) {
+        Optional<CursorQuad> quad = getQuad(prop.getPath(), source.getSubjectUri(), quadStore);
         if (quad.isPresent()) {
           return Optional.of(createTypedValue(quad.get(), dataSet));
         }
-      } catch (IOException e) {
-        LOG.error("Cannot parse SummaryProp: '{}'", userConfigured.get().getObject());
       }
-    }
-    // fallback to default summary props
-    for (SummaryProp prop : defaultProperties) {
-      Optional<CursorQuad> quad = getQuad(prop.getPath(), source.getSubjectUri(), quadStore);
-      if (quad.isPresent()) {
-        return Optional.of(createTypedValue(quad.get(), dataSet));
-      }
-    }
 
-    return Optional.empty();
+      return Optional.empty();
+    }
+  }
+
+  private Optional<CursorQuad> getQuad(QuadStore quadStore, String source, String predicate) {
+    try (Stream<CursorQuad> possibleCollections = quadStore.getQuads(
+      source,
+      predicate,
+      Direction.OUT,
+      ""
+    )) {
+      return possibleCollections.findFirst();
+    }
   }
 
   private Optional<CursorQuad> getQuad(List<String> path, String uri, QuadStore quadStore) {
