@@ -1,12 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
@@ -14,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfParser;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
@@ -224,7 +221,7 @@ public class ImportManager implements DataProvider {
               try (RdfPatchSerializer srlzr = serializerFactory.makeRdfPatchSerializer(stream, entry.getBaseUri())) {
                 mediaType = srlzr.getMediaType();
                 charset = Optional.of(srlzr.getCharset());
-                ((PatchRdfCreator) creator).sendQuads(srlzr, importStatus::setStatus);
+                ((PatchRdfCreator) creator).sendQuads(srlzr, importStatus::setStatus, dataSet);
               } catch (Exception e) {
                 LOG.error("Log generation failed", e);
                 importStatus.addError("Log generation failed", e);

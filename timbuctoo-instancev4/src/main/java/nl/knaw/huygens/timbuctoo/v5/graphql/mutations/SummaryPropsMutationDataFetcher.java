@@ -3,22 +3,14 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
-import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 
 import java.io.IOException;
 import java.util.Map;
@@ -27,12 +19,10 @@ import java.util.concurrent.ExecutionException;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYDESCRIPTIONPREDICATE;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYIMAGEPREDICATE;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYTITLEPREDICATE;
 
 public class SummaryPropsMutationDataFetcher implements DataFetcher {
-  private static final Logger LOG = LoggerFactory.getLogger(SummaryPropsMutationDataFetcher.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
   private final DataSetRepository dataSetRepository;
 
@@ -42,50 +32,24 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
 
   @Override
   public Object get(DataFetchingEnvironment env) {
-    String dataSetId = env.getArgument("dataSetId");
     String collectionUri = env.getArgument("collectionUri");
-    Map viewConfig = env.getArgument("summaryProperties");
+    Map summaryProperties = env.getArgument("summaryProperties");
+    final PredicateMutation mutation = new PredicateMutation();
 
-    ContextData contextData = env.getContext();
-    User user = contextData.getUser().get();
-    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+    getValue(summaryProperties, "title")
+      .ifPresent(val -> mutation.withReplacement(collectionUri, TIM_SUMMARYTITLEPREDICATE, val, STRING));
+    getValue(summaryProperties, "image")
+      .ifPresent(val -> mutation.withReplacement(collectionUri, TIM_SUMMARYTITLEPREDICATE, val, STRING));
+    getValue(summaryProperties, "description")
+      .ifPresent(val -> mutation.withReplacement(collectionUri, TIM_SUMMARYTITLEPREDICATE, val, STRING));
 
-    Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
-
-    String ownerId = userAndDataSet.getLeft();
-    String dataSetName = userAndDataSet.getRight();
-    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user, ownerId, dataSetName);
-    if (dataSetOpt.isPresent() &&
-      userPermissionCheck.getPermissions(dataSetRepository.getDataSet(user, ownerId, dataSetName).get()
-        .getMetadata()).contains(Permission.ADMIN)) {
-      DataSet dataSet = dataSetOpt.get();
-      dataSet.getQuadStore();
-      try {
-        final String baseUri = dataSet.getMetadata().getBaseUri();
-        dataSet.getImportManager().generateLog(
-          baseUri,
-          baseUri,
-          new StringPredicatesRdfCreator(
-            dataSet.getQuadStore(),
-            ImmutableMap.of(
-              Tuple.tuple(collectionUri, TIM_SUMMARYTITLEPREDICATE),
-              getValue(viewConfig, "title"),
-
-              Tuple.tuple(collectionUri, TIM_SUMMARYDESCRIPTIONPREDICATE),
-              getValue(viewConfig, "description"),
-
-              Tuple.tuple(collectionUri, TIM_SUMMARYIMAGEPREDICATE),
-              getValue(viewConfig, "image")
-            ),
-            baseUri
-          )
-        ).get();
-        return new LazyTypeSubjectReference(collectionUri, dataSet);
-      } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      throw new RuntimeException("Dataset does not exist");
+    DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
+    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
+    try {
+      MutationHelpers.addMutation(dataSet, mutation);
+      return new LazyTypeSubjectReference(collectionUri, dataSet);
+    } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
+      throw new RuntimeException(e);
     }
   }
 

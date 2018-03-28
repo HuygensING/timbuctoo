@@ -2,29 +2,20 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
-import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_VIEW_CONFIG;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 
 public class ViewConfigDataFetcher implements DataFetcher {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-  private static final Logger LOG = LoggerFactory.getLogger(ViewConfigDataFetcher.class);
   private final DataSetRepository dataSetRepository;
 
   public ViewConfigDataFetcher(DataSetRepository dataSetRepository) {
@@ -33,45 +24,20 @@ public class ViewConfigDataFetcher implements DataFetcher {
 
   @Override
   public Object get(DataFetchingEnvironment env) {
-    String dataSetId = env.getArgument("dataSetId");
     String collectionUri = env.getArgument("collectionUri");
     Object viewConfig = env.getArgument("viewConfig");
+    DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
 
-    ContextData contextData = env.getContext();
-
-    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
-
-    Tuple<String, String> ownerAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
-
-    String ownerId = ownerAndDataSet.getLeft();
-    String dataSetName = ownerAndDataSet.getRight();
-
-    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(contextData.getUser().get(),
-      ownerId, dataSetName);
-    DataSet dataSet = dataSetOpt.get();
-    if (dataSetOpt.isPresent() && userPermissionCheck.getPermissions(dataSet.getMetadata())
-                                                  .contains(Permission.ADMIN)) {
-      dataSet.getQuadStore();
-      try {
-        final String baseUri = dataSet.getMetadata().getBaseUri();
-
-        dataSet.getImportManager().generateLog(
-          baseUri,
-          baseUri,
-          new StringPredicatesRdfCreator(
-            dataSet.getQuadStore(),
-            ImmutableMap.of(
-              Tuple.tuple(collectionUri, HAS_VIEW_CONFIG), Optional.of(OBJECT_MAPPER.writeValueAsString(viewConfig))
-            ),
-            baseUri
-          )
-        ).get();
-        return viewConfig;
-      } catch (LogStorageFailedException | InterruptedException | ExecutionException | JsonProcessingException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      throw new RuntimeException("Dataset does not exist");
+    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
+    try {
+      MutationHelpers.addMutation(
+        dataSet,
+        new PredicateMutation()
+          .withReplacement(collectionUri, HAS_VIEW_CONFIG, OBJECT_MAPPER.writeValueAsString(viewConfig), STRING)
+      );
+      return viewConfig;
+    } catch (LogStorageFailedException | InterruptedException | ExecutionException | JsonProcessingException e) {
+      throw new RuntimeException(e);
     }
   }
 

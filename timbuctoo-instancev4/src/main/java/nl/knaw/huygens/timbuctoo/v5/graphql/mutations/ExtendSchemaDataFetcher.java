@@ -8,27 +8,26 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class ExtendSchemaDataFetcher implements DataFetcher {
+  private static final Logger LOG = LoggerFactory.getLogger(ExtendSchemaDataFetcher.class);
+
   private final DataSetRepository dataSetRepository;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .registerModule(new Jdk8Module())
@@ -43,23 +42,8 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
 
   @Override
   public Object get(DataFetchingEnvironment env) {
-    ContextData contextData = env.getContext();
-    Optional<User> user = contextData.getUser();
-    String dataSetId = env.getArgument("dataSetId");
-    Tuple<String, String> ownerIdDataSetName = DataSetMetaData.splitCombinedId(dataSetId);
-
-    if (!user.isPresent()) {
-      throw new RuntimeException("User not present.");
-    }
-
-    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user.get(),
-      ownerIdDataSetName.getLeft(), ownerIdDataSetName.getRight());
-
-    if (!dataSetOpt.isPresent()) {
-      throw new RuntimeException("Can't retrieve dataset.");
-    }
-
-    final DataSet dataSet = dataSetOpt.get();
+    DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
+    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
     final SchemaStore generatedSchema = dataSet.getSchemaStore();
 
     Map<String, Type> customTypes = new HashMap<>();
@@ -71,7 +55,7 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
       customSchema = OBJECT_MAPPER.readValue(customSchemaString, new TypeReference<List<ExplicitType>>() {
       });
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Could not parse the schema input");
     }
 
     for (ExplicitType explicitType : customSchema) {
@@ -79,9 +63,7 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
       newCustomSchema.put(explicitType.getCollectionId(), explicitType.getFields());
     }
 
-
     Map<String, List<ExplicitField>> existingCustomSchema = dataSet.getCustomSchema();
-
 
     Map<String, Type> existingCustomSchemaTypes = new HashMap<>();
 
@@ -104,11 +86,11 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
     try {
       dataSet.saveCustomSchema(mergedExplicitSchema);
     } catch (IOException e) {
+      LOG.error("Saving the custom schema failed", e);
       throw new RuntimeException(e);
     }
 
-    Map<String, Type> mergedSchema = mergeSchemas.mergeSchema(generatedSchema.getStableTypes(),
-      customTypes);
+    Map<String, Type> mergedSchema = mergeSchemas.mergeSchema(generatedSchema.getStableTypes(), customTypes);
 
     for (Map.Entry<String, Type> customType : customTypes.entrySet()) {
       if (!mergedSchema.containsKey(customType.getKey())) {
