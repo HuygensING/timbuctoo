@@ -9,10 +9,7 @@ import java.util.Map;
 
 public class MergeSchemas {
 
-  private final MergePredicates mergePredicates;
-
   public MergeSchemas() {
-    mergePredicates = new MergePredicates();
   }
 
   public Map<String, Type> mergeSchema(Map<String, Type> generatedSchema, Map<String, Type> customSchema) {
@@ -29,7 +26,7 @@ public class MergeSchemas {
             .getPredicate(customPredicate.getName(), customPredicate.getDirection()) != null) {
             Predicate generatedPredicate = mergedSchema.get(entry.getKey())
               .getPredicate(customPredicate.getName(), customPredicate.getDirection());
-            Predicate mergedPredicate = mergePredicates.merge(generatedPredicate, customPredicate);
+            Predicate mergedPredicate = generatedPredicate.merge(customPredicate);
             mergedPredicate.setIsExplicit(true);
             mergedPredicates.add(mergedPredicate);
           } else {

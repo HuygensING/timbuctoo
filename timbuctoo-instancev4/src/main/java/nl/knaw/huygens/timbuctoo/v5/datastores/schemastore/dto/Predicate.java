@@ -28,7 +28,7 @@ public class Predicate {
   private boolean isList;
 
   @JsonCreator
-  public Predicate(@JsonProperty("name") String name, @JsonProperty("direction") Direction direction) {
+  Predicate(@JsonProperty("name") String name, @JsonProperty("direction") Direction direction) {
     this.name = name;
     this.direction = direction;
   }
@@ -171,5 +171,50 @@ public class Predicate {
   public void finish() {
     this.hasBeenList = this.hasBeenList || subjectsWithThisPredicateAsList > 0;
     this.hasBeenSingular = this.hasBeenSingular || subjectsWithThisPredicateAsList <= 0;
+  }
+
+  @JsonIgnore
+  public Predicate merge(Predicate predicate2) {
+    if (getOwner() == null || predicate2.getOwner() == null) {
+      throw new IllegalArgumentException("Predicate owner missing");
+    }
+    if (!java.util.Objects.equals(getName(), predicate2.getName()) ||
+      getDirection() != predicate2.getDirection() ||
+      !java.util.Objects.equals(getOwner().getName(), predicate2.getOwner().getName())) {
+      throw new IllegalArgumentException("Predicate name, direction and/or owner do not match");
+    }
+    Predicate mergedPredicate = new Predicate(getName(), getDirection());
+
+    mergedPredicate.setOwner(getOwner());
+
+    mergedPredicate.setHasBeenList(hasBeenList() || predicate2.hasBeenList());
+
+    mergedPredicate.setHasBeenSingular(isHasBeenSingular() || predicate2.isHasBeenSingular());
+
+    mergedPredicate.setSubjectsWithThisPredicateAsList(getSubjectsWithThisPredicateAsList() +
+      predicate2.getSubjectsWithThisPredicateAsList());
+
+    //Handle References
+    Map<String, Long> mergedReferences = new HashMap<>();
+    for (Map.Entry<String, Long> entry : getReferenceTypes().entrySet()) {
+      mergedReferences.put(entry.getKey(), entry.getValue());
+    }
+    mergedPredicate.setReferenceTypes(mergedReferences);
+    for (Map.Entry<String, Long> entry : predicate2.getReferenceTypes().entrySet()) {
+      mergedPredicate.incReferenceType(entry.getKey(), entry.getValue());
+    }
+
+    //Handle Values
+    Map<String, Long> mergedValues = new HashMap<>();
+    for (Map.Entry<String, Long> entry : getValueTypes().entrySet()) {
+      mergedValues.put(entry.getKey(), entry.getValue());
+    }
+    mergedPredicate.setValueTypes(mergedValues);
+    for (Map.Entry<String, Long> entry : predicate2.getValueTypes().entrySet()) {
+      mergedPredicate.incValueType(entry.getKey(), entry.getValue());
+    }
+
+    return mergedPredicate;
+
   }
 }
