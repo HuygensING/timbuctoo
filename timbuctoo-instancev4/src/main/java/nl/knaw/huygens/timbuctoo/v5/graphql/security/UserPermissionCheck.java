@@ -29,7 +29,7 @@ public class UserPermissionCheck {
     Set<Permission> permissions = user
       .map(user -> {
         try {
-          String dataSetId = dataSetMetaData.getDataSetId();
+          String dataSetId = dataSetMetaData.getCombinedId();
           if (dataSetPermissionMap.containsKey(dataSetId)) {
             return dataSetPermissionMap.get(dataSetId);
           }

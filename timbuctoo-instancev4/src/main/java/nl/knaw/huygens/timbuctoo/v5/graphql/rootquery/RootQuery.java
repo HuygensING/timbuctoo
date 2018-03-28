@@ -140,6 +140,24 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         return dataSetRepository.getDataSet(user, splitCombinedId.getLeft(), splitCombinedId.getRight())
           .map(DataSetWithDatabase::new);
       })
+      .dataFetcher("dataSetMetadataList", env -> {
+        Stream<DataSetWithDatabase> dataSets = dataSetRepository.getDataSets()
+          .stream()
+          .map(DataSetWithDatabase::new);
+        if (env.getArgument("promotedOnly")) {
+          dataSets = dataSets.filter(DataSetWithDatabase::isPromoted);
+        }
+        if (env.getArgument("publishedOnly")) {
+          dataSets = dataSets.filter(DataSetWithDatabase::isPublished);
+        }
+        return dataSets
+          .filter(x -> {
+            ContextData contextData = env.getContext();
+            UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+            return userPermissionCheck.getPermissions(x.getDataSet().getMetadata()).contains(Permission.READ);
+          })
+          .collect(Collectors.toList());
+      })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
         .map(MimeTypeDescription::create)
@@ -260,6 +278,22 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .getDataSetsWithWriteAccess(env.getSource())
         .stream().map(DataSetWithDatabase::new).iterator()
       )
+      .dataFetcher("dataSetMetadataList", env -> (Iterable) () -> {
+        Stream<DataSetWithDatabase> dataSets = dataSetRepository.getDataSets()
+          .stream()
+          .map(DataSetWithDatabase::new);
+        if (env.getArgument("ownOnly")) {
+          String userId = ((ContextData) env.getContext()).getUser().map(u -> "u" + u.getPersistentId()).orElse(null);
+          dataSets = dataSets.filter(d -> d.getOwnerId().equals(userId));
+        }
+        Permission permission = Permission.valueOf(env.getArgument("permission"));
+        if (permission != Permission.READ) { //Read is implied
+          UserPermissionCheck check = ((ContextData) env.getContext()).getUserPermissionCheck();
+          dataSets = dataSets.filter(d -> check.getPermissions(d).contains(permission));
+        }
+
+        return dataSets.iterator();
+      })
       .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
       .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
       .dataFetcher("personalInfo", env -> "http://example.com")

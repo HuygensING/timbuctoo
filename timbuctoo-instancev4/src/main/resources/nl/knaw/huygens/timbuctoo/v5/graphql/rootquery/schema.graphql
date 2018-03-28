@@ -26,14 +26,11 @@ type Option {
 }
 
 type Query {
-  #the datasets that are supposed to get extra attention
-  promotedDataSets: [DataSetMetadata!]!
-
-  #all the dataSets, with and without the promoted ones
-  allDataSets: [DataSetMetadata!]!
-
   #The actual dataSets
   #dataSets: DataSets (Added using extends if there is actually a dataSet available)
+
+  #metadata for all visible dataSets, with or without the promoted ones, use aboutMe { dataSetMetadataList(ownOnly: true) } for the user's own data sets.
+  dataSetMetadataList(promotedOnly: Boolean!, publishedOnly: Boolean!): [DataSetMetadata!]!
 
   #metadata for a specific dataset
   dataSetMetadata(dataSetId: ID!): DataSetMetadata
@@ -43,6 +40,16 @@ type Query {
 
   #all mimetypes that you can use when downloading data from a dataSet
   availableExportMimetypes: [MimeType!]!
+
+  ##############
+  #DEPRECATED:
+  ##############
+
+  #metadata for the datasets that are supposed to get extra attention
+  promotedDataSets: [DataSetMetadata!]! @deprecated(reason: "Use dataSetMetadataList(promotedOnly: true, ownOnly: false)")
+
+  #metadata for all the dataSets that this user can see, with and without the promoted ones
+  allDataSets: [DataSetMetadata!]! @deprecated(reason: "Use dataSetMetadataList(promotedOnly: false, ownOnly: false)")
 }
 
 type MimeType {
@@ -131,9 +138,18 @@ enum TimeUnit {
   DAYS
 }
 
+enum Permission {
+  ADMIN
+  WRITE
+  READ
+}
+
 type AboutMe {
   #datasets that this user has some specific permissions on
-  dataSets: [DataSetMetadata!]!
+  dataSets: [DataSetMetadata!]! @deprecated(reason: "renamed to dataSetMetadataList to align with the naming conventions")
+
+  #datasets that this user has specifically been granted permissions on, or just his or her own data sets.
+  dataSetMetadataList(ownOnly: Boolean!, permission: Permission!): [DataSetMetadata!]!
 
   #The unique identifier of this user
   id: ID!
