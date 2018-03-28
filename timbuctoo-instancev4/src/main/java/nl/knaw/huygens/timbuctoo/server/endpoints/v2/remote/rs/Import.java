@@ -54,6 +54,12 @@ public class Import {
           Iterator<RemoteFile> files =
             resourceSyncFileLoader.loadFiles(importData.source.toString()).iterator();
           LOG.info("Found files '{}'", files.hasNext());
+
+          if (!files.hasNext()) {
+            LOG.error("No supported files available for import.");
+            return Response.serverError().build();
+          }
+
           ResourceSyncResport resourceSyncResport = new ResourceSyncResport();
 
           while (files.hasNext()) {

@@ -360,7 +360,7 @@ public class IntegrationTest {
     String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
-      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      new File(getResource(IntegrationTest.class, "dataset.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
         "encoding", "UTF-8",

@@ -92,12 +92,11 @@ public class ResourceSyncFileLoader {
   public Stream<RemoteFile> loadFiles(String capabilityListUri) throws IOException {
     List<UrlItem> itemList = getRsFile(capabilityListUri).getItemList();
 
-
-    boolean hasCapabilityList = hasCapabilityList(itemList);
+    boolean hasChangeList = hasChangeList(itemList);
 
     Stream<RemoteFile> remoteFileStream;
 
-    if (hasCapabilityList) {
+    if (hasChangeList) {
       remoteFileStream = itemList.stream()
         .filter(url -> url
           .getMetadata().getCapability().equals(Capability.CHANGELIST.getXmlValue())
@@ -174,7 +173,7 @@ public class ResourceSyncFileLoader {
     }
   }
 
-  private boolean hasCapabilityList(List<UrlItem> itemList) {
+  private boolean hasChangeList(List<UrlItem> itemList) {
     for (UrlItem urlItem : itemList) {
       if (urlItem.getMetadata().getCapability().contains(Capability.CHANGELIST.getXmlValue())) {
         return true;
