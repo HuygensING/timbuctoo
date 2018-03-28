@@ -31,12 +31,12 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadataList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadata;
@@ -301,13 +301,13 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.type("Mutation", builder -> builder
-      .dataFetcher("setViewConfig", new ViewConfigDataFetcher(dataSetRepository))
-      .dataFetcher("setSummaryProperties", new SummaryPropsMutationDataFetcher(dataSetRepository))
-      .dataFetcher("setIndexConfig", new IndexConfigDataFetcher(dataSetRepository))
+      .dataFetcher("setViewConfig", new ViewConfigMutation(dataSetRepository))
+      .dataFetcher("setSummaryProperties", new SummaryPropsMutation(dataSetRepository))
+      .dataFetcher("setIndexConfig", new IndexConfigMutation(dataSetRepository))
       .dataFetcher("createDataSet", new CreateDataSetMutation(dataSetRepository))
-      .dataFetcher("deleteDataSet", new DeleteDataSetDataFetcher(dataSetRepository))
-      .dataFetcher("publish", new MakePublicDataFetcher(dataSetRepository))
-      .dataFetcher("extendSchema", new ExtendSchemaDataFetcher(dataSetRepository))
+      .dataFetcher("deleteDataSet", new DeleteDataSetMutation(dataSetRepository))
+      .dataFetcher("publish", new MakePublicMutation(dataSetRepository))
+      .dataFetcher("extendSchema", new ExtendSchemaMutation(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);

@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ExtendSchemaDataFetcher implements DataFetcher {
-  private static final Logger LOG = LoggerFactory.getLogger(ExtendSchemaDataFetcher.class);
+public class ExtendSchemaMutation implements DataFetcher {
+  private static final Logger LOG = LoggerFactory.getLogger(ExtendSchemaMutation.class);
 
   private final DataSetRepository dataSetRepository;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
@@ -36,7 +36,7 @@ public class ExtendSchemaDataFetcher implements DataFetcher {
     .enable(SerializationFeature.INDENT_OUTPUT);
 
 
-  public ExtendSchemaDataFetcher(DataSetRepository dataSetRepository) {
+  public ExtendSchemaMutation(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
 

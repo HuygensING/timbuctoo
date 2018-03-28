@@ -10,11 +10,11 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MakePublicDataFetcher implements DataFetcher {
-  private static final Logger LOG = LoggerFactory.getLogger(MakePublicDataFetcher.class);
+public class MakePublicMutation implements DataFetcher {
+  private static final Logger LOG = LoggerFactory.getLogger(MakePublicMutation.class);
   private final DataSetRepository dataSetRepository;
 
-  public MakePublicDataFetcher(DataSetRepository dataSetRepository) {
+  public MakePublicMutation(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
 

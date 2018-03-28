@@ -22,11 +22,11 @@ import static java.util.Optional.of;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYTITLEPREDICATE;
 
-public class SummaryPropsMutationDataFetcher implements DataFetcher {
+public class SummaryPropsMutation implements DataFetcher {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
   private final DataSetRepository dataSetRepository;
 
-  public SummaryPropsMutationDataFetcher(DataSetRepository dataSetRepository) {
+  public SummaryPropsMutation(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
 

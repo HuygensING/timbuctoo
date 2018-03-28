@@ -12,13 +12,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class DeleteDataSetDataFetcher implements DataFetcher {
+public class DeleteDataSetMutation implements DataFetcher {
 
 
-  private static final Logger LOG = LoggerFactory.getLogger(DeleteDataSetDataFetcher.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DeleteDataSetMutation.class);
   private final DataSetRepository dataSetRepository;
 
-  public DeleteDataSetDataFetcher(DataSetRepository dataSetRepository) {
+  public DeleteDataSetMutation(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
 

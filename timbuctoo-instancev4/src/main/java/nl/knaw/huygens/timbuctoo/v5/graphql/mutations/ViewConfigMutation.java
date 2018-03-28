@@ -11,33 +11,34 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 
 import java.util.concurrent.ExecutionException;
 
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_VIEW_CONFIG;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
-public class IndexConfigDataFetcher implements DataFetcher {
+public class ViewConfigMutation implements DataFetcher {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final DataSetRepository dataSetRepository;
 
-  public IndexConfigDataFetcher(DataSetRepository dataSetRepository) {
+  public ViewConfigMutation(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
 
   @Override
   public Object get(DataFetchingEnvironment env) {
-
     String collectionUri = env.getArgument("collectionUri");
-    Object indexConfig = env.getArgument("indexConfig");
+    Object viewConfig = env.getArgument("viewConfig");
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
+
     MutationHelpers.checkPermissions(env, dataSet.getMetadata());
     try {
       MutationHelpers.addMutation(
         dataSet,
         new PredicateMutation()
-          .withReplacement(collectionUri, TIM_HASINDEXERCONFIG, OBJECT_MAPPER.writeValueAsString(indexConfig), STRING)
+          .withReplacement(collectionUri, HAS_VIEW_CONFIG, OBJECT_MAPPER.writeValueAsString(viewConfig), STRING)
       );
-      return indexConfig;
+      return viewConfig;
     } catch (LogStorageFailedException | InterruptedException | ExecutionException | JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
+
 }
