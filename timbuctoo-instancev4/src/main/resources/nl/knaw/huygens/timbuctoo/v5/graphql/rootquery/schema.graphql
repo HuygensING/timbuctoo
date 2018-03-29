@@ -341,6 +341,30 @@ type ExtendSchemaMessage {
   message: String!
 }
 
+input DataSetMetadataInput {
+  title: String
+  description: String
+  imageUrl: String
+  owner: ContactInfoInput
+  contact: ContactInfoInput
+  provenanceInfo: ProvenanceInfoInput
+  license: LicenseInput
+}
+
+input ContactInfoInput {
+  name: String!
+  email: String!
+}
+
+input LicenseInput {
+  uri: String!
+}
+
+input ProvenanceInfoInput {
+  title: String!
+  body: String!
+}
+
 type Mutation {
   setViewConfig(dataSetId: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
   setSummaryProperties(dataSetId: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
@@ -349,4 +373,8 @@ type Mutation {
   deleteDataSet(dataSetId: String!): RemovedDataSet!
   publish(dataSetId: String!): DataSetMetadata!
   extendSchema(dataSetId: String!, customSchema: [CustomSchemaTypeInput!]!): ExtendSchemaMessage!
+  # Update the metadata for this dataset. To leave a property as-is you can omit it from the metadata. To delete it you can include it and set it's value to null.
+  setDataSetMetadata(dataSetId: String!, metadata: DataSetMetadataInput!): DataSetMetadata!
 }
+
+

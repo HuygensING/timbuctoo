@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DataSetDescriptionMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
@@ -308,6 +309,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("deleteDataSet", new DeleteDataSetMutation(dataSetRepository))
       .dataFetcher("publish", new MakePublicMutation(dataSetRepository))
       .dataFetcher("extendSchema", new ExtendSchemaMutation(dataSetRepository))
+      .dataFetcher("setDataSetMetadata", new DataSetDescriptionMutation(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);

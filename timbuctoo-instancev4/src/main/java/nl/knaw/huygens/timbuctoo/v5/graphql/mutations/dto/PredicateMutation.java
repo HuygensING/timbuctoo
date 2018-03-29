@@ -62,15 +62,17 @@ public class PredicateMutation {
     return (subject, mutation) -> {
       mutation.fullRetractions.add(create(subject, predicateUri, Direction.OUT, "", null, null, ""));
       for (Value value : values) {
-        mutation.additions.add(create(
-          subject,
-          predicateUri,
-          Direction.OUT,
-          value.value,
-          value.type,
-          value.language,
-          ""
-        ));
+        if (value.value != null) {
+          mutation.additions.add(create(
+            subject,
+            predicateUri,
+            Direction.OUT,
+            value.value,
+            value.type,
+            value.language,
+            ""
+          ));
+        }
       }
     };
   }
