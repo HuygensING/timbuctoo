@@ -9,6 +9,9 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -16,17 +19,21 @@ public class PredicateMutationRdfPatcher implements PatchRdfCreator {
   private final PredicateMutation mutation;
 
   public PredicateMutationRdfPatcher(PredicateMutation mutation) {
-
     this.mutation = mutation;
   }
+
 
   @Override
   public void sendQuads(RdfPatchSerializer saver, Consumer<String> importStatusConsumer, DataSet dataSet)
     throws LogStorageFailedException {
-
     final QuadStore quadStore = dataSet.getQuadStore();
-    for (CursorQuad newValue : mutation.getReplacements()) {
-      final String subject = newValue.getSubject();
+    final Map<String, String> foundSubjects = new HashMap<>();
+    for (Map.Entry<UUID, PredicateMutation.SubjectFinder> entry : mutation.getSubjectFinders().entrySet()) {
+      foundSubjects.put(entry.getKey().toString(), entry.getValue().getSubject(quadStore));
+    }
+
+    for (CursorQuad newValue : mutation.getFullRetractions()) {
+      final String subject = foundSubjects.getOrDefault(newValue.getSubject(), newValue.getSubject());
       final String predicate = newValue.getPredicate();
       final Direction direction = newValue.getDirection();
 
@@ -42,36 +49,30 @@ public class PredicateMutationRdfPatcher implements PatchRdfCreator {
           );
         }
       }
-      saver.onQuad(
-        newValue.getSubject(),
-        newValue.getPredicate(),
-        newValue.getObject(),
-        newValue.getValuetype().orElse(null),
-        newValue.getLanguage().orElse(null),
-        null
-      );
     }
 
     for (CursorQuad oldValue : mutation.getRetractions()) {
       saver.delQuad(
-        oldValue.getSubject(),
+        foundSubjects.getOrDefault(oldValue.getSubject(), oldValue.getSubject()),
         oldValue.getPredicate(),
-        oldValue.getObject(),
+        foundSubjects.getOrDefault(oldValue.getObject(), oldValue.getObject()),
         oldValue.getValuetype().orElse(null),
         oldValue.getLanguage().orElse(null),
         null
       );
     }
 
-    for (CursorQuad oldValue : mutation.getAdditions()) {
-      saver.onQuad(
-        oldValue.getSubject(),
-        oldValue.getPredicate(),
-        oldValue.getObject(),
-        oldValue.getValuetype().orElse(null),
-        oldValue.getLanguage().orElse(null),
-        null
-      );
+    for (CursorQuad newValue : mutation.getAdditions()) {
+      if (newValue.getObject() != null) {
+        saver.onQuad(
+          foundSubjects.getOrDefault(newValue.getSubject(), newValue.getSubject()),
+          newValue.getPredicate(),
+          foundSubjects.getOrDefault(newValue.getObject(), newValue.getObject()),
+          newValue.getValuetype().orElse(null),
+          newValue.getLanguage().orElse(null),
+          null
+        );
+      }
     }
   }
 }

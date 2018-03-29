@@ -19,7 +19,10 @@ import java.util.concurrent.ExecutionException;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.replace;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.value;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYDESCRIPTIONPREDICATE;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYIMAGEPREDICATE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYTITLEPREDICATE;
 
 public class SummaryPropsMutation implements DataFetcher {
@@ -32,20 +35,19 @@ public class SummaryPropsMutation implements DataFetcher {
 
   @Override
   public Object get(DataFetchingEnvironment env) {
-    String collectionUri = env.getArgument("collectionUri");
-    Map summaryProperties = env.getArgument("summaryProperties");
-    final PredicateMutation mutation = new PredicateMutation();
-
-    getValue(summaryProperties, "title")
-      .ifPresent(val -> mutation.withReplacement(collectionUri, TIM_SUMMARYTITLEPREDICATE, val, STRING));
-    getValue(summaryProperties, "image")
-      .ifPresent(val -> mutation.withReplacement(collectionUri, TIM_SUMMARYTITLEPREDICATE, val, STRING));
-    getValue(summaryProperties, "description")
-      .ifPresent(val -> mutation.withReplacement(collectionUri, TIM_SUMMARYTITLEPREDICATE, val, STRING));
-
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     MutationHelpers.checkPermissions(env, dataSet.getMetadata());
     try {
+      String collectionUri = env.getArgument("collectionUri");
+      Map data = env.getArgument("summaryProperties");
+      final PredicateMutation mutation = new PredicateMutation();
+      mutation.entity(
+        collectionUri,
+        getValue(data, "title").map(v -> replace(TIM_SUMMARYTITLEPREDICATE, value(v))).orElse(null),
+        getValue(data, "image").map(v -> replace(TIM_SUMMARYIMAGEPREDICATE, value(v))).orElse(null),
+        getValue(data, "description").map(v -> replace(TIM_SUMMARYDESCRIPTIONPREDICATE, value(v))).orElse(null)
+      );
+
       MutationHelpers.addMutation(dataSet, mutation);
       return new LazyTypeSubjectReference(collectionUri, dataSet);
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
@@ -54,7 +56,6 @@ public class SummaryPropsMutation implements DataFetcher {
   }
 
   private Optional<String> getValue(Map viewConfig, String valueName) {
-
     Object value = viewConfig.get(valueName);
     if (value != null) {
       try {
