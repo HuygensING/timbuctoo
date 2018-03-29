@@ -143,7 +143,9 @@ public class BdbWrapper<KeyT, ValueT> {
         keyBinder.objectToEntry(key, keyEntry);
         if (databaseConfig.getSortedDuplicates()) {
           valueBinder.objectToEntry(value, valueEntry);
-          return database.putNoDupData(transaction, keyEntry, valueEntry) != null;
+          OperationStatus operationStatus = database.putNoDupData(transaction, keyEntry, valueEntry);
+          // operation status is only SUCCESS if the data was not in the database before
+          return operationStatus.equals(OperationStatus.SUCCESS);
         } else {
           try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
             OperationStatus searchResult = cursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
@@ -151,7 +153,8 @@ public class BdbWrapper<KeyT, ValueT> {
               return false;
             } else {
               valueBinder.objectToEntry(value, valueEntry);
-              return database.put(transaction, keyEntry, valueEntry) != null;
+              database.put(transaction, keyEntry, valueEntry); // returns OperationStatus.SUCCESS or throws an exception
+              return  true;
             }
           }
         }
