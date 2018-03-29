@@ -289,9 +289,13 @@ public class DataSetRepository {
   }
 
   public void removeDataSet(String ownerId, String dataSetName, User user)
-    throws IOException, NotEnoughPermissionsException {
+    throws IOException, NotEnoughPermissionsException, DataSetDoesNotExistException {
     try {
       DataSet dataSet = dataSetMap.get(ownerId).get(dataSetName);
+      if (dataSet == null) {
+        LOG.warn("DataSet '{}' of user with id '{}' does not exist (anymore).", dataSetName, ownerId);
+        throw new DataSetDoesNotExistException(dataSetName, ownerId);
+      }
       String combinedId = dataSet.getMetadata().getCombinedId();
       if (!permissionFetcher.getPermissions(user, dataSet.getMetadata()).contains(Permission.ADMIN)) {
         throw new NotEnoughPermissionsException(
@@ -326,4 +330,9 @@ public class DataSetRepository {
     loadDataSetsFromJson();
   }
 
+  public class DataSetDoesNotExistException extends Exception {
+    DataSetDoesNotExistException(String dataSetName, String ownerId) {
+      super(String.format("DataSet '%s' of user with id '%s' does not exist", dataSetName, ownerId));
+    }
+  }
 }

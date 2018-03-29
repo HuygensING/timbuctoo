@@ -36,6 +36,8 @@ public class DeleteDataSetMutation implements DataFetcher {
       throw new RuntimeException("Data set could not be deleted");
     } catch (NotEnoughPermissionsException e) {
       throw new RuntimeException("You do not have enough permissions");
+    } catch (DataSetRepository.DataSetDoesNotExistException e) {
+      throw new RuntimeException(e.getMessage());
     }
   }
 
