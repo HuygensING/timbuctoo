@@ -15,6 +15,7 @@ import com.github.jsonldjava.core.RDFDataset;
 import com.github.jsonldjava.utils.JsonUtils;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PatchRdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -227,7 +228,8 @@ public class JsonProvenanceToRdfPatch implements PatchRdfCreator {
   }
 
   @Override
-  public void sendQuads(RdfPatchSerializer saver, Consumer<String> importStatus) throws LogStorageFailedException {
+  public void sendQuads(RdfPatchSerializer saver, Consumer<String> importStatus,
+                        DataSet dataSet) throws LogStorageFailedException {
     for (JsonNode revision : activity.get(PROV_GENERATES)) {
       final String entityUri = revision.get(PROV_SPECIALIZATION_OF).get(0).get("@id").asText();
 

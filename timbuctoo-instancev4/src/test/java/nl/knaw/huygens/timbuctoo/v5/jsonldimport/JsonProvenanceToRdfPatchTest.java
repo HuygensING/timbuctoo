@@ -153,7 +153,7 @@ public class JsonProvenanceToRdfPatchTest {
       new DummyQuadStore(), EDITOR_URI, "test", CLOCK);
 
     creator.sendQuads(basicRdfPatchSerializer, s -> {
-    });
+    }, null);
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred2")));
@@ -199,7 +199,7 @@ public class JsonProvenanceToRdfPatchTest {
       new DummyQuadStore(), EDITOR_URI, "test", CLOCK);
 
     creator.sendQuads(basicRdfPatchSerializer, s -> {
-    });
+    }, null);
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred")));
@@ -235,7 +235,7 @@ public class JsonProvenanceToRdfPatchTest {
       testMultiValueAdditions, new DummyQuadStore(), EDITOR_URI, "test", CLOCK);
 
     creator.sendQuads(basicRdfPatchSerializer, s -> {
-    });
+    }, null);
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred")));
@@ -285,7 +285,7 @@ public class JsonProvenanceToRdfPatchTest {
       new DummyQuadStore(), EDITOR_URI, "test", CLOCK);
 
     creator.sendQuads(basicRdfPatchSerializer, s -> {
-    });
+    }, null);
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred")));
@@ -326,7 +326,7 @@ public class JsonProvenanceToRdfPatchTest {
       testQuadStore, EDITOR_URI, "test", CLOCK);
 
     creator.sendQuads(basicRdfPatchSerializer, s -> {
-    });
+    }, null);
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("http://example.org/pred")));
@@ -377,7 +377,7 @@ public class JsonProvenanceToRdfPatchTest {
       testQuadStore, EDITOR_URI, "test", CLOCK);
 
     creator.sendQuads(basicRdfPatchSerializer, s -> {
-    });
+    }, null);
 
     List<String> filteredResult = Lists.newArrayList(Collections2.filter(
       result, Predicates.containsPattern("latestRevision")));

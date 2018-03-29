@@ -1,0 +1,58 @@
+package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
+
+import graphql.schema.DataFetchingEnvironment;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+
+public class MutationHelpers {
+
+  public static User getUser(DataFetchingEnvironment env) {
+    ContextData contextData = env.getContext();
+
+    return contextData.getUser().orElseThrow(() -> new RuntimeException("You are not logged in"));
+  }
+
+  public static void checkPermissions(DataFetchingEnvironment env, DataSetMetaData dataSetMetaData) {
+    ContextData contextData = env.getContext();
+
+    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+    if (!userPermissionCheck.getPermissions(dataSetMetaData).contains(Permission.ADMIN)) {
+      throw new RuntimeException("You are not admin of this dataset");
+    }
+  }
+
+  public static DataSet getDataSet(DataFetchingEnvironment env, DataSetFetcher fetcher) {
+    String dataSetId = env.getArgument("dataSetId");
+    Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
+
+    User user = getUser(env);
+
+    String ownerId = userAndDataSet.getLeft();
+    String dataSetName = userAndDataSet.getRight();
+
+    return fetcher.getDataSet(user, ownerId, dataSetName)
+      .orElseThrow(() -> new RuntimeException("Dataset does not exist"));
+  }
+
+  public static void addMutation(DataSet dataSet, PredicateMutation mutation)
+    throws LogStorageFailedException, ExecutionException, InterruptedException {
+
+    final String baseUri = dataSet.getMetadata().getBaseUri();
+    dataSet.getImportManager().generateLog(baseUri, baseUri, new PredicateMutationRdfPatcher(mutation))
+      .get();
+  }
+
+  public interface DataSetFetcher {
+    Optional<DataSet> getDataSet(User user, String ownerId, String dataSetName);
+  }
+}

@@ -49,7 +49,10 @@ public class Rml {
       user = userValidator.getUserFromAccessToken(authHeader);
     } catch (UserValidationException e) {
       LOG.error("Exception validating user", e);
-      return Response.status(Response.Status.FORBIDDEN).build();
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+    if (!user.isPresent()) {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
     }
     final Optional<DataSet> dataSet = dataSetRepository.getDataSet(user.get(),ownerId, dataSetId);
     if (dataSet.isPresent()) {

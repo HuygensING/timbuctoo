@@ -19,7 +19,6 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -43,7 +42,6 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -696,7 +694,7 @@ public class IntegrationTest {
         "query",
         jsn(
           "mutation setViewConfig($dataSetId: String!, $collectionUri: String!, $type: String!, $value: String) " +
-            "{setViewConfig(dataSet: $dataSetId, collectionUri: $collectionUri, viewConfig: [{type: $type, value: " +
+            "{setViewConfig(dataSetId: $dataSetId, collectionUri: $collectionUri, viewConfig: [{type: $type, value: " +
             "$value, subComponents: [], formatter: []}]){   type    value}}"),
         "variables",
         jsnO(
@@ -790,14 +788,14 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation extendSchema($dataSet: String!, $customSchema: [CustomSchemaTypeInput!]!) { " +
-            "   extendSchema(dataSet:$dataSet,customSchema:$customSchema){\n" +
+          "mutation extendSchema($dataSetId: String!, $customSchema: [CustomSchemaTypeInput!]!) { " +
+            "   extendSchema(dataSetId: $dataSetId, customSchema:$customSchema){\n" +
             "    message\n" +
             "   }" +
             "}"),
         "variables",
         jsnO(
-          "dataSet", jsn(dataSetId),
+          "dataSetId", jsn(dataSetId),
           "customSchema", customSchema
         )
       ).toString(), MediaType.valueOf("application/json")));
@@ -855,14 +853,14 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation extendSchema($dataSet: String!, $customSchema: [CustomSchemaTypeInput!]!) { " +
-            "   extendSchema(dataSet:$dataSet,customSchema:$customSchema){\n" +
+          "mutation extendSchema($dataSetId: String!, $customSchema: [CustomSchemaTypeInput!]!) { " +
+            "   extendSchema(dataSetId: $dataSetId, customSchema:$customSchema){\n" +
             "    message\n" +
             "   }" +
             "}"),
         "variables",
         jsnO(
-          "dataSet", jsn(dataSetId),
+          "dataSetId", jsn(dataSetId),
           "customSchema", customSchema2
         )
       ).toString(), MediaType.valueOf("application/json")));
@@ -962,8 +960,8 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation SetIndexConfig($dataSetId:ID!, $collectionUri: String!, $indexConfig: IndexConfigInput!) {\n" +
-            "  setIndexConfig(dataSet: $dataSetId, collectionUri:$collectionUri, indexConfig: $indexConfig) {\n" +
+          "mutation SetIndexConfig($dataSetId: String!, $collectionUri: String!, $indexConfig: IndexConfigInput!) {\n" +
+            "  setIndexConfig(dataSetId: $dataSetId, collectionUri:$collectionUri, indexConfig: $indexConfig) {\n" +
             "    facet {\n" +
             "      paths\n" +
             "      type\n" +
@@ -1259,7 +1257,7 @@ public class IntegrationTest {
         "query",
         jsn(
           "mutation Publish($dataSetId: String!) {" +
-            "  publish(dataSet: $dataSetId) {" +
+            "  publish(dataSetId: $dataSetId) {" +
             "    dataSetId" +
             "  }" +
             "}"
@@ -1332,8 +1330,8 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation SetSummaryProps($dataSetId:String! $collectionUri: String! $data:SummaryPropertiesInput!) {\n" +
-          "  setSummaryProperties(dataSet:$dataSetId, collectionUri: $collectionUri, summaryProperties: $data){ \n" +
+          "mutation SetSummaryProps($dataSetId: String! $collectionUri: String! $data:SummaryPropertiesInput!) {\n" +
+          "  setSummaryProperties(dataSetId: $dataSetId, collectionUri: $collectionUri, summaryProperties: $data){ \n" +
           "    title {\n" +
           "      type\n" +
           "    }\n" +

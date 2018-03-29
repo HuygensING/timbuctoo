@@ -6,42 +6,36 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Optional;
 
-public class DeleteDataSetDataFetcher implements DataFetcher {
+public class DeleteDataSetMutation implements DataFetcher {
 
 
-  private static final Logger LOG = LoggerFactory.getLogger(DeleteDataSetDataFetcher.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DeleteDataSetMutation.class);
   private final DataSetRepository dataSetRepository;
 
-  public DeleteDataSetDataFetcher(DataSetRepository dataSetRepository) {
+  public DeleteDataSetMutation(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
-    Optional<User> currentUser = ((RootData) environment.getRoot()).getCurrentUser();
-    if (!currentUser.isPresent()) {
-      throw new RuntimeException("User is not provided");
-    }
-
-    String dataSetId = environment.getArgument("dataSetId");
-
-    Tuple<String, String> ownerDataSetName = DataSetMetaData.splitCombinedId(dataSetId);
+    String combinedId = environment.getArgument("dataSetId");
+    Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(combinedId);
+    User user = MutationHelpers.getUser(environment);
 
     try {
-      dataSetRepository.removeDataSet(ownerDataSetName.getLeft(),ownerDataSetName.getRight(),currentUser.get());
-
-      return new RemovedDataSet(dataSetId);
-    } catch (IOException | NotEnoughPermissionsException e) {
+      dataSetRepository.removeDataSet(userAndDataSet.getLeft(), userAndDataSet.getRight(), user);
+      return new RemovedDataSet(combinedId);
+    } catch (IOException e) {
       LOG.error("Data set deletion exception", e);
       throw new RuntimeException("Data set could not be deleted");
+    } catch (NotEnoughPermissionsException e) {
+      throw new RuntimeException("You do not have enough permissions");
     }
   }
 

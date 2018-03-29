@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -16,10 +15,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
-import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -28,18 +23,20 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
+import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadataList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadata;
@@ -143,6 +140,24 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         return dataSetRepository.getDataSet(user, splitCombinedId.getLeft(), splitCombinedId.getRight())
           .map(DataSetWithDatabase::new);
       })
+      .dataFetcher("dataSetMetadataList", env -> {
+        Stream<DataSetWithDatabase> dataSets = dataSetRepository.getDataSets()
+          .stream()
+          .map(DataSetWithDatabase::new);
+        if (env.getArgument("promotedOnly")) {
+          dataSets = dataSets.filter(DataSetWithDatabase::isPromoted);
+        }
+        if (env.getArgument("publishedOnly")) {
+          dataSets = dataSets.filter(DataSetWithDatabase::isPublished);
+        }
+        return dataSets
+          .filter(x -> {
+            ContextData contextData = env.getContext();
+            UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+            return userPermissionCheck.getPermissions(x.getDataSet().getMetadata()).contains(Permission.READ);
+          })
+          .collect(Collectors.toList());
+      })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
         .map(MimeTypeDescription::create)
@@ -150,7 +165,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       )
     );
     wiring.type("DataSetMetadata", builder -> builder
-
       .dataFetcher("currentImportStatus", env -> {
         DataSetMetaData input = env.getSource();
         Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
@@ -264,6 +278,22 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .getDataSetsWithWriteAccess(env.getSource())
         .stream().map(DataSetWithDatabase::new).iterator()
       )
+      .dataFetcher("dataSetMetadataList", env -> (Iterable) () -> {
+        Stream<DataSetWithDatabase> dataSets = dataSetRepository.getDataSets()
+          .stream()
+          .map(DataSetWithDatabase::new);
+        if (env.getArgument("ownOnly")) {
+          String userId = ((ContextData) env.getContext()).getUser().map(u -> "u" + u.getPersistentId()).orElse(null);
+          dataSets = dataSets.filter(d -> d.getOwnerId().equals(userId));
+        }
+        Permission permission = Permission.valueOf(env.getArgument("permission"));
+        if (permission != Permission.READ) { //Read is implied
+          UserPermissionCheck check = ((ContextData) env.getContext()).getUserPermissionCheck();
+          dataSets = dataSets.filter(d -> check.getPermissions(d).contains(permission));
+        }
+
+        return dataSets.iterator();
+      })
       .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
       .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
       .dataFetcher("personalInfo", env -> "http://example.com")
@@ -271,37 +301,13 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.type("Mutation", builder -> builder
-      .dataFetcher("setViewConfig", new ViewConfigDataFetcher(dataSetRepository))
-      .dataFetcher("setSummaryProperties", new SummaryPropsMutationDataFetcher(dataSetRepository))
-      .dataFetcher("setIndexConfig", new IndexConfigDataFetcher(dataSetRepository))
-      .dataFetcher("createDataSet", (DataFetchingEnvironment environment) -> {
-        Optional<User> currentUser = ((RootData) environment.getRoot()).getCurrentUser();
-        if (!currentUser.isPresent()) {
-          throw new RuntimeException("User is not provided");
-        }
-
-        String dataSetName = environment.getArgument("dataSetName");
-        try {
-          Optional<DataSet> dataSetOpt =
-            dataSetRepository.getDataSet(
-              currentUser.get(),
-              "u" + currentUser.get().getPersistentId(),
-              dataSetName
-            );
-          if (dataSetOpt.isPresent()) {
-            return dataSetOpt.get().getMetadata();
-          }
-          return dataSetRepository.createDataSet(currentUser.get(), dataSetName).getMetadata();
-        } catch (DataStoreCreationException e) {
-          LOG.error("Data set creation exception", e);
-          throw new RuntimeException("Data set could not be created");
-        } catch (IllegalDataSetNameException e) {
-          LOG.error("Data set creation exception", e);
-          throw new RuntimeException("Data set id is not supported: " + e.getMessage());
-        }
-      }).dataFetcher("deleteDataSet", new DeleteDataSetDataFetcher(dataSetRepository))
-      .dataFetcher("publish", new MakePublicDataFetcher(dataSetRepository))
-      .dataFetcher("extendSchema", new ExtendSchemaDataFetcher(dataSetRepository))
+      .dataFetcher("setViewConfig", new ViewConfigMutation(dataSetRepository))
+      .dataFetcher("setSummaryProperties", new SummaryPropsMutation(dataSetRepository))
+      .dataFetcher("setIndexConfig", new IndexConfigMutation(dataSetRepository))
+      .dataFetcher("createDataSet", new CreateDataSetMutation(dataSetRepository))
+      .dataFetcher("deleteDataSet", new DeleteDataSetMutation(dataSetRepository))
+      .dataFetcher("publish", new MakePublicMutation(dataSetRepository))
+      .dataFetcher("extendSchema", new ExtendSchemaMutation(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);
