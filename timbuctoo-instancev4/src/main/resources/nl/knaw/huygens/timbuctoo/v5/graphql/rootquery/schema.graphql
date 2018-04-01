@@ -365,6 +365,11 @@ input ProvenanceInfoInput {
   body: String!
 }
 
+input CollectionMetadataInput {
+  title: String
+  archeType: String
+}
+
 type Mutation {
   setViewConfig(dataSetId: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
   setSummaryProperties(dataSetId: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
@@ -375,6 +380,8 @@ type Mutation {
   extendSchema(dataSetId: String!, customSchema: [CustomSchemaTypeInput!]!): ExtendSchemaMessage!
   # Update the metadata for this dataset. To leave a property as-is you can omit it from the metadata. To delete it you can include it and set it's value to null.
   setDataSetMetadata(dataSetId: String!, metadata: DataSetMetadataInput!): DataSetMetadata!
+  # Set the title or archetype for this collection
+  setCollectionMetadata(dataSetId: String!, collectionUri: String!, metadata: CollectionMetadataInput!): CollectionMetadata!
 }
 
 
