@@ -51,7 +51,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
-import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -427,7 +426,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
                 .prevCursor(Optional.empty())
                 .nextCursor(Optional.empty())
                 .items(() -> pred.getUsedReferenceTypes().stream()
-                  .filter(t -> !t.equals(RdfConstants.UNKNOWN))
                   .map(typeNameStore::makeGraphQlname)
                   .iterator())
                 .build()
