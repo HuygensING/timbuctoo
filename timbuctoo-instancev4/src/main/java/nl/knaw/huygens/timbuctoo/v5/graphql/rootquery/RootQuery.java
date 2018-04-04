@@ -48,6 +48,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePro
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ViewConfigFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -66,7 +67,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.getResource;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_VIEW_CONFIG;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class RootQuery implements Supplier<GraphQLSchema> {
@@ -258,20 +258,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return result;
         }
       })
-      .dataFetcher("viewConfig", env -> {
-        SubjectReference source = env.getSource();
-        final QuadStore qs = source.getDataSet().getQuadStore();
-        try (Stream<CursorQuad> quads = qs.getQuads(source.getSubjectUri(), HAS_VIEW_CONFIG, Direction.OUT, "")) {
-          return quads.findFirst().map(q -> {
-            try {
-              return objectMapper.readValue(q.getObject(), List.class);
-            } catch (IOException e) {
-              LOG.error("view config not available", e);
-              return new ArrayList();
-            }
-          }).orElse(new ArrayList());
-        }
-      })
+      .dataFetcher("viewConfig", new ViewConfigFetcher(objectMapper))
     );
 
     wiring.type("AboutMe", builder -> builder
