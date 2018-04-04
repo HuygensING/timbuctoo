@@ -21,7 +21,13 @@ from the dataset.<rdf> file. Updates will be made using the changelists.
 
 Changes required to import code:
 
-* On first call to resourcesync import, we check for the existence of a changelist. If it does not exist, we import the dataset.* resource from the resourcelist.xml and we mark the dataset as "DUMP_IMPORTED" (in the log.json).
+* On first call to resourcesync import, we check for the existence of a changelist. If it does not exist, we import the dataset resource from the resourcelist.xml and we mark the dataset as "DUMP_IMPORTED" (in the log.json).
+* For importing from the resourcelist.xml we have three options:
+** Only one file in resourcelist.xml. We import this.
+** Multiple files in resourcelist.xml and one is tagged with the <to_be_determined> property. We import the tagged one.
+** Multiple files in resourcelist.xml and user mentions which one to import. We import that one.
+** If none of the three above apply then we throw an error.
+(Note: add to exchange-protocol document)
 * If a changelist does exist, we loop over it and import all the patches.
 * We also store the address of the capabilityList in the log entries (log.json file).
 * If the user triggers an import from another dataset we check for the existence of a capabilityList url and return 400. A dataset can only contain 1 remote dataset (otherwise we have the merge conflict edge cases again).
