@@ -94,17 +94,17 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     try (Stream<CursorQuad> subjTypes = changeFetcher.getPredicates(subject, RDF_TYPE, OUT, true, true, true)) {
       subjTypes.forEach(type -> {
         boolean hadTypesBefore = false;
-        final Type typeObj = types.computeIfAbsent(type.getObject(), TYPE_MAKER);
+        final Type typeOfSubject = types.computeIfAbsent(type.getObject(), TYPE_MAKER);
         if (type.getChangeType() == ChangeType.ASSERTED) {
-          typeObj.registerSubject(1);
-          addedTypes.add(typeObj);
+          typeOfSubject.registerSubject(1);
+          addedTypes.add(typeOfSubject);
         } else if (type.getChangeType() == ChangeType.RETRACTED) {
           hadTypesBefore = true;
-          typeObj.registerSubject(-1);
-          removedTypes.add(typeObj);
+          typeOfSubject.registerSubject(-1);
+          removedTypes.add(typeOfSubject);
         } else if (type.getChangeType() == ChangeType.UNCHANGED) {
           hadTypesBefore = true;
-          unchangedTypes.add(typeObj);
+          unchangedTypes.add(typeOfSubject);
         }
         if (!hadTypesBefore) {
           try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
