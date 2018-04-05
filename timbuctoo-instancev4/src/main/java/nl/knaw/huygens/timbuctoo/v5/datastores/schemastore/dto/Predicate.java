@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -34,19 +35,19 @@ public class Predicate {
   }
 
   public Map<String, Long> getReferenceTypes() {
-    return referenceTypes;
+    return ImmutableMap.copyOf(referenceTypes);
   }
 
   public void setReferenceTypes(Map<String, Long> referenceTypes) {
-    this.referenceTypes = referenceTypes;
+    this.referenceTypes.putAll(referenceTypes);
   }
 
   public Map<String, Long> getValueTypes() {
-    return valueTypes;
+    return ImmutableMap.copyOf(valueTypes);
   }
 
   public void setValueTypes(Map<String, Long> valueTypes) {
-    this.valueTypes = valueTypes;
+    this.valueTypes.putAll(valueTypes);
   }
 
   @JsonIgnore
