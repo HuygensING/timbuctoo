@@ -45,20 +45,20 @@ public class PredicateMutation {
     return retractions;
   }
 
-  public PredicateMutation entity(String subjectUri, MutationBuilder... operations) {
+  public PredicateMutation entity(String subjectUri, MutationOperation... operations) {
     entity(this, subjectUri, operations);
     return this;
   }
 
-  public static void entity(PredicateMutation start, String subjectUri, MutationBuilder... operations) {
-    for (MutationBuilder operation : operations) {
+  private void entity(PredicateMutation start, String subjectUri, MutationOperation... operations) {
+    for (MutationOperation operation : operations) {
       if (operation != null) {
         operation.apply(subjectUri, start);
       }
     }
   }
 
-  public static MutationBuilder replace(String predicateUri, Value... values) {
+  public static MutationOperation replace(String predicateUri, Value... values) {
     return (subject, mutation) -> {
       mutation.fullRetractions.add(create(subject, predicateUri, Direction.OUT, "", null, null, ""));
       for (Value value : values) {
@@ -77,12 +77,12 @@ public class PredicateMutation {
     };
   }
 
-  public static MutationBuilder getOrCreate(String predicateUri, String defaultUri, MutationBuilder... operations) {
+  public static MutationOperation getOrCreate(String predicateUri, String defaultUri, MutationOperation... operations) {
     return (subject, mutation) -> {
       UUID id = UUID.randomUUID();
       mutation.subjectFinders.put(id, new FollowPredicateFinder(subject, predicateUri, defaultUri));
       mutation.additions.add(CursorQuad.create(subject, predicateUri, Direction.OUT, id.toString(), null, null, ""));
-      for (MutationBuilder operation : operations) {
+      for (MutationOperation operation : operations) {
         if (operation != null) {
           operation.apply(id.toString(), mutation);
         }
@@ -106,7 +106,7 @@ public class PredicateMutation {
     return new Value(value, RdfConstants.LANGSTRING, language);
   }
 
-  public interface MutationBuilder {
+  public interface MutationOperation {
     void apply(String subject, PredicateMutation mutation);
   }
 

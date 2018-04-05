@@ -29,7 +29,7 @@ public class ViewConfigMutation implements DataFetcher {
     Object viewConfig = env.getArgument("viewConfig");
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
 
-    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
     try {
       MutationHelpers.addMutation(
         dataSet,

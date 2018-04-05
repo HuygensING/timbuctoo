@@ -43,7 +43,7 @@ public class ExtendSchemaMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
     final SchemaStore generatedSchema = dataSet.getSchemaStore();
 
     Map<String, Type> customTypes = new HashMap<>();

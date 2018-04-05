@@ -36,7 +36,7 @@ public class SummaryPropsMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
     try {
       String collectionUri = env.getArgument("collectionUri");
       Map data = env.getArgument("summaryProperties");

@@ -29,7 +29,7 @@ public class IndexConfigMutation implements DataFetcher {
     String collectionUri = env.getArgument("collectionUri");
     Object indexConfig = env.getArgument("indexConfig");
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
     try {
       MutationHelpers.addMutation(
         dataSet,

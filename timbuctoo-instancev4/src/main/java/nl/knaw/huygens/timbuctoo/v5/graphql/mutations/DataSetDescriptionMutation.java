@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.MutationOperation;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -29,7 +30,7 @@ public class DataSetDescriptionMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
 
     try {
       Map md = env.getArgument("metadata");
@@ -74,10 +75,9 @@ public class DataSetDescriptionMutation implements DataFetcher {
     }
   }
 
-  private <T> PredicateMutation.MutationBuilder parseProp(Map metadata, String property,
-                                                          Function<T, PredicateMutation.MutationBuilder> builder) {
+  private <T> MutationOperation parseProp(Map metadata, String property, Function<T, MutationOperation> builder) {
     if (metadata.containsKey(property)) {
-      T value = (T) metadata.get(property);
+      T value = (T) metadata.get(property); // you might want to catch and log the class cast exception
       return builder.apply(value);
     } else {
       return null;
