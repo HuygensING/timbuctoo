@@ -22,7 +22,8 @@ public class MutationHelpers {
     return contextData.getUser().orElseThrow(() -> new RuntimeException("You are not logged in"));
   }
 
-  public static void checkPermissions(DataFetchingEnvironment env, DataSetMetaData dataSetMetaData) {
+  public static void checkAdminPermissions(DataFetchingEnvironment env, DataSetMetaData dataSetMetaData)
+    throws RuntimeException {
     ContextData contextData = env.getContext();
 
     UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();

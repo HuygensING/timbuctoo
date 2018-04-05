@@ -30,7 +30,9 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CollectionMetadataMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DataSetDescriptionMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
@@ -46,10 +48,10 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePro
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ViewConfigFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
-import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.getResource;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_VIEW_CONFIG;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class RootQuery implements Supplier<GraphQLSchema> {
@@ -257,20 +258,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return result;
         }
       })
-      .dataFetcher("viewConfig", env -> {
-        SubjectReference source = env.getSource();
-        final QuadStore qs = source.getDataSet().getQuadStore();
-        try (Stream<CursorQuad> quads = qs.getQuads(source.getSubjectUri(), HAS_VIEW_CONFIG, Direction.OUT, "")) {
-          return quads.findFirst().map(q -> {
-            try {
-              return objectMapper.readValue(q.getObject(), List.class);
-            } catch (IOException e) {
-              LOG.error("view config not available", e);
-              return new ArrayList();
-            }
-          }).orElse(new ArrayList());
-        }
-      })
+      .dataFetcher("viewConfig", new ViewConfigFetcher(objectMapper))
     );
 
     wiring.type("AboutMe", builder -> builder
@@ -308,6 +296,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("deleteDataSet", new DeleteDataSetMutation(dataSetRepository))
       .dataFetcher("publish", new MakePublicMutation(dataSetRepository))
       .dataFetcher("extendSchema", new ExtendSchemaMutation(dataSetRepository))
+      .dataFetcher("setDataSetMetadata", new DataSetDescriptionMutation(dataSetRepository))
+      .dataFetcher("setCollectionMetadata", new CollectionMetadataMutation(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);
@@ -423,7 +413,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
                 .prevCursor(Optional.empty())
                 .nextCursor(Optional.empty())
                 .items(() -> pred.getUsedReferenceTypes().stream()
-                  .filter(t -> !t.equals(RdfConstants.UNKNOWN))
                   .map(typeNameStore::makeGraphQlname)
                   .iterator())
                 .build()

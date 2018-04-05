@@ -51,6 +51,7 @@ public class RdfConstants {
   public static final String XSD_BOOLEAN = "http://www.w3.org/2001/XMLSchema#boolean";
   public static final String INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
   public static final String URI = "http://www.w3.org/2001/XMLSchema#anyURI";
+  public static final String MARKDOWN = "https://daringfireball.net/projects/markdown/syntax";
 
 
   // helper methods

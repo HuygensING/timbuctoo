@@ -11,8 +11,9 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 
 import java.util.concurrent.ExecutionException;
 
+import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.replace;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_VIEW_CONFIG;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 
 public class ViewConfigMutation implements DataFetcher {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -28,12 +29,15 @@ public class ViewConfigMutation implements DataFetcher {
     Object viewConfig = env.getArgument("viewConfig");
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
 
-    MutationHelpers.checkPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
     try {
       MutationHelpers.addMutation(
         dataSet,
         new PredicateMutation()
-          .withReplacement(collectionUri, HAS_VIEW_CONFIG, OBJECT_MAPPER.writeValueAsString(viewConfig), STRING)
+          .entity(
+            collectionUri,
+            replace(HAS_VIEW_CONFIG, value(OBJECT_MAPPER.writeValueAsString(viewConfig)))
+          )
       );
       return viewConfig;
     } catch (LogStorageFailedException | InterruptedException | ExecutionException | JsonProcessingException e) {
