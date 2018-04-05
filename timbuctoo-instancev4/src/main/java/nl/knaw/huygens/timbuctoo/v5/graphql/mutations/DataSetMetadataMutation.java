@@ -20,10 +20,10 @@ import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutati
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.MARKDOWN;
 
-public class DataSetDescriptionMutation implements DataFetcher {
+public class DataSetMetadataMutation implements DataFetcher {
   private final DataSetRepository dataSetRepository;
 
-  public DataSetDescriptionMutation(DataSetRepository dataSetRepository) {
+  public DataSetMetadataMutation(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
 
