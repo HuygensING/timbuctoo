@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -20,7 +18,6 @@ import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutati
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 
 public class CollectionMetadataMutation implements DataFetcher {
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
   private final DataSetRepository dataSetRepository;
 
   public CollectionMetadataMutation(DataSetRepository dataSetRepository) {
