@@ -34,7 +34,7 @@ public class BasicRdfPatchSerializerTest {
       "This is a multi-line\nliteral with many quotes (\"\"\"\"\")\nand two apostrophes ('').", "http://www.w3.org/2001/XMLSchema#string",null);
 
     assertThat(result, is("+<http://example.org/#spiderman> <http://example.org/text> \"This is " +
-      "a multi-line\\\nliteral with many quotes (\\\"\\\"\\\"\\\"\\\")\\\nand two apostrophes ('').\"^^<http://www.w3.org/2001/XMLSchema#string> <http://example.org/graph> .\n"));
+      "a multi-line\\nliteral with many quotes (\\\"\\\"\\\"\\\"\\\")\\nand two apostrophes ('').\"^^<http://www.w3.org/2001/XMLSchema#string> <http://example.org/graph> .\n"));
   }
 
   @Test
@@ -65,7 +65,7 @@ public class BasicRdfPatchSerializerTest {
       "This is a multi-line\nliteral with many quotes (\"\"\"\"\")\nand two apostrophes ('').", "http://www.w3.org/2001/XMLSchema#string",null);
 
     assertThat(result, is("-<http://example.org/#spiderman> <http://example.org/text> \"This is " +
-      "a multi-line\\\nliteral with many quotes (\\\"\\\"\\\"\\\"\\\")\\\nand two apostrophes ('').\"^^<http://www.w3.org/2001/XMLSchema#string> <http://example.org/graph> .\n"));
+      "a multi-line\\nliteral with many quotes (\\\"\\\"\\\"\\\"\\\")\\nand two apostrophes ('').\"^^<http://www.w3.org/2001/XMLSchema#string> <http://example.org/graph> .\n"));
   }
 
   @Test
