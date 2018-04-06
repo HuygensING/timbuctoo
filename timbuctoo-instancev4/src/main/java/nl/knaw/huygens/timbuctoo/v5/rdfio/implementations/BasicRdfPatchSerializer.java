@@ -57,8 +57,8 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
   private String escapeCharacters(String value) {
     return value
       .replace("\\", "\\\\")
-      .replace("\n", "\\\n")
-      .replace("\r", "\\\r")
+      .replace("\n", "\\n")
+      .replace("\r", "\\r")
       .replace("\"", "\\\"");
   }
 
