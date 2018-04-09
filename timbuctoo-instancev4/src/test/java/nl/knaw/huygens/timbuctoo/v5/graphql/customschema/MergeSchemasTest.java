@@ -2,13 +2,12 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.customschema;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
-import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.PredicateMatcher.predicateMatcher;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.PredicateMatcher.predicate;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -53,11 +52,11 @@ public class MergeSchemasTest {
     Map<String, Type> mergedSchema = mergeSchemas.mergeSchema(generatedSchema, customSchema);
 
     assertThat(mergedSchema, hasEntry(is("Type"), hasProperty("predicates", contains(
-      predicateMatcher().withName("generated").withDirection(Direction.OUT)
+      predicate().withName("generated").withDirection(Direction.OUT)
     ))));
 
     assertThat(mergedSchema, hasEntry(is("Type 2"), hasProperty("predicates", contains(
-      predicateMatcher().withName("custom").withDirection(Direction.IN)
+      predicate().withName("custom").withDirection(Direction.IN)
     ))));
   }
 
@@ -73,8 +72,8 @@ public class MergeSchemasTest {
     Map<String, Type> mergedSchema = mergeSchemas.mergeSchema(generatedSchema, customSchema);
 
     assertThat(mergedSchema, hasEntry(is("Type"), hasProperty("predicates", containsInAnyOrder(
-      predicateMatcher().withName("generated").withDirection(Direction.OUT),
-      predicateMatcher().withName("custom").withDirection(Direction.IN)
+      predicate().withName("generated").withDirection(Direction.OUT),
+      predicate().withName("custom").withDirection(Direction.IN)
     ))));
   }
 
@@ -95,10 +94,10 @@ public class MergeSchemasTest {
     Map<String, Type> mergedSchema = mergeSchemas.mergeSchema(generatedSchema, customSchema);
 
     assertThat(mergedSchema, hasEntry(is("Type"), hasProperty("predicates", contains(
-      predicateMatcher().withName("generated").withDirection(Direction.IN).withWasList(true)
+      predicate().withName("generated").withDirection(Direction.IN).withWasList(true)
     ))));
     assertThat(mergedSchema, hasEntry(is("Type"), hasProperty("predicates", not(hasItem(
-      predicateMatcher().withName("generated").withDirection(Direction.IN).withWasList(false))
+      predicate().withName("generated").withDirection(Direction.IN).withWasList(false))
     ))));
   }
 
@@ -119,10 +118,10 @@ public class MergeSchemasTest {
     Map<String, Type> mergedSchema = mergeSchemas.mergeSchema(generatedSchema, customSchema);
 
     assertThat(mergedSchema, hasEntry(is("Type"), hasProperty("predicates", contains(
-      predicateMatcher().withName("generated").withDirection(Direction.IN).withWasList(true).withIsExplicit(true)
+      predicate().withName("generated").withDirection(Direction.IN).withWasList(true).withIsExplicit(true)
     ))));
     assertThat(mergedSchema, hasEntry(is("Type"), hasProperty("predicates", not(hasItem(
-      predicateMatcher().withName("generated").withDirection(Direction.IN).withWasList(false))
+      predicate().withName("generated").withDirection(Direction.IN).withWasList(false))
     ))));
   }
 

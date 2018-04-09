@@ -9,7 +9,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
 
   }
 
-  public static PredicateMatcher predicateMatcher() {
+  public static PredicateMatcher predicate() {
     return new PredicateMatcher();
   }
 
