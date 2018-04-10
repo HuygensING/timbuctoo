@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -279,29 +280,42 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     }
   }
 
-  public void updatePredicateType(Type type, CursorQuad quad, boolean inc, ChangeFetcher changeFetcher) {
-    final Predicate predicate = type.getOrCreatePredicate(quad.getPredicate(), quad.getDirection());
+  public void updatePredicateType(Type type, CursorQuad quad, boolean add, ChangeFetcher changeFetcher) {
+    final Optional<Predicate> predicateOpt = getPredicateForType(type, add, quad.getPredicate(), quad.getDirection());
+
     if (quad.getValuetype().isPresent()) {
-      predicate.incValueType(quad.getValuetype().get(), inc ? 1 : -1);
+      predicateOpt.ifPresent(predicate -> predicate.incValueType(quad.getValuetype().get(), add ? 1 : -1));
     } else {
-      try (Stream<CursorQuad> typeQs = changeFetcher.getPredicates(quad.getObject(), RDF_TYPE, OUT, !inc, true, inc)) {
+      try (Stream<CursorQuad> typeQs = changeFetcher.getPredicates(quad.getObject(), RDF_TYPE, OUT, !add, true, add)) {
         boolean[] hadType = new boolean[] { false };
         typeQs.forEach(typeQ -> {
           hadType[0] = true;
-          predicate.incReferenceType(typeQ.getObject(), inc ? 1 : -1);
+          predicateOpt.ifPresent(predicate -> predicate.incReferenceType(typeQ.getObject(), add ? 1 : -1));
         });
         if (!hadType[0]) {
-          predicate.incReferenceType(UNKNOWN, inc ? 1 : -1);
+          predicateOpt.ifPresent( predicate -> predicate.incReferenceType(UNKNOWN, add ? 1 : -1));
         }
       }
     }
   }
 
+  private Optional<Predicate> getPredicateForType(Type type, boolean add, String predicate, Direction direction) {
+    if (add) {
+      return Optional.of(type.getOrCreatePredicate(predicate, direction));
+    } else {
+      return Optional.ofNullable(type.getPredicate(predicate, direction));
+    }
+  }
+
   public void setPredicateOccurrence(Type type, String predicateUri, Direction direction, int listMutation,
                                      int subjectMutation) {
-    final Predicate predicate = type.getOrCreatePredicate(predicateUri, direction);
-    predicate.registerListOccurrence(listMutation);
-    predicate.registerSubject(subjectMutation);
+    boolean isAssertion = listMutation > 0 || subjectMutation > 0;
+    final Optional<Predicate> predicateOpt = getPredicateForType(type, isAssertion, predicateUri, direction);
+
+    predicateOpt.ifPresent(predicate -> {
+      predicate.registerListOccurrence(listMutation);
+      predicate.registerSubject(subjectMutation);
+    });
   }
 
   @Override

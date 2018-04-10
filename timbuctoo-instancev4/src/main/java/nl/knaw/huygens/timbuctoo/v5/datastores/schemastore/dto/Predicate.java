@@ -8,6 +8,7 @@ import com.google.common.base.Objects;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -134,7 +135,7 @@ public class Predicate {
 
   @Override
   public String toString() {
-    return ToStringBuilder.reflectionToString(this);
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
   }
 
   @Override

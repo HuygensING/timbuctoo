@@ -2,7 +2,16 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+
+import java.util.Collection;
+
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 
 public class PredicateMatcher extends CompositeMatcher<Predicate> {
   private PredicateMatcher() {
@@ -48,6 +57,26 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
       @Override
       protected Boolean getItemValue(Predicate item) {
         return item.isExplicit();
+      }
+    });
+    return this;
+  }
+
+  public PredicateMatcher withReferenceType(String referenceType) {
+    this.addMatcher(new PropertyMatcher<Predicate, Iterable<? super String>>("referenceTypes", hasItem(referenceType)) {
+      @Override
+      protected Iterable<String> getItemValue(Predicate item) {
+        return item.getReferenceTypes().keySet();
+      }
+    });
+    return this;
+  }
+
+  public PredicateMatcher withValueType(String valueType) {
+    this.addMatcher(new PropertyMatcher<Predicate, Iterable<? super String>>("valueTypes", hasItem(valueType)) {
+      @Override
+      protected Iterable<String> getItemValue(Predicate item) {
+        return item.getValueTypes().keySet();
       }
     });
     return this;
