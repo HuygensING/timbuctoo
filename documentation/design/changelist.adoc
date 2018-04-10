@@ -37,12 +37,14 @@ and we mark the dataset as "DUMP_IMPORTED" (in the log.json).
 
 New code structure for the above mentioned changes:
 
-* In the Import endpoint class we first call the 'getRemoteFilesList' function.
-** This 'getRemoteFilesList' will be a new method in ResourceSyncFileLoader class that accepts a capabilityList uri and
-traverses it to find all the changelist changes and resourcelist resources. It will return an object that contains two
-lists: 1) list of uris for changes 2) list of uris for resources
-* We will then filter on these files using the aforementioned priorities for Import.
-** For this we will have a new 'filter' method in a new 'FilterRemoteFilesForImport' class that will take the object
+* In the Import endpoint class we call the 'importRemoteFiles' function from the new "TimbuctooRemoteFilesImporter" class.
+** This 'importRemoteFiles' function in the new class will in-turn first call the
+'getRemoteFilesList' method which will be a new method in ResourceSyncFileLoader class. 'getRemoteFilesList' accepts a
+capabilityList uri and traverses it to find all the changelist changes and resourcelist resources.
+It will return an object that contains two lists:
+1) list of uris for changes 2) list of uris for resources
+* We will then filter on these files using the aforementioned priorities in "importRemoteFiles"
+** a new helper function 'filter' in "TimbuctooRemoteFilesImporter" will take the object
 from the 'getRemoteFilesList' call, filter over it according to the determined priorities and return a list of one
 or more RemoteFiles.
 ** The filter function can also return an error if none of the pre-determined criteria are satisfied.
