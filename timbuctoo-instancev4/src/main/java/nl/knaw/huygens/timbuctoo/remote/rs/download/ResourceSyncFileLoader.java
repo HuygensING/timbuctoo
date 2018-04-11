@@ -154,14 +154,11 @@ public class ResourceSyncFileLoader {
   }
 
   private RemoteFile getRemoteFile(Tuple<String, String> resource) {
-    try {
-      return RemoteFile.create(resource.getLeft(), remoteFileRetriever.getFile(
-        resource.getLeft()),
-        resource.getRight()
-      );
-    } catch (IOException e) {
-      throw new RuntimeUpgrader(e);
-    }
+    return RemoteFile.create(
+      resource.getLeft(),
+      () -> remoteFileRetriever.getFile(resource.getLeft()),
+      resource.getRight()
+    );
   }
 
   private Tuple<String, String> getUrlAndMimeType(Tuple<String, Metadata> item) {

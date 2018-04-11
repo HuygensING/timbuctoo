@@ -76,14 +76,14 @@ public class Import {
                 dataSet.getMetadata().getBaseUri(),
                 dataSet.getMetadata().getBaseUri(),
                 file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1),
-                file.getData(),
+                file.getData().get(),
                 Optional.of(Charsets.UTF_8),
                 parsedMediatype
               );
             } else {
               resourceSyncResport.ignoredFiles.add(file.getUrl());
               importManager.addFile(
-                file.getData(),
+                file.getData().get(),
                 file.getUrl(),
                 parsedMediatype
               );
