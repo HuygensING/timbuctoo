@@ -7,15 +7,18 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -43,9 +46,9 @@ public class SummaryPropsMutation implements DataFetcher {
       final PredicateMutation mutation = new PredicateMutation();
       mutation.entity(
         collectionUri,
-        getValue(data, "title").map(v -> replace(TIM_SUMMARYTITLEPREDICATE, value(v))).orElse(null),
-        getValue(data, "image").map(v -> replace(TIM_SUMMARYIMAGEPREDICATE, value(v))).orElse(null),
-        getValue(data, "description").map(v -> replace(TIM_SUMMARYDESCRIPTIONPREDICATE, value(v))).orElse(null)
+        getValue(data, "title", dataSet).map(v -> replace(TIM_SUMMARYTITLEPREDICATE, value(v))).orElse(null),
+        getValue(data, "image", dataSet).map(v -> replace(TIM_SUMMARYIMAGEPREDICATE, value(v))).orElse(null),
+        getValue(data, "description", dataSet).map(v -> replace(TIM_SUMMARYDESCRIPTIONPREDICATE, value(v))).orElse(null)
       );
 
       MutationHelpers.addMutation(dataSet, mutation);
@@ -55,14 +58,28 @@ public class SummaryPropsMutation implements DataFetcher {
     }
   }
 
-  private Optional<String> getValue(Map viewConfig, String valueName) {
+  private Optional<String> getValue(Map viewConfig, String valueName, DataSet dataSet) {
     Object value = viewConfig.get(valueName);
     if (value != null) {
       try {
         String valueAsString = OBJECT_MAPPER.writeValueAsString(value);
 
         // check if the value can be parsed to SummaryProp
-        OBJECT_MAPPER.readValue(valueAsString, SummaryProp.class);
+        SummaryProp summaryProp = OBJECT_MAPPER.readValue(valueAsString, SummaryProp.class);
+        List<String> undirectedPath = SummaryProp.getUndirectedPath(summaryProp);
+
+        List<String> predicates = dataSet.getSchemaStore().getStableTypes().values().stream()
+                                            .flatMap(type -> type.getPredicates().stream())
+                                            .map(Predicate::getName)
+                                            .collect(Collectors.toList());
+
+        List<String> unknownPredicates =
+          undirectedPath.stream().filter(step -> !predicates.contains(step)).collect(Collectors.toList());
+
+        if (!unknownPredicates.isEmpty()) {
+          throw new RuntimeException(valueName + " contains predicates unknown in the data set: " + unknownPredicates);
+        }
+
 
         return of(valueAsString);
       } catch (JsonProcessingException e) {

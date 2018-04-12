@@ -2,17 +2,13 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
-import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DirectionalPath;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DirectionalStep;
-import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SimplePath;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
@@ -22,8 +18,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 public class SummaryPropDataRetriever {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
@@ -46,7 +40,7 @@ public class SummaryPropDataRetriever {
         .flatMap(userConfigured -> {
           try {
             SummaryProp summaryProp = OBJECT_MAPPER.readValue(userConfigured.getObject(), SummaryProp.class);
-            return getDataQuad(getPath(summaryProp), source.getSubjectUri(), quadStore)
+            return getDataQuad(SummaryProp.getDirectedPath(summaryProp), source.getSubjectUri(), quadStore)
               .map(quad -> createTypedValue(quad, dataSet));
           } catch (IOException e) {
             LOG.error("Cannot parse SummaryProp: '{}'", userConfigured.getObject());
@@ -59,7 +53,7 @@ public class SummaryPropDataRetriever {
     } else {
       // fallback to default summary props
       for (SummaryProp prop : defaultProperties) {
-        Optional<CursorQuad> quad = getDataQuad(getPath(prop), source.getSubjectUri(), quadStore);
+        Optional<CursorQuad> quad = getDataQuad(SummaryProp.getDirectedPath(prop), source.getSubjectUri(), quadStore);
         if (quad.isPresent()) {
           return Optional.of(createTypedValue(quad.get(), dataSet));
         }
@@ -67,17 +61,6 @@ public class SummaryPropDataRetriever {
 
       return Optional.empty();
     }
-  }
-
-  private List<DirectionalStep> getPath(SummaryProp summaryProp)  {
-    if (summaryProp instanceof SimplePath) {
-      return ((SimplePath) summaryProp).getPath().stream()
-                                       .map(step -> DirectionalStep.create(step, Direction.OUT))
-                                       .collect(toList());
-    } else if (summaryProp instanceof DirectionalPath) {
-      return ((DirectionalPath) summaryProp).getPath();
-    }
-    return Lists.newArrayList();
   }
 
   private Optional<CursorQuad> getDataQuad(QuadStore quadStore, String source, String predicate) {
