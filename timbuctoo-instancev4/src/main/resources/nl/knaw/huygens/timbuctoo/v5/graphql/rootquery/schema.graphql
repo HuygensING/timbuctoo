@@ -200,9 +200,26 @@ type SummaryProperties {
   image: SummaryProperty @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
 
-type SummaryProperty {
-  path: [String]
-  type: String
+union SummaryProperty = SimplePath | DirectionalPath
+
+type SimplePath {
+  path: [String!]!
+  type: String!
+}
+
+type DirectionalPath {
+  path: [DirectionalStep!]!
+  type: String!
+}
+
+type DirectionalStep {
+  step: String!
+  direction: Direction!
+}
+
+enum Direction {
+  IN
+  OUT
 }
 
 input SummaryPropertiesInput {
@@ -211,11 +228,15 @@ input SummaryPropertiesInput {
   image: SummaryPropertyInput
 }
 
-input SummaryPropertyInput {
-  path: [String!]!
+input SummaryPropertyInput  {
+  path: [DirectionalStepInput!]
   type: String!
 }
 
+input DirectionalStepInput {
+  step: String!
+  direction: Direction!
+}
 
 type IndexConfig {
   facet: [FacetConfig]!
