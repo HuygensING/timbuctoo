@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
@@ -10,6 +11,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DirectionalPath;
+import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DirectionalStep;
+import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SimplePath;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.junit.Test;
@@ -220,6 +224,24 @@ public class SummaryPropDataRetrieverTest {
   }
 
   @Test
+  public void createSummaryPropertySupportsInverseRelations() {
+    List<SummaryProp> defaultProperties = Lists.newArrayList(
+      summaryPropertyWithPath("http://example.org/prop1", Direction.IN)
+    );
+    SummaryPropDataRetriever instance = new SummaryPropDataRetriever(
+      "http://example.org/userConfigured",
+      defaultProperties
+    );
+    QuadStore quadStore = mock(QuadStore.class);
+    CursorQuad foundQuad = quadWithObject("http://example.org/objectFound1", Optional.empty());
+    given(foundQuad.getObject()).willReturn("http://example.org/value");
+
+    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+
+    verify(quadStore).getQuads("http://example.org/source", "http://example.org/prop1", Direction.IN, "");
+  }
+
+  @Test
   public void createSummaryPropertyReturnsAnEmptyOptionalWhenNoDefaultPropertiesAreConfigured() {
     SummaryPropDataRetriever instance = new SummaryPropDataRetriever(
       "http://example.org/userConfigured",
@@ -248,8 +270,13 @@ public class SummaryPropDataRetrieverTest {
   }
 
   private SummaryProp summaryPropertyWithPath(String... path) {
-    return SummaryProp.create(Lists.newArrayList(path), "SimplePath");
+    return SimplePath.create(Lists.newArrayList(path));
   }
+
+  private SummaryProp summaryPropertyWithPath(String predicate, Direction direction) {
+    return DirectionalPath.create(Lists.newArrayList(DirectionalStep.create(predicate, direction)));
+  }
+
 
   private SubjectReference subjectWithUri(String uri) {
     SubjectReference source = mock(SubjectReference.class);

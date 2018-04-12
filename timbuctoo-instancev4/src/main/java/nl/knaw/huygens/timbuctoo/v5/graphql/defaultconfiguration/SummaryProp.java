@@ -1,19 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.immutables.value.Value;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.List;
-
-@Value.Immutable
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(name = "SimplePath", value = ImmutableSimplePath.class),
+    @JsonSubTypes.Type(name = "DirectionalPath", value = ImmutableDirectionalPath.class)
+  })
 public interface SummaryProp {
-  @JsonCreator
-  static SummaryProp create(@JsonProperty("path") List<String> path, @JsonProperty("type") String type) {
-    return ImmutableSummaryProp.builder().path(path).type(type).build();
-  }
-
-  List<String> getPath();
-
-  String getType();
 }
