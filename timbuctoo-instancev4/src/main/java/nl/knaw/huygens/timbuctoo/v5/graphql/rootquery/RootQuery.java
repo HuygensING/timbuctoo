@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.SummaryPropertiesDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
@@ -259,6 +260,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         }
       })
       .dataFetcher("viewConfig", new ViewConfigFetcher(objectMapper))
+      .dataFetcher("summaryProperties", new SummaryPropertiesDataFetcher(objectMapper))
     );
 
     wiring.type("AboutMe", builder -> builder

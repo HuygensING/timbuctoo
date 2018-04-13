@@ -32,6 +32,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DefaultSummaryProps;
+import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DirectionalPath;
+import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SimplePath;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,7 +223,7 @@ public class RdfWiringFactory implements WiringFactory {
           }
         }
       } else {
-        throw new RuntimeException("Expected either  a  'TypedValue' or a 'SubjectReference', but was: " +
+        throw new RuntimeException("Expected either a 'TypedValue' or a 'SubjectReference', but was: " +
           (object == null ? "null" : object.getClass()));
       }
       final GraphQLObjectType type = (GraphQLObjectType) environment.getSchema().getType(typeName);

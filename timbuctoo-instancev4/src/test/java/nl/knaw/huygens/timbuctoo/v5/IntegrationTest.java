@@ -1333,12 +1333,10 @@ public class IntegrationTest {
           "mutation SetSummaryProps($dataSetId: String! $collectionUri: String! $data:SummaryPropertiesInput!) {\n" +
           "  setSummaryProperties(dataSetId: $dataSetId, collectionUri: $collectionUri, summaryProperties: $data){ \n" +
           "    title {\n" +
-          "      ... on DirectionalPath {\n" +
-          "        path {\n" +
-          "          step\n" +
-          "        }\n" +
-          "        type\n" +
-        "        }\n" +
+          "      path {\n" +
+          "        step\n" +
+          "        direction\n" +
+          "      }" +
           "    }\n" +
           "  }\n" +
           "}\n"
