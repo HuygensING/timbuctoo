@@ -202,7 +202,7 @@ public class IntegrationTest {
     String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=false",
-      new File(getResource(IntegrationTest.class, "error1_bia_clusius.ttl").toURI()),
+      new File(getResource(IntegrationTest.class, "unknown_prefix1.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
         "encoding", "UTF-8",
@@ -216,7 +216,7 @@ public class IntegrationTest {
 
     uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=false",
-      new File(getResource(IntegrationTest.class, "error2_bia_clusius.ttl").toURI()),
+      new File(getResource(IntegrationTest.class, "unknown_prefix2.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
         "encoding", "UTF-8",
@@ -234,7 +234,7 @@ public class IntegrationTest {
     String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true",
-      new File(getResource(IntegrationTest.class, "error1_bia_clusius.ttl").toURI()),
+      new File(getResource(IntegrationTest.class, "unknown_prefix1.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
         "encoding", "UTF-8",
