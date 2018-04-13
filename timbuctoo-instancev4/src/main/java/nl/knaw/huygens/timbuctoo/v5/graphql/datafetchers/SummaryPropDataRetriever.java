@@ -40,7 +40,7 @@ public class SummaryPropDataRetriever {
         .flatMap(userConfigured -> {
           try {
             SummaryProp summaryProp = OBJECT_MAPPER.readValue(userConfigured.getObject(), SummaryProp.class);
-            return getDataQuad(SummaryProp.getDirectedPath(summaryProp), source.getSubjectUri(), quadStore)
+            return getDataQuad(summaryProp.getPath(), source.getSubjectUri(), quadStore)
               .map(quad -> createTypedValue(quad, dataSet));
           } catch (IOException e) {
             LOG.error("Cannot parse SummaryProp: '{}'", userConfigured.getObject());
@@ -53,7 +53,7 @@ public class SummaryPropDataRetriever {
     } else {
       // fallback to default summary props
       for (SummaryProp prop : defaultProperties) {
-        Optional<CursorQuad> quad = getDataQuad(SummaryProp.getDirectedPath(prop), source.getSubjectUri(), quadStore);
+        Optional<CursorQuad> quad = getDataQuad(prop.getPath(), source.getSubjectUri(), quadStore);
         if (quad.isPresent()) {
           return Optional.of(createTypedValue(quad.get(), dataSet));
         }
