@@ -1333,7 +1333,10 @@ public class IntegrationTest {
           "mutation SetSummaryProps($dataSetId: String! $collectionUri: String! $data:SummaryPropertiesInput!) {\n" +
           "  setSummaryProperties(dataSetId: $dataSetId, collectionUri: $collectionUri, summaryProperties: $data){ \n" +
           "    title {\n" +
-          "      type\n" +
+          "      path {\n" +
+          "        step\n" +
+          "        direction\n" +
+          "      }" +
           "    }\n" +
           "  }\n" +
           "}\n"
@@ -1350,10 +1353,13 @@ public class IntegrationTest {
             jsnO(
               "path",
               jsnA(
-                jsn("http://timbuctoo.huygens.knaw.nl/properties/birthDate")
+                jsnO(
+                  "step", jsn("http://timbuctoo.huygens.knaw.nl/properties/birthDate"),
+                  "direction", jsn("OUT")
+                )
               ),
               "type",
-              jsn("SimplePath")
+              jsn("DirectionalPath")
             )
           )
         )

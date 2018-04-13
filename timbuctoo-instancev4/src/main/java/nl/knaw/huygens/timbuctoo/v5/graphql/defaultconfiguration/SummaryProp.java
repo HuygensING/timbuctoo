@@ -1,19 +1,27 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.immutables.value.Value;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.collect.Lists;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Value.Immutable
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(name = "SimplePath", value = ImmutableSimplePath.class),
+    @JsonSubTypes.Type(name = "DirectionalPath", value = ImmutableDirectionalPath.class)
+  })
 public interface SummaryProp {
-  @JsonCreator
-  static SummaryProp create(@JsonProperty("path") List<String> path, @JsonProperty("type") String type) {
-    return ImmutableSummaryProp.builder().path(path).type(type).build();
+  List<DirectionalStep> getPath();
+
+  static List<String> getUndirectedPath(SummaryProp summaryProp)  {
+    if (summaryProp instanceof SimplePath) {
+      return ((SimplePath) summaryProp).getSimplePath();
+    } else if (summaryProp instanceof DirectionalPath) {
+      return summaryProp.getPath().stream()
+                        .map(DirectionalStep::getStep).collect(Collectors.toList());
+    }
+    return Lists.newArrayList();
   }
-
-  List<String> getPath();
-
-  String getType();
 }

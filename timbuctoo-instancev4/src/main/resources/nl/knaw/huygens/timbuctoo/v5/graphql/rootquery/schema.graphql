@@ -190,19 +190,28 @@ type CollectionMetadata {
   title: Value @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#label", direction: "OUT", isList: false, isObject: false, isValue: true)
   archeType: Entity @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#subClassOf", direction: "OUT", isList: false, isObject: true, isValue: false)
   indexConfig: IndexConfig!
-  summaryProperties: SummaryProperties! @passThrough
+  summaryProperties: SummaryProperties!
   viewConfig: [Component]!
 }
 
 type SummaryProperties {
-  title: SummaryProperty @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
-  description: SummaryProperty @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryDescriptionPredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
-  image: SummaryProperty @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+  title: SummaryProperty
+  description: SummaryProperty
+  image: SummaryProperty
 }
 
 type SummaryProperty {
-  path: [String]
-  type: String
+  path: [DirectionalStep!]!
+}
+
+type DirectionalStep {
+  step: String!
+  direction: Direction!
+}
+
+enum Direction {
+  IN
+  OUT
 }
 
 input SummaryPropertiesInput {
@@ -211,11 +220,15 @@ input SummaryPropertiesInput {
   image: SummaryPropertyInput
 }
 
-input SummaryPropertyInput {
-  path: [String!]!
+input SummaryPropertyInput  {
+  path: [DirectionalStepInput!]
   type: String!
 }
 
+input DirectionalStepInput {
+  step: String!
+  direction: Direction!
+}
 
 type IndexConfig {
   facet: [FacetConfig]!
