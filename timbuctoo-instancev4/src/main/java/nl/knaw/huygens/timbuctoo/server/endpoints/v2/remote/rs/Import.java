@@ -51,6 +51,7 @@ public class Import {
         ImportManager importManager = dataSet.getImportManager();
         try {
           LOG.info("Loading files");
+
           Iterator<RemoteFile> files =
             resourceSyncFileLoader.loadFiles(importData.source.toString()).iterator();
           LOG.info("Found files '{}'", files.hasNext());

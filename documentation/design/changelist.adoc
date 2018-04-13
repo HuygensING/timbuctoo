@@ -1,9 +1,9 @@
 = Updates to Timbuctoo Resource/Changelist
 
 . Problem:
-* Timbuctoo datasets currently have information in fileList.json and log.json that do contain enough information to generate proper changeLists according to the Resource Sync Specification. (we currently generate resourceLists only)
+* Timbuctoo datasets currently have information in fileList.json and log.json that do contain enough information to generate proper changeList according to the Resource Sync Specification. (we currently generate resourceList only)
 * Issue 1: Instead of storing all changes in the resourceList we want to start using both the changeList and the resourceList. The resourcelist should contain all files except the ones that are used as rdf patches. It should also contain a resource that represents the dataset as is.
-* Issue 2: When we download an external resourcesync dataset it may contain multiple changeLists while our importmanager requires 1 ordered list of changes.
+* Issue 2: When we download an external resourcesync dataset it may contain multiple changeList while our importmanager requires 1 ordered list of changes.
 
 . Result:
 * Timbuctoo properly generates a Changelist based on the log.json and according to the requirements stated in the

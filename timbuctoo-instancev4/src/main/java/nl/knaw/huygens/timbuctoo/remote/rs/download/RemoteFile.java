@@ -14,11 +14,14 @@ public interface RemoteFile {
 
   String getMimeType();
 
-  static RemoteFile create(String url, RemoteData data, String mimeType) {
+  Metadata getMetadata();
+
+  static RemoteFile create(String url, RemoteData data, String mimeType, Metadata metadata) {
     return ImmutableRemoteFile.builder()
       .data(data)
       .url(url)
       .mimeType(mimeType)
+      .metadata(metadata)
       .build();
   }
 

@@ -16,10 +16,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
@@ -89,6 +91,37 @@ public class ResourceSyncFileLoader {
     }
   }
 
+  public RemoteFilesList getRemoteFilesList(String capabilityListUri) throws IOException {
+    List<UrlItem> itemList = getRsFile(capabilityListUri).getItemList();
+
+    List<RemoteFile> changes = new ArrayList<>();
+    List<RemoteFile> resources = new ArrayList<>();
+
+    for (UrlItem urlItem : itemList) {
+      if (urlItem.getMetadata().getCapability().equals(Capability.CHANGELIST.getXmlValue())) {
+        UrlSet rsFile = getRsFile(urlItem.getLoc());
+
+        String datasetNamePattern = ".*.nqud";
+
+        for (UrlItem item : rsFile.getItemList()) {
+          if (item.getLoc().matches(datasetNamePattern)) {
+            changes.add(getRemoteFile(new Tuple<>(item.getLoc(), item.getMetadata())));
+          }
+        }
+      } else if (urlItem.getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())) {
+        UrlSet rsFile = getRsFile(urlItem.getLoc());
+
+        for (UrlItem item : rsFile.getItemList()) {
+          if (RdfExtensions.createFromFile(item.getLoc()) != null) {
+            resources.add(getRemoteFile(new Tuple<>(item.getLoc(), item.getMetadata())));
+          }
+        }
+      }
+    }
+
+    return new RemoteFilesList(changes, resources);
+  }
+
   public Stream<RemoteFile> loadFiles(String capabilityListUri) throws IOException {
     List<UrlItem> itemList = getRsFile(capabilityListUri).getItemList();
 
@@ -117,13 +150,12 @@ public class ResourceSyncFileLoader {
           return item.getLoc().matches(datasetNamePattern);
         })
         .map(item -> tuple(item.getLoc(), item.getMetadata()))
-        .map(this::getUrlAndMimeType)
         .map(this::getRemoteFile);
       LOG.info("Resources found");
       return remoteFileStream;
     }
 
-    Optional<RemoteFile> remoteFile = itemList.stream()
+    Stream<UrlItem> urlItemStream = itemList.stream()
       .filter(url -> url
         .getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())
       )
@@ -139,11 +171,10 @@ public class ResourceSyncFileLoader {
         return resourceList.getItemList().stream();
       })
       .filter(item -> RdfExtensions.createFromFile(item.getLoc()) != null)
-      .sorted(Comparator.comparing(item2 -> RdfExtensions.createFromFile(item2.getLoc())))
-      .findFirst()
-      .map(item -> tuple(item.getLoc(), item.getMetadata()))
-      .map(this::getUrlAndMimeType)
-      .map(this::getRemoteFile);
+      .sorted(Comparator.comparing(item2 -> RdfExtensions.createFromFile(item2.getLoc())));
+
+
+    Optional<RemoteFile> remoteFile = getDatasetFile(urlItemStream);
 
     if (remoteFile.isPresent()) {
       LOG.info("Resources found");
@@ -153,13 +184,42 @@ public class ResourceSyncFileLoader {
     return Stream.empty();
   }
 
-  private RemoteFile getRemoteFile(Tuple<String, String> resource) {
+  private Optional<RemoteFile> getDatasetFile(Stream<UrlItem> urlItemStream) {
+    List<UrlItem> urlItemList = urlItemStream.collect(Collectors.toList());
+
+    if (urlItemList.size() == 1) {
+      return urlItemList.stream().findFirst().map(item -> tuple(item.getLoc(), item.getMetadata()))
+        .map(this::getRemoteFile);
+    } else {
+      for (UrlItem urlItem : urlItemList) {
+        if (urlItem.getMetadata().isDataset()) {
+          return Optional.of(getRemoteFile(new Tuple<>(urlItem.getLoc(), urlItem.getMetadata())));
+        }
+      }
+
+      return Optional.empty();
+    }
+
+  }
+
+  private RemoteFile getRemoteFile(Tuple<String, Metadata> item) {
     return RemoteFile.create(
-      resource.getLeft(),
-      () -> remoteFileRetriever.getFile(resource.getLeft()),
-      resource.getRight()
+      item.getLeft(),
+      () -> remoteFileRetriever.getFile(item.getLeft()),
+      getUrl(tuple(item.getLeft(), item.getRight())),
+      item.getRight()
     );
   }
+
+  private String getUrl(Tuple<String, Metadata> item) {
+    if (item.getRight() != null) {
+      return item.getRight().getMimeType();
+    } else {
+      String extension = item.getLeft().substring(item.getLeft().lastIndexOf(".") + 1);
+      return MIME_TYPE_FOR_EXTENSION.get(extension);
+    }
+  }
+
 
   private Tuple<String, String> getUrlAndMimeType(Tuple<String, Metadata> item) {
     if (item.getRight() != null) {
@@ -192,7 +252,7 @@ public class ResourceSyncFileLoader {
     NT("nt"),
     TTL("ttl"),
     N3("n3"),
-    RDF("rdf"),
+    RDF_XML("xml"),
     JSONLD("jsonld");
 
     private final String extension;
@@ -212,6 +272,24 @@ public class ResourceSyncFileLoader {
 
     public String getExtension() {
       return extension;
+    }
+  }
+
+  static class RemoteFilesList {
+    private List<RemoteFile> changeList;
+    private List<RemoteFile> resourceList;
+
+    public RemoteFilesList(List<RemoteFile> changeList, List<RemoteFile> resourceList) {
+      this.changeList = changeList;
+      this.resourceList = resourceList;
+    }
+
+    public List<RemoteFile> getChangeList() {
+      return changeList;
+    }
+
+    public List<RemoteFile> getResourceList() {
+      return resourceList;
     }
   }
 

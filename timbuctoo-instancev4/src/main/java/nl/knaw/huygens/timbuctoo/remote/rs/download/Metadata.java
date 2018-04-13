@@ -9,8 +9,15 @@ public class Metadata {
   @JacksonXmlProperty(localName = "type", isAttribute = true)
   private String mimeType = "unknown"; // set default value make sure it is not null
 
+  @JacksonXmlProperty(localName = "isDataset", isAttribute = true)
+  private boolean isDataset = false;
+
   public String getCapability() {
     return capability;
+  }
+
+  public boolean isDataset() {
+    return isDataset;
   }
 
   public void setCapability(String capability) {
@@ -24,5 +31,9 @@ public class Metadata {
 
   public void setMimeType(String mimeType) {
     this.mimeType = mimeType;
+  }
+
+  public void setIsDataset(boolean isDataset) {
+    this.isDataset = isDataset;
   }
 }
