@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import javaslang.control.Either;
-import nl.knaw.huygens.timbuctoo.remote.rs.download.FilterRemoteFilesForImport;
+import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.RemoteFile;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
@@ -54,13 +54,13 @@ public class Import {
         try {
           LOG.info("Loading files");
 
-          FilterRemoteFilesForImport filterRemoteFilesForImport =
-            new FilterRemoteFilesForImport(resourceSyncFileLoader);
+          ResourceSyncImport resourceSyncImport =
+            new ResourceSyncImport(resourceSyncFileLoader);
 
           Iterator<RemoteFile> files;
 
           try {
-            files = filterRemoteFilesForImport.filter(importData.source.toString()).iterator();
+            files = resourceSyncImport.filter(importData.source.toString()).iterator();
           } catch (CantDetermineDataSetException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
           }

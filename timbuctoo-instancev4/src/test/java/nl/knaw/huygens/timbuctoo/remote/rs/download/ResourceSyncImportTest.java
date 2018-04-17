@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class FilterRemoteFilesForImportTest {
+public class ResourceSyncImportTest {
 
   private String baseUrl = "http://127.0.0.1:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/";
 
@@ -43,9 +43,9 @@ public class FilterRemoteFilesForImportTest {
 
     given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri)).willReturn(remoteFilesList);
 
-    FilterRemoteFilesForImport filterRemoteFilesForImport = new FilterRemoteFilesForImport(resourceSyncFileLoader);
+    ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader);
 
-    List<RemoteFile> filteredFiles = filterRemoteFilesForImport.filter(capabilityListUri);
+    List<RemoteFile> filteredFiles = resourceSyncImport.filter(capabilityListUri);
 
     assertThat(filteredFiles, containsInAnyOrder(
       hasProperty("url", is(baseUrl + "files/changes1.nqud")),
@@ -69,9 +69,9 @@ public class FilterRemoteFilesForImportTest {
 
     given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri)).willReturn(remoteFilesList);
 
-    FilterRemoteFilesForImport filterRemoteFilesForImport = new FilterRemoteFilesForImport(resourceSyncFileLoader);
+    ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader);
 
-    List<RemoteFile> filteredFiles = filterRemoteFilesForImport.filter(capabilityListUri);
+    List<RemoteFile> filteredFiles = resourceSyncImport.filter(capabilityListUri);
 
     assertThat(filteredFiles, contains(
       hasProperty("url", is(baseUrl + "files/dataset.nq"))
@@ -101,9 +101,9 @@ public class FilterRemoteFilesForImportTest {
 
     given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri)).willReturn(remoteFilesList);
 
-    FilterRemoteFilesForImport filterRemoteFilesForImport = new FilterRemoteFilesForImport(resourceSyncFileLoader);
+    ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader);
 
-    List<RemoteFile> filteredFiles = filterRemoteFilesForImport.filter(capabilityListUri);
+    List<RemoteFile> filteredFiles = resourceSyncImport.filter(capabilityListUri);
 
     assertThat(filteredFiles, contains(
       hasProperty("url", is(baseUrl + "files/dataset.rdf"))
@@ -129,11 +129,11 @@ public class FilterRemoteFilesForImportTest {
 
     given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri)).willReturn(remoteFilesList);
 
-    FilterRemoteFilesForImport filterRemoteFilesForImport = new FilterRemoteFilesForImport(resourceSyncFileLoader);
+    ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader);
 
     String userSpecifiedDataSet = baseUrl + "files/dataset.rdf";
 
-    List<RemoteFile> filteredFiles = filterRemoteFilesForImport.filter(capabilityListUri, userSpecifiedDataSet);
+    List<RemoteFile> filteredFiles = resourceSyncImport.filter(capabilityListUri, userSpecifiedDataSet);
 
     assertThat(filteredFiles, contains(
       hasProperty("url", is(baseUrl + "files/dataset.rdf"))
@@ -159,9 +159,9 @@ public class FilterRemoteFilesForImportTest {
 
     given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri)).willReturn(remoteFilesList);
 
-    FilterRemoteFilesForImport filterRemoteFilesForImport = new FilterRemoteFilesForImport(resourceSyncFileLoader);
+    ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader);
 
-    filterRemoteFilesForImport.filter(capabilityListUri);
+    resourceSyncImport.filter(capabilityListUri);
 
   }
 }

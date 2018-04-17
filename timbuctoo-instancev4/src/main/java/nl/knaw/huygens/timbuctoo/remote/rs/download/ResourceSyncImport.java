@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class FilterRemoteFilesForImport {
+public class ResourceSyncImport {
   private ResourceSyncFileLoader resourceSyncFileLoader;
 
-  public FilterRemoteFilesForImport(ResourceSyncFileLoader resourceSyncFileLoader) {
+  public ResourceSyncImport(ResourceSyncFileLoader resourceSyncFileLoader) {
     this.resourceSyncFileLoader = resourceSyncFileLoader;
   }
 
