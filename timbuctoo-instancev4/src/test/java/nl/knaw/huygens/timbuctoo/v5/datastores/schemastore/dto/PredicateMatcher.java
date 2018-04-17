@@ -4,10 +4,6 @@ import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-
-import java.util.Collection;
 
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -77,6 +73,16 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
       @Override
       protected Iterable<String> getItemValue(Predicate item) {
         return item.getValueTypes().keySet();
+      }
+    });
+    return this;
+  }
+
+  public PredicateMatcher withIsList(boolean isList) {
+    this.addMatcher(new PropertyEqualityMatcher<Predicate, Boolean>("isList", isList) {
+      @Override
+      protected Boolean getItemValue(Predicate item) {
+        return item.isList();
       }
     });
     return this;
