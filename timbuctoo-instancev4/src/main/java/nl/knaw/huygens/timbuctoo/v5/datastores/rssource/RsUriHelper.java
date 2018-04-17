@@ -35,6 +35,7 @@ public class RsUriHelper {
   }
 
   public String uriForToken(DataSetMetaData dataSetMetaData, String token) {
+
     return String.format("%s/%s/%s/%s/%s/%s", uriHelper.getBaseUri(), RESOURCE_SYNC_PATH, dataSetMetaData.getOwnerId(),
       dataSetMetaData.getDataSetId(), FILES_DIR, token);
   }

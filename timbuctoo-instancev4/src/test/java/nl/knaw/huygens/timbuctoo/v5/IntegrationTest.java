@@ -354,13 +354,12 @@ public class IntegrationTest {
     );
   }
 
-  @Ignore
   @Test
   public void resourcesyncImportsValidDatasets() throws Exception {
     String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
-      new File(getResource(IntegrationTest.class, "dataset.ttl").toURI()),
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
         "encoding", "UTF-8",
@@ -370,20 +369,22 @@ public class IntegrationTest {
 
     assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
 
+    String dataSetId = createDataSetId(dataSetName);
+
     call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(jsnO(
         "query",
         jsn(
           "mutation Publish($dataSetId: String!) {" +
-            "  publish(dataSet: $dataSetId) {" +
+            "  publish(dataSetId: $dataSetId) {" +
             "    dataSetId" +
             "  }" +
             "}"
         ),
         "variables",
         jsnO(
-          "dataSetId", jsn(PREFIX + "__" + dataSetName)
+          "dataSetId", jsn(dataSetId)
         )
       ).toString(), MediaType.valueOf("application/json")));
 
