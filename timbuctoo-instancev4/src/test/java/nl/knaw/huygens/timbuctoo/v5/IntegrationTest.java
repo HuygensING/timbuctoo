@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.CleaningDropwizard;
+import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.apache.activemq.util.ByteArrayInputStream;
@@ -65,8 +66,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.Is.is;
 
 public class IntegrationTest {
@@ -405,6 +408,71 @@ public class IntegrationTest {
 
     assertThat("Successful resourcesync import", resourceSyncCall.getStatus(), is(200));
     
+  }
+
+  @Test
+  public void resourcesyncThrowsExceptionWithFileListWhenDatasetResourceIsNotDetectable() throws Exception {
+    String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.rdfp"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    String dataSetId = createDataSetId(dataSetName);
+
+    call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Publish($dataSetId: String!) {" +
+            "  publish(dataSetId: $dataSetId) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.rdfp"
+      )
+    );
+
+
+    String capabilityListUri = format("http://localhost:%d/v5/resourcesync/%s/%s/capabilitylist.xml" ,
+      APP.getLocalPort(),
+      PREFIX,
+      dataSetName
+    );
+
+    Response resourceSyncCall = call("/v2.1/remote/rs/import?forceCreation=true")
+      .accept(MediaType.APPLICATION_JSON)
+      .header("authorization", "fake")
+      .post(Entity.entity(jsnO(
+        "source", jsn(capabilityListUri),
+        "userId", jsn(PREFIX),
+        "dataSetId", jsn("datasettest")
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(resourceSyncCall.getStatus(),is(400));
+    assertThat(resourceSyncCall.readEntity(Exception.class),
+      hasProperty("message",startsWith("Can not determine dataset file.")));
   }
 
   @Test

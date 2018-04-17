@@ -62,7 +62,7 @@ public class Import {
           try {
             files = filterRemoteFilesForImport.filter(importData.source.toString()).iterator();
           } catch (CantDetermineDataSetException e) {
-            return Response.serverError().entity(e).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
           }
 
           LOG.info("Found files '{}'", files.hasNext());
