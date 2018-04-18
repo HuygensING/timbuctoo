@@ -75,30 +75,47 @@ So to create a resourcesync capable server for timbuctoo you should:
  4. Fill the resource list with links to the actual data files. There should be at least one file called `dataset.*` in one of the supported rdf formats (see below)
  5. Fill the changelist with the nqud files that together form dataset.*
 
+
 You may use the `describedby` mechanism (see http://www.openarchives.org/rs/1.1/resourcesync#DocumentFormats[]) to point to documents that describe your datasets. 
 These description documents can be in any format, however, using one of the RDF-formats is recommended. 
 Timbuctoo interprets http://www.openarchives.org/rs/1.1/resourcesync#CapabilityList[capabilitylist's] as description of a dataset. 
-Therefore expects that the metadata of a `capabilitylist` will contain the `describedby` mechanism. 
+Therefore expects that the metadata of a `capabilitylist` will contain the `describedby` mechanism.
 This `describedBy` item can either be added to a url in the sourcedescription or to the root item of the `capabilitylist`.
+
+=== Capabilitylists
+Capabilitylists have a special place in the resourcesync of Timbuctoo.
+Timbuctoo has a different for each of its data sets.
+So Timbuctoo considers each capability list to be a representative for a data set.
+This is why all Timbuctoo capability lists have a `describedby` link.
+The description will look something like the following:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+	xmlns="http://purl.org/dc/terms/"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+<rdf:Description rdf:about="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/">
+	<abstract rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/summaryProperties"/>
+	<description rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Short description of the dataset</description>
+	<license rdf:resource="https://creativecommons.org/publicdomain/zero/1.0/"/>
+	<provenance rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/provenance"/>
+	<rightsHolder rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/rightsHolder"/>
+	<title rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Data set title</title>
+	<ContactPoint xmlns="http://schema.org/" rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/contactPerson"/>
+</rdf:Description>
+
+</rdf:RDF>
+```
 
 === Valid resources
 Timbuctoo cannot sync every filetype on the internet, only files containing rdf in several of the more well-known serialisation formats.
 To indicate the serialisation format you can specify the mimetype in the optional `md` field (meta data field) for each url from the resource list.
 Alternatively you can use a file extension to indicate the type of file.
 The explicit mimetype overrules the file extension.
+Look add <<Valid types, Valid types>> for more information.
 
-The filetypes that we can currently import are:
 
- * text/turtle (.ttl)
- * application/rdf+xml (.rdf)
- * application/n-triples (.nt)
- * application/ld+json (.jsonld)
- * application/trig (.trig)
- * application/n-quads (.nq)
- * text/n3 (.n3)
-
-The extra files that are uploaded along with the dataset will simply be stored in the Timbuctoo
-filesystem.
+The other files that are uploaded along with the dataset will simply be stored in the Timbuctoo filesystem.
 
 So we expect an item resource list will look like:
 
@@ -110,11 +127,44 @@ So we expect an item resource list will look like:
 </url>
 ...
 ```
+= RDF
+https://www.w3.org/1999/.status/PR-rdf-schema-19990303/status[RDF] is the exchange format we use.
 
+== Valid types
+The types Timbuctoo currently support are:
+
+ * text/turtle (.ttl)
+ * application/rdf+xml (.rdf)
+ * application/n-triples (.nt)
+ * application/ld+json (.jsonld)
+ * application/trig (.trig)
+ * application/n-quads (.nq)
+ * text/n3 (.n3)
+ * application/vnd.timbuctoo-rdf.nquads_unified_diff (.nqud) [Our custom type for more information look below]
+
+== Data set (rdf) design considerations
+In order to make your data set work well with Timbuctoo, there are a few thinks to be considered.
+
+First Timbuctoo expects each resource to have a `http://www.w3.org/1999/02/22-rdf-syntax-ns#type`.
+This is how it will organize your data set into multiple collections.
+If none of your resources have type definition, all the data will be swept on a big pile of a type Timbuctoo calls `unknown`.
+
+Timbuctoo supports all kind of value type definitions.
+But when you when you want to take full advantage of the power of the Timbuctoo and use its GUI to generate an Elasticsearch index for you; you are limited to:
+
+* `http://schema.org/Date` will suffice for your modern day dates.
+* `https://www.loc.gov/standards/datetime/pre-submission.html` will give you the freedom to add uncertainties to you date description.
+Currently we are using https://github.com/inukshuk/edtf.js to parse our EDTF for the Elasticseach index. So we are limited to the EDTF it supports, which is almost, but not all.
+
+=== Validate your RDF
+To make sure your RDF will be accepted by Timbuctoo, you can create a small test script using http://docs.rdf4j.org/programming/#_parsing_a_file_and_collecting_all_triples[RDF4J].
+
+
+=== Additions and retractions
 Changes (additions and retractions) made in Timbuctoo will be stored in the changelist for dataset.<rdf extension> file
  that is in the nquads-ud format (see below)
 
-== N-Quads U.D.
+= N-Quads U.D.
 N-Quads U.D. stands for N-Quads Unified Diff.
 It is an extension on the RDF N-Quads notation.
 
@@ -136,7 +186,7 @@ For Timbuctoo we needed a way to change a data without changing its history.
 So the first thing we did was looking at ideas that were already floating around on the internet.
 We found one called https://afs.github.io/rdf-patch/[RDF Patch] and another one called https://www.w3.org/TR/ldpatch/[Linked Data Patch Format].
 
-=== Why didn't we use RDF Patch?
+== Why didn't we use RDF Patch?
 At first glance RDF Patch looks like the ideal solution for our problem.
 So we tried to write a piece of code that allowed us to import the notation.
 But we got stuck pretty quickly.
