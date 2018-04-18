@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+import org.hamcrest.Matchers;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -18,13 +19,18 @@ import java.io.IOException;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType.ASSERTED;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType.RETRACTED;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.PredicateMatcher.predicate;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
@@ -216,6 +222,60 @@ public class SchemaGenerationTest {
     );
   }
 
+  // add triple1 twice should give hte same result as adding triple1 once
+  @Test
+  public void adoubleAssertionOfATripleDoesNotChangeTheSchema() throws Exception {
+    Map<String, Type> singleAssertion = runTest(
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+    );
+
+    Map<String, Type> doubleAssertion = runTest(
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+    );
+
+    assertThat(doubleAssertion, is(singleAssertion));
+  }
+
+  @Test
+  public void retractingATripleLeavesTheTypesInTheSchema() throws Exception {
+    Map<String, Type> assertRetract = runTest(
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, "")
+    );
+
+    assertThat(assertRetract, hasEntry(is(TYPE_1), hasProperty("predicates",
+      contains(predicate().withName(RDF_TYPE))
+    )));
+  }
+
+  // add triple1 should be the same as adding triple1, retracting it and adding it again.
+  @Test
+  public void assertRetractAssertShouldShowNoDifferencesAfterTheFirstAndSecondAssert() throws Exception {
+    Map<String, Type> singleAssertion = runTest(
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+    );
+
+    Map<String, Type> ara = runTest(
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+    );
+
+    assertThat(ara, is(singleAssertion));
+  }
+
+  @Test
+  public void onlyRetractingATripleShouldHaveNoInfluenceOnTheSchema() throws Exception {
+    Map<String, Type> noChanges = runTest();
+    Map<String, Type> retractionOnly = runTest(
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, "")
+    );
+
+    assertThat(retractionOnly, is(noChanges));
+  }
+
 
   /* When the SUBJECT_A rdf:type TYPE_2 is asserted in a a separate update, while ex:baz did not have a type before.
    * Then I expect the TYPE_2 to get an ex:links predicate that points to ex:type
@@ -346,7 +406,7 @@ public class SchemaGenerationTest {
     storeUpdater.start(0);
     for (CursorQuad quad : quads) {
       storeUpdater.onQuad(
-        true,
+        quad.getChangeType() == ASSERTED,
         quad.getSubject(),
         quad.getPredicate(),
         quad.getObject(),
