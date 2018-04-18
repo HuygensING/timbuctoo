@@ -87,25 +87,48 @@ Capabilitylists have a special place in the resourcesync of Timbuctoo.
 Timbuctoo has a different for each of its data sets.
 So Timbuctoo considers each capability list to be a representative for a data set.
 This is why all Timbuctoo capability lists have a `describedby` link.
-The description will look something like the following:
+The description will should something like the following:
 ```
-<?xml version="1.0" encoding="UTF-8"?>
-<rdf:RDF
-	xmlns="http://purl.org/dc/terms/"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<?xml version="1.0" encoding="utf-8" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:dc="http://purl.org/dc/terms/"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:schema="http://schema.org/">
 
-<rdf:Description rdf:about="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/">
-	<abstract rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/summaryProperties"/>
-	<description rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Short description of the dataset</description>
-	<license rdf:resource="https://creativecommons.org/publicdomain/zero/1.0/"/>
-	<provenance rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/provenance"/>
-	<rightsHolder rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/rightsHolder"/>
-	<title rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Data set title</title>
-	<ContactPoint xmlns="http://schema.org/" rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/dataset/contactPerson"/>
-</rdf:Description>
+  <rdf:Description rdf:about="http://example.org/dataset">
+    <dc:title>Data set title</dc:title>
+    <dc:description>Short description of the data set</dc:description>
+    <foaf:depiction>https://timbuctoostorage.blob.core.windows.net/imagestorage/2TBI.png</foaf:depiction>
+    <dc:rightsHolder>
+      <rdf:Description rdf:about="http://example.org/rightsHolder">
+        <schema:name>Rights Holder</schema:name>
+        <schema:email>Rights.holder@example.org</schema:email>
+      </rdf:Description>
+    </dc:rightsHolder>
 
+    <schema:ContactPoint>
+      <rdf:Description rdf:about="http://example.org/contactPerson">
+        <schema:name>Contact Person</schema:name>
+        <schema:email>contact.person@example.org</schema:email>
+      </rdf:Description>
+    </schema:ContactPoint>
+
+    <dc:license rdf:resource="https://creativecommons.org/publicdomain/zero/1.0/"/> <!-- Could be any lincense -->
+    <dc:provenance>
+      <rdf:Description rdf:about="http://example.org/provenance">
+        <dc:title>Provenance title</dc:title>
+        <dc:description rdf:datatype="http://spec.commonmark.org/0.28/">
+          Provenance description, [markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#links) could be used.
+        </dc:description>
+      </rdf:Description>
+    </dc:provenance>
+
+    <dc:abstract rdf:resource="http://example.org/summaryProperties"/>
+  </rdf:Description>
 </rdf:RDF>
 ```
+The description is based on https://www.w3.org/TR/void/[VoID vocabulary] with the addition of `foaf:depiction`.
+This description will be the information on the landing page of the data set in the Timbuctoo GUI.
 
 === Valid resources
 Timbuctoo cannot sync every filetype on the internet, only files containing rdf in several of the more well-known serialisation formats.
