@@ -34,6 +34,7 @@ public class Import {
   @Produces("application/json")
   public Response importData(@HeaderParam("Authorization") String authorization,
                              @QueryParam("forceCreation") boolean forceCreation,
+                             @QueryParam("dataSetFile") String dataSetFile,
                              @QueryParam("async") @DefaultValue("true") final boolean async,
                              ImportData importData)
     throws DataStoreCreationException {
@@ -50,7 +51,7 @@ public class Import {
             new ResourceSyncImport(resourceSyncFileLoader, dataSet, async);
 
           ResourceSyncImport.ResourceSyncReport resourceSyncReport = resourceSyncImport.filterAndImport(
-            importData.source.toString(), null
+            importData.source.toString(), dataSetFile
           );
 
           return Response.ok(resourceSyncReport).build();
