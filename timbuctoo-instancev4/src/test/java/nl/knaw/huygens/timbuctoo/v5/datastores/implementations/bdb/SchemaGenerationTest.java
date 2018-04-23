@@ -56,6 +56,7 @@ public class SchemaGenerationTest {
   private static final String PROP_III = "http://example.org/links";
 
   private static final String GRAPH = "http://example.org";
+  private static final String VALUE_TYPE = "http://example.org/valuetype";
 
 
   @Test
@@ -117,6 +118,31 @@ public class SchemaGenerationTest {
     ));
   }
 
+  /* PROP_I of SUBJECT_A should be added to TYPE_2 as an outgoing predicate with a reference type TYPE_3
+   * PROP_I of SUBJECT_A should be added to TYPE_3 as an incoming predicate with a reference type TYPE_2
+   */
+  @Ignore
+  @Test
+  public void eachPredicateThatLinksToAnotherSubjectWillBeAddedToTheOtherSubjectAsAnIncomingEvenInMultipleSessions()
+    throws Exception {
+    Map<String, Type> schema = runTest(
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+    );
+
+
+
+    assertThat(schema, allOf(
+      hasEntry(is(TYPE_2), hasProperty("predicates",allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(TYPE_3))
+      ))),
+      hasEntry(is(TYPE_3), hasProperty("predicates", allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(Direction.IN).withReferenceType(TYPE_2))
+      )))
+    ));
+  }
+
   /* PROP_I of SUBJECT_A should be added to TYPE_2 as an outgoing predicate with a reference type UKNOWN
    * PROP_I of SUBJECT_A should be added to UKNOWN as an incoming predicate with a reference type TYPE_2
    */
@@ -145,10 +171,10 @@ public class SchemaGenerationTest {
   public void theValueTypeIsAddedToThePredicate() throws Exception {
     Map<String, Type> schema = runTest(
       CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, "")
     );
     assertThat(schema, hasEntry(is(TYPE_2), hasProperty("predicates",
-      hasItem(predicate().withName(PROP_I).withValueType("http://example.org/valuetype"))
+      hasItem(predicate().withName(PROP_I).withValueType(VALUE_TYPE))
     )));
   }
 
@@ -159,8 +185,8 @@ public class SchemaGenerationTest {
   public void thePredicateWillBecomeAListWhenASubjectHasMultipleInstances() throws Exception {
     Map<String, Type> schema = runTest(
       CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value2", "http://example.org/valuetype", null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value2", VALUE_TYPE, null, "")
     );
     assertThat(schema, hasEntry(is(TYPE_2), hasProperty("predicates",
       hasItem(predicate().withName(PROP_I).withIsList(true).withValueTypeCount(2))
@@ -177,13 +203,13 @@ public class SchemaGenerationTest {
     Map<String, Type> schema = runTest(
       CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
       CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, ""),
       CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
     );
 
     assertThat(schema, hasEntry(is(TYPE_2), hasProperty("predicates", hasItem(
       predicate().withName(PROP_I).withReferenceType(TYPE_3)
-                 .withValueType("http://example.org/valuetype").withIsList(true)
+                 .withValueType(VALUE_TYPE).withIsList(true)
     ))));
   }
 
@@ -223,7 +249,7 @@ public class SchemaGenerationTest {
   }
 
   // add triple1 twice should give hte same result as adding triple1 once
-  @Test
+  @Test // TODO figure out how to test in permutation test
   public void adoubleAssertionOfATripleDoesNotChangeTheSchema() throws Exception {
     Map<String, Type> singleAssertion = runTest(
       CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
@@ -311,13 +337,12 @@ public class SchemaGenerationTest {
     )));
   }
 
-  /* When the ex:baz rdf:type ex:type is asserted in a a separate update, while ex:baz did not have a type before.
-   * Then I expect the ex:type to get an inverse of the ex:links predicate that points to TYPE_2
+  /* When the SUBJECT_C RDF_TYPE TYPE_1 is asserted in a a separate update, while ex:baz did not have a type before.
+   * Then I expect the RDF_TYPE to get an inverse of the ex:links predicate that points to TYPE_2
    *
    * But in the current code that does not happen. Instead ex:type gets an ex:links
    *  predicate that has no reference or value types
    */
-  @Ignore
   @Test
   public void addAValidIncomingPredicateToTheNewType() throws Exception {
     BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
@@ -346,43 +371,6 @@ public class SchemaGenerationTest {
 
     assertThat(schema.getStableTypes(), hasEntry(is(TYPE_1), hasProperty("predicates",
       hasItem(predicate().withName(PROP_III).withDirection(Direction.IN).withReferenceType(TYPE_2))
-    )));
-  }
-
-  /* When the ex:baz rdf:type ex:type is asserted in a a separate update, while ex:baz did not have a type before.
-   * Then I expect the TYPE_2s ex:links will have the reference type ex:type added
-   *
-   * But in the current code that does not happen.
-   */
-  @Ignore
-  @Test
-  public void updateTheInversePredicatesForReferencePredicates() throws Exception {
-    BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
-    final BdbSchemaStore schema = new BdbSchemaStore(
-      new BdbBackedData(dataStoreFactory.getDatabase(
-        USER,
-        DATA_SET,
-        "schema",
-        false,
-        STRING_BINDING,
-        STRING_BINDING,
-        STRING_IS_CLEAN_HANDLER
-      )),
-      mock(ImportStatus.class)
-    );
-
-    final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
-
-    storeUpdater.start(0);
-    storeUpdater.onQuad(true, SUBJECT_A, PROP_III, SUBJECT_C, null, null, GRAPH);
-    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, GRAPH);
-    storeUpdater.commit();
-    storeUpdater.start(1);
-    storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH);
-    storeUpdater.commit();
-
-    assertThat(schema.getStableTypes(), hasEntry(is(TYPE_2), hasProperty("predicates",
-      hasItem(predicate().withName(PROP_III).withDirection(OUT).withReferenceType(TYPE_1))
     )));
   }
 

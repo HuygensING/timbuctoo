@@ -192,28 +192,26 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         } else if (quad.getChangeType() == ChangeType.ASSERTED) {
           assertedCount++;
         }
-        if (quad.getDirection() != Direction.IN) {
-          if (quad.getChangeType() == ChangeType.RETRACTED) {
-            for (Type type : unchangedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
-            for (Type type : removedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
-          } else if (quad.getChangeType() == ChangeType.UNCHANGED) {
-            for (Type type : removedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
-            for (Type type : addedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
-            }
-          } else if (quad.getChangeType() == ChangeType.ASSERTED) {
-            for (Type type : unchangedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
-            }
-            for (Type type : addedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
-            }
+        if (quad.getChangeType() == ChangeType.RETRACTED) {
+          for (Type type : unchangedTypes) {
+            updatePredicateType(type, quad, false, changeFetcher);
+          }
+          for (Type type : removedTypes) {
+            updatePredicateType(type, quad, false, changeFetcher);
+          }
+        } else if (quad.getChangeType() == ChangeType.UNCHANGED) {
+          for (Type type : removedTypes) {
+            updatePredicateType(type, quad, false, changeFetcher);
+          }
+          for (Type type : addedTypes) {
+            updatePredicateType(type, quad, true, changeFetcher);
+          }
+        } else if (quad.getChangeType() == ChangeType.ASSERTED) {
+          for (Type type : unchangedTypes) {
+            updatePredicateType(type, quad, true, changeFetcher);
+          }
+          for (Type type : addedTypes) {
+            updatePredicateType(type, quad, true, changeFetcher);
           }
         }
       }
@@ -322,40 +320,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   public void finish() {
     LOG.info("Finished processing entities");
     importStatus.setStatus("Finished processing entities");
-    //Step 3: Add type information to inverse predicates
     for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
       Type type = typeEntry.getValue();
-      String typeName = typeEntry.getKey();
 
+      // finish the predicates register if it has been singular or list
       for (Predicate predicate : type.getPredicates()) {
         predicate.finish();
-        if (predicate.getDirection() == Direction.IN) {
-          continue;
-        }
-        for (String referenceType : predicate.getReferenceTypes().keySet()) {
-          try {
-            types.get(referenceType)
-              .getPredicate(predicate.getName(), Direction.IN) //There must be an inverse for each outward predicate
-              .incReferenceType(type.getName(), 1);
-          } catch (Exception e) {
-            String cause = "Referenced type " + referenceType + " not found";
-            try {
-              if (types.containsKey(referenceType)) {
-                cause = "type does not have the inverse predicate " + predicate.getName();
-                if (types.get(referenceType).getPredicate(predicate.getName(), Direction.IN) != null) {
-                  cause = "Something failed during addreferencetype(" + typeName + ")";
-                }
-              }
-              LOG.error("Error during inverse generation (ignored): " + cause , e);
-              importStatus.addError("Error during inverse generation (ignored): " + cause, e);
-            } catch (Exception e2) {
-              LOG.error("Error during inverse generation " + cause, e);
-              importStatus.addError("Error during inverse generation " + cause, e);
-              LOG.error("Error during recovery generation ", e2);
-              importStatus.addError("Error during recovery generation ", e2);
-            }
-          }
-        }
       }
     }
     try {
