@@ -141,8 +141,6 @@ public class RsDocumentBuilder {
         Optional<String> maybeToken = logEntry.getLogToken();
         if (maybeToken.isPresent()) {
           String loc = rsUriHelper.uriForToken(dataSetMetaData, maybeToken.get());
-          //change '_' before file extension back to '.'
-          loc = loc.substring(0, loc.lastIndexOf("_")) + "." + loc.substring(loc.lastIndexOf("_") + 1);
 
           Optional<CachedFile> maybeCachedFile = fileStorage.getFile(maybeToken.get());
           if (maybeCachedFile.isPresent()) {

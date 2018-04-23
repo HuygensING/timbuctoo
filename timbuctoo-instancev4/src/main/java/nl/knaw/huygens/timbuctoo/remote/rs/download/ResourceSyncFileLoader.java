@@ -17,12 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
@@ -112,6 +108,9 @@ public class ResourceSyncFileLoader {
         UrlSet rsFile = getRsFile(urlItem.getLoc());
 
         for (UrlItem item : rsFile.getItemList()) {
+          if (item.getMetadata().getMimeType().equals("text/turtle")) {
+            resources.add(getRemoteFile(new Tuple<>(item.getLoc(), item.getMetadata())));
+          }
           if (RdfExtensions.createFromFile(item.getLoc()) != null) {
             resources.add(getRemoteFile(new Tuple<>(item.getLoc(), item.getMetadata())));
           }
