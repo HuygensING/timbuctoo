@@ -5,6 +5,8 @@ import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 
+import java.util.Map;
+
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
@@ -88,7 +90,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
     return this;
   }
 
-  public <T> PredicateMatcher withValueTypeCount(long count) {
+  public PredicateMatcher withValueTypeCount(long count) {
     this.addMatcher(new PropertyEqualityMatcher<Predicate, Long>("valueTypeCount", count) {
 
       @Override

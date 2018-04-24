@@ -20,6 +20,7 @@ import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType.ASSERTED;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType.RETRACTED;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.PredicateMatcher.predicate;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
@@ -27,6 +28,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -254,7 +256,7 @@ public class SchemaGenerationTest {
 
   // add triple1 twice should give hte same result as adding triple1 once
   @Test // TODO figure out how to test in permutation test
-  public void adoubleAssertionOfATripleDoesNotChangeTheSchema() throws Exception {
+  public void doubleAssertionOfATripleDoesNotChangeTheSchema() throws Exception {
     Map<String, Type> singleAssertion = runTest(
       CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
     );
@@ -268,6 +270,19 @@ public class SchemaGenerationTest {
   }
 
   @Test
+  public void doubleAssertionOfATripleDoesNotIncreaseTheReferenceCounts() throws Exception {
+    Map<String, Type> schema = runTest(
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+    );
+
+    assertThat(schema, hasEntry(is(UNKNOWN), hasProperty("predicates", allOf(
+      hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceTypeCount(1)),
+      hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceTypeCount(1))
+    ))));
+  }
+
+  @Test
   public void retractingATripleLeavesTheTypesInTheSchema() throws Exception {
     Map<String, Type> assertRetract = runTest(
       CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
@@ -277,6 +292,40 @@ public class SchemaGenerationTest {
 
     assertThat(assertRetract, hasEntry(is(TYPE_1), hasProperty("predicates",
       contains(predicate().withName(RDF_TYPE))
+    )));
+  }
+
+  @Test
+  public void retractingATripleInAnotherSessionLeavesTheRetractedPredicateInTheSchema() throws Exception {
+    BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
+    final BdbSchemaStore schema = new BdbSchemaStore(
+      new BdbBackedData(dataStoreFactory.getDatabase(
+        USER,
+        DATA_SET,
+        "schema",
+        false,
+        STRING_BINDING,
+        STRING_BINDING,
+        STRING_IS_CLEAN_HANDLER
+      )),
+      mock(ImportStatus.class)
+    );
+
+    final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
+
+    storeUpdater.start(0);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, GRAPH);
+    storeUpdater.commit();
+    storeUpdater.start(1);
+    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, GRAPH);
+    storeUpdater.commit();
+
+    assertThat(schema.getStableTypes(), hasEntry(is(TYPE_1), hasProperty("predicates",
+      containsInAnyOrder(
+        predicate().withName(RDF_TYPE),
+        predicate().withName(PROP_I)
+      )
     )));
   }
 
