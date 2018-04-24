@@ -62,6 +62,17 @@ public class BdbSchemaStoreTest {
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"hasBeenList\" : false,\n" +
       "      \"hasBeenSingular\" : true\n" +
+      "    }, {\n" +
+      "      \"name\" : \"http://www.w3.org/1999/02/22-rdf-syntax-ns#type\",\n" +
+      "      \"direction\" : \"IN\",\n" +
+      "      \"valueTypes\" : { },\n" +
+      "      \"referenceTypes\" : {\n" +
+      "        \"type\" : 1\n" +
+      "      },\n" +
+      "      \"subjectsWithThisPredicate\" : 0,\n" +
+      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
+      "      \"hasBeenList\" : false,\n" +
+      "      \"hasBeenSingular\" : false\n" +
       "    } ],\n" +
       "    \"subjectsWithThisType\" : 1\n" +
       "  },\n" +
@@ -197,10 +208,10 @@ public class BdbSchemaStoreTest {
       boolean getAsserted
     ) {
       return triples.stream()
-        .filter(t -> (t.getChangeType() == ChangeType.RETRACTED) == getRetracted ||
-          (t.getChangeType() == ChangeType.UNCHANGED) == getUnchanged ||
-          (t.getChangeType() == ChangeType.ASSERTED) == getAsserted)
-        .filter(t -> (t.getSubject().equals(subject)));
+                    .filter(t -> (t.getChangeType() == ChangeType.RETRACTED) == getRetracted ||
+                      (t.getChangeType() == ChangeType.UNCHANGED) == getUnchanged ||
+                      (t.getChangeType() == ChangeType.ASSERTED) == getAsserted)
+                    .filter(t -> (t.getSubject().equals(subject)));
     }
 
     @Override
@@ -213,12 +224,12 @@ public class BdbSchemaStoreTest {
       boolean getAsserted
     ) {
       return triples.stream()
-        .filter(t -> (t.getChangeType() == ChangeType.RETRACTED) == getRetracted ||
-          (t.getChangeType() == ChangeType.UNCHANGED) == getUnchanged ||
-          (t.getChangeType() == ChangeType.ASSERTED) == getAsserted)
-        .filter(t -> (t.getSubject().equals(subject)))
-        .filter(t -> (t.getPredicate().equals(predicate)))
-        .filter(t -> (t.getDirection() == direction));
+                    .filter(t -> (t.getChangeType() == ChangeType.RETRACTED) == getRetracted ||
+                      (t.getChangeType() == ChangeType.UNCHANGED) == getUnchanged ||
+                      (t.getChangeType() == ChangeType.ASSERTED) == getAsserted)
+                    .filter(t -> (t.getSubject().equals(subject)))
+                    .filter(t -> (t.getPredicate().equals(predicate)))
+                    .filter(t -> (t.getDirection() == direction));
     }
   }
 }

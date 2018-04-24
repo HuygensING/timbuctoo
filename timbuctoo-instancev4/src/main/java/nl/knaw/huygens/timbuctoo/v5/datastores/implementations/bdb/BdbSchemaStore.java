@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
@@ -326,6 +327,14 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       // finish the predicates register if it has been singular or list
       for (Predicate predicate : type.getPredicates()) {
         predicate.finish();
+        predicate.getReferenceTypes().keySet().forEach(key -> {
+            Type refType = types.get(key);
+            Predicate inversePred = refType.getOrCreatePredicate(predicate.getName(), getOppositeDirection(predicate));
+            if (!inversePred.getReferenceTypes().keySet().contains(type.getName())) {
+              inversePred.incReferenceType(type.getName(), 1);
+            }
+          }
+        );
       }
     }
     try {
@@ -340,6 +349,10 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     } catch (SchemaUpdateException e) {
       e.printStackTrace();
     }
+  }
+
+  private Direction getOppositeDirection(Predicate predicate) {
+    return predicate.getDirection() == OUT ? IN : OUT;
   }
 
   public boolean isClean() {

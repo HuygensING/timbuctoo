@@ -174,9 +174,6 @@ public class SchemaGenerationPermutationTest {
     //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
     //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
     //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, ""),
-    //   CursorQuad.create(SUBJECT_B, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, ""),
-    //   CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, ""),
-    //   CursorQuad.create(SUBJECT_C, RDF_TYPE, OUT, ASSERTED, TYPE_4, null, null, "")
     // ));
     // TODO fix tests? Schema ignores predicates that are asserted and retracted in one session
     // testCases.addAll(createPartitionsOfTestCase( // use partitions, because the cause contains a retraction

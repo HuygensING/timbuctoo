@@ -121,19 +121,34 @@ public class SchemaGenerationTest {
   /* PROP_I of SUBJECT_A should be added to TYPE_2 as an outgoing predicate with a reference type TYPE_3
    * PROP_I of SUBJECT_A should be added to TYPE_3 as an incoming predicate with a reference type TYPE_2
    */
-  @Ignore
   @Test
   public void eachPredicateThatLinksToAnotherSubjectWillBeAddedToTheOtherSubjectAsAnIncomingEvenInMultipleSessions()
     throws Exception {
-    Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+    BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
+    final BdbSchemaStore schema = new BdbSchemaStore(
+      new BdbBackedData(dataStoreFactory.getDatabase(
+        USER,
+        DATA_SET,
+        "schema",
+        false,
+        STRING_BINDING,
+        STRING_BINDING,
+        STRING_IS_CLEAN_HANDLER
+      )),
+      mock(ImportStatus.class)
     );
 
+    final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
+    storeUpdater.start(0);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, GRAPH);
+    storeUpdater.commit();
+    storeUpdater.start(1);
+    storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_3, null, null, GRAPH);
+    storeUpdater.commit();
 
-    assertThat(schema, allOf(
+    assertThat(schema.getStableTypes(), allOf(
       hasEntry(is(TYPE_2), hasProperty("predicates",allOf(
         hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(TYPE_3))
       ))),
@@ -224,28 +239,17 @@ public class SchemaGenerationTest {
     Map<String, Type> schema = runTest(
       CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
       CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, ""),
-      CursorQuad.create(SUBJECT_B, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, ""),
-      CursorQuad.create(SUBJECT_C, RDF_TYPE, OUT, ASSERTED, TYPE_4, null, null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, "")
     );
 
-    assertThat(schema,
+    assertThat(schema, allOf(
       hasEntry(is(TYPE_2), hasProperty("predicates",
         hasItem(predicate().withName(PROP_I).withDirection(OUT).withIsList(true))
-      ))
-    );
-    assertThat(schema,
-      hasEntry(is(SchemaGenerationTest.TYPE_3), hasProperty("predicates", allOf(
-        hasItem(predicate().withName(PROP_I).withDirection(OUT).withIsList(false)),
+      )),
+      hasEntry(is(UNKNOWN), hasProperty("predicates",
         hasItem(predicate().withName(PROP_I).withDirection(Direction.IN).withIsList(false))
-      )))
-    );
-    assertThat(schema,
-      hasEntry(is(TYPE_4), hasProperty("predicates",
-        hasItem(predicate().withName(PROP_I).withDirection(Direction.IN).withIsList(true))
       ))
-    );
+    ));
   }
 
   // add triple1 twice should give hte same result as adding triple1 once
@@ -301,7 +305,6 @@ public class SchemaGenerationTest {
 
     assertThat(retractionOnly, is(noChanges));
   }
-
 
   /* When the SUBJECT_A rdf:type TYPE_2 is asserted in a a separate update, while ex:baz did not have a type before.
    * Then I expect the TYPE_2 to get an ex:links predicate that points to ex:type
