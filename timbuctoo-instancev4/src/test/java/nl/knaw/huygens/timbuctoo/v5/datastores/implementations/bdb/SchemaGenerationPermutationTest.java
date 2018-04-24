@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandle
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.hamcrest.Matcher;
@@ -27,6 +26,8 @@ import java.util.Map;
 import static com.google.common.collect.Collections2.orderedPermutations;
 import static java.util.Arrays.asList;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType.ASSERTED;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType.RETRACTED;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.PredicateMatcher.predicate;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
@@ -75,112 +76,130 @@ public class SchemaGenerationPermutationTest {
   @Parameters(name = "{index}: schema for {0}")
   public static Collection<Object[]> getData() {
     List<Object[]> testCases = Lists.newArrayList();
-    // testCases.addAll(createPermutationsOfTestCase(
-    //   allOf(
-    //     hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1))),
-    //     hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1))),
-    //     hasEntry(is(TYPE_3), hasProperty("name", is(TYPE_3)))
-    //   ),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
-    // ));
-    // testCases.addAll(createPermutationsOfTestCase(
-    //   allOf(
-    //     hasEntry(is(TYPE_1), hasProperty("predicates", allOf(
-    //       hasItem(predicate().withName(PROP_I)),
-    //       hasItem(predicate().withName(PROP_II))
-    //     ))),
-    //     hasEntry(is(TYPE_2), hasProperty("predicates", allOf(
-    //       hasItem(predicate().withName(PROP_I)),
-    //       hasItem(predicate().withName(PROP_II))
-    //     )))
-    //   ),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_II, OUT, ASSERTED, SUBJECT_B, null, null, "")
-    // ));
-    // testCases.addAll(createPermutationsOfTestCase(allOf(
-    //   hasEntry(is(TYPE_2), hasProperty("predicates", allOf(
-    //     hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(TYPE_3))
-    //   ))),
-    //   hasEntry(is(TYPE_3), hasProperty("predicates", allOf(
-    //     hasItem(predicate().withName(PROP_I).withDirection(Direction.IN).withReferenceType(TYPE_2))
-    //   )))
-    //   ),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-    //   CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
-    // ));
-    // testCases.addAll(createPermutationsOfTestCase(allOf(
-    //   hasEntry(is(TYPE_2), hasProperty("predicates",allOf(
-    //     hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(TYPE_3))
-    //   ))),
-    //   hasEntry(is(TYPE_3), hasProperty("predicates", allOf(
-    //     hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceType(TYPE_2))
-    //   )))
-    // ),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-    //   CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
-    // ));
-    // testCases.addAll(createPermutationsOfTestCase(allOf(
-    //   hasEntry(is(TYPE_2), hasProperty("predicates", allOf(
-    //     hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(RdfConstants.UNKNOWN))
-    //   ))),
-    //   hasEntry(is(RdfConstants.UNKNOWN), hasProperty("predicates", allOf(
-    //     hasItem(predicate().withName(PROP_I).withDirection(Direction.IN).withReferenceType(TYPE_2))
-    //   )))
-    //   ),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
-    // ));
-    // testCases.addAll(createPermutationsOfTestCase(allOf(
-    //   hasEntry(is(TYPE_2), hasProperty("predicates",
-    //     hasItem(predicate().withName(PROP_I).withValueType("http://example.org/valuetype"))
-    //   ))),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, "")
-    // ));
-    // testCases.addAll(createPermutationsOfTestCase(allOf(
-    //   hasEntry(is(TYPE_2), hasProperty("predicates",
-    //     hasItem(predicate().withName(PROP_I).withIsList(true).withValueTypeCount(2))
-    //   ))),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value2", "http://example.org/valuetype", null, "")
-    // ));
-    // testCases.addAll(createPermutationsOfTestCase(
-    //   allOf(hasEntry(is(TYPE_2), hasProperty("predicates", hasItem(
-    //     predicate().withName(PROP_I).withReferenceType(TYPE_3)
-    //                .withValueType("http://example.org/valuetype").withIsList(true)
-    //   )))),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, ""),
-    //   CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
-    // ));
-    // testCases.addAll(createPermutationsOfTestCase(allOf(
-    //   hasEntry(is(TYPE_2), hasProperty("predicates",
-    //     hasItem(predicate().withName(PROP_I).withDirection(OUT).withIsList(true))
-    //   )),
-    //   hasEntry(is(UNKNOWN), hasProperty("predicates",
-    //     hasItem(predicate().withName(PROP_I).withDirection(Direction.IN).withIsList(false))
-    //   ))),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, "")
-    // ));
+    // predicateOfASubjectIsAddedToEachType
+    testCases.addAll(createPermutationsOfTestCase(
+      allOf(
+        hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1))),
+        hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1))),
+        hasEntry(is(TYPE_3), hasProperty("name", is(TYPE_3)))
+      ),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+    ));
+    // predicateOfASubjectIsAddedToEachType
+    testCases.addAll(createPermutationsOfTestCase(
+      allOf(
+        hasEntry(is(TYPE_1), hasProperty("predicates", allOf(
+          hasItem(predicate().withName(PROP_I)),
+          hasItem(predicate().withName(PROP_II))
+        ))),
+        hasEntry(is(TYPE_2), hasProperty("predicates", allOf(
+          hasItem(predicate().withName(PROP_I)),
+          hasItem(predicate().withName(PROP_II))
+        )))
+      ),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_II, OUT, ASSERTED, SUBJECT_B, null, null, "")
+    ));
+    // eachPredicateThatLinksToAnotherSubjectWillBeAddedToTheOtherSubjectAsAnIncoming
+    testCases.addAll(createPermutationsOfTestCase(allOf(
+      hasEntry(is(TYPE_2), hasProperty("predicates", allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(TYPE_3))
+      ))),
+      hasEntry(is(TYPE_3), hasProperty("predicates", allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceType(TYPE_2))
+      )))
+      ),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+    ));
+    testCases.addAll(createPermutationsOfTestCase(allOf(
+      hasEntry(is(TYPE_2), hasProperty("predicates",allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(TYPE_3))
+      ))),
+      hasEntry(is(TYPE_3), hasProperty("predicates", allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceType(TYPE_2))
+      )))
+    ),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+    ));
+    // ifTheReferencedSubjectHasNoTypeThePredicateWillBeAddedToTimUnknown
+    testCases.addAll(createPermutationsOfTestCase(allOf(
+      hasEntry(is(TYPE_2), hasProperty("predicates", allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(UNKNOWN))
+      ))),
+      hasEntry(is(UNKNOWN), hasProperty("predicates", allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceType(TYPE_2))
+      )))
+      ),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+    ));
+    // theValueTypeIsAddedToThePredicate
+    testCases.addAll(createPermutationsOfTestCase(allOf(
+      hasEntry(is(TYPE_2), hasProperty("predicates",
+        hasItem(predicate().withName(PROP_I).withValueType("http://example.org/valuetype"))
+      ))),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, "")
+    ));
+    // thePredicateWillBecomeAListWhenASubjectHasMultipleInstances
+    testCases.addAll(createPermutationsOfTestCase(allOf(
+      hasEntry(is(TYPE_2), hasProperty("predicates",
+        hasItem(predicate().withName(PROP_I).withIsList(true).withValueTypeCount(2))
+      ))),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value2", "http://example.org/valuetype", null, "")
+    ));
+    // predicateIsAlsoAListWhenItHasDifferentTypes
+    testCases.addAll(createPermutationsOfTestCase(
+      allOf(hasEntry(is(TYPE_2), hasProperty("predicates", hasItem(
+        predicate().withName(PROP_I).withReferenceType(TYPE_3)
+                   .withValueType("http://example.org/valuetype").withIsList(true)
+      )))),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+    ));
+    // inversePredicatesAreNotAlwaysLists
+    testCases.addAll(createPermutationsOfTestCase(allOf(
+      hasEntry(is(TYPE_2), hasProperty("predicates",
+        hasItem(predicate().withName(PROP_I).withDirection(OUT).withIsList(true))
+      )),
+      hasEntry(is(UNKNOWN), hasProperty("predicates",
+        hasItem(predicate().withName(PROP_I).withDirection(IN).withIsList(false))
+      ))),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, "")
+    ));
+    // aDoubleAssertionOfATripleDoesNotIncreaseTheReferenceCounts
+    testCases.addAll(createPermutationsOfTestCase(
+      allOf(hasEntry(is(UNKNOWN), hasProperty("predicates", allOf(
+        hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceTypeCount(1)),
+        hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceTypeCount(1))
+      )))),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+    ));
+    // retractingATripleLeavesTheTypesInTheSchema
     // TODO fix tests? Schema ignores predicates that are asserted and retracted in one session
-    // testCases.addAll(createPartitionsOfTestCase( // use partitions, because the cause contains a retraction
-    //   allOf(
-    //     hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1) ))
-    //   ),
-    //   CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-    //   CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, "")
-    // ));
+    testCases.addAll(createPartitionsOfTestCase( // use partitions, because the case contains a retraction
+      allOf(
+        hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1)))
+      ),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, "")
+    ));
     return testCases;
   }
 

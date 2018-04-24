@@ -98,5 +98,15 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
     });
     return this;
   }
+
+  public PredicateMatcher withReferenceTypeCount(long count) {
+    this.addMatcher(new PropertyEqualityMatcher<Predicate, Long>("referenceTypeCount", count) {
+      @Override
+      protected Long getItemValue(Predicate item) {
+        return item.getReferenceTypes().values().stream().mapToLong(value -> value).sum();
+      }
+    });
+    return this;
+  }
 }
 
