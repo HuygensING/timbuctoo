@@ -40,7 +40,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
-@Ignore
 @RunWith(Parameterized.class)
 public class SchemaGenerationPermutationTest {
   private static final String USER = "user";
