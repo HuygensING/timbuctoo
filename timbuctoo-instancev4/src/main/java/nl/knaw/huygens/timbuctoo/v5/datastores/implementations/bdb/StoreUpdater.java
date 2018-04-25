@@ -167,6 +167,7 @@ public class StoreUpdater implements RdfProcessor {
     startTransactions();
     dbFactory.startTransaction();
     logString = "Processed {} triples ({} triples/s)";
+    count = 0; // reset the count to make sure the right amount of imported triples are logged.
   }
 
   private void startTransactions() {
