@@ -363,8 +363,7 @@ public class IntegrationTest {
       new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
-        "encoding", "UTF-8",
-        "uri", "http://example.com/clusius.rdfp"
+        "encoding", "UTF-8"
       )
     );
 
