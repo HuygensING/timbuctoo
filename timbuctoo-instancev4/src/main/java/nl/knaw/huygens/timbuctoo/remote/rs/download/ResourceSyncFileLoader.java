@@ -43,6 +43,7 @@ public class ResourceSyncFileLoader {
     .put("nq", "application/n-quads")
     .put("trix", "application/trix+xml")
     .put("trdf", "application/rdf+thrift")
+    .put("nqud", "application/vnd.timbuctoo-rdf.nquads_unified_diff")
     .build();
   private static final Logger LOG = getLogger(ResourceSyncFileLoader.class);
   private final RemoteFileRetriever remoteFileRetriever;
@@ -88,31 +89,30 @@ public class ResourceSyncFileLoader {
   }
 
   public RemoteFilesList getRemoteFilesList(String capabilityListUri) throws IOException {
-    List<UrlItem> itemList = getRsFile(capabilityListUri).getItemList();
+    List<UrlItem> capabilityList = getRsFile(capabilityListUri).getItemList();
 
     List<RemoteFile> changes = new ArrayList<>();
     List<RemoteFile> resources = new ArrayList<>();
 
-    for (UrlItem urlItem : itemList) {
-      if (urlItem.getMetadata().getCapability().equals(Capability.CHANGELIST.getXmlValue())) {
-        UrlSet rsFile = getRsFile(urlItem.getLoc());
+    for (UrlItem capabilityListItem : capabilityList) {
+      if (capabilityListItem.getMetadata().getCapability().equals(Capability.CHANGELIST.getXmlValue())) {
+        UrlSet rsFile = getRsFile(capabilityListItem.getLoc());
 
-        String datasetNamePattern = ".*.nqud";
+        String changeListExtension = ".*.nqud";
 
-        for (UrlItem item : rsFile.getItemList()) {
-          if (item.getLoc().matches(datasetNamePattern)) {
-            changes.add(getRemoteFile(new Tuple<>(item.getLoc(), item.getMetadata())));
+        for (UrlItem changeListItem : rsFile.getItemList()) {
+          if (changeListItem.getMetadata().getMimeType().equals(MIME_TYPE_FOR_EXTENSION.get(changeListExtension)) ||
+            changeListItem.getLoc().matches(changeListExtension)) {
+            changes.add(getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata())));
           }
         }
-      } else if (urlItem.getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())) {
-        UrlSet rsFile = getRsFile(urlItem.getLoc());
+      } else if (capabilityListItem.getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())) {
+        UrlSet rsFile = getRsFile(capabilityListItem.getLoc());
 
-        for (UrlItem item : rsFile.getItemList()) {
-          if (item.getMetadata().getMimeType().equals("text/turtle")) {
-            resources.add(getRemoteFile(new Tuple<>(item.getLoc(), item.getMetadata())));
-          }
-          if (RdfExtensions.createFromFile(item.getLoc()) != null) {
-            resources.add(getRemoteFile(new Tuple<>(item.getLoc(), item.getMetadata())));
+        for (UrlItem resourceListItem : rsFile.getItemList()) {
+          if (MIME_TYPE_FOR_EXTENSION.values().contains(resourceListItem.getMetadata().getMimeType()) ||
+            RdfExtensions.createFromFile(resourceListItem.getLoc()) != null) {
+            resources.add(getRemoteFile(new Tuple<>(resourceListItem.getLoc(), resourceListItem.getMetadata())));
           }
         }
       }
