@@ -95,7 +95,7 @@ public class ResourceSyncImport {
     }
   }
 
-  public List<RemoteFile> filter(String capabilityListUri) throws CantDetermineDataSetException {
+  private List<RemoteFile> filter(String capabilityListUri) throws CantDetermineDataSetException {
     try {
       RemoteFilesList remoteFilesList =
         resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
@@ -127,7 +127,7 @@ public class ResourceSyncImport {
 
   }
 
-  public List<RemoteFile> filter(String capabilityListUri, String userSpecifiedDataSet) {
+  private List<RemoteFile> filter(String capabilityListUri, String userSpecifiedDataSet) {
     try {
       RemoteFilesList remoteFilesList =
         resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
