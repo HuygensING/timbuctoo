@@ -141,6 +141,7 @@ public class RsDocumentBuilder {
         Optional<String> maybeToken = logEntry.getLogToken();
         if (maybeToken.isPresent()) {
           String loc = rsUriHelper.uriForToken(dataSetMetaData, maybeToken.get());
+
           Optional<CachedFile> maybeCachedFile = fileStorage.getFile(maybeToken.get());
           if (maybeCachedFile.isPresent()) {
             UrlItem item = new UrlItem(loc)

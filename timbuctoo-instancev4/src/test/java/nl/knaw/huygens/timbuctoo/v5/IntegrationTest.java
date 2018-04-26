@@ -64,8 +64,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.Is.is;
 
 public class IntegrationTest {
@@ -260,7 +262,7 @@ public class IntegrationTest {
       .get(("currentImportStatus"))
       .get("elapsedTime").asInt();
     assertThat(elapsedTime > 0, is(true));
-    
+
     graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(String.format("{\n" +
@@ -275,9 +277,9 @@ public class IntegrationTest {
         PREFIX, vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     String status = objectNode.get("data")
-                              .get("dataSetMetadata")
-                              .get(("currentImportStatus"))
-                              .get("status").asText();
+      .get("dataSetMetadata")
+      .get(("currentImportStatus"))
+      .get("status").asText();
     assertThat(status, status.contains("Finished import with 1 error"), is(true));
   }
 
@@ -354,6 +356,124 @@ public class IntegrationTest {
   }
 
   @Test
+  public void resourcesyncImportsValidDatasets() throws Exception {
+    String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    String dataSetId = createDataSetId(dataSetName);
+
+    call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Publish($dataSetId: String!) {" +
+            "  publish(dataSetId: $dataSetId) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    String capabilityListUri = format("http://localhost:%d/v5/resourcesync/%s/%s/capabilitylist.xml",
+      APP.getLocalPort(),
+      PREFIX,
+      dataSetName
+    );
+
+    Response resourceSyncCall = call("/v2.1/remote/rs/import?forceCreation=true&async=false")
+      .accept(MediaType.APPLICATION_JSON)
+      .header("authorization", "fake")
+      .post(Entity.entity(jsnO(
+        "source", jsn(capabilityListUri),
+        "userId", jsn(PREFIX),
+        "dataSetId", jsn("datasettest")
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat("Successful resourcesync import", resourceSyncCall.getStatus(), is(200));
+
+  }
+
+
+  @Test
+  public void resourcesyncThrowsExceptionWithFileListWhenDatasetResourceIsNotDetectable() throws Exception {
+    String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.rdfp"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    String dataSetId = createDataSetId(dataSetName);
+
+    call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Publish($dataSetId: String!) {" +
+            "  publish(dataSetId: $dataSetId) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.rdfp"
+      )
+    );
+
+
+    String capabilityListUri = format("http://localhost:%d/v5/resourcesync/%s/%s/capabilitylist.xml",
+      APP.getLocalPort(),
+      PREFIX,
+      dataSetName
+    );
+
+    Response resourceSyncCall = call("/v2.1/remote/rs/import?forceCreation=true")
+      .accept(MediaType.APPLICATION_JSON)
+      .header("authorization", "fake")
+      .post(Entity.entity(jsnO(
+        "source", jsn(capabilityListUri),
+        "userId", jsn(PREFIX),
+        "dataSetId", jsn("datasettest")
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(resourceSyncCall.getStatus(), is(500));
+    assertThat(resourceSyncCall.readEntity(Exception.class),
+      hasProperty("message", startsWith("Can not determine dataset file.")));
+  }
+
+  @Test
   public void succeedingRdfUploadResourceSync() throws Exception {
     String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
@@ -402,7 +522,7 @@ public class IntegrationTest {
     // TODO should be ends-with, but that is not supported in xpath v1
     assertThat(
       sourceDesc, not(
-      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/capabilitylist.xml')]"))
+        hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/capabilitylist.xml')]"))
     );
 
     capabilityListResp =
@@ -1300,7 +1420,7 @@ public class IntegrationTest {
     Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(value);
     XPath xpath = XPathFactory.newInstance().newXPath();
 
-    NodeList uriNodes =  (NodeList) xpath.compile("/urlset/url/loc").evaluate(document, XPathConstants.NODESET);
+    NodeList uriNodes = (NodeList) xpath.compile("/urlset/url/loc").evaluate(document, XPathConstants.NODESET);
     Set<String> dataSets = new HashSet<>();
     for (int i = 0; i < uriNodes.getLength(); i++) {
       dataSets.add(uriNodes.item(i).getTextContent());
@@ -1331,15 +1451,16 @@ public class IntegrationTest {
         "query",
         jsn(
           "mutation SetSummaryProps($dataSetId: String! $collectionUri: String! $data:SummaryPropertiesInput!) {\n" +
-          "  setSummaryProperties(dataSetId: $dataSetId, collectionUri: $collectionUri, summaryProperties: $data){ \n" +
-          "    title {\n" +
-          "      path {\n" +
-          "        step\n" +
-          "        direction\n" +
-          "      }" +
-          "    }\n" +
-          "  }\n" +
-          "}\n"
+            "  setSummaryProperties(dataSetId: $dataSetId, collectionUri: $collectionUri, summaryProperties: $data)" +
+            "{ \n" +
+            "    title {\n" +
+            "      path {\n" +
+            "        step\n" +
+            "        direction\n" +
+            "      }" +
+            "    }\n" +
+            "  }\n" +
+            "}\n"
         ),
         "variables",
         jsnO(
@@ -1374,19 +1495,19 @@ public class IntegrationTest {
         "query",
         jsn(
           "query bia_clusius {\n" +
-          "  dataSets {\n" +
-          "    " + dataSetId + "{\n" +
-          "      clusius_Persons(uri: \"http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons_PE00002125\") {\n" +
-          "        tim_birthDate {\n" +
-          "          value\n" +
-          "        }\n" +
-          "        title {\n" +
-          "          value\n" +
-          "        }\n" +
-          "      }\n" +
-          "    }\n" +
-          "  }\n" +
-          "}"
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      clusius_Persons(uri: \"http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons_PE00002125\") {\n" +
+            "        tim_birthDate {\n" +
+            "          value\n" +
+            "        }\n" +
+            "        title {\n" +
+            "          value\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
         )
       ).toString(), MediaType.APPLICATION_JSON));
 

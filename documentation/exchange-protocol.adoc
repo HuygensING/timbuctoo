@@ -46,7 +46,7 @@ The document linked above provides the full spec, but we found it convenient to 
                         Vmany                  V1
               +---------------------+    +---------------+
               |                     |    |               |
-              |  Other files        |    |  dataset.*    |
+              |  Other files        |    |  [dataset]    |
               |  (A.nq, B.jpg, ...) |    | (actual file) |
               |                     |    |               |
               +---------------------+    +---------------+
@@ -61,10 +61,28 @@ A source description contains links to one or more capability lists, each list i
 NOTE: each capabilitylist is treated as 1 "dataset". Another instance will import a whole dataset, not a part of it.
 
 A capability list will link to one or more files via a resource (index) list.
-All files in the resource list are considered to be part of the same dataset.
-The file `dataset.*` should contain the current version of the full rdf dataset.
+
 Besides the resourcelist, a capability list should also point to a changelist.
 The changelist should contain a list of files in the nqud format (see below) that when executed in serie construct the current dataset rdf file in the resourcelist.
+
+If such a changelist is available we will import the dataset using those change files.
+
+If a changelist is not available then the dataset will be imported from the resourcelist.
+
+All files in the resource list are considered to be part of the same dataset.
+A single file in the dataset should contain the current version of the full rdf dataset. This can be determined in
+one of three different ways:
+
+1. If there is only one file in the list then that is assumed to be the dataset.
+2. If there is more than one file and one has the 'isDataSet' property in the metadata set to true then that file will be used.
+3. If there is more than one file, user can specify the dataset file by using the "dataSetFile" parameter to
+the ResourceSync import call.
+
+Note: If there is more than one file and the dataset cannot be determined either by the user specified 'dataSetFile'
+parameter or the 'isDataSet' property then an error is returned along with the list of all available files in the
+resourcelist.
+
+
 Finally, a capability list may also point to a resource dump, this is an optional feature and should be provided in addition to the resource list and the changelist.
 
 So to create a resourcesync capable server for timbuctoo you should:
@@ -72,8 +90,8 @@ So to create a resourcesync capable server for timbuctoo you should:
  1. Put a http://www.openarchives.org/rs/1.0.9/resourcesync#ex_7[source description] at `/.well-known/resourcesync` on your server
  2. Fill it with links to http://www.openarchives.org/rs/1.0.9/resourcesync#ex_6[capability lists] (1 per dataset that you wish to publish)
  3. Fill them with a link to a http://www.openarchives.org/rs/1.0.9/resourcesync#ex_1[Resource list] and a http://www.openarchives.org/rs/1.0.9/resourcesync#ex_3[Change list]
- 4. Fill the resource list with links to the actual data files. There should be at least one file called `dataset.*` in one of the supported rdf formats (see below)
- 5. Fill the changelist with the nqud files that together form dataset.*
+ 4. Fill the resource list with links to the actual data files. There should be at least one <dataset> file in one of the supported rdf formats (see below)
+ 5. Fill the changelist with the nqud files that together form <dataset>
 
 
 You may use the `describedby` mechanism (see http://www.openarchives.org/rs/1.1/resourcesync#DocumentFormats[]) to point to documents that describe your datasets. 

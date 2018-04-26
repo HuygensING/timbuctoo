@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -14,8 +16,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
@@ -40,30 +43,24 @@ public class ResourceSyncFileLoader {
     .put("nq", "application/n-quads")
     .put("trix", "application/trix+xml")
     .put("trdf", "application/rdf+thrift")
+    .put("nqud", "application/vnd.timbuctoo-rdf.nquads_unified_diff")
     .build();
   private static final Logger LOG = getLogger(ResourceSyncFileLoader.class);
-  protected final ObjectMapper objectMapper;
-  private final CloseableHttpClient httpClient;
+  private final RemoteFileRetriever remoteFileRetriever;
+  private final ObjectMapper objectMapper;
 
   public ResourceSyncFileLoader(CloseableHttpClient httpClient) {
-    this.httpClient = httpClient;
     objectMapper = new XmlMapper();
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    remoteFileRetriever = new RemoteFileRetriever(httpClient);
   }
 
-  private UrlSet getRsFile(String url) throws IOException {
-    LOG.info("getRsFile '{}'", url);
-    return objectMapper.readValue(IOUtils.toString(getFile(url)).replace("rs.md", "rs:md"), UrlSet.class);
+  public ResourceSyncFileLoader(RemoteFileRetriever remoteFileRetriever) {
+    objectMapper = new XmlMapper();
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    this.remoteFileRetriever = remoteFileRetriever;
   }
 
-  private InputStream getFile(String url) throws IOException {
-    InputStream content = httpClient.execute(new HttpGet(url)).getEntity().getContent();
-    if (content != null) {
-      return maybeDecompress(content);
-    } else {
-      return new ByteArrayInputStream(new byte[0]);
-    }
-  }
 
   //FIXME: maybe we should just store everything compressed
   public static InputStream maybeDecompress(InputStream input) throws IOException {
@@ -80,7 +77,7 @@ public class ResourceSyncFileLoader {
       return pb;
     }
 
-    pb.unread(new byte[]{(byte)header, (byte)firstByte});
+    pb.unread(new byte[]{(byte) header, (byte) firstByte});
 
     header = (firstByte << 8) | header;
 
@@ -91,41 +88,126 @@ public class ResourceSyncFileLoader {
     }
   }
 
-  public Stream<RemoteFile> loadFiles(String capabilityListUri) throws IOException {
-    Stream<RemoteFile> remoteFileStream = getRsFile(capabilityListUri)
-      .getItemList().stream()
-      .filter(url -> url
-        .getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())
-      )
-      .map(resourceListUrl -> {
-        try {
-          return getRsFile(resourceListUrl.getLoc());
-        } catch (IOException e) {
-          throw new RuntimeUpgrader(e);
+  public RemoteFilesList getRemoteFilesList(String capabilityListUri) throws IOException {
+    List<UrlItem> capabilityList = getRsFile(capabilityListUri).getItemList();
+
+    List<RemoteFile> changes = new ArrayList<>();
+    List<RemoteFile> resources = new ArrayList<>();
+
+    for (UrlItem capabilityListItem : capabilityList) {
+      if (capabilityListItem.getMetadata().getCapability().equals(Capability.CHANGELIST.getXmlValue())) {
+        UrlSet rsFile = getRsFile(capabilityListItem.getLoc());
+
+        String changeListExtension = ".*.nqud";
+
+        for (UrlItem changeListItem : rsFile.getItemList()) {
+          if (changeListItem.getMetadata().getMimeType().equals(MIME_TYPE_FOR_EXTENSION.get(changeListExtension)) ||
+            changeListItem.getLoc().matches(changeListExtension)) {
+            changes.add(getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata())));
+          }
         }
-      })
-      .flatMap(resourceList -> {
-        LOG.info("map resource list");
-        return resourceList.getItemList().stream();
-      })
-      .map(item -> tuple(item.getLoc(), item.getMetadata()))
-      .map(item -> {
-        if (item.getRight() != null) {
-          return tuple(item.getLeft(), item.getRight().getMimeType());
-        } else {
-          String extension = item.getLeft().substring(item.getLeft().lastIndexOf(".") + 1);
-          return tuple(item.getLeft(), MIME_TYPE_FOR_EXTENSION.get(extension));
+      } else if (capabilityListItem.getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())) {
+        UrlSet rsFile = getRsFile(capabilityListItem.getLoc());
+
+        for (UrlItem resourceListItem : rsFile.getItemList()) {
+          if (MIME_TYPE_FOR_EXTENSION.values().contains(resourceListItem.getMetadata().getMimeType()) ||
+            RdfExtensions.createFromFile(resourceListItem.getLoc()) != null) {
+            resources.add(getRemoteFile(new Tuple<>(resourceListItem.getLoc(), resourceListItem.getMetadata())));
+          }
         }
-      })
-      .map(resource -> {
-        try {
-          return RemoteFile.create(resource.getLeft(), getFile(resource.getLeft()), resource.getRight());
-        } catch (IOException e) {
-          throw new RuntimeUpgrader(e);
+      }
+    }
+
+    return new RemoteFilesList(changes, resources);
+  }
+
+
+  private RemoteFile getRemoteFile(Tuple<String, Metadata> item) {
+    return RemoteFile.create(
+      item.getLeft(),
+      () -> remoteFileRetriever.getFile(item.getLeft()),
+      getUrl(tuple(item.getLeft(), item.getRight())),
+      item.getRight()
+    );
+  }
+
+  private String getUrl(Tuple<String, Metadata> item) {
+    if (item.getRight() != null) {
+      return item.getRight().getMimeType();
+    } else {
+      String extension = item.getLeft().substring(item.getLeft().lastIndexOf(".") + 1);
+      return MIME_TYPE_FOR_EXTENSION.get(extension);
+    }
+  }
+
+  private UrlSet getRsFile(String url) throws IOException {
+    LOG.info("getRsFile '{}'", url);
+    return objectMapper.readValue(IOUtils.toString(remoteFileRetriever.getFile(url))
+      .replace("rs.md", "rs:md"), UrlSet.class);
+  }
+
+  private enum RdfExtensions {
+    NQ("nq"),
+    TRIG("trig"),
+    NT("nt"),
+    TTL("ttl"),
+    N3("n3"),
+    RDF_XML("xml"),
+    JSONLD("jsonld");
+
+    private final String extension;
+
+    RdfExtensions(String extension) {
+      this.extension = extension;
+    }
+
+    public static RdfExtensions createFromFile(String fileName) {
+      for (RdfExtensions rdfExtensions : RdfExtensions.values()) {
+        if (fileName.endsWith("." + rdfExtensions.getExtension())) {
+          return rdfExtensions;
         }
-      });
-    LOG.info("Resources found");
-    return remoteFileStream;
+      }
+      return null;
+    }
+
+    public String getExtension() {
+      return extension;
+    }
+  }
+
+  static class RemoteFilesList {
+    private List<RemoteFile> changeList;
+    private List<RemoteFile> resourceList;
+
+    public RemoteFilesList(List<RemoteFile> changeList, List<RemoteFile> resourceList) {
+      this.changeList = changeList;
+      this.resourceList = resourceList;
+    }
+
+    public List<RemoteFile> getChangeList() {
+      return changeList;
+    }
+
+    public List<RemoteFile> getResourceList() {
+      return resourceList;
+    }
+  }
+
+  static class RemoteFileRetriever {
+    private final HttpClient httpClient;
+
+    private RemoteFileRetriever(HttpClient httpClient) {
+      this.httpClient = httpClient;
+    }
+
+    public InputStream getFile(String url) throws IOException {
+      InputStream content = httpClient.execute(new HttpGet(url)).getEntity().getContent();
+      if (content != null) {
+        return maybeDecompress(content);
+      } else {
+        return new ByteArrayInputStream(new byte[0]);
+      }
+    }
   }
 
   private class RuntimeUpgrader extends RuntimeException {
@@ -134,3 +216,4 @@ public class ResourceSyncFileLoader {
     }
   }
 }
+
