@@ -25,9 +25,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
@@ -191,28 +193,26 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         } else if (quad.getChangeType() == ChangeType.ASSERTED) {
           assertedCount++;
         }
-        if (quad.getDirection() != Direction.IN) {
-          if (quad.getChangeType() == ChangeType.RETRACTED) {
-            for (Type type : unchangedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
-            for (Type type : removedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
-          } else if (quad.getChangeType() == ChangeType.UNCHANGED) {
-            for (Type type : removedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
-            for (Type type : addedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
-            }
-          } else if (quad.getChangeType() == ChangeType.ASSERTED) {
-            for (Type type : unchangedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
-            }
-            for (Type type : addedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
-            }
+        if (quad.getChangeType() == ChangeType.RETRACTED) {
+          for (Type type : unchangedTypes) {
+            updatePredicateType(type, quad, false, changeFetcher);
+          }
+          for (Type type : removedTypes) {
+            updatePredicateType(type, quad, false, changeFetcher);
+          }
+        } else if (quad.getChangeType() == ChangeType.UNCHANGED) {
+          for (Type type : removedTypes) {
+            updatePredicateType(type, quad, false, changeFetcher);
+          }
+          for (Type type : addedTypes) {
+            updatePredicateType(type, quad, true, changeFetcher);
+          }
+        } else if (quad.getChangeType() == ChangeType.ASSERTED) {
+          for (Type type : unchangedTypes) {
+            updatePredicateType(type, quad, true, changeFetcher);
+          }
+          for (Type type : addedTypes) {
+            updatePredicateType(type, quad, true, changeFetcher);
           }
         }
       }
@@ -279,69 +279,62 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     }
   }
 
-  public void updatePredicateType(Type type, CursorQuad quad, boolean inc, ChangeFetcher changeFetcher) {
-    final Predicate predicate = type.getOrCreatePredicate(quad.getPredicate(), quad.getDirection());
+  public void updatePredicateType(Type type, CursorQuad quad, boolean add, ChangeFetcher changeFetcher) {
+    final Optional<Predicate> predicateOpt = getPredicateForType(type, add, quad.getPredicate(), quad.getDirection());
+
     if (quad.getValuetype().isPresent()) {
-      predicate.incValueType(quad.getValuetype().get(), inc ? 1 : -1);
+      predicateOpt.ifPresent(predicate -> predicate.incValueType(quad.getValuetype().get(), add ? 1 : -1));
     } else {
-      try (Stream<CursorQuad> typeQs = changeFetcher.getPredicates(quad.getObject(), RDF_TYPE, OUT, !inc, true, inc)) {
+      try (Stream<CursorQuad> typeQs = changeFetcher.getPredicates(quad.getObject(), RDF_TYPE, OUT, !add, true, add)) {
         boolean[] hadType = new boolean[] { false };
         typeQs.forEach(typeQ -> {
           hadType[0] = true;
-          predicate.incReferenceType(typeQ.getObject(), inc ? 1 : -1);
+          predicateOpt.ifPresent(predicate -> predicate.incReferenceType(typeQ.getObject(), add ? 1 : -1));
         });
         if (!hadType[0]) {
-          predicate.incReferenceType(UNKNOWN, inc ? 1 : -1);
+          predicateOpt.ifPresent( predicate -> predicate.incReferenceType(UNKNOWN, add ? 1 : -1));
         }
       }
     }
   }
 
+  private Optional<Predicate> getPredicateForType(Type type, boolean add, String predicate, Direction direction) {
+    if (add) {
+      return Optional.of(type.getOrCreatePredicate(predicate, direction));
+    } else {
+      return Optional.ofNullable(type.getPredicate(predicate, direction));
+    }
+  }
+
   public void setPredicateOccurrence(Type type, String predicateUri, Direction direction, int listMutation,
                                      int subjectMutation) {
-    final Predicate predicate = type.getOrCreatePredicate(predicateUri, direction);
-    predicate.registerListOccurrence(listMutation);
-    predicate.registerSubject(subjectMutation);
+    boolean isAssertion = listMutation > 0 || subjectMutation > 0;
+    final Optional<Predicate> predicateOpt = getPredicateForType(type, isAssertion, predicateUri, direction);
+
+    predicateOpt.ifPresent(predicate -> {
+      predicate.registerListOccurrence(listMutation);
+      predicate.registerSubject(subjectMutation);
+    });
   }
 
   @Override
   public void finish() {
     LOG.info("Finished processing entities");
     importStatus.setStatus("Finished processing entities");
-    //Step 3: Add type information to inverse predicates
     for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
       Type type = typeEntry.getValue();
-      String typeName = typeEntry.getKey();
 
+      // finish the predicates register if it has been singular or list
       for (Predicate predicate : type.getPredicates()) {
         predicate.finish();
-        if (predicate.getDirection() == Direction.IN) {
-          continue;
-        }
-        for (String referenceType : predicate.getReferenceTypes().keySet()) {
-          try {
-            types.get(referenceType)
-              .getPredicate(predicate.getName(), Direction.IN) //There must be an inverse for each outward predicate
-              .incReferenceType(type.getName(), 1);
-          } catch (Exception e) {
-            String cause = "Referenced type " + referenceType + " not found";
-            try {
-              if (types.containsKey(referenceType)) {
-                cause = "type does not have the inverse predicate " + predicate.getName();
-                if (types.get(referenceType).getPredicate(predicate.getName(), Direction.IN) != null) {
-                  cause = "Something failed during addreferencetype(" + typeName + ")";
-                }
-              }
-              LOG.error("Error during inverse generation (ignored): " + cause , e);
-              importStatus.addError("Error during inverse generation (ignored): " + cause, e);
-            } catch (Exception e2) {
-              LOG.error("Error during inverse generation " + cause, e);
-              importStatus.addError("Error during inverse generation " + cause, e);
-              LOG.error("Error during recovery generation ", e2);
-              importStatus.addError("Error during recovery generation ", e2);
+        predicate.getReferenceTypes().keySet().forEach(key -> {
+            Type refType = types.get(key);
+            Predicate inversePred = refType.getOrCreatePredicate(predicate.getName(), getOppositeDirection(predicate));
+            if (!inversePred.getReferenceTypes().keySet().contains(type.getName())) {
+              inversePred.incReferenceType(type.getName(), 1);
             }
           }
-        }
+        );
       }
     }
     try {
@@ -356,6 +349,10 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     } catch (SchemaUpdateException e) {
       e.printStackTrace();
     }
+  }
+
+  private Direction getOppositeDirection(Predicate predicate) {
+    return predicate.getDirection() == OUT ? IN : OUT;
   }
 
   public boolean isClean() {

@@ -56,14 +56,16 @@ public class BdbWrapper<KeyT, ValueT> {
       transaction = dbEnvironment.beginTransaction(null, null);
     }
 
-    if (database.count() > 0) {
-      try {
-        boolean success = delete(isCleanHandler.getKey(), isCleanHandler.getValue());
-        if (!success) {
-          LOG.error("Could not remove 'isClean' property");
+    try (Stream<KeyT> keys = databaseGetter().getAll().getKeys()) {
+      if (keys.findAny().isPresent()) {
+        try {
+          boolean success = delete(isCleanHandler.getKey(), isCleanHandler.getValue());
+          if (!success) {
+            LOG.error("Could not remove 'isClean' property");
+          }
+        } catch (DatabaseWriteException e) {
+          LOG.error("Could not remove 'isClean' property", e);
         }
-      } catch (DatabaseWriteException e) {
-        LOG.error("Could not remove 'isClean' property", e);
       }
     }
   }
