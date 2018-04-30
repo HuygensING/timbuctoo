@@ -7,7 +7,6 @@ import graphql.execution.ExecutionContext;
 import graphql.execution.ExecutionStrategyParameters;
 import graphql.execution.NonNullableFieldWasNullException;
 import graphql.language.Field;
-import graphql.language.StringValue;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -33,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.v5.graphql.DirectiveRetriever.getDirectiveArgument;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList.graphqlIntrospectionList;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject.graphqlIntrospectionObject;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList.serializableList;
@@ -142,22 +142,6 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
       }
     });
 
-  }
-
-  public Optional<String> getDirectiveArgument(GraphQLObjectType parentType, String directiveName,
-                                                    String argumentName) {
-    return Optional.ofNullable(parentType.getDefinition().getDirective(directiveName))
-      .map(d -> d.getArgument(argumentName))
-      .map(v -> (StringValue) v.getValue())
-      .map(StringValue::getValue);
-  }
-
-  public Optional<String> getDirectiveArgument(GraphQLFieldDefinition field, String directiveName,
-                                               String argumentName) {
-    return Optional.ofNullable(field.getDefinition().getDirective(directiveName))
-      .map(d -> d.getArgument(argumentName))
-      .map(v -> (StringValue) v.getValue())
-      .map(StringValue::getValue);
   }
 
   @Override

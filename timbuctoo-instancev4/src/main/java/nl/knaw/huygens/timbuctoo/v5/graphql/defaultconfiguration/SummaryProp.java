@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
 @JsonSubTypes({
-    @JsonSubTypes.Type(name = "SimplePath", value = ImmutableSimplePath.class),
-    @JsonSubTypes.Type(name = "DirectionalPath", value = ImmutableDirectionalPath.class)
+    @JsonSubTypes.Type(name = "SimplePath", value = SimplePath.class),
+    @JsonSubTypes.Type(name = "DirectionalPath", value = DirectionalPath.class)
   })
 public interface SummaryProp {
   List<DirectionalStep> getPath();
