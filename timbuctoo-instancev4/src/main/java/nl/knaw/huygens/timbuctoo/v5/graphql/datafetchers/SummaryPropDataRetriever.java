@@ -31,11 +31,11 @@ public class SummaryPropDataRetriever {
   }
 
 
-  public Optional<TypedValue> createSummaryProperty(SubjectReference source, DataSet dataSet) {
+  public Optional<TypedValue> createSummaryProperty(SubjectReference source, DataSet dataSet, String typeUri) {
     QuadStore quadStore = dataSet.getQuadStore();
 
     final Optional<TypedValue> localConfiguredSummaryProp =
-      getDataQuad(quadStore, source.getSubjectUri(), RdfConstants.RDF_TYPE)
+      getType(quadStore, source.getSubjectUri(), typeUri)
         .flatMap(collection -> getDataQuad(quadStore, collection.getObject(), summaryPropConfigPredicate))
         .flatMap(userConfigured -> {
           try {
@@ -60,6 +60,17 @@ public class SummaryPropDataRetriever {
       }
 
       return Optional.empty();
+    }
+  }
+
+  private Optional<CursorQuad> getType(QuadStore quadStore, String source, String typeUri) {
+    try (Stream<CursorQuad> possibleCollections = quadStore.getQuads(
+      source,
+      RdfConstants.RDF_TYPE,
+      Direction.OUT,
+      ""
+    )) {
+      return possibleCollections.filter(quad -> quad.getObject().equals(typeUri)).findFirst();
     }
   }
 

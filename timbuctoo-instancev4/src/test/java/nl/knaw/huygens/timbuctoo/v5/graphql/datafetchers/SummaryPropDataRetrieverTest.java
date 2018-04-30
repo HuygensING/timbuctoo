@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
@@ -48,23 +47,52 @@ public class SummaryPropDataRetrieverTest {
       "http://example.org/userConfigured",
       defaultProperties
     );
-    SummaryProp summaryProp = summaryPropertyWithPath("http://example.org/userPath");
-    CursorQuad collectionQuad = quadWithObject("http://example.org/collection", Optional.empty());
-    CursorQuad userConfiguredSummaryProp = quadWithObject(OBJECT_MAPPER.writeValueAsString(summaryProp),
-      Optional.empty());
+
     QuadStore quadStore = mock(QuadStore.class);
+    CursorQuad collectionQuad = createCollectionQuad(quadStore, "http://example.org/collection", "http://example.org/userPath");
+
     given(quadStore.getQuads("http://example.org/source", RdfConstants.RDF_TYPE, Direction.OUT, ""))
       .willReturn(Stream.of(collectionQuad));
-    given(quadStore.getQuads("http://example.org/collection", "http://example.org/userConfigured", Direction.OUT, ""))
-      .willReturn(Stream.of(userConfiguredSummaryProp));
-
-    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+      "http://example.org/collection");
 
     InOrder inOrder = inOrder(quadStore);
+    inOrder.verify(quadStore).getQuads("http://example.org/source", RdfConstants.RDF_TYPE, Direction.OUT, "");
     // walk the path of the user configured SummaryProp
     inOrder.verify(quadStore).getQuads("http://example.org/source", "http://example.org/userPath", Direction.OUT, "");
     // walk the path of the default SummaryProp
     inOrder.verify(quadStore).getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, "");
+  }
+
+  @Test
+  public void createSummaryChoosesTheRightType() throws JsonProcessingException {
+    List<SummaryProp> defaultProperties = Lists.newArrayList(
+      summaryPropertyWithPath("http://example.org/path")
+    );
+    SummaryPropDataRetriever instance = new SummaryPropDataRetriever(
+      "http://example.org/userConfigured",
+      defaultProperties
+    );
+    QuadStore quadStore = mock(QuadStore.class);
+    CursorQuad wrongCollection = createCollectionQuad(quadStore, "http://example.org/wrongCollection", "http://example.org/wrongUserPath");
+    CursorQuad collection = createCollectionQuad(quadStore, "http://example.org/collection", "http://example.org/userPath");
+    given(quadStore.getQuads("http://example.org/source", RdfConstants.RDF_TYPE, Direction.OUT, ""))
+      .willReturn(Stream.of(wrongCollection, collection));
+
+    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore), "http://example.org/collection");
+
+    verify(quadStore, never()).getQuads("http://example.org/source", "http://example.org/wrongUserPath", Direction.OUT, "");
+  }
+
+  private CursorQuad createCollectionQuad(QuadStore quadStore, String collectionUri, String summaryPropPath)
+    throws JsonProcessingException {
+    CursorQuad collection = quadWithObject(collectionUri, Optional.empty());
+    SummaryProp summaryProp = summaryPropertyWithPath(summaryPropPath);
+    CursorQuad userConfiguredSummaryProp =
+      quadWithObject(OBJECT_MAPPER.writeValueAsString(summaryProp), Optional.empty());
+    given(quadStore.getQuads(collectionUri, "http://example.org/userConfigured", Direction.OUT, ""))
+      .willReturn(Stream.of(userConfiguredSummaryProp));
+    return collection;
   }
 
   @Test
@@ -85,7 +113,8 @@ public class SummaryPropDataRetrieverTest {
     given(quadStore.getQuads("http://example.org/objectFound1", "http://example.org/path2", Direction.OUT, ""))
       .willReturn(Stream.of(quadWithObjectUriOfPath2));
 
-    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+      "http://example.org/collection");
 
     verify(quadStore).getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, "");
     verify(quadStore).getQuads("http://example.org/objectFound1", "http://example.org/path2", Direction.OUT, "");
@@ -111,7 +140,8 @@ public class SummaryPropDataRetrieverTest {
       .willReturn(Stream.of(quadWithObjectUriOfPath2));
 
     Optional<TypedValue> summaryProperty =
-      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+        "http://example.org/collection");
 
     assertThat(summaryProperty, is(present()));
     assertThat(summaryProperty.get(), hasProperty("value", is("http://example.org/objectOfPath2")));
@@ -146,7 +176,8 @@ public class SummaryPropDataRetrieverTest {
       .willReturn(Stream.of(quadWithObjectUriOfPath2));
 
     Optional<TypedValue> summaryProperty =
-      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+        "http://example.org/collection");
 
     assertThat(summaryProperty, is(present()));
     assertThat(summaryProperty.get(), hasProperty("value", is("http://example.org/objectOfPath2")));
@@ -169,7 +200,8 @@ public class SummaryPropDataRetrieverTest {
     given(quadStore.getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, ""))
       .willReturn(Stream.of(foundQuad));
 
-    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+      "http://example.org/collection");
 
     InOrder inOrder = inOrder(quadStore);
     inOrder.verify(quadStore).getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, "");
@@ -189,7 +221,8 @@ public class SummaryPropDataRetrieverTest {
     given(quadStore.getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, ""))
       .willReturn(Stream.empty());
 
-    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+      "http://example.org/collection");
 
     verify(quadStore).getQuads("http://example.org/source", "http://example.org/path", Direction.OUT, "");
     verify(quadStore, never()).getQuads(anyString(), eq("http://example.org/path2"), eq(Direction.OUT), eq(""));
@@ -213,7 +246,8 @@ public class SummaryPropDataRetrieverTest {
       .willReturn(Stream.of(foundQuad));
 
     Optional<TypedValue> found =
-      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+        "http://example.org/collection");
 
 
     assertThat(found, is(present()));
@@ -236,7 +270,8 @@ public class SummaryPropDataRetrieverTest {
     CursorQuad foundQuad = quadWithObject("http://example.org/objectFound1", Optional.empty());
     given(foundQuad.getObject()).willReturn("http://example.org/value");
 
-    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+    instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+      "http://example.org/collection");
 
     verify(quadStore).getQuads("http://example.org/source", "http://example.org/prop1", Direction.IN, "");
   }
@@ -250,7 +285,8 @@ public class SummaryPropDataRetrieverTest {
     QuadStore quadStore = mock(QuadStore.class);
 
     Optional<TypedValue> found =
-      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore));
+      instance.createSummaryProperty(subjectWithUri("http://example.org/source"), dataSetWithQuadStore(quadStore),
+        "http://example.org/collection");
 
 
     assertThat(found, not(is(present())));
