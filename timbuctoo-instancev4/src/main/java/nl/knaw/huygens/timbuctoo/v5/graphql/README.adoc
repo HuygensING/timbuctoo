@@ -58,3 +58,11 @@ else if (environment.getFieldDefinition().getDirective("entityTitle") != null) {
 }
 ...
 ```
+
+The custom directive should also be registered in the providesDataFetcher method
+
+```
+...
+      return environment.getFieldDefinition().getDirective("entityTitle") != null;
+...
+```
