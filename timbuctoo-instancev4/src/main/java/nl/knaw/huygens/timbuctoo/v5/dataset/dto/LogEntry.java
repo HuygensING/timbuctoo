@@ -18,7 +18,7 @@ public interface LogEntry {
 
   Optional<String> getLogToken();
 
-  Optional<EntryImportStatus> getImportStatus();
+  EntryImportStatus getImportStatus();
 
   static LogEntry create(String baseUri, String defaultGraph, String token) {
     return ImmutableLogEntry.builder()

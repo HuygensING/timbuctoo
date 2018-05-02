@@ -33,7 +33,7 @@ public class ImportStatusTest {
 
     status.addError("This error is recorded in logEntry", new RuntimeException("entry"));
     assertThat(status.getStatus().contains("This error is recorded in logEntry"), is(true));
-    assertThat(entry.getImportStatus().get().getErrors().get(0).contains("This error is recorded in logEntry"),
+    assertThat(entry.getImportStatus().getErrors().get(0).contains("This error is recorded in logEntry"),
       is(true));
 
     status.finishEntry();

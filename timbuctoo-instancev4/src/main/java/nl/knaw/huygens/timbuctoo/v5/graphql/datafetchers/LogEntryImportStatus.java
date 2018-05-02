@@ -15,7 +15,7 @@ public class LogEntryImportStatus {
   public LogEntryImportStatus(LogEntry logEntry, int id, boolean unprocessed) {
     this.id = "" + id;
     this.status = createStatus(logEntry, unprocessed);
-    this.errors = logEntry.getImportStatus().map(EntryImportStatus::getErrors).orElse(Lists.newArrayList());
+    this.errors = logEntry.getImportStatus().getErrors();
     this.source = logEntry.getLogToken().orElse("");
   }
 
@@ -24,8 +24,7 @@ public class LogEntryImportStatus {
   }
 
   private static String createStatus(LogEntry logEntry, boolean unprocessed) {
-    boolean finished = logEntry.getImportStatus().map(EntryImportStatus::getStatus)
-                               .map(status -> status.startsWith("Finished")).orElse(false);
+    boolean finished = logEntry.getImportStatus().getStatus().startsWith("Finished");
 
     return unprocessed ? "PENDING" : finished ? "DONE" : "IMPORTING";
   }
