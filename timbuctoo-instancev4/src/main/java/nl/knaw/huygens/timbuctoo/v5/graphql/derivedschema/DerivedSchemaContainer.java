@@ -198,7 +198,9 @@ public class DerivedSchemaContainer {
         .append("  uri: String! @uri\n")
         .append("  title: Value @entityTitle\n")
         .append("  description: Value @entityDescription\n")
-        .append("  image: Value @entityImage\n");
+        .append("  image: Value @entityImage\n")
+        .append("  inOtherDataSets(dataSetIds: [String!]): [DataSetLink!]! @otherDataSets\n");
+
     }
   }
 

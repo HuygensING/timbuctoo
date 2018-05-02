@@ -7,7 +7,6 @@ import graphql.language.Field;
 import graphql.language.InlineFragment;
 import graphql.language.Selection;
 import graphql.language.StringValue;
-import graphql.language.Value;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -20,7 +19,6 @@ import graphql.schema.idl.WiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.CollectionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
@@ -52,6 +50,7 @@ public class RdfWiringFactory implements WiringFactory {
   private final EntityTitleFetcher entityTitleFetcher;
   private final EntityDescriptionFetcher entityDescriptionFetcher;
   private final EntityImageFetcher entityImageFetcher;
+  private final OtherDataSetFetcher otherDataSetFetcher;
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
                           DefaultSummaryProps defaultSummaryProps) {
@@ -63,6 +62,7 @@ public class RdfWiringFactory implements WiringFactory {
     entityTitleFetcher = new EntityTitleFetcher(defaultSummaryProps.getDefaultTitles());
     entityDescriptionFetcher = new EntityDescriptionFetcher(defaultSummaryProps.getDefaultDescriptions());
     entityImageFetcher = new EntityImageFetcher(defaultSummaryProps.getDefaultImages());
+    otherDataSetFetcher = new OtherDataSetFetcher(dataSetRepository);
   }
 
   @Override
@@ -95,7 +95,8 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("dataSet") != null ||
       environment.getFieldDefinition().getDirective("entityTitle") != null ||
       environment.getFieldDefinition().getDirective("entityDescription") != null ||
-      environment.getFieldDefinition().getDirective("entityImage") != null;
+      environment.getFieldDefinition().getDirective("entityImage") != null ||
+      environment.getFieldDefinition().getDirective("otherDataSets") != null;
   }
 
   @Override
@@ -157,6 +158,8 @@ public class RdfWiringFactory implements WiringFactory {
       return entityDescriptionFetcher;
     } else if (environment.getFieldDefinition().getDirective("entityImage") != null) {
       return entityImageFetcher;
+    } else if (environment.getFieldDefinition().getDirective("otherDataSets") != null) {
+      return otherDataSetFetcher;
     }
     return null;
   }
@@ -212,7 +215,9 @@ public class RdfWiringFactory implements WiringFactory {
             } else if (selection instanceof Field && ((Field) selection).getName().equals("__typename")) {
               //Ignore, __typename is indeed not part of a fragment
             } else {
-              LOG.error("I have a union type whose selection is not an InlineFragment!");
+              //The selection on the interface is not an InlineFragment. I.e. they query the interface on the interface
+              //itself. This is no problem. The code below picks a random type which will implement the interface,
+              //guaranteed
             }
           }
           if (typeName == null) {
