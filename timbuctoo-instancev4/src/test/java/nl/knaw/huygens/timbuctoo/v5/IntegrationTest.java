@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.CleaningDropwizard;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
@@ -19,6 +20,7 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -65,6 +67,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
@@ -249,38 +252,27 @@ public class IntegrationTest {
       .post(Entity.entity(String.format("{\n" +
           "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
           "  {\n" +
-          "    currentImportStatus {\n" +
-          "      elapsedTime(unit: MILLISECONDS)\n" +
+          "    importStatus(id: \"0\") {\n" +
           "      status\n" +
+          "      errors\n" +
           "    }\n" +
           "  }\n" +
           "}\n",
         PREFIX, vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
-    int elapsedTime = objectNode.get("data")
-      .get("dataSetMetadata")
-      .get(("currentImportStatus"))
-      .get("elapsedTime").asInt();
-    assertThat(elapsedTime > 0, is(true));
-
-    graphqlCall = call("/v5/graphql")
-      .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
-          "  {\n" +
-          "    currentImportStatus {\n" +
-          "      elapsedTime(unit: MILLISECONDS)\n" +
-          "      status\n" +
-          "    }\n" +
-          "  }\n" +
-          "}\n",
-        PREFIX, vreName), MediaType.valueOf("application/graphql")));
-    objectNode = graphqlCall.readEntity(ObjectNode.class);
     String status = objectNode.get("data")
       .get("dataSetMetadata")
-      .get(("currentImportStatus"))
+      .get("importStatus")
       .get("status").asText();
-    assertThat(status, status.contains("Finished import with 1 error"), is(true));
+    assertThat(status, is("DONE"));
+
+    List<String> errors = Lists.newArrayList();
+    objectNode.get("data")
+     .get("dataSetMetadata")
+     .get("importStatus")
+     .get("errors").forEach(error -> errors.add(error.asText()));
+
+    assertThat(errors, hasSize(1));
   }
 
   @Test

@@ -54,7 +54,6 @@ public class ImportManager implements DataProvider {
   private final List<RdfProcessor> subscribedProcessors;
   private final Runnable webhooks;
   private final ImportStatus importStatus;
-  private final DataSetImportStatus dataSetImportStatus;
   private DataSet dataSet;
 
   public ImportManager( JsonDataStore<LogList> logListStore,FileStorage fileStorage, FileStorage imageStorage,
@@ -69,7 +68,6 @@ public class ImportManager implements DataProvider {
     this.logListStore = logListStore;
     subscribedProcessors = new ArrayList<>();
     importStatus = new ImportStatus(this.logListStore.getData());
-    dataSetImportStatus = new DataSetImportStatus(this.logListStore.getData());
   }
 
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
@@ -293,10 +291,6 @@ public class ImportManager implements DataProvider {
 
   public ImportStatus getImportStatus() {
     return importStatus;
-  }
-
-  public DataSetImportStatus getDataSetImportStatus() {
-    return dataSetImportStatus;
   }
 
   public void init(DataSet dataSet) {

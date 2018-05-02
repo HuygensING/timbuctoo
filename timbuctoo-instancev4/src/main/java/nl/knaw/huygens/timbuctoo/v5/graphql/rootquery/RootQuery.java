@@ -9,12 +9,9 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -24,6 +21,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataSetImportStatusFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.ImportStatusFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.SummaryPropertiesDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
@@ -179,18 +178,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           input.getDataSetId()
         ).map(dataSet -> dataSet.getImportManager().getImportStatus());
       })
-      .dataFetcher("dataSetImportStatus", env -> {
-        Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
-        if (!currentUser.isPresent()) {
-          throw new RuntimeException("User is not provided");
-        }
-        DataSetMetaData input = env.getSource();
-        return dataSetRepository.getDataSet(
-          currentUser.get(),
-          input.getOwnerId(),
-          input.getDataSetId()
-        ).map(dataSet -> dataSet.getImportManager().getDataSetImportStatus());
-      })
+      .dataFetcher("dataSetImportStatus", new DataSetImportStatusFetcher(dataSetRepository))
+      .dataFetcher("importStatus", new ImportStatusFetcher(dataSetRepository))
       .dataFetcher("collectionList", env -> getCollections(env.getSource(), ((ContextData) env.getContext()).getUser()))
 
       .dataFetcher("collection", env -> {
@@ -216,25 +205,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("dataSetName", env -> ((DataSetMetaData) env.getSource()).getDataSetId())
       .dataFetcher("ownerId", env -> ((DataSetMetaData) env.getSource()).getOwnerId())
     );
-    wiring.type("CurrentImportStatus", builder -> builder
-      .dataFetcher("elapsedTime", env -> {
-        final String timeUnit = env.getArgument("unit");
-        return ((ImportStatus) env.getSource()).getElapsedTime(timeUnit);
-      })
-    );
-    wiring.type("DataSetImportStatus", builder -> builder
-      .dataFetcher("lastImportDuration", env -> {
-        final String timeUnit = env.getArgument("unit");
-        return ((DataSetImportStatus) env.getSource()).getLastImportDuration(timeUnit);
-      })
-    );
-    wiring.type("EntryImportStatus", builder -> builder
-      .dataFetcher("elapsedTime", env -> {
-        final String timeUnit = env.getArgument("unit");
-        return ((EntryImportStatus) env.getSource()).getElapsedTime(timeUnit);
-      })
 
-    );
     wiring.type("CollectionMetadata", builder -> builder
       .dataFetcher("indexConfig", env -> {
         SubjectReference source = env.getSource();
