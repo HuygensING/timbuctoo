@@ -1,0 +1,31 @@
+= Storing changes and resources in Timbuctoo with support for changeList and ResourceList
+
+. Problem:
+* Since Timbuctoo now supports changelist and resourcelist for ResourceSync Import,
+ we need to determine how we are going to store the resource files and change files so that they can be used for a
+ ResourceSync Import call when necessary.
+
+. Result:
+* Timbuctoo will maintain, for each Dataset:
+** A resourcelist.xml file that contains a single resource file that determines the current state of the DataSet.
+** A changelist.xml file that contains one or more NQUD change files that determine all the changes for the DataSet.
+
+. Approach:
+There are 3 different kinds of dataset updates in Timbuctoo that need to be handled:
+.. Upload Rdf (Bulkupload):  In this case each Rdf file in the dataset will be saved as a resource Rdf file and
+a conversion will also be done to NQUD and stored as change files for the changelist. It is necessary to convert
+all the resource Rdfs to NQUD and store them because these will together determine the state of the Dataset along with all
+the changes. A single resource NQ file will also be maintained in the resourcelist which reflects the current state of the
+dataset.
+The NQUD conversion will be handled by a
+new class "ConvertToNqud" that will be called once the resource Rdf is saved.
+.. JsonLd Update: In this case, we already have NQUD changes stored in Timbuctoo. We will also now
+store these changes as NQUD files for the changelist.  We will also have to update the stored dataset resource
+to reflect these changes.
+.. Rml Execution: Similar to the JsonLd update case, Rml Execution already uses RmlRdfCreator class to store NQUD changes.
+ We will now also store these changes as NQUD files for the changelist.  We will also have to update the stored dataset resource
+to reflect these changes.
+
+
+TODO: Still need to determine how to update the stored dataset resource file for the JsonLd Update and Rml Execution cases.
+
