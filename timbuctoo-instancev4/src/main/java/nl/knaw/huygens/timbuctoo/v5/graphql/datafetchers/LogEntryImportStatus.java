@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
-import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 
 import java.util.List;

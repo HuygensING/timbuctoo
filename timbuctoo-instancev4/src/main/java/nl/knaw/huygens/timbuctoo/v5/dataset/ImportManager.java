@@ -56,9 +56,9 @@ public class ImportManager implements DataProvider {
   private final ImportStatus importStatus;
   private DataSet dataSet;
 
-  public ImportManager( JsonDataStore<LogList> logListStore,FileStorage fileStorage, FileStorage imageStorage,
-                        LogStorage logStorage, ExecutorService executorService, RdfIoFactory rdfIoFactory,
-                        Runnable onUpdated) {
+  public ImportManager(JsonDataStore<LogList> logListStore, FileStorage fileStorage, FileStorage imageStorage,
+                       LogStorage logStorage, ExecutorService executorService, RdfIoFactory rdfIoFactory,
+                       Runnable onUpdated) {
     this.webhooks = onUpdated;
     this.fileStorage = fileStorage;
     this.imageStorage = imageStorage;
