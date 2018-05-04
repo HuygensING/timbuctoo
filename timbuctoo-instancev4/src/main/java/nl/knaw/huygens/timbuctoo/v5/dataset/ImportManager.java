@@ -160,42 +160,7 @@ public class ImportManager implements DataProvider {
       int index = unprocessed.nextIndex();
       LogEntry entry = unprocessed.next();
       importStatus.startEntry(entry);
-      if (entry.getLogToken().isPresent()) { // logToken
-        String logToken = entry.getLogToken().get();
-        try (CachedLog log = logStorage.getLog(logToken)) {
-          final Stopwatch stopwatch = Stopwatch.createStarted();
-          for (RdfProcessor processor : subscribedProcessors) {
-            if (processor.getCurrentVersion() <= index) {
-              String msg = "******* " + processor.getClass().getSimpleName() + " Started importing full log...";
-              LOG.info(msg);
-              importStatus.setStatus(msg);
-              RdfParser rdfParser = serializerFactory.makeRdfParser(log);
-              processor.start(index);
-              rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
-              processor.commit();
-            }
-          }
-          long elapsedTime = stopwatch.elapsed(TimeUnit.SECONDS);
-          String msg = "Finished importing. Total import took " + elapsedTime + " seconds.";
-          LOG.info(msg);
-          importStatus.setStatus(msg);
-          dataWasAdded = true;
-        } catch (Exception e) {
-          LOG.error("Processing log failed", e);
-          importStatus.addError("Processing log failed", e);
-        }
-
-        // Update the log, even after RdfProcessingFailedException | IOException
-        try {
-          logListStore.updateData(logList -> {
-            logList.markAsProcessed(index);
-            return logList;
-          });
-        } catch (IOException e) {
-          LOG.error("Updating the log failed", e);
-          importStatus.addError("Updating log failed", e);
-        }
-      } else { // no logToken
+      if (!entry.getLogToken().isPresent()) { // no logToken, because the data is generated from a tabular file
         RdfCreator creator = entry.getRdfCreator().get();
         String token = "";
         MediaType mediaType;
@@ -236,12 +201,10 @@ public class ImportManager implements DataProvider {
               charset
             );
           }
-          LogEntry entryWithLog;
-          entryWithLog = LogEntry.addLogToEntry(entry, token);
-          unprocessed.set(entryWithLog);
+          entry = LogEntry.addLogToEntry(entry, token);
+          unprocessed.set(entry); //maybe use loglist.setLog or something like that
 
           token = "";
-          unprocessed.previous(); //move back to process this item again
         } catch (Exception e) {
           if (token.isEmpty()) {
             LOG.error("Log processing failed", e);
@@ -255,7 +218,42 @@ public class ImportManager implements DataProvider {
             tempFile.delete();
           }
         }
-      } // end else with no condition
+      }
+
+      String logToken = entry.getLogToken().get();
+      try (CachedLog log = logStorage.getLog(logToken)) {
+        final Stopwatch stopwatch = Stopwatch.createStarted();
+        for (RdfProcessor processor : subscribedProcessors) {
+          if (processor.getCurrentVersion() <= index) {
+            String msg = "******* " + processor.getClass().getSimpleName() + " Started importing full log...";
+            LOG.info(msg);
+            importStatus.setStatus(msg);
+            RdfParser rdfParser = serializerFactory.makeRdfParser(log);
+            processor.start(index);
+            rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
+            processor.commit();
+          }
+        }
+        long elapsedTime = stopwatch.elapsed(TimeUnit.SECONDS);
+        String msg = "Finished importing. Total import took " + elapsedTime + " seconds.";
+        LOG.info(msg);
+        importStatus.setStatus(msg);
+        dataWasAdded = true;
+      } catch (Exception e) {
+        LOG.error("Processing log failed", e);
+        importStatus.addError("Processing log failed", e);
+      }
+
+      // Update the log, even after RdfProcessingFailedException | IOException
+      try {
+        logListStore.updateData(logList -> {
+          logList.markAsProcessed(index);
+          return logList;
+        });
+      } catch (IOException e) {
+        LOG.error("Updating the log failed", e);
+        importStatus.addError("Updating log failed", e);
+      }
       importStatus.finishEntry();
     } // end main while loop
     if (dataWasAdded) {
