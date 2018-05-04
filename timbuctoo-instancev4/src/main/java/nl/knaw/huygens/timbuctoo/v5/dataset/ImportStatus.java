@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Stopwatch;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.TimeWithUnit;
@@ -71,13 +72,13 @@ public class ImportStatus {
                    .ifPresent(creator -> setStatus("Creating entry with " + creator.getClass().getSimpleName()));
     currentLogEntry = logEntry;
     date = Instant.now().toString();
-    currentLogEntry.getImportStatus().ifPresent(eis -> eis.setDate(date));
+    currentLogEntry.getImportStatus().setDate(date);
     currentEntryStart = stopwatch.elapsed(TIME_UNIT);
   }
 
   public void setStatus(String status) {
     if (currentLogEntry != null) {
-      currentLogEntry.getImportStatus().ifPresent(eis -> eis.setStatus(status));
+      currentLogEntry.getImportStatus().setStatus(status);
     } else {
       logList.setLastStatus(status);
     }
@@ -90,7 +91,7 @@ public class ImportStatus {
       "; message: " + message +
       "; error: " + error.getMessage();
     if (currentLogEntry != null) {
-      currentLogEntry.getImportStatus().ifPresent(eis -> eis.addError(errorString));
+      currentLogEntry.getImportStatus().addError(errorString);
     } else {
       logList.addListError(errorString);
     }
@@ -100,14 +101,12 @@ public class ImportStatus {
 
   public void finishEntry() {
     getCurrentLogEntry().ifPresent(entry -> {
-      entry.getImportStatus().ifPresent(eis -> {
-        int errorCount = eis.getErrors().size();
-        setStatus("Finished entry with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
-        date = Instant.now().toString();
-        eis.setDate(date);
-        eis.setElapsedTime(
-          new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT) - currentEntryStart));
-      });
+      EntryImportStatus eis = entry.getImportStatus();
+      int errorCount = eis.getErrors().size();
+      setStatus("Finished entry with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
+      date = Instant.now().toString();
+      eis.setDate(date);
+      eis.setElapsedTime(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT) - currentEntryStart));
       currentLogEntry = null;
       entry.getLogToken().ifPresent(token -> setStatus("Finished adding entry with token " + token));
       entry.getRdfCreator()

@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,15 +129,7 @@ public class RsDocumentBuilder {
 
       FileStorage fileStorage = maybeDataSet.get().getFileStorage();
       List<LogEntry> entries = loglist.getEntries();
-      entries.sort((e1, e2) -> {
-        if (e1.getImportStatus().isPresent() && e2.getImportStatus().isPresent()) {
-          return e1.getImportStatus().get().getDate().compareTo(e2.getImportStatus().get().getDate());
-        } else if (e1.getImportStatus().isPresent()) {
-          return 1;
-        } else {
-          return -1;
-        }
-      });
+      entries.sort(Comparator.comparing(e -> e.getImportStatus().getDate()));
       for (LogEntry logEntry : entries) {
         Optional<String> maybeToken = logEntry.getLogToken();
         if (maybeToken.isPresent()) {
