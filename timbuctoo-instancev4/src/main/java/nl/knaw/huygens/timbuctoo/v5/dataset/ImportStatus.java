@@ -56,7 +56,7 @@ public class ImportStatus {
     errors = new ConcurrentLinkedDeque<>();
   }
 
-  public void start(String methodName, String baseUri) {
+  public synchronized void start(String methodName, String baseUri) {
     reset();
     messages.clear();
     errors.clear();
@@ -66,7 +66,7 @@ public class ImportStatus {
     stopwatch.start();
   }
 
-  public void startEntry(LogEntry logEntry) {
+  public synchronized void startEntry(LogEntry logEntry) {
     logEntry.getLogToken().ifPresent(token -> setStatus("Adding entry with token " + token));
     logEntry.getRdfCreator()
                    .ifPresent(creator -> setStatus("Creating entry with " + creator.getClass().getSimpleName()));
@@ -76,7 +76,7 @@ public class ImportStatus {
     currentEntryStart = stopwatch.elapsed(TIME_UNIT);
   }
 
-  public void setStatus(String status) {
+  public synchronized void setStatus(String status) {
     if (currentLogEntry != null) {
       currentLogEntry.getImportStatus().setStatus(status);
     } else {
@@ -85,7 +85,7 @@ public class ImportStatus {
     messages.add(status);
   }
 
-  public void addError(String message, Throwable error) {
+  public synchronized void addError(String message, Throwable error) {
     String errorString = "[" + Instant.now().toString() + "] " +
       "; method: " + methodName +
       "; message: " + message +
@@ -99,7 +99,7 @@ public class ImportStatus {
     messages.add("ERROR: " + errorString);
   }
 
-  public void finishEntry() {
+  public synchronized void finishEntry() {
     getCurrentLogEntry().ifPresent(entry -> {
       EntryImportStatus eis = entry.getImportStatus();
       int errorCount = eis.getErrors().size();
@@ -114,7 +114,7 @@ public class ImportStatus {
     });
   }
 
-  public void finishList() {
+  public synchronized void finishList() {
     stopwatch.stop();
     int errorCount = errors.size();
     setStatus("Finished import with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
@@ -123,15 +123,15 @@ public class ImportStatus {
     logList.setLastImportDuration(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT)));
   }
 
-  public String getMethodName() {
+  public synchronized String getMethodName() {
     return methodName;
   }
 
-  public String getBaseUri() {
+  public synchronized String getBaseUri() {
     return baseUri;
   }
 
-  public String getStatus() {
+  public synchronized String getStatus() {
     if (messages.isEmpty()) {
       return "No current import";
     } else {
@@ -139,27 +139,27 @@ public class ImportStatus {
     }
   }
 
-  public String getDate() {
+  public synchronized String getDate() {
     return date;
   }
 
-  public List<String> getMessages() {
+  public synchronized List<String> getMessages() {
     return new ArrayList<>(messages);
   }
 
-  public List<String> getErrors() {
+  public synchronized List<String> getErrors() {
     return new ArrayList<>(errors);
   }
 
-  public int getErrorCount() {
+  public synchronized int getErrorCount() {
     return errors.size();
   }
 
-  public boolean hasErrors() {
+  public synchronized boolean hasErrors() {
     return !errors.isEmpty();
   }
 
-  public long getElapsedTime(String unit) {
+  public synchronized long getElapsedTime(String unit) {
     if (messages.isEmpty()) {
       return -1L;
     } else {
@@ -167,11 +167,11 @@ public class ImportStatus {
     }
   }
 
-  public TimeWithUnit getElapsedTime() {
+  public synchronized TimeWithUnit getElapsedTime() {
     return new TimeWithUnit(TIME_UNIT, getElapsedTime(TIME_UNIT.name()));
   }
 
-  public boolean isActive() {
+  public synchronized boolean isActive() {
     return stopwatch.isRunning();
   }
 
