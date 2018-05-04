@@ -20,7 +20,6 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -52,17 +51,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.getResource;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
@@ -534,16 +535,9 @@ public class IntegrationTest {
   }
 
   @Test
-  public void tabularUpload() {
-    Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
-    String dataSetId = "dataset" + UUID.randomUUID().toString().replace("-", "_");
-    WebTarget target = client.target(
-      format(
-        "http://localhost:%d/v5/" + PREFIX + "/" + dataSetId + "/upload/table?forceCreation=true",
-        APP.getLocalPort()
-      )
-    );
-
+  public void tabularUploadCreatesTabularCollections() {
+    final String dataSetName = "dataset" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = PREFIX + "__" + dataSetName;
     FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
     FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(
@@ -555,12 +549,93 @@ public class IntegrationTest {
     multiPart.field("type", "xlsx");
 
 
-    Response response = target.request()
+    Response response = call("/v5/" + PREFIX + "/" + dataSetName + "/upload/table?forceCreation=true")
       .header(HttpHeaders.AUTHORIZATION, "fake")
       .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
     assertThat(response.getStatus(), Matchers.is(201));
-    // assertThat(response.getHeaderString(HttpHeaders.LOCATION), Matchers.is(notNullValue()));
+
+    Response query = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query tabularData {\n" +
+            "dataSets {\n" +
+            "    " + dataSetId + " {\n" +
+            "    \thttp___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList {\n" +
+            "        items {\n" +
+            "          tim_hasCollectionList {\n" +
+            "            items {\n" +
+            "              ... on " + dataSetId +
+            "_http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularCollection {\n" +
+            "                title {\n" +
+            "                  value\n" +
+            "                }\n" +
+            "              }\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    ObjectNode data = query.readEntity(ObjectNode.class);
+    List<JsonNode> tabularFile = stream(
+      data.get("data")
+          .get("dataSets")
+          .get(dataSetId)
+          .get("http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList")
+          .get("items")
+          .iterator()
+    ).collect(toList());
+
+    Stream<JsonNode> rawCollections = stream(tabularFile.get(0).get("tim_hasCollectionList").get("items").iterator());
+    assertThat(rawCollections.collect(toList()), containsInAnyOrder(jsnO(
+      "title", jsnO("value", jsn("Persons"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Persons_name_variants"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Occupation"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Residence"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Education"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Biography"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Membership"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Provenance"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Provenance_type"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Places"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Place_name_variants"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Institutes"))
+      ),
+      jsnO(
+        "title", jsnO("value", jsn("Institute_name_variants"))
+      ),
+      jsnO(
+        "title", jsnO("value",  jsn("Fields_of_interest"))
+      )));
   }
 
 
@@ -773,7 +848,7 @@ public class IntegrationTest {
         .get("local_pred_pred2List")
         .get("items").iterator())
         .map(x -> x.get("value").asText())
-        .collect(Collectors.toList()),
+        .collect(toList()),
       contains(
         "extra value",
         "values"
@@ -850,7 +925,7 @@ public class IntegrationTest {
         .get("data")
         .get("dataSetMetadata")
         .get("collectionList")
-        .get("items").iterator()).collect(Collectors.toList()),
+        .get("items").iterator()).collect(toList()),
       hasItem(jsnO(
         "uri", jsn(collectionUri),
         "viewConfig", jsnA(
@@ -1153,7 +1228,7 @@ public class IntegrationTest {
         .get("data")
         .get("dataSetMetadata")
         .get("collectionList")
-        .get("items").iterator()).collect(Collectors.toList()),
+        .get("items").iterator()).collect(toList()),
       hasItem(jsnO(
         "uri", jsn(collectionUri),
         "indexConfig", jsnO(
@@ -1290,7 +1365,7 @@ public class IntegrationTest {
     assertThat(stream(dataSetsBeforeDelete
         .get("data")
         .get("allDataSets").iterator()
-      ).collect(Collectors.toList()),
+      ).collect(toList()),
       hasItem((JsonNode) jsnO("dataSetId", jsn(dataSetId)))
     );
 
@@ -1343,7 +1418,7 @@ public class IntegrationTest {
     assertThat(stream(dataSetsAfterDelete
         .get("data")
         .get("allDataSets").iterator()
-      ).collect(Collectors.toList()),
+      ).collect(toList()),
       not(hasItem((JsonNode) jsnO("dataSetId", jsn(dataSetId))))
     );
   }
@@ -1542,7 +1617,7 @@ public class IntegrationTest {
         .get("aboutMe")
         .get("dataSets").iterator())
       .map(x -> x.get("dataSetId").asText())
-      .collect(Collectors.toList());
+      .collect(toList());
   }
 
   private Response multipartPost(String path, File resource, String mediaType, Map<String, String> arguments)
