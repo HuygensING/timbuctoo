@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 
 import java.util.List;
@@ -22,9 +23,18 @@ public class LogEntryImportStatus {
   }
 
   private static String createStatus(LogEntry logEntry, boolean unprocessed) {
-    boolean finished = logEntry.getImportStatus().getStatus().startsWith("Finished");
+    EntryImportStatus importStatus = logEntry.getImportStatus();
+    boolean hasDate = importStatus.getDate() != null; // means the import of the entry was started
 
-    return unprocessed ? "PENDING" : finished ? "DONE" : "IMPORTING";
+    if (hasDate) {
+      if (unprocessed) {
+        return "IMPORTING";
+      } else {
+        return "DONE";
+      }
+    } else {
+      return "PENDING";
+    }
   }
 
   public String getStatus() {
