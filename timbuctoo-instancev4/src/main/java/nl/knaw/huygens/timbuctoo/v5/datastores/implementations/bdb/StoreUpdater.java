@@ -50,7 +50,6 @@ public class StoreUpdater implements RdfProcessor {
     this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
     this.versionStore = versionStore;
-    // currentversion = versionStore.getVersion();
     this.listeners = listeners;
     this.importStatus = importStatus;
   }
@@ -98,7 +97,7 @@ public class StoreUpdater implements RdfProcessor {
                        String language) throws RdfProcessingFailedException {
     try {
       final boolean wasChanged = tripleStore.putQuad(subject, predicate, direction, object, valueType, language);
-      if (wasChanged && currentversion >= 0) {
+      if (wasChanged) {
         truePatchStore.put(subject, currentversion, predicate, direction, true, object, valueType, language);
         updatedPerPatchStore.put(currentversion, subject);
       }
@@ -111,7 +110,7 @@ public class StoreUpdater implements RdfProcessor {
                           String language) throws RdfProcessingFailedException {
     try {
       final boolean wasChanged = tripleStore.deleteQuad(subject, predicate, direction, object, valueType, language);
-      if (wasChanged && currentversion >= 0) {
+      if (wasChanged) {
         truePatchStore.put(subject, currentversion, predicate, direction, false, object, valueType, language);
         updatedPerPatchStore.put(currentversion, subject);
       }
