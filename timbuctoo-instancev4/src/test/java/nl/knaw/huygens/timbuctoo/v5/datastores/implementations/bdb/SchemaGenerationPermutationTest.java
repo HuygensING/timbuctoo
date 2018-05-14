@@ -55,11 +55,9 @@ public class SchemaGenerationPermutationTest {
   private static final String TYPE_1 = "http://example.org/type";
   private static final String TYPE_2 = "http://example.org/footype";
   private static final String TYPE_3 = "http://example.org/barType";
-  private static final String TYPE_4 = "http://example.org/baztype";
 
   private static final String PROP_I = "http://example.org/pred1";
   private static final String PROP_II = "http://example.org/pred2";
-  private static final String PROP_III = "http://example.org/links";
 
   private static final String GRAPH = "http://example.org";
 
@@ -362,7 +360,6 @@ public class SchemaGenerationPermutationTest {
     ));
 
     return new StoreUpdater(
-      dataStoreFactory,
       quadStore,
       typeNameStore,
       truePatchStore,

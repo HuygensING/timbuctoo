@@ -172,7 +172,6 @@ public abstract class DataSet {
       ));
 
       final StoreUpdater storeUpdater = new StoreUpdater(
-        dataStoreFactory,
         quadStore,
         typeNameStore,
         truePatchStore,
