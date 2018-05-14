@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Stopwatch;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.TimeWithUnit;
@@ -186,4 +187,19 @@ public class ImportStatus {
     stopwatch.reset();
   }
 
+  public void addProgressItem(String itemName, ImportStatusLabel statusLabel) {
+
+  }
+
+  public void updateProgressItem(String itemName, long numberOfTriplesProcessed) {
+
+  }
+
+  public void finishProgressItem(String itemName) {
+
+  }
+
+  public void startProgressItem(String itemName) {
+
+  }
 }
