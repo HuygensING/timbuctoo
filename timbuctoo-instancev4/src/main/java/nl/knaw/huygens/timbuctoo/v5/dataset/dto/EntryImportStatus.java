@@ -3,11 +3,17 @@ package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel.IMPORTING;
 
 public class EntryImportStatus {
+  @JsonProperty
+  private Map<String, ProgressItem> progressItemMap = Maps.newHashMap();
 
   @JsonProperty
   private String date;
@@ -61,4 +67,32 @@ public class EntryImportStatus {
     errors.add(errorString);
   }
 
+  public void addProgressItem(String itemName, ImportStatusLabel statusLabel) {
+    ProgressItem progressItem = new ProgressItem();
+    progressItemMap.put(itemName, progressItem);
+    if (statusLabel == IMPORTING) {
+      progressItem.start();
+    }
+  }
+
+  public void updateProgressItem(String itemName, long numberOfTriplesProcessed) {
+    ProgressItem progressItem = progressItemMap.get(itemName);
+    if (progressItem != null) {
+      progressItem.update(numberOfTriplesProcessed);
+    }
+  }
+
+  public void finishProgressItem(String itemName) {
+    ProgressItem progressItem = progressItemMap.get(itemName);
+    if (progressItem != null) {
+      progressItem.finish();
+    }
+  }
+
+  public void startProgressItem(String itemName) {
+    ProgressItem progressItem = progressItemMap.get(itemName);
+    if (progressItem != null) {
+      progressItem.start();
+    }
+  }
 }

@@ -188,18 +188,18 @@ public class ImportStatus {
   }
 
   public void addProgressItem(String itemName, ImportStatusLabel statusLabel) {
-
+    currentLogEntry.getImportStatus().addProgressItem(itemName, statusLabel);
   }
 
   public void updateProgressItem(String itemName, long numberOfTriplesProcessed) {
-
+    currentLogEntry.getImportStatus().updateProgressItem(itemName, numberOfTriplesProcessed);
   }
 
   public void finishProgressItem(String itemName) {
-
+    currentLogEntry.getImportStatus().finishProgressItem(itemName);
   }
 
   public void startProgressItem(String itemName) {
-
+    currentLogEntry.getImportStatus().startProgressItem(itemName);
   }
 }
