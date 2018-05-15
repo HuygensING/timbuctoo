@@ -27,6 +27,10 @@ public class UpdatedPerPatchStore {
     return bdbWrapper.databaseGetter().key(version).dontSkip().forwards().getValues(bdbWrapper.valueRetriever());
   }
 
+  public Stream<Integer> getVersions() {
+    return bdbWrapper.databaseGetter().getAll().getKeys(bdbWrapper.keyRetriever());
+  }
+
   public void close() {
     try {
       bdbWrapper.close();

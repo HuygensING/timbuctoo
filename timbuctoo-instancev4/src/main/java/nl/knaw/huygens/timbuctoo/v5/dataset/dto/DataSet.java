@@ -191,6 +191,8 @@ public abstract class DataSet {
         .quadStore(quadStore)
         .typeNameStore(typeNameStore)
         .schemaStore(schema)
+        .updatedPerPatchStore(updatedPerPatchStore)
+        .truePatchStore(truePatchStore)
         .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
         .schemaStore(schema)
         .importManager(importManager)
@@ -258,6 +260,10 @@ public abstract class DataSet {
   protected abstract DataSetStorage getDataSetStorage();
 
   public abstract SchemaStore getSchemaStore();
+
+  public abstract UpdatedPerPatchStore getUpdatedPerPatchStore();
+
+  public abstract BdbTruePatchStore getTruePatchStore();
 
   public abstract TypeNameStore getTypeNameStore();
 

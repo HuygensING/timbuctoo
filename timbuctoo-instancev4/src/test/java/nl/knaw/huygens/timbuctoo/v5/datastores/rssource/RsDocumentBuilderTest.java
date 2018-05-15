@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,9 +17,11 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -105,6 +108,36 @@ public class RsDocumentBuilderTest {
     assertThat(cl.getItemList().get(0).getLoc(), is("http://example.com/v5/resourcesync/u1/ds1/resourcelist.xml"));
     assertThat(cl.getItemList().get(0).getMetadata().get().getCapability().get(),
       is(Capability.RESOURCELIST.xmlValue));
+  }
+
+  @Test
+  public void getChangeListGeneratesChangeListWithChangeFileNames() throws Exception {
+    when(dataSetRepository.getDataSet(null, "u1", "ds1")).thenReturn(Optional.of(dataSet));
+
+    UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
+
+    given(updatedPerPatchStore.getVersions()).willReturn(Stream.of(1,2));
+
+    DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
+    given(dataSetMetaData.getBaseUri()).willReturn("http://example.com");
+    given(dataSetMetaData.getOwnerId()).willReturn("u1");
+    given(dataSetMetaData.getDataSetId()).willReturn("ds1");
+
+    given(dataSet.getUpdatedPerPatchStore()).willReturn(updatedPerPatchStore);
+    given(dataSet.getMetadata()).willReturn(dataSetMetaData);
+
+    Urlset changeList = rsDocumentBuilder.getChangeList(null,"u1","ds1").get();
+
+    String xml = rsBuilder.toXml(changeList, true);
+    rsBuilder.setXmlString(xml).build();
+    System.out.println(xml);
+    Urlset changeListSet = rsBuilder.getUrlset().get();
+    assertThat(changeListSet.getCapability().get(), is(Capability.CHANGELIST));
+    assertThat(changeList.getItemList().size(), is(2));
+    assertThat(changeList.getItemList().get(0).getLoc(),
+      is("http://example.com/u1/ds1/changes/changes1.nqud"));
+    assertThat(changeList.getItemList().get(1).getLoc(),
+      is("http://example.com/u1/ds1/changes/changes2.nqud"));
   }
 
 }

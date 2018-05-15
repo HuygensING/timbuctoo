@@ -115,6 +115,16 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
+            public UpdatedPerPatchStore getUpdatedPerPatchStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public BdbTruePatchStore getTruePatchStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
             public TypeNameStore getTypeNameStore() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
