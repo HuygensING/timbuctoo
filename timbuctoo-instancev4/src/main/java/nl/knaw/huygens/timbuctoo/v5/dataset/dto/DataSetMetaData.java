@@ -13,6 +13,7 @@ public interface DataSetMetaData {
 
   /**
    * Returns the baseUri that is used to resolve relative uri's in uploaded rdf files that have no explicit baseUri set.
+   * The baseUri is used as the "graph" in quads.
    */
   String getBaseUri();
 
