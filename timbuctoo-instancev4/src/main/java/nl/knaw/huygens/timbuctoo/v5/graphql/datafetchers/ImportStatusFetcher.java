@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.LogEntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
 import java.util.List;
