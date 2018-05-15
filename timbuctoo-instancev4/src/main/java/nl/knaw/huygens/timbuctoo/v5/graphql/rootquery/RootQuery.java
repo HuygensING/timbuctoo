@@ -166,18 +166,18 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       )
     );
     wiring.type("DataSetMetadata", builder -> builder
-      .dataFetcher("currentImportStatus", env -> {
-        DataSetMetaData input = env.getSource();
-        Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
-        if (!currentUser.isPresent()) {
-          throw new RuntimeException("User is not provided");
-        }
-        return dataSetRepository.getDataSet(
-          currentUser.get(),
-          input.getOwnerId(),
-          input.getDataSetId()
-        ).map(dataSet -> dataSet.getImportManager().getImportStatus());
-      })
+      // .dataFetcher("currentImportStatus", env -> {
+      //   DataSetMetaData input = env.getSource();
+      //   Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
+      //   if (!currentUser.isPresent()) {
+      //     throw new RuntimeException("User is not provided");
+      //   }
+      //   return dataSetRepository.getDataSet(
+      //     currentUser.get(),
+      //     input.getOwnerId(),
+      //     input.getDataSetId()
+      //   ).map(dataSet -> dataSet.getImportManager().getImportStatus());
+      // })
       .dataFetcher("dataSetImportStatus", new DataSetImportStatusFetcher(dataSetRepository))
       .dataFetcher("importStatus", new ImportStatusFetcher(dataSetRepository))
       .dataFetcher("collectionList", env -> getCollections(env.getSource(), ((ContextData) env.getContext()).getUser()))

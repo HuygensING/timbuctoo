@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import java.util.function.Supplier;
 public class JsonFileBackedData<T> implements JsonDataStore<T> {
   private static ObjectMapper objectMapper = new ObjectMapper()
     .registerModule(new Jdk8Module())
+    .registerModule(new JavaTimeModule())
     .registerModule(new GuavaModule())
     .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);

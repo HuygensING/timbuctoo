@@ -3,8 +3,10 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ProgressItem;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel.DONE;
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel.IMPORTING;
@@ -15,16 +17,14 @@ public class LogEntryImportStatus {
   private final ImportStatusLabel status;
   private final List<String> errors;
   private final String source;
+  private final List<ProgressStep> progress;
 
   public LogEntryImportStatus(LogEntry logEntry, int id, boolean unprocessed) {
     this.id = "" + id;
     this.status = createStatus(logEntry, unprocessed);
     this.errors = logEntry.getImportStatus().getErrors();
     this.source = logEntry.getLogToken().orElse("");
-  }
-
-  public String getId() {
-    return id;
+    this.progress = createProgress(logEntry);
   }
 
   private static ImportStatusLabel createStatus(LogEntry logEntry, boolean unprocessed) {
@@ -42,6 +42,17 @@ public class LogEntryImportStatus {
     }
   }
 
+  private List<ProgressStep> createProgress(LogEntry logEntry) {
+    return logEntry.getImportStatus().getProgressItems().entrySet().stream().map(e -> {
+      ProgressItem value = e.getValue();
+      return ProgressStep.create(e.getKey(), value.getStatus(), value.getProgress(), value.getSpeed());
+    }).collect(Collectors.toList());
+  }
+
+  public String getId() {
+    return id;
+  }
+
   public ImportStatusLabel getStatus() {
     return status;
   }
@@ -52,5 +63,9 @@ public class LogEntryImportStatus {
 
   public List<String> getErrors() {
     return errors;
+  }
+
+  public List<ProgressStep> getProgress() {
+    return progress;
   }
 }

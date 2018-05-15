@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.Duration;
@@ -33,14 +34,17 @@ public class ProgressItem {
     status = ImportStatusLabel.DONE;
   }
 
+  @JsonIgnore
   public ImportStatusLabel getStatus() {
     return status;
   }
 
+  @JsonIgnore
   public String getProgress() {
     return String.format("%d quads", numberOfTriplesProcessed);
   }
 
+  @JsonIgnore
   public String getSpeed() {
     long duration = Duration.between(Instant.now(), startMoment).get(ChronoUnit.SECONDS);
     return String.format("%d quads/s", numberOfTriplesProcessed / duration);

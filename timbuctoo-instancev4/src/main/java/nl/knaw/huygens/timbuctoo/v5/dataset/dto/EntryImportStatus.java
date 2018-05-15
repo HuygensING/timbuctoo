@@ -95,4 +95,8 @@ public class EntryImportStatus {
       progressItem.start();
     }
   }
+
+  public Map<String, ProgressItem> getProgressItems() {
+    return progressItemMap;
+  }
 }

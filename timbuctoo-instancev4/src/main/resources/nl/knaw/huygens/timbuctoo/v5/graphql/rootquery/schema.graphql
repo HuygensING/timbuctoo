@@ -90,7 +90,7 @@ type ImportStatus {
   status: ImportStatusLabel!
   source: String!
   errors: [String]!
-  progress: [ProgressStep]
+  progress: [ProgressStep]!
 }
 
 type ProgressStep {
