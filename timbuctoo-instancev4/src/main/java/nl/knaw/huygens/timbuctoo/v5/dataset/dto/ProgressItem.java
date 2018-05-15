@@ -46,6 +46,10 @@ public class ProgressItem {
 
   @JsonIgnore
   public synchronized String getSpeed() {
-    return String.format("%d quads/s", numberOfTriplesProcessed / duration);
+    if (startMoment != null) {
+      long duration = Duration.between(startMoment, Instant.now()).get(ChronoUnit.SECONDS);
+      return String.format("%d quads/s", duration > 0 ? numberOfTriplesProcessed / duration : numberOfTriplesProcessed);
+    }
+    return "";
   }
 }
