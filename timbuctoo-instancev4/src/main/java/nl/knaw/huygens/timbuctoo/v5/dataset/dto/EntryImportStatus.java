@@ -25,32 +25,32 @@ public class EntryImportStatus {
 
   private List<String> errors = new ArrayList<>();
 
-  public String getStatus() {
+  public synchronized String getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
+  public synchronized void setStatus(String status) {
     this.status = status;
   }
 
-  public String getDate() {
+  public synchronized String getDate() {
     return date;
   }
 
-  public void setDate(String importDate) {
+  public synchronized void setDate(String importDate) {
     this.date = importDate;
   }
 
-  public void setElapsedTime(TimeWithUnit elapsedTime) {
+  public synchronized void setElapsedTime(TimeWithUnit elapsedTime) {
     this.elapsedTime = elapsedTime;
   }
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public TimeWithUnit getElapsedTime() {
+  public synchronized TimeWithUnit getElapsedTime() {
     return elapsedTime;
   }
 
-  public long getElapsedTime(String unit) {
+  public synchronized long getElapsedTime(String unit) {
     if (elapsedTime != null) {
       return elapsedTime.getTime(unit);
     } else {
@@ -59,15 +59,15 @@ public class EntryImportStatus {
   }
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  public List<String> getErrors() {
+  public synchronized List<String> getErrors() {
     return errors;
   }
 
-  public void addError(String errorString) {
+  public synchronized void addError(String errorString) {
     errors.add(errorString);
   }
 
-  public void addProgressItem(String itemName, ImportStatusLabel statusLabel) {
+  public synchronized void addProgressItem(String itemName, ImportStatusLabel statusLabel) {
     ProgressItem progressItem = new ProgressItem();
     progressItemMap.put(itemName, progressItem);
     if (statusLabel == IMPORTING) {
@@ -75,28 +75,28 @@ public class EntryImportStatus {
     }
   }
 
-  public void updateProgressItem(String itemName, long numberOfTriplesProcessed) {
+  public synchronized void updateProgressItem(String itemName, long numberOfTriplesProcessed) {
     ProgressItem progressItem = progressItemMap.get(itemName);
     if (progressItem != null) {
       progressItem.update(numberOfTriplesProcessed);
     }
   }
 
-  public void finishProgressItem(String itemName) {
+  public synchronized void finishProgressItem(String itemName) {
     ProgressItem progressItem = progressItemMap.get(itemName);
     if (progressItem != null) {
       progressItem.finish();
     }
   }
 
-  public void startProgressItem(String itemName) {
+  public synchronized void startProgressItem(String itemName) {
     ProgressItem progressItem = progressItemMap.get(itemName);
     if (progressItem != null) {
       progressItem.start();
     }
   }
 
-  public Map<String, ProgressItem> getProgressItems() {
+  public synchronized Map<String, ProgressItem> getProgressItems() {
     return progressItemMap;
   }
 }

@@ -77,6 +77,7 @@ public class StoreUpdater implements RdfProcessor {
         for (OptimizedPatchListener listener : listeners) {
           if (needUpdate) {
             listener.notifyUpdate();
+            importStatus.updateProgressItem(listener.getClass().getSimpleName(), count);
           }
           listener.onChangedSubject(subject, getQuads);
         }

@@ -21,32 +21,31 @@ public class ProgressItem {
 
   }
 
-  public void start() {
+  public synchronized void start() {
     startMoment = Instant.now();
     status = ImportStatusLabel.IMPORTING;
   }
 
-  public void update(long numberOfTriplesProcessed) {
+  public synchronized void update(long numberOfTriplesProcessed) {
     this.numberOfTriplesProcessed = numberOfTriplesProcessed;
   }
 
-  public void finish() {
+  public synchronized void finish() {
     status = ImportStatusLabel.DONE;
   }
 
   @JsonIgnore
-  public ImportStatusLabel getStatus() {
+  public synchronized ImportStatusLabel getStatus() {
     return status;
   }
 
   @JsonIgnore
-  public String getProgress() {
+  public synchronized String getProgress() {
     return String.format("%d quads", numberOfTriplesProcessed);
   }
 
   @JsonIgnore
-  public String getSpeed() {
-    long duration = Duration.between(Instant.now(), startMoment).get(ChronoUnit.SECONDS);
+  public synchronized String getSpeed() {
     return String.format("%d quads/s", numberOfTriplesProcessed / duration);
   }
 }

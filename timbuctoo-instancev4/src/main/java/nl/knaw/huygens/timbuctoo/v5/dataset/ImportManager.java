@@ -283,7 +283,7 @@ public class ImportManager implements DataProvider {
     return logListStore.getData().getEntries();
   }
 
-  public synchronized LogList getLogList() {
+  public LogList getLogList() {
     return logListStore.getData();
   }
 
