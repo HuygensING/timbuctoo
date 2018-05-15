@@ -43,10 +43,12 @@ public class LogEntryImportStatus {
   }
 
   private List<ProgressStep> createProgress(LogEntry logEntry) {
-    return logEntry.getImportStatus().getProgressItems().entrySet().stream().map(e -> {
-      ProgressItem value = e.getValue();
-      return ProgressStep.create(e.getKey(), value.getStatus(), value.getProgress(), value.getSpeed());
-    }).collect(Collectors.toList());
+    return logEntry.getImportStatus().getProgressItems().entrySet().stream()
+                   .filter(e -> e.getValue().getStatus() != DONE)
+                   .map(e -> {
+                     ProgressItem value = e.getValue();
+                     return ProgressStep.create(e.getKey(), value.getStatus(), value.getProgress(), value.getSpeed());
+                   }).collect(Collectors.toList());
   }
 
   public String getId() {
