@@ -228,17 +228,17 @@ public class StoreUpdater implements RdfProcessor {
       String msg = "processing " + count + " triples took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.setStatus(msg);
-      stopwatch.reset();
-      stopwatch.start();
-      updateListeners();
-      msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
-      LOG.info(msg);
       importStatus.setStatus(msg);
       stopwatch.reset();
       stopwatch.start();
       versionStore.setVersion(currentversion);
       commitChanges();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
+      LOG.info(msg);
+      stopwatch.reset();
+      stopwatch.start();
+      updateListeners();
+      msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.setStatus(msg);
     } catch (DatabaseWriteException | JsonProcessingException e) {
