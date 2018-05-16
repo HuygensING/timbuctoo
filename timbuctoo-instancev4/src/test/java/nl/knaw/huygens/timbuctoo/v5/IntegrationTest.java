@@ -67,11 +67,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.Is.is;
 
 public class IntegrationTest {
@@ -269,9 +267,9 @@ public class IntegrationTest {
 
     List<String> errors = Lists.newArrayList();
     objectNode.get("data")
-     .get("dataSetMetadata")
-     .get("importStatus")
-     .get("errors").forEach(error -> errors.add(error.asText()));
+      .get("dataSetMetadata")
+      .get("importStatus")
+      .get("errors").forEach(error -> errors.add(error.asText()));
 
     assertThat(errors, hasSize(1));
   }
@@ -401,6 +399,70 @@ public class IntegrationTest {
   }
 
   @Test
+  public void resourceSyncChangeListGenerationTest() throws Exception {
+    String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    String dataSetId = createDataSetId(dataSetName);
+
+    call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Publish($dataSetId: String!) {" +
+            "  publish(dataSetId: $dataSetId) {" +
+            "    dataSetId" +
+            "  }" +
+            "}"
+        ),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
+
+    Response uploadResponse2 = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf",
+      new File(getResource(IntegrationTest.class, "test.nqud").toURI()),
+      "application/n-quads",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse2.getStatus(), is(201));
+
+    Response getChangeListCall = call("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/changelist.xml")
+      .get();
+
+    assertThat(getChangeListCall.getStatus(), is(200));
+
+    Node changeList = streamToXml(getChangeListCall.readEntity(InputStream.class));
+
+    assertThat(
+      changeList,
+      hasXPath("//urlset/url/loc/text()[contains(. , 'datasets/" + PREFIX + "/" +
+        dataSetName + "/changes/changes0.nqud')]")
+    );
+    assertThat(
+      changeList,
+      hasXPath("//urlset/url/loc/text()[contains(. , 'datasets/" + PREFIX + "/" +
+        dataSetName + "/changes/changes1.nqud')]")
+    );
+
+  }
+
+  @Test
   public void succeedingRdfUploadResourceSync() throws Exception {
     String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
@@ -520,11 +582,11 @@ public class IntegrationTest {
     ObjectNode data = query.readEntity(ObjectNode.class);
     List<JsonNode> tabularFile = stream(
       data.get("data")
-          .get("dataSets")
-          .get(dataSetId)
-          .get("http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList")
-          .get("items")
-          .iterator()
+        .get("dataSets")
+        .get(dataSetId)
+        .get("http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList")
+        .get("items")
+        .iterator()
     ).collect(toList());
 
     Stream<JsonNode> rawCollections = stream(tabularFile.get(0).get("tim_hasCollectionList").get("items").iterator());
@@ -568,7 +630,7 @@ public class IntegrationTest {
         "title", jsnO("value", jsn("Institute_name_variants"))
       ),
       jsnO(
-        "title", jsnO("value",  jsn("Fields_of_interest"))
+        "title", jsnO("value", jsn("Fields_of_interest"))
       )));
   }
 

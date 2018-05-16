@@ -196,13 +196,12 @@ public class RsDocumentBuilder {
       List<String> changeFileNames = changesRetriever.retrieveChangeFileNames(versionsSupplier);
 
       for (String changeFileName : changeFileNames) {
-        LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName) - 1);
-        UrlItem item = new UrlItem(dataSetMetaData.getBaseUri() + "/" +
-          dataSetMetaData.getOwnerId() + "/" +
-          dataSetMetaData.getDataSetId() + "/changes/" + changeFileName)
+        LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName));
+        UrlItem item = new UrlItem(dataSetMetaData.getBaseUri() +
+          "changes/" + changeFileName)
           .withMetadata(new RsMd()
-              .withChange("updated")
-              .withDateTime(ZonedDateTime.parse(logEntry.getImportStatus().getDate())));
+            .withChange("updated")
+            .withDateTime(ZonedDateTime.parse(logEntry.getImportStatus().getDate())));
         changeList.addItem(item);
       }
     }
@@ -241,7 +240,9 @@ public class RsDocumentBuilder {
 
   private Integer getVersionFromFileId(String fileId) {
     String fileName = fileId.substring(0, fileId.lastIndexOf("."));
-    return Integer.parseInt(fileName.substring(fileName.length() - 1));
+    String fileIndex = fileName.replaceAll("\\D+", "");
+    //return Integer.parseInt(fileName.substring(fileName.length() - 1));
+    return Integer.parseInt(fileIndex);
   }
 
   /**
