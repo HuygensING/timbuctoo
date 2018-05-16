@@ -8,8 +8,12 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import org.apache.jena.graph.impl.TripleStore;
+import org.apache.jena.update.Update;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
@@ -52,9 +56,11 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void updateListeners() throws RdfProcessingFailedException {
+    // start updating the derivative stores
     logString = "Processed {} subjects ({} subjects/s)";
     for (OptimizedPatchListener listener : listeners) {
       listener.start();
+      importStatus.startProgressItem(listener.getClass().getSimpleName());
     }
 
     count = 0;
@@ -70,6 +76,7 @@ public class StoreUpdater implements RdfProcessor {
         for (OptimizedPatchListener listener : listeners) {
           if (needUpdate) {
             listener.notifyUpdate();
+            importStatus.updateProgressItem(listener.getClass().getSimpleName(), count);
           }
           listener.onChangedSubject(subject, getQuads);
         }
@@ -77,6 +84,7 @@ public class StoreUpdater implements RdfProcessor {
     }
     for (OptimizedPatchListener listener : listeners) {
       listener.finish();
+      importStatus.finishProgressItem(listener.getClass().getSimpleName());
     }
   }
 
@@ -168,10 +176,19 @@ public class StoreUpdater implements RdfProcessor {
 
   private void startTransactions() {
     versionStore.start();
-    typeNameStore.start();
+    importStatus.addProgressItem(VersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     tripleStore.start();
+    importStatus.addProgressItem(BdbTripleStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     truePatchStore.start();
+    importStatus.addProgressItem(BdbTruePatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    typeNameStore.start();
+    importStatus.addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     updatedPerPatchStore.start();
+    importStatus.addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+
+    listeners.forEach(listener -> importStatus.addProgressItem(
+      listener.getClass().getSimpleName(), ImportStatusLabel.PENDING)
+    );
   }
 
   private boolean notifyUpdate() {
@@ -184,9 +201,18 @@ public class StoreUpdater implements RdfProcessor {
         count, itemsPerSecond));
       prevCount = count;
       prevTime = curTime;
+      updateStoreProgress();
       return true;
     }
     return false;
+  }
+
+  private void updateStoreProgress() {
+    importStatus.updateProgressItem(VersionStore.class.getSimpleName(), count);
+    importStatus.updateProgressItem(BdbTripleStore.class.getSimpleName(), count);
+    importStatus.updateProgressItem(BdbTruePatchStore.class.getSimpleName(), count);
+    importStatus.updateProgressItem(BdbTypeNameStore.class.getSimpleName(), count);
+    importStatus.updateProgressItem(UpdatedPerPatchStore.class.getSimpleName(), count);
   }
 
   @Override
@@ -200,17 +226,17 @@ public class StoreUpdater implements RdfProcessor {
       String msg = "processing " + count + " triples took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.setStatus(msg);
-      stopwatch.reset();
-      stopwatch.start();
-      updateListeners();
-      msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
-      LOG.info(msg);
       importStatus.setStatus(msg);
       stopwatch.reset();
       stopwatch.start();
       versionStore.setVersion(currentversion);
       commitChanges();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
+      LOG.info(msg);
+      stopwatch.reset();
+      stopwatch.start();
+      updateListeners();
+      msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.setStatus(msg);
     } catch (DatabaseWriteException | JsonProcessingException e) {
@@ -220,10 +246,15 @@ public class StoreUpdater implements RdfProcessor {
 
   private void commitChanges() throws JsonProcessingException, DatabaseWriteException {
     versionStore.commit();
+    importStatus.finishProgressItem(VersionStore.class.getSimpleName());
     typeNameStore.commit();
+    importStatus.finishProgressItem(BdbTypeNameStore.class.getSimpleName());
     tripleStore.commit();
+    importStatus.finishProgressItem(BdbTripleStore.class.getSimpleName());
     truePatchStore.commit();
+    importStatus.finishProgressItem(BdbTruePatchStore.class.getSimpleName());
     updatedPerPatchStore.commit();
+    importStatus.finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
   }
 
 }
