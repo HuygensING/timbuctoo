@@ -1,13 +1,18 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsBuilder;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -104,10 +109,14 @@ public class RsDocumentBuilderTest {
       is("http://example.com/v5/resourcesync/u1/ds1/description.xml"));
     assertThat(cl.getLink("describedby").get().getType().get(),
       is("application/rdf+xml"));
-    assertThat(cl.getItemList().size(), is(1));
+    assertThat(cl.getItemList().size(), is(2));
+
     assertThat(cl.getItemList().get(0).getLoc(), is("http://example.com/v5/resourcesync/u1/ds1/resourcelist.xml"));
     assertThat(cl.getItemList().get(0).getMetadata().get().getCapability().get(),
       is(Capability.RESOURCELIST.xmlValue));
+    assertThat(cl.getItemList().get(1).getLoc(), is("http://example.com/v5/resourcesync/u1/ds1/changelist.xml"));
+    assertThat(cl.getItemList().get(1).getMetadata().get().getCapability().get(),
+      is(Capability.CHANGELIST.xmlValue));
   }
 
   @Test
@@ -118,6 +127,25 @@ public class RsDocumentBuilderTest {
 
     given(updatedPerPatchStore.getVersions()).willReturn(Stream.of(1,2));
 
+    LogList logList = new LogList();
+    logList.setLastImportDate("2018-03-21T10:11:53.811Z");
+    ImportManager importManager = mock(ImportManager.class);
+    given(importManager.getLogList()).willReturn(logList);
+
+    EntryImportStatus entryImportStatus1 = new EntryImportStatus();
+    entryImportStatus1.setDate("2018-02-21T10:11:53.811Z");
+    LogEntry logEntry1 = mock(LogEntry.class);
+    given(logEntry1.getImportStatus()).willReturn(entryImportStatus1);
+
+    EntryImportStatus entryImportStatus2 = new EntryImportStatus();
+    entryImportStatus2.setDate("2018-01-21T10:11:53.811Z");
+    LogEntry logEntry2 = mock(LogEntry.class);
+    given(logEntry2.getImportStatus()).willReturn(entryImportStatus2);
+
+    logList.addEntry(logEntry1);
+    logList.addEntry(logEntry2);
+
+
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     given(dataSetMetaData.getBaseUri()).willReturn("http://example.com");
     given(dataSetMetaData.getOwnerId()).willReturn("u1");
@@ -125,12 +153,12 @@ public class RsDocumentBuilderTest {
 
     given(dataSet.getUpdatedPerPatchStore()).willReturn(updatedPerPatchStore);
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
+    given(dataSet.getImportManager()).willReturn(importManager);
 
     Urlset changeList = rsDocumentBuilder.getChangeList(null,"u1","ds1").get();
 
     String xml = rsBuilder.toXml(changeList, true);
     rsBuilder.setXmlString(xml).build();
-    System.out.println(xml);
     Urlset changeListSet = rsBuilder.getUrlset().get();
     assertThat(changeListSet.getCapability().get(), is(Capability.CHANGELIST));
     assertThat(changeList.getItemList().size(), is(2));
