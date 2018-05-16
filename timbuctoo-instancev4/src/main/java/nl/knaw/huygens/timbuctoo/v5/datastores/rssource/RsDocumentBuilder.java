@@ -106,6 +106,11 @@ public class RsDocumentBuilder {
       UrlItem item = new UrlItem(loc)
         .withMetadata(new RsMd(Capability.RESOURCELIST.xmlValue));
       capabilityList.addItem(item);
+
+      String loc2 = rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CHANGELIST);
+      UrlItem item2 = new UrlItem(loc2)
+        .withMetadata(new RsMd(Capability.CHANGELIST.xmlValue));
+      capabilityList.addItem(item2);
     }
     return Optional.ofNullable(capabilityList);
   }
@@ -165,9 +170,12 @@ public class RsDocumentBuilder {
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(user, ownerId, dataSetId);
     if (maybeDataSet.isPresent()) {
       DataSetMetaData dataSetMetaData = maybeDataSet.get().getMetadata();
+      LogList loglist = maybeDataSet.get().getImportManager().getLogList();
 
-      RsMd rsMd = new RsMd(Capability.CHANGELIST.xmlValue);
-      //.withAt(ZonedDateTime.parse(loglist.getLastImportDate())); // lastImportDate set on server startup?
+      RsMd rsMd = new RsMd(Capability.CHANGELIST.xmlValue)
+        .withFrom(ZonedDateTime.parse(loglist.getLastImportDate()));
+
+      List<LogEntry> logEntries = loglist.getEntries();
 
       changeList = new Urlset(rsMd)
         .addLink(new RsLn(REL_UP, rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CAPABILITYLIST)));
@@ -188,11 +196,13 @@ public class RsDocumentBuilder {
       List<String> changeFileNames = changesRetriever.retrieveChangeFileNames(versionsSupplier);
 
       for (String changeFileName : changeFileNames) {
+        LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName) - 1);
         UrlItem item = new UrlItem(dataSetMetaData.getBaseUri() + "/" +
           dataSetMetaData.getOwnerId() + "/" +
           dataSetMetaData.getDataSetId() + "/changes/" + changeFileName)
           .withMetadata(new RsMd()
-              .withChange("updated"));
+              .withChange("updated")
+              .withDateTime(ZonedDateTime.parse(logEntry.getImportStatus().getDate())));
         changeList.addItem(item);
       }
     }
