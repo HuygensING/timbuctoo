@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
@@ -96,6 +97,7 @@ public class EntryImportStatus {
     }
   }
 
+  @JsonIgnore
   public synchronized Map<String, ProgressItem> getProgressItems() {
     return progressItemMap;
   }
