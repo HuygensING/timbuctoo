@@ -81,7 +81,7 @@ type DataSetMetadata {
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
   #status of imports
-  dataSetImportStatus: [ImportStatus]!
+  dataSetImportStatus: [ImportStatus!]!
   importStatus(id: String!): ImportStatus!
 }
 
@@ -89,15 +89,15 @@ type ImportStatus {
   id: String!
   status: ImportStatusLabel!
   source: String!
-  errors: [String]!
-  progress: [ProgressStep]!
+  errors: [String!]!
+  progress: [ProgressStep!]!
 }
 
 type ProgressStep {
-  label: String
-  status: ImportStatusLabel
-  progress: String
-  speed: String
+  label: String!
+  status: ImportStatusLabel!
+  progress: String!
+  speed: String!
 }
 
 enum ImportStatusLabel {

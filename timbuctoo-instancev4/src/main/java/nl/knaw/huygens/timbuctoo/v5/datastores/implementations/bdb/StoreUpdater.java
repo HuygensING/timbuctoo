@@ -59,7 +59,6 @@ public class StoreUpdater implements RdfProcessor {
     // start updating the derivative stores
     logString = "Processed {} subjects ({} subjects/s)";
     for (OptimizedPatchListener listener : listeners) {
-      // TODO add listener as progress to the entryimportstatus
       listener.start();
       importStatus.startProgressItem(listener.getClass().getSimpleName());
     }
@@ -84,7 +83,6 @@ public class StoreUpdater implements RdfProcessor {
       }
     }
     for (OptimizedPatchListener listener : listeners) {
-      // TODO set the progress for the listener to DONE
       listener.finish();
       importStatus.finishProgressItem(listener.getClass().getSimpleName());
     }
@@ -174,10 +172,6 @@ public class StoreUpdater implements RdfProcessor {
     startTransactions();
     logString = "Processed {} triples ({} triples/s)";
     count = 0; // reset the count to make sure the right amount of imported triples are logged.
-
-    listeners.forEach(listener -> importStatus.addProgressItem(
-      listener.getClass().getSimpleName(), ImportStatusLabel.PENDING)
-    );
   }
 
   private void startTransactions() {
@@ -191,6 +185,10 @@ public class StoreUpdater implements RdfProcessor {
     importStatus.addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     updatedPerPatchStore.start();
     importStatus.addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+
+    listeners.forEach(listener -> importStatus.addProgressItem(
+      listener.getClass().getSimpleName(), ImportStatusLabel.PENDING)
+    );
   }
 
   private boolean notifyUpdate() {
@@ -247,7 +245,6 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void commitChanges() throws JsonProcessingException, DatabaseWriteException {
-    // TODO set progress for finish of primary stores
     versionStore.commit();
     importStatus.finishProgressItem(VersionStore.class.getSimpleName());
     typeNameStore.commit();
