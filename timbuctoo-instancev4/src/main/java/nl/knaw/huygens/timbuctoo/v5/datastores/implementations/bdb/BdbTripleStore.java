@@ -48,7 +48,7 @@ public class BdbTripleStore implements QuadStore {
           .direction(cursor.startsWith("A\n") ? FORWARDS : BACKWARDS);
       }
     }
-    return getter.getKeysAndValues(this::formatResult);
+    return getter.getKeysAndValues(bdbWrapper.keyValueConverter(this::formatResult));
   }
 
   @Override
@@ -57,7 +57,7 @@ public class BdbTripleStore implements QuadStore {
       .partialKey(subject + "\n", (prefix, key) -> key.startsWith(prefix))
       .dontSkip()
       .forwards()
-      .getKeysAndValues(this::formatResult);
+      .getKeysAndValues(bdbWrapper.keyValueConverter(this::formatResult));
   }
 
   @Override

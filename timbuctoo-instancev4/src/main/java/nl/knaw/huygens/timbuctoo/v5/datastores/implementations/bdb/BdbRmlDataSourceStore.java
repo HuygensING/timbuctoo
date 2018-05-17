@@ -42,7 +42,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
       .key(collectionUri)
       .dontSkip()
       .forwards()
-      .getValues();
+      .getValues(bdbWrapper.valueRetriever());
   }
 
   @Override
