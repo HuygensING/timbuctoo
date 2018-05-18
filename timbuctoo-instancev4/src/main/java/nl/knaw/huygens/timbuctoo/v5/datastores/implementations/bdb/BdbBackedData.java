@@ -27,7 +27,7 @@ public class BdbBackedData implements DataStorage {
 
     this.bdbWrapper = bdbWrapper;
 
-    try (Stream<String> stream = this.bdbWrapper.databaseGetter().getAll().getValues()) {
+    try (Stream<String> stream = this.bdbWrapper.databaseGetter().getAll().getValues(bdbWrapper.valueRetriever())) {
       final Optional<String> storedSchema = stream.filter(value -> !Objects.equals(value, "isClean")).findAny();
       if (storedSchema.isPresent()) {
         value = storedSchema.get();

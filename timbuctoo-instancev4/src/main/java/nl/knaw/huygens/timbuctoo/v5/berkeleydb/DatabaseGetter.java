@@ -7,6 +7,10 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper.KeyRetriever;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper.KeyValueConverter;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper.ValueRetriever;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 
@@ -45,18 +49,19 @@ public class DatabaseGetter<KeyT, ValueT> {
     this.value = value;
   }
 
-
-  public Stream<KeyT> getKeys() {
-    return getItems(() -> keyBinder.entryToObject(key));
+  public Stream<KeyT> getKeys(KeyRetriever<KeyT> keyRetriever) {
+    return getItems(() -> Tuple.tuple(keyBinder.entryToObject(key), valueBinder.entryToObject(value)))
+      .filter(keyRetriever::filter).map(keyRetriever::get);
   }
 
-  public Stream<ValueT> getValues() {
-    return getItems(() -> valueBinder.entryToObject(value));
-
+  public Stream<ValueT> getValues(ValueRetriever<ValueT> valueRetriever) {
+    return getItems(() -> Tuple.tuple(keyBinder.entryToObject(key), valueBinder.entryToObject(value)))
+      .filter(valueRetriever::filter).map(valueRetriever::get);
   }
 
-  public <U> Stream<U> getKeysAndValues(BiFunction<KeyT, ValueT, U> valueMaker) {
-    return getItems(() -> valueMaker.apply(keyBinder.entryToObject(key), valueBinder.entryToObject(value)));
+  public <U> Stream<U> getKeysAndValues(KeyValueConverter<KeyT, ValueT, U> keyValueConverter) {
+    return getItems(() -> Tuple.tuple(keyBinder.entryToObject(key), valueBinder.entryToObject(value)))
+      .filter(keyValueConverter::filter).map(keyValueConverter::convert);
   }
 
   private <U> Stream<U> getItems(Supplier<U> valueMaker) {
@@ -82,8 +87,10 @@ public class DatabaseGetter<KeyT, ValueT> {
   public static <KeyT, ValueT> Builder<KeyT, ValueT> databaseGetter(EntryBinding<KeyT> keyBinder,
                                                                     EntryBinding<ValueT> valueBinder,
                                                                     Database database,
-                                                                    Map<Cursor, String> cursors) {
-    return new DatabaseGetterBuilderImpl<>(keyBinder, valueBinder, database, cursors);
+                                                                    Map<Cursor, String> cursors,
+                                                                    KeyT keyToIgnore,
+                                                                    ValueT valueToIgnore) {
+    return new DatabaseGetterBuilderImpl<>(keyBinder, valueBinder, database, cursors, keyToIgnore, valueToIgnore);
   }
 
   private interface DatabaseFunctionMaker<KeyT, ValueT> {
@@ -170,6 +177,8 @@ public class DatabaseGetter<KeyT, ValueT> {
     private final EntryBinding<ValueT> valueBinder;
     private final Database database;
     private final Map<Cursor, String> cursors;
+    private final KeyT keyToIgnore;
+    private final ValueT valueToIgnore;
 
     private KeyT key = null;
     private BiFunction<KeyT, KeyT, Boolean> keyCheck = null;
@@ -183,11 +192,13 @@ public class DatabaseGetter<KeyT, ValueT> {
     private int skipCount = 0;
 
     public DatabaseGetterBuilderImpl(EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder, Database database,
-                                     Map<Cursor, String> cursors) {
+                                     Map<Cursor, String> cursors, KeyT keyToIgnore, ValueT valueToIgnore) {
       this.keyBinder = keyBinder;
       this.valueBinder = valueBinder;
       this.database = database;
       this.cursors = cursors;
+      this.keyToIgnore = keyToIgnore;
+      this.valueToIgnore = valueToIgnore;
     }
 
     @Override

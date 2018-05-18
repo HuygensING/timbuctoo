@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.After;
@@ -15,7 +16,9 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 public class BdbWrapperTest {
 
@@ -62,7 +65,7 @@ public class BdbWrapperTest {
       db.put("key", "value");
       db.put("key", "other");
 
-      Stream<String> stream = db.databaseGetter().key("key").dontSkip().forwards().getValues();
+      Stream<String> stream = db.databaseGetter().key("key").dontSkip().forwards().getValues(db.valueRetriever());
       List<String> values = stream.collect(toList());
       stream.close();
       assertThat(values, contains("other"));
@@ -91,7 +94,7 @@ public class BdbWrapperTest {
       db.put("key", "value");
       db.put("key", "other");
 
-      Stream<String> stream = db.databaseGetter().key("key").dontSkip().forwards().getValues();
+      Stream<String> stream = db.databaseGetter().key("key").dontSkip().forwards().getValues(db.valueRetriever());
       List<String> values = stream.collect(toList());
       stream.close();
       assertThat(values, containsInAnyOrder("other", "value"));
@@ -130,7 +133,7 @@ public class BdbWrapperTest {
   public void getAllItems() throws Exception {
     final Stream<String> stream = database.databaseGetter()
       .getAll()
-      .getValues();
+      .getValues(database.valueRetriever());
     final long count = stream
       .count();
     stream.close();
@@ -143,7 +146,7 @@ public class BdbWrapperTest {
       .key("ab")
       .dontSkip()
       .forwards()
-      .getValues();
+      .getValues(database.valueRetriever());
     final long count = stream
       .count();
     stream.close();
@@ -156,7 +159,7 @@ public class BdbWrapperTest {
       .partialKey("a", (prefix, key) -> key.startsWith(prefix))
       .dontSkip()
       .forwards()
-      .getValues();
+      .getValues(database.valueRetriever());
     final long count = stream
       .count();
     stream.close();
@@ -169,7 +172,7 @@ public class BdbWrapperTest {
       .key("ab")
       .skipToEnd()
       .backwards()
-      .getValues();
+      .getValues(database.valueRetriever());
     final long count = stream
       .count();
     stream.close();
@@ -182,7 +185,7 @@ public class BdbWrapperTest {
       .key("ab")
       .skipToValue("bc")
       .forwards()
-      .getValues();
+      .getValues(database.valueRetriever());
     final long count = stream
       .count();
     stream.close();
@@ -198,7 +201,7 @@ public class BdbWrapperTest {
         return value.startsWith(prefix);
       })
       .forwards()
-      .getValues();
+      .getValues(database.valueRetriever());
     final long count = stream
       .count();
     stream.close();
@@ -254,9 +257,51 @@ public class BdbWrapperTest {
     database.commit();
 
 
-    try (Stream<String> keys = database.databaseGetter().getAll().getKeys()) {
-      assertThat(keys.count(), is(1L)); // it only has the isClean property
+    try (Stream<String> keys = database.databaseGetter().getAll().getKeys(database.keyRetriever())) {
+      assertThat(keys.count(), is(0L));
     }
   }
 
+  @Test
+  public void doesNotReturnIsCleanKeyWhenAllDataIsRetrieved() throws Exception {
+    database.beginTransaction();
+    database.put("ab", "cd");
+    database.commit();
+
+    try (Stream<String> keys = database.databaseGetter().getAll().getKeys(database.keyRetriever())) {
+      List<String> collect = keys.collect(toList());
+
+      assertThat(collect, not(hasItem(IS_CLEAN_HANDLER.getKey())));
+    }
+
+  }
+
+  @Test
+  public void doesNotReturnIsCleanValueWhenAllDataIsRetrieved() throws Exception {
+    database.beginTransaction();
+    database.put("ab", "cd");
+    database.commit();
+
+    try (Stream<String> keys = database.databaseGetter().getAll().getValues(database.valueRetriever())) {
+      List<String> collect = keys.collect(toList());
+
+      assertThat(collect, not(hasItem(IS_CLEAN_HANDLER.getValue())));
+    }
+  }
+
+  @Test
+  public void doesNotReturnIsCleanWhenAllDataIsRetrieved() throws Exception {
+    database.beginTransaction();
+    database.put("ab", "cd");
+    database.commit();
+
+    try (Stream<Tuple<String,String>> keys = database.databaseGetter().getAll().getKeysAndValues(
+      database.keyValueConverter(Tuple::tuple)
+    )) {
+      List<Tuple<String,String>> collect = keys.collect(toList());
+
+      assertThat(collect, not(hasItem(Tuple.tuple(IS_CLEAN_HANDLER.getKey(),IS_CLEAN_HANDLER.getValue()))));
+    }
+
+  }
 }

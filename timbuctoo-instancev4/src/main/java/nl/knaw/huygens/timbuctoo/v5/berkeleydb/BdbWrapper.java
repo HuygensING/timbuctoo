@@ -11,6 +11,7 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -56,7 +58,7 @@ public class BdbWrapper<KeyT, ValueT> {
       transaction = dbEnvironment.beginTransaction(null, null);
     }
 
-    try (Stream<KeyT> keys = databaseGetter().getAll().getKeys()) {
+    try (Stream<KeyT> keys = databaseGetter().getAll().getKeys(new NonFilteringKeyRetriever<>())) {
       if (keys.findAny().isPresent()) {
         try {
           boolean success = delete(isCleanHandler.getKey(), isCleanHandler.getValue());
@@ -83,17 +85,24 @@ public class BdbWrapper<KeyT, ValueT> {
   }
 
   public DatabaseGetter.Builder<KeyT, ValueT> databaseGetter() {
-    return DatabaseGetter.databaseGetter(keyBinder, valueBinder, database, cursors);
+    return DatabaseGetter.databaseGetter(
+      keyBinder,
+      valueBinder,
+      database,
+      cursors,
+      isCleanHandler.getKey(),
+      isCleanHandler.getValue());
   }
 
   public boolean isClean() {
-    try (Stream<KeyT> keys = databaseGetter().getAll().getKeys()) {
+    try (Stream<KeyT> keys = databaseGetter().getAll().getKeys(new NonFilteringKeyRetriever<>())) {
       if (!keys.findAny().isPresent()) { // database is empty so it is clean
         return true;
       }
     }
 
-    try (Stream<ValueT> values = databaseGetter().key(isCleanHandler.getKey()).dontSkip().forwards().getValues()) {
+    try (Stream<ValueT> values = databaseGetter().key(isCleanHandler.getKey()).dontSkip().forwards().getValues(
+      new NonFilteringValueRetriever<>())) {
       Optional<ValueT> first = values.findFirst();
       if (first.isPresent()) {
         ValueT value = first.get();
@@ -156,7 +165,7 @@ public class BdbWrapper<KeyT, ValueT> {
             } else {
               valueBinder.objectToEntry(value, valueEntry);
               database.put(transaction, keyEntry, valueEntry); // returns OperationStatus.SUCCESS or throws an exception
-              return  true;
+              return true;
             }
           }
         }
@@ -213,6 +222,108 @@ public class BdbWrapper<KeyT, ValueT> {
           cursor.delete();
         }
       }
+    }
+  }
+
+  public <U> KeyValueConverter<KeyT, ValueT, U> keyValueConverter(BiFunction<KeyT, ValueT, U> converter) {
+    return new CleanFilteringKeyValueConverter<>(converter);
+  }
+
+  public KeyRetriever<KeyT> keyRetriever() {
+    return new CleanFilteringKeyRetriever<>();
+  }
+
+  public ValueRetriever<ValueT> valueRetriever() {
+    return new CleanFilteringValueRetriever<>();
+  }
+
+  public interface KeyValueConverter<KeyT, ValueT, U> {
+    boolean filter(Tuple<KeyT, ValueT> keyValue);
+
+    U convert(Tuple<KeyT, ValueT> keyValue);
+  }
+
+  public interface KeyRetriever<KeyT> {
+
+    boolean filter(Tuple<KeyT, ?> keyValue);
+
+
+    KeyT get(Tuple<KeyT, ?> keyValue);
+  }
+
+  public interface ValueRetriever<ValueT> {
+    boolean filter(Tuple<?, ValueT> keyValue);
+
+
+    ValueT get(Tuple<?, ValueT> keyValue);
+  }
+
+  private class NonFilteringKeyRetriever<FKeyT> implements KeyRetriever<FKeyT> {
+    @Override
+    public boolean filter(Tuple<FKeyT, ?> keyValue) {
+      return true;
+    }
+
+    @Override
+    public FKeyT get(Tuple<FKeyT, ?> keyValue) {
+      return keyValue.getLeft();
+    }
+  }
+
+  private class CleanFilteringKeyRetriever<FKeyT> implements KeyRetriever<FKeyT> {
+    @Override
+    public boolean filter(Tuple<FKeyT, ?> keyValue) {
+      return !(isCleanHandler.getKey().equals(keyValue.getLeft()) &&
+        isCleanHandler.getValue().equals(keyValue.getRight()));
+    }
+
+    @Override
+    public FKeyT get(Tuple<FKeyT, ?> keyValue) {
+      return keyValue.getLeft();
+    }
+  }
+
+  private class CleanFilteringKeyValueConverter<FKeyT, FValueT, U> implements KeyValueConverter<FKeyT, FValueT, U> {
+    private final BiFunction<FKeyT, FValueT, U> converter;
+
+    public CleanFilteringKeyValueConverter(BiFunction<FKeyT, FValueT, U> converter) {
+      this.converter = converter;
+    }
+
+    @Override
+    public boolean filter(Tuple<FKeyT, FValueT> keyValue) {
+      return !(isCleanHandler.getKey().equals(keyValue.getLeft()) &&
+        isCleanHandler.getValue().equals(keyValue.getRight()));
+    }
+
+    @Override
+    public U convert(Tuple<FKeyT, FValueT> keyValue) {
+      return converter.apply(keyValue.getLeft(), keyValue.getRight());
+    }
+  }
+
+  private class CleanFilteringValueRetriever<FValueT> implements ValueRetriever<FValueT> {
+    @Override
+    public boolean filter(Tuple<?, FValueT> keyValue) {
+      return !(isCleanHandler.getKey().equals(keyValue.getLeft()) &&
+        isCleanHandler.getValue().equals(keyValue.getRight()));
+    }
+
+    @Override
+    public FValueT get(Tuple<?, FValueT> keyValue) {
+      return keyValue.getRight();
+    }
+  }
+
+  private class NonFilteringValueRetriever<FValueT> implements ValueRetriever<FValueT> {
+    @Override
+    public boolean filter(Tuple<?, FValueT> keyValue) {
+      return true;
+    }
+
+    @Override
+    public FValueT get(Tuple<?, FValueT> keyValue) {
+      return keyValue.getRight();
     }
   }
 }

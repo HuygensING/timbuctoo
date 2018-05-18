@@ -22,7 +22,7 @@ public class VersionStore {
   public int getVersion() {
     try (Stream<Integer> values = bdbWrapper.databaseGetter()
       .getAll()
-      .getValues()) {
+      .getValues(bdbWrapper.valueRetriever())) {
       return values.findAny().orElse(-1);
     }
   }

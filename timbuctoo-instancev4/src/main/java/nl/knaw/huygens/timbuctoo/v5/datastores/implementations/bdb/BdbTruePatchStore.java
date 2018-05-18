@@ -52,7 +52,8 @@ public class BdbTruePatchStore {
       .key(subject + "\n" + version + "\n" + (assertions ? "1" : "0"))
       .dontSkip()
       .forwards()
-      .getValues().map(v -> makeCursorQuad(subject, assertions, v));
+      .getValues(bdbWrapper.valueRetriever())
+      .map(v -> makeCursorQuad(subject, assertions, v));
   }
 
   public Stream<CursorQuad> getChanges(String subject, String predicate, Direction direction, int version,
@@ -62,7 +63,8 @@ public class BdbTruePatchStore {
                      .skipNearValue(predicate + "\n" + (direction == OUT ? "1" : "0") + "\n")
                      .onlyValuesMatching((prefix, value) -> value.startsWith(prefix))
                      .forwards()
-                     .getValues().map(v -> makeCursorQuad(subject, assertions, v));
+                     .getValues(bdbWrapper.valueRetriever())
+                     .map(v -> makeCursorQuad(subject, assertions, v));
   }
 
   public CursorQuad makeCursorQuad(String subject, boolean assertions, String value) {
