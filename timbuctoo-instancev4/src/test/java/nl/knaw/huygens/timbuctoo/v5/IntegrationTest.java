@@ -460,6 +460,19 @@ public class IntegrationTest {
         dataSetName + "/changes/changes1.nqud')]")
     );
 
+    Response getChangesCall = call("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/changes/changes1.nqud")
+      .get();
+
+    assertThat(getChangesCall.getStatus(), is(200));
+
+    String changes = getChangesCall.readEntity(String.class);
+
+    String graph = "http://example.org/datasets/" + PREFIX + "/" + dataSetName + "/";
+
+    assertThat(changes, is("+<http://one.example/subject1> <http://one.example/predicate1>" +
+      " <http://one.example/object1> " + "<" + graph + ">" + " .\n" +
+      "+<http://one.example/subject2> <http://one.example/predicate2>" +
+      " <http://one.example/object2> " + "<" + graph + ">" + " .\n"));
   }
 
   @Test

@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchS
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -192,12 +193,14 @@ public class RsDocumentBuilderTest {
     given(cursorQuad1.getPredicate()).willReturn("p1");
     given(cursorQuad1.getChangeType()).willReturn(ChangeType.ASSERTED);
     given(cursorQuad1.getObject()).willReturn("o1");
+    given(cursorQuad1.getDirection()).willReturn(Direction.OUT);
 
     CursorQuad cursorQuad2 = mock(CursorQuad.class);
     given(cursorQuad2.getSubject()).willReturn("s2");
     given(cursorQuad2.getPredicate()).willReturn("p2");
     given(cursorQuad2.getChangeType()).willReturn(ChangeType.RETRACTED);
     given(cursorQuad2.getObject()).willReturn("o2");
+    given(cursorQuad2.getDirection()).willReturn(Direction.OUT);
 
     given(truePatchStore.getChanges("s1",1,true)).willReturn(Stream.of(cursorQuad1));
     given(truePatchStore.getChanges("s2",1,true)).willReturn(Stream.of(cursorQuad2));
