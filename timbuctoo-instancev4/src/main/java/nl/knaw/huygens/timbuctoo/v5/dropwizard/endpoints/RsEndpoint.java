@@ -93,6 +93,7 @@ public class RsEndpoint {
 
   @GET
   @Path("{ownerId}/{dataSetName}/changes/{fileId}")
+  @Produces(MediaType.TEXT_PLAIN)
   public Response getChanges(@HeaderParam("authorization") String authHeader,
                              @PathParam("ownerId") String owner,
                              @PathParam("dataSetName") String dataSetName,
@@ -101,7 +102,14 @@ public class RsEndpoint {
     Optional<Stream<String>> changesStream = rsDocumentBuilder.getChanges(user, owner, dataSetName, fileId);
 
     if (changesStream.isPresent()) {
-      return Response.ok(changesStream.get()).build();
+      StringBuilder stringBuilder = new StringBuilder();
+
+      try (Stream<String> changes = changesStream.get()) {
+        changes.forEach(s -> {
+          stringBuilder.append(s);
+        });
+      }
+      return Response.ok(stringBuilder.toString()).build();
     }
 
     return Response.status(Response.Status.NOT_FOUND).build();

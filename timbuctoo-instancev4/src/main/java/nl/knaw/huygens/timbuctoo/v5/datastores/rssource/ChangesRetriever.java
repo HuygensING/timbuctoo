@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchS
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,17 +39,20 @@ public class ChangesRetriever {
     List<String> changes = new ArrayList<>();
 
     subjects.get().forEach(subject -> {
-      Stream<CursorQuad> quads = bdbTruePatchStore.getChanges(subject, version, true);
-
-      quads.forEach(quad -> {
-        if (quad.getChangeType() == ChangeType.ASSERTED) {
-          changes.add("+" + "<" + quad.getSubject() + "> <" + quad.getPredicate() +
-            "> <" + quad.getObject() + "> <" + graph + "> .\n");
-        } else if (quad.getChangeType() == ChangeType.RETRACTED) {
-          changes.add("-" + "<" + quad.getSubject() + "> <" + quad.getPredicate() +
-            "> <" + quad.getObject() + "> <" + graph + "> .\n");
-        }
-      });
+      try (Stream<CursorQuad> quads = bdbTruePatchStore.getChanges(subject, version, true)) {
+        // Filtering on direction is needed as the TruePatchStore contains the inverse relations as well.
+        // The original relations are always in the "OUT" direction.
+        // See StoreUpdater.addRelation
+        quads.filter(quad -> quad.getDirection().equals(Direction.OUT)).forEach(quad -> {
+          if (quad.getChangeType() == ChangeType.ASSERTED) {
+            changes.add("+" + "<" + quad.getSubject() + "> <" + quad.getPredicate() +
+              "> <" + quad.getObject() + "> <" + graph + "> .\n");
+          } else if (quad.getChangeType() == ChangeType.RETRACTED) {
+            changes.add("-" + "<" + quad.getSubject() + "> <" + quad.getPredicate() +
+              "> <" + quad.getObject() + "> <" + graph + "> .\n");
+          }
+        });
+      }
     });
 
     return changes;

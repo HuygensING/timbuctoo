@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchS
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.junit.Test;
 
 import java.util.List;
@@ -42,6 +43,7 @@ public class ChangesRetrieverTest {
     given(cursorQuad.getPredicate()).willReturn("p1");
     given(cursorQuad.getChangeType()).willReturn(ChangeType.ASSERTED);
     given(cursorQuad.getObject()).willReturn("o1");
+    given(cursorQuad.getDirection()).willReturn(Direction.OUT);
 
     given(bdbTruePatchStore.getChanges("s1",1,true)).willReturn(Stream.of(cursorQuad));
 

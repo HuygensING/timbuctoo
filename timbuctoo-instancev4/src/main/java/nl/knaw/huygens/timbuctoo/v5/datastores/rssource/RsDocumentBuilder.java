@@ -227,8 +227,8 @@ public class RsDocumentBuilder {
       Integer version = getVersionFromFileId(fileId);
 
       Supplier<List<String>> subjectsSupplier = () -> {
-        try (Stream<String> versions = updatedPerPatchStore.ofVersion(version)) {
-          return versions.collect(Collectors.toList());
+        try (Stream<String> subjects = updatedPerPatchStore.ofVersion(version)) {
+          return subjects.collect(Collectors.toList());
         }
       };
 
