@@ -193,7 +193,8 @@ public class DerivedSchemaContainer {
         .append("\n")
 
         .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME).append(" @rdfType(uri: \"")
-        .append(typeUri.replace("\"", "")) //quotes are not allowed in uri's anyway so this shouldn't happen
+        //quotes and backslashes are not allowed in uri's anyway so this shouldn't happen
+        .append(typeUri.replace("\"", "").replace("\\", ""))
         .append("\") {\n")
         .append("  uri: String! @uri\n")
         .append("  title: Value @entityTitle\n")
@@ -221,12 +222,12 @@ public class DerivedSchemaContainer {
       String typename = getObjectTypeName(uri);
       String name = typename.substring(rootType.length() + 1);
       total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
-        "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");
+        "@fromCollection(uri: \"")
+           .append(graphQlUri(uri)).append("\", listAll: false)\n");
       total.append("  ")
         .append(collectionType(name, typename))
-        .append(" " +
-          "@fromCollection(uri: \"")
-        .append(uri.replace("\"", "\\\""))
+        .append(" " + "@fromCollection(uri: \"")
+        .append(graphQlUri(uri))
         .append("\", listAll: true)\n");
     }
 
@@ -236,6 +237,12 @@ public class DerivedSchemaContainer {
     }
 
     return total.toString();
+  }
+
+  private String graphQlUri(String uri) {
+    // quotes and backslashes are not allowed in uri's anyway so this shouldn't happen
+    // http://facebook.github.io/graphql/October2016/#sec-String-Value
+    return uri.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 
 }
