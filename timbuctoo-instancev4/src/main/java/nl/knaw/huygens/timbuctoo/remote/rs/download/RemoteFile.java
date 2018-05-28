@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.download;
 
+import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;
 import org.immutables.value.Value;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.function.Supplier;
 
 @Value.Immutable
 public interface RemoteFile {
@@ -26,7 +26,7 @@ public interface RemoteFile {
   }
 
   interface RemoteData {
-    InputStream get() throws IOException;
+    InputStream get() throws IOException, CantRetrieveFileException;
   }
 }
 
