@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.remote.rs.download;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader.RemoteFilesList;
+import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;
 import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
@@ -33,7 +34,7 @@ public class ResourceSyncImport {
   }
 
   public ResourceSyncReport filterAndImport(String capabilityListUri, String userSpecifiedDataSet)
-    throws CantDetermineDataSetException {
+    throws CantDetermineDataSetException, IOException, CantRetrieveFileException {
     List<RemoteFile> filesToImport;
 
     if (userSpecifiedDataSet == null) {
@@ -95,7 +96,8 @@ public class ResourceSyncImport {
     }
   }
 
-  private List<RemoteFile> filter(String capabilityListUri) throws CantDetermineDataSetException {
+  private List<RemoteFile> filter(String capabilityListUri) throws CantDetermineDataSetException, IOException,
+    CantRetrieveFileException {
     try {
       RemoteFilesList remoteFilesList =
         resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
@@ -122,15 +124,15 @@ public class ResourceSyncImport {
       return resources;
 
     } catch (IOException e) {
-      return Collections.emptyList();
+      throw e;
     }
 
   }
 
-  private List<RemoteFile> filter(String capabilityListUri, String userSpecifiedDataSet) {
+  private List<RemoteFile> filter(String capabilityListUri, String userSpecifiedDataSet)
+    throws CantRetrieveFileException {
     try {
-      RemoteFilesList remoteFilesList =
-        resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
+      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
 
       List<RemoteFile> resources = new ArrayList<>();
 
