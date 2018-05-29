@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -105,7 +106,8 @@ public class ResourceSyncFileLoader {
         for (UrlItem changeListItem : rsFile.getItemList()) {
           if (changeListItem.getMetadata().getMimeType().equals(MIME_TYPE_FOR_EXTENSION.get(changeListExtension)) ||
             changeListItem.getLoc().matches(changeListExtension)) {
-            changes.add(getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata())));
+            RemoteFile remoteFile = getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata()));
+            changes.add(remoteFile);
           }
         }
       } else if (capabilityListItem.getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())) {
@@ -209,10 +211,12 @@ public class ResourceSyncFileLoader {
     }
 
     public InputStream getFile(String url) throws CantRetrieveFileException, IOException {
-      //InputStream content = httpClient.execute(new HttpGet(url)).getEntity().getContent();
-      HttpResponse httpResponse = httpClient.execute(new HttpGet(url));
+      HttpGet httpGet = new HttpGet(url);
+      /*Timeout time is set to 100seconds to prevent socket timeout during changelist import*/
+      httpGet.setConfig(RequestConfig.custom().setSocketTimeout(100000).build());
+      HttpResponse httpResponse = httpClient.execute(httpGet);
       if (httpResponse.getStatusLine().getStatusCode() == 200) {
-        InputStream content = httpClient.execute(new HttpGet(url)).getEntity().getContent();
+        InputStream content = httpResponse.getEntity().getContent();
         if (content != null) {
           return maybeDecompress(content);
         } else {

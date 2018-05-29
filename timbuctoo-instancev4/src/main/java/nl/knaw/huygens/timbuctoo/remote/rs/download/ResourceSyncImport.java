@@ -99,14 +99,17 @@ public class ResourceSyncImport {
   private List<RemoteFile> filter(String capabilityListUri) throws CantDetermineDataSetException, IOException,
     CantRetrieveFileException {
     try {
-      RemoteFilesList remoteFilesList =
-        resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
-
-      if (!remoteFilesList.getChangeList().isEmpty()) {
-        return remoteFilesList.getChangeList();
-      }
+      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
 
       List<RemoteFile> resources = new ArrayList<>();
+
+
+      if (!remoteFilesList.getChangeList().isEmpty()) {
+
+        resources.addAll(remoteFilesList.getChangeList());
+
+        return resources;
+      }
 
       for (RemoteFile remoteFile : remoteFilesList.getResourceList()) {
         if (remoteFile.getMetadata().isDataset()) {

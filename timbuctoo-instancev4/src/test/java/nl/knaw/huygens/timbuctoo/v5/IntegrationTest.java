@@ -451,12 +451,12 @@ public class IntegrationTest {
 
     assertThat(
       changeList,
-      hasXPath("//urlset/url/loc/text()[contains(. , 'datasets/" + PREFIX + "/" +
+      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" +
         dataSetName + "/changes/changes0.nqud')]")
     );
     assertThat(
       changeList,
-      hasXPath("//urlset/url/loc/text()[contains(. , 'datasets/" + PREFIX + "/" +
+      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" +
         dataSetName + "/changes/changes1.nqud')]")
     );
 
