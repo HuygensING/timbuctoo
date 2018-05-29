@@ -197,10 +197,10 @@ public class RsDocumentBuilder {
 
       for (String changeFileName : changeFileNames) {
         LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName));
-        UrlItem item = new UrlItem(dataSetMetaData.getBaseUri() +
-          "changes/" + changeFileName)
+        UrlItem item = new UrlItem(rsUriHelper.uriForChanges(dataSetMetaData, changeFileName))
           .withMetadata(new RsMd()
             .withChange("updated")
+            .withType("application/vnd.timbuctoo-rdf.nquads_unified_diff")
             .withDateTime(ZonedDateTime.parse(logEntry.getImportStatus().getDate())));
         changeList.addItem(item);
       }

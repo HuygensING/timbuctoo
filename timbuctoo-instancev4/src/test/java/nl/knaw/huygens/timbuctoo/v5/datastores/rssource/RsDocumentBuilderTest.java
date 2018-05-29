@@ -173,9 +173,9 @@ public class RsDocumentBuilderTest {
     assertThat(changeListSet.getCapability().get(), is(Capability.CHANGELIST));
     assertThat(changeList.getItemList().size(), is(2));
     assertThat(changeList.getItemList().get(0).getLoc(),
-      is("http://example.com/u1/ds1/changes/changes0.nqud"));
+      is("http://example.com/v5/resourcesync/u1/ds1/changes/changes0.nqud"));
     assertThat(changeList.getItemList().get(1).getLoc(),
-      is("http://example.com/u1/ds1/changes/changes1.nqud"));
+      is("http://example.com/v5/resourcesync/u1/ds1/changes/changes1.nqud"));
   }
 
   @Test
