@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.TimeWithUnit;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -58,16 +59,18 @@ public class ImportStatus {
   }
 
   public synchronized void start(String methodName, String baseUri) {
-    reset();
     messages.clear();
     errors.clear();
     this.methodName = methodName;
     this.baseUri = baseUri;
     setStatus("Started " + this.methodName);
-    stopwatch.start();
+    if (!stopwatch.isRunning()) {
+      stopwatch.start();
+    }
   }
 
   public synchronized void startEntry(LogEntry logEntry) {
+    LoggerFactory.getLogger(ImportStatus.class).info("Start entry: " + logEntry);
     logEntry.getLogToken().ifPresent(token -> setStatus("Adding entry with token " + token));
     logEntry.getRdfCreator()
                    .ifPresent(creator -> setStatus("Creating entry with " + creator.getClass().getSimpleName()));
@@ -108,6 +111,7 @@ public class ImportStatus {
       date = Instant.now().toString();
       eis.setDate(date);
       eis.setElapsedTime(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT) - currentEntryStart));
+      LoggerFactory.getLogger(ImportStatus.class).info("Finish entry: " + currentLogEntry);
       currentLogEntry = null;
       entry.getLogToken().ifPresent(token -> setStatus("Finished adding entry with token " + token));
       entry.getRdfCreator()
@@ -122,6 +126,7 @@ public class ImportStatus {
     date = Instant.now().toString();
     logList.setLastImportDate(date);
     logList.setLastImportDuration(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT)));
+    reset();
   }
 
   public synchronized String getMethodName() {
@@ -181,6 +186,7 @@ public class ImportStatus {
   }
 
   private void reset() {
+    LoggerFactory.getLogger(ImportStatus.class).info("Reset: " + currentLogEntry);
     methodName = null;
     baseUri = null;
     currentLogEntry = null;
@@ -188,6 +194,7 @@ public class ImportStatus {
   }
 
   public void addProgressItem(String itemName, ImportStatusLabel statusLabel) {
+    LoggerFactory.getLogger(ImportStatus.class).info("Add Progress Item: " + currentLogEntry);
     currentLogEntry.getImportStatus().addProgressItem(itemName, statusLabel);
   }
 
