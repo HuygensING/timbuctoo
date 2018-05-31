@@ -16,12 +16,14 @@ public class ChangesRetriever {
   UpdatedPerPatchStore updatedPerPatchStore;
   BdbTruePatchStore bdbTruePatchStore;
   String graph; //pass in graph from the dataset for now as the QuadStore does not currently contain it.
+  ChangesQuadGenerator changesQuadGenerator;
 
   public ChangesRetriever(UpdatedPerPatchStore updatedPerPatchStore, BdbTruePatchStore bdbTruePatchStore,
                           String graph) {
     this.updatedPerPatchStore = updatedPerPatchStore;
     this.bdbTruePatchStore = bdbTruePatchStore;
     this.graph = graph;
+    this.changesQuadGenerator = new ChangesQuadGenerator(graph);
   }
 
   public List<String> retrieveChangeFileNames(Supplier<List<Integer>> versions) {
@@ -45,11 +47,9 @@ public class ChangesRetriever {
         // See StoreUpdater.addRelation
         quads.filter(quad -> quad.getDirection().equals(Direction.OUT)).forEach(quad -> {
           if (quad.getChangeType() == ChangeType.ASSERTED) {
-            changes.add("+" + "<" + quad.getSubject() + "> <" + quad.getPredicate() +
-              "> <" + quad.getObject() + "> <" + graph + "> .\n");
+            changes.add(changesQuadGenerator.onRelation(quad.getSubject(),quad.getPredicate(),quad.getObject(),graph));
           } else if (quad.getChangeType() == ChangeType.RETRACTED) {
-            changes.add("-" + "<" + quad.getSubject() + "> <" + quad.getPredicate() +
-              "> <" + quad.getObject() + "> <" + graph + "> .\n");
+            changes.add(changesQuadGenerator.delRelation(quad.getSubject(),quad.getPredicate(),quad.getObject(),graph));
           }
         });
       }
