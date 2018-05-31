@@ -70,7 +70,6 @@ public class ImportStatus {
   }
 
   public synchronized void startEntry(LogEntry logEntry) {
-    LoggerFactory.getLogger(ImportStatus.class).info("Start entry: " + logEntry);
     logEntry.getLogToken().ifPresent(token -> setStatus("Adding entry with token " + token));
     logEntry.getRdfCreator()
                    .ifPresent(creator -> setStatus("Creating entry with " + creator.getClass().getSimpleName()));
@@ -111,7 +110,6 @@ public class ImportStatus {
       date = Instant.now().toString();
       eis.setDate(date);
       eis.setElapsedTime(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT) - currentEntryStart));
-      LoggerFactory.getLogger(ImportStatus.class).info("Finish entry: " + currentLogEntry);
       currentLogEntry = null;
       entry.getLogToken().ifPresent(token -> setStatus("Finished adding entry with token " + token));
       entry.getRdfCreator()
@@ -186,7 +184,6 @@ public class ImportStatus {
   }
 
   private void reset() {
-    LoggerFactory.getLogger(ImportStatus.class).info("Reset: " + currentLogEntry);
     methodName = null;
     baseUri = null;
     currentLogEntry = null;
@@ -194,7 +191,6 @@ public class ImportStatus {
   }
 
   public void addProgressItem(String itemName, ImportStatusLabel statusLabel) {
-    LoggerFactory.getLogger(ImportStatus.class).info("Add Progress Item: " + currentLogEntry);
     currentLogEntry.getImportStatus().addProgressItem(itemName, statusLabel);
   }
 
