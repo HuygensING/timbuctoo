@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,7 @@ public class ResourceSyncImportMutation implements DataFetcher {
     String userSpecifiedDataSet = env.getArgument("userSpecifiedDataSet");
     DataSet dataSet;
 
-    ResourceSyncImport.ResourceSyncReport resourceSyncReport = null;
+    ResourceSyncImport.ResourceSyncReport resourceSyncReport;
 
     try {
       dataSet = dataSetRepository.createDataSet(user, dataSetName);
@@ -51,8 +50,7 @@ public class ResourceSyncImportMutation implements DataFetcher {
       throw new RuntimeException(e);
     }
 
-    //return resourceSyncReport;
+    return resourceSyncReport;
 
-    return new DataSetWithDatabase(dataSet);
   }
 }

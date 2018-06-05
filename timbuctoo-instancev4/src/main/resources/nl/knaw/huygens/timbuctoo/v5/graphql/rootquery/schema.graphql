@@ -85,6 +85,11 @@ type DataSetMetadata {
   importStatus(id: String!): ImportStatus!
 }
 
+type ResourceSyncFiles {
+    importedFiles: [String]!
+    ignoredFiles: [String]!
+}
+
 type ImportStatus {
   id: String!
   status: ImportStatusLabel!
@@ -383,7 +388,7 @@ type Mutation {
   # Set the title or archetype for this collection
   setCollectionMetadata(dataSetId: String!, collectionUri: String!, metadata: CollectionMetadataInput!): CollectionMetadata!
   #To trigger a resourcesync import
-  resourceSyncImport(dataSetName: String!, capabilityListUri: String!, userSpecifiedDataSet: String): DataSetMetadata!
+  resourceSyncImport(dataSetName: String!, capabilityListUri: String!, userSpecifiedDataSet: String): ResourceSyncFiles!
 }
 
 
