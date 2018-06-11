@@ -280,4 +280,9 @@ public abstract class DataSet {
   public abstract DataSetMetaData getMetadata();
 
   public abstract ChangesRetriever getChangesRetriever();
+
+  public LogInfo getLogInfo() throws IOException {
+    return new LogInfo(getDataSetStorage().getLogList().getData());
+  }
+
 }

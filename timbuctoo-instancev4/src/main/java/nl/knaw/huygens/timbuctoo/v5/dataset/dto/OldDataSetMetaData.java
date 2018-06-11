@@ -77,7 +77,7 @@ public class OldDataSetMetaData {
     BasicDataSetMetaData dataSetMetaData;
 
     dataSetMetaData = new BasicDataSetMetaData(this.ownerId, this.dataSetId, this.baseUri,
-      this.uriPrefix, this.promoted, false);
+      this.uriPrefix, this.promoted, false, "");
 
 
     return dataSetMetaData;

@@ -62,7 +62,7 @@ public class ResourceSyncImportTest {
     RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
     given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI)).willReturn(remoteFilesList);
 
-    ResourceSyncReport resourceSyncReport = instance.filterAndImport(CAPABILITY_LIST_URI, null);
+    ResourceSyncReport resourceSyncReport = instance.filterAndImport(CAPABILITY_LIST_URI, null, false);
 
     verify(importManager).addLog(any(), any(), endsWith("changes1.nqud"), any(), any(), any());
     verify(importManager).addLog(any(), any(), endsWith("changes2.nqud"), any(), any(), any());
@@ -80,7 +80,7 @@ public class ResourceSyncImportTest {
     RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
     given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI)).willReturn(remoteFilesList);
 
-    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, null);
+    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, null, false);
 
     verify(importManager).addLog(any(), any(), endsWith("dataset.nq"), any(), any(), any());
     assertThat(filteredFiles.importedFiles, contains(BASE_URL + "files/dataset.nq"));
@@ -97,7 +97,7 @@ public class ResourceSyncImportTest {
     RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
     given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI)).willReturn(remoteFilesList);
 
-    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, null);
+    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, null, false);
 
     verify(importManager).addLog(any(), any(), endsWith("dataset.rdf"), any(), any(), any());
     assertThat(filteredFiles.importedFiles, contains(BASE_URL + "files/dataset.rdf"));
@@ -113,7 +113,7 @@ public class ResourceSyncImportTest {
     given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI)).willReturn(remoteFilesList);
     String userSpecifiedDataSet = BASE_URL + "files/dataset.rdf";
 
-    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, userSpecifiedDataSet);
+    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, userSpecifiedDataSet, false);
 
     verify(importManager).addLog(any(), any(), endsWith("dataset.rdf"), any(), any(), any());
     assertThat(filteredFiles.importedFiles, contains(BASE_URL + "files/dataset.rdf"));
@@ -130,7 +130,7 @@ public class ResourceSyncImportTest {
     given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri)).willReturn(remoteFilesList);
 
 
-    instance.filterAndImport(capabilityListUri, null);
+    instance.filterAndImport(capabilityListUri, null, false);
 
   }
 }

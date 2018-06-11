@@ -142,6 +142,13 @@ public class DataSetRepository {
 
   public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException,
     IllegalDataSetNameException {
+    return createDataSet(user, dataSetId, null);
+  }
+
+
+
+  public DataSet createDataSet(User user, String dataSetId, String importSource) throws DataStoreCreationException,
+    IllegalDataSetNameException {
     //The ownerId might not be valid (i.e. a safe string). We make it safe here:
     //dataSetId is under the control of the user so we simply throw if it's not valid
     String ownerPrefix = "u" + user.getPersistentId();
@@ -177,7 +184,8 @@ public class DataSetRepository {
       baseUri,
       uriPrefix,
       false,
-      publicByDefault
+      publicByDefault,
+      importSource
     );
 
     try {

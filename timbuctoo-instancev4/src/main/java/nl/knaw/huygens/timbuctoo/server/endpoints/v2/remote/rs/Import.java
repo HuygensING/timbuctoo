@@ -52,8 +52,8 @@ public class Import {
             new ResourceSyncImport(resourceSyncFileLoader, dataSet, async);
 
           ResourceSyncImport.ResourceSyncReport resourceSyncReport = resourceSyncImport.filterAndImport(
-            importData.source.toString(), dataSetFile
-          );
+            importData.source.toString(), dataSetFile,
+            false);
 
           return Response.ok(resourceSyncReport).build();
         } catch (CantRetrieveFileException e) {

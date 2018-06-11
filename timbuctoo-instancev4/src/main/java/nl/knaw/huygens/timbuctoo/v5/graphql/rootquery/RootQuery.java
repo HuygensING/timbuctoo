@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncImportMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncUpdateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
@@ -266,6 +267,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("setCollectionMetadata", new CollectionMetadataMutation(dataSetRepository))
       .dataFetcher("resourceSyncImport",
         new ResourceSyncImportMutation(dataSetRepository, resourceSyncFileLoader))
+      .dataFetcher("resourceSyncUpdate",
+        new ResourceSyncUpdateMutation(dataSetRepository, resourceSyncFileLoader))
     );
 
     wiring.wiringFactory(wiringFactory);

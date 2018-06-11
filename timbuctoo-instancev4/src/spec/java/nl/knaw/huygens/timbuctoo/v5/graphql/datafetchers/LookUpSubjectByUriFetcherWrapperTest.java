@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogInfo;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
@@ -152,7 +153,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
                   "ownerid",
                   "datasetid",
                   "http://example.org",
-                  "http://example.org/prefix/", false,false
+                  "http://example.org/prefix/", false,false,""
                 );
               } catch (IllegalDataSetNameException e) {
                 throw new RuntimeException(e);

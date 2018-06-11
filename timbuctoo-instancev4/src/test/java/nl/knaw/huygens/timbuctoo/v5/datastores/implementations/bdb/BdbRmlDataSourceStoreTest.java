@@ -54,7 +54,7 @@ public class BdbRmlDataSourceStoreTest {
       "userid",
       "datasetid",
       "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",
-      "http://example.org/prefix/", false, false
+      "http://example.org/prefix/", false, false, ""
     );
 
     final RmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(

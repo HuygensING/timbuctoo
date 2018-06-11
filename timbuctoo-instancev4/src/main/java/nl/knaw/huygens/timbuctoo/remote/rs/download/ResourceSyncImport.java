@@ -13,8 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -33,12 +35,12 @@ public class ResourceSyncImport {
     this.async = async;
   }
 
-  public ResourceSyncReport filterAndImport(String capabilityListUri, String userSpecifiedDataSet)
+  public ResourceSyncReport filterAndImport(String capabilityListUri, String userSpecifiedDataSet, boolean update)
     throws CantDetermineDataSetException, IOException, CantRetrieveFileException {
     List<RemoteFile> filesToImport;
 
     if (userSpecifiedDataSet == null) {
-      filesToImport = filter(capabilityListUri);
+      filesToImport = filter(capabilityListUri, update);
     } else {
       filesToImport = filter(capabilityListUri, userSpecifiedDataSet);
     }
@@ -96,7 +98,8 @@ public class ResourceSyncImport {
     }
   }
 
-  private List<RemoteFile> filter(String capabilityListUri) throws CantDetermineDataSetException, IOException,
+  private List<RemoteFile> filter(String capabilityListUri, boolean update) throws CantDetermineDataSetException,
+    IOException,
     CantRetrieveFileException {
     try {
       RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
@@ -106,7 +109,24 @@ public class ResourceSyncImport {
 
       if (!remoteFilesList.getChangeList().isEmpty()) {
 
-        resources.addAll(remoteFilesList.getChangeList());
+        if (update) {
+          Date lastUpdate = null;
+
+          try {
+            lastUpdate = dataSet.getLogInfo().getDateofLastImport();
+          } catch (ParseException e) {
+            throw new RuntimeException("Can't determine date of last import.", e);
+          }
+
+          for (RemoteFile remoteFile : remoteFilesList.getChangeList()) {
+            if (remoteFile.getMetadata().getDateTime().compareTo(lastUpdate) > 0) {
+              resources.add(remoteFile);
+            }
+          }
+
+        } else {
+          resources.addAll(remoteFilesList.getChangeList());
+        }
 
         return resources;
       }

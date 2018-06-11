@@ -56,5 +56,8 @@ public interface DataSetMetaData {
   @Value.Auxiliary
   boolean isPublished();
 
+
+  String getImportSource();
+
   void publish();
 }

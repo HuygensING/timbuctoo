@@ -48,6 +48,11 @@ public class DataSetWithDatabase extends LazyTypeSubjectReference implements Dat
   }
 
   @Override
+  public String getImportSource() {
+    return dataSetMetaData.getImportSource();
+  }
+
+  @Override
   public String getSubjectUri() {
     return dataSetMetaData.getBaseUri();
   }
