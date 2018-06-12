@@ -33,6 +33,7 @@ public class ResourceSyncUpdateMutation implements DataFetcher {
     User user = MutationHelpers.getUser(env);
 
     String combinedId = env.getArgument("dataSetId");
+    String authString = env.getArgument("authorization");
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(combinedId);
     Optional<DataSet> dataSet;
 
@@ -48,7 +49,7 @@ public class ResourceSyncUpdateMutation implements DataFetcher {
         resourceSyncFileLoader, dataSet.get(), false);
       String capabilityListUri = dataSet.get().getMetadata().getImportSource();
       resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, null, true,
-        null);
+        authString);
     } catch (IOException | CantRetrieveFileException | CantDetermineDataSetException e) {
       LOG.error("Failed to do a resource sync import. ", e);
       throw new RuntimeException(e);

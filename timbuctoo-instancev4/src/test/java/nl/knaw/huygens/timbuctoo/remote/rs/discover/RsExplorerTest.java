@@ -53,7 +53,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
 
     RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
     ResultIndex index = new ResultIndex();
-    Result<RsRoot> result = explorer.explore(uri, index);
+    Result<RsRoot> result = explorer.explore(uri, index, null);
 
     result.getErrors().forEach(Throwable::printStackTrace);
 
@@ -104,7 +104,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
 
     RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
     ResultIndex index = new ResultIndex();
-    Result<RsRoot> result = explorer.explore(uri, index);
+    Result<RsRoot> result = explorer.explore(uri, index, null);
 
     //result.listErrors().forEach(Throwable::printStackTrace);
 
@@ -146,7 +146,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
 
     RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
     ResultIndex index = new ResultIndex();
-    Result<RsRoot> result = explorer.explore(composeUri(path), index);
+    Result<RsRoot> result = explorer.explore(composeUri(path), index, null);
 
     assertThat(result.getUri(), equalTo(composeUri(path)));
     assertThat(result.getStatusCode(), equalTo(200));
@@ -173,7 +173,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
 
     RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
     ResultIndex index = new ResultIndex();
-    Result<RsRoot> result = explorer.explore(composeUri(path), index);
+    Result<RsRoot> result = explorer.explore(composeUri(path), index, null);
 
     assertThat(result.getUri(), equalTo(composeUri(path)));
     assertThat(result.getStatusCode(), equalTo(404));
@@ -244,7 +244,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
 
     RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
     ResultIndex index = new ResultIndex();
-    Result<RsRoot> result = explorer.explore(composeUri(path), index);
+    Result<RsRoot> result = explorer.explore(composeUri(path), index, null);
 
     assertThat(result.getStatusCode(), equalTo(200));
     assertThat(result.getDescriptionResult().isPresent(), is(true));

@@ -64,8 +64,8 @@ public class LinkExplorer extends AbstractUriExplorer {
   }
 
   @Override
-  public Result<LinkList> explore(URI uri, ResultIndex index) {
-    Result<List<String>> stringResult = execute(uri, responseReader);
+  public Result<LinkList> explore(URI uri, ResultIndex index, String authString) {
+    Result<List<String>> stringResult = execute(uri, responseReader, authString);
     Result<LinkList> result = stringResult.map(stringListToLinkListConverter);
     result.getInvalidUris().addAll(result.getContent().map(LinkList::getInvalidUris).orElse(Collections.emptySet()));
     index.add(result);
@@ -74,7 +74,7 @@ public class LinkExplorer extends AbstractUriExplorer {
     RsExplorer rsExplorer = new RsExplorer(getHttpClient(), rsContext);
     for (URI rsUri : result.getContent().orElse(new LinkList()).getValidUris()) {
       if (!index.contains(rsUri)) {
-        Result<RsRoot> child = rsExplorer.explore(rsUri, index);
+        Result<RsRoot> child = rsExplorer.explore(rsUri, index, null);
         result.addChild(child);
       }
     }

@@ -10,7 +10,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 
@@ -19,23 +18,21 @@ import java.nio.charset.Charset;
  */
 public abstract class AbstractUriExplorer {
 
-  static String getCharset(HttpResponse response) {
-    ContentType contentType = ContentType.getOrDefault(response.getEntity());
-    Charset charset = contentType.getCharset();
-    return charset == null ? "UTF-8" : charset.name();
-  }
-
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractUriExplorer.class);
-
   private final CloseableHttpClient httpClient;
-
   private URI currentUri;
 
   public AbstractUriExplorer(CloseableHttpClient httpClient) {
     this.httpClient = httpClient;
   }
 
-  public abstract Result<?> explore(URI uri, ResultIndex index);
+  static String getCharset(HttpResponse response) {
+    ContentType contentType = ContentType.getOrDefault(response.getEntity());
+    Charset charset = contentType.getCharset();
+    return charset == null ? "UTF-8" : charset.name();
+  }
+
+  public abstract Result<?> explore(URI uri, ResultIndex index, String authString);
 
   protected CloseableHttpClient getHttpClient() {
     return httpClient;
@@ -45,10 +42,13 @@ public abstract class AbstractUriExplorer {
     return currentUri;
   }
 
-  public <T> Result<T> execute(URI uri, Function_WithExceptions<HttpResponse, T, ?> func) {
+  public <T> Result<T> execute(URI uri, Function_WithExceptions<HttpResponse, T, ?> func, String authString) {
     currentUri = uri;
     Result<T> result = new Result<T>(uri);
     HttpGet request = new HttpGet(uri);
+    if (authString != null) {
+      request.addHeader("Authorization", authString);
+    }
     try (CloseableHttpResponse response = httpClient.execute(request)) {
       int statusCode = response.getStatusLine().getStatusCode();
       result.setStatusCode(statusCode);

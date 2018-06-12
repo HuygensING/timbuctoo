@@ -292,7 +292,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         new RdfWiringFactory(dataSetRepository, argHelper, configuration.getDefaultSummaryProps()),
         new DerivedSchemaTypeGenerator(argHelper),
         environment.getObjectMapper(),
-        new ResourceSyncFileLoader(httpClient)
+        new ResourceSyncFileLoader(httpClient),
+        resourceSyncService
       ),
       serializerWriterRegistry,
       securityConfig.getUserValidator(),

@@ -8,6 +8,7 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -23,6 +24,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataSetImportStatusFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DiscoverResourceSyncDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.ImportStatusFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.SummaryPropertiesDataFetcher;
@@ -84,13 +86,14 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final DerivedSchemaTypeGenerator typeGenerator;
   private final ObjectMapper objectMapper;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
+  private final ResourceSyncService resourceSyncService;
   private final SchemaParser schemaParser;
   private final String staticQuery;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
                    String archetypes, RdfWiringFactory wiringFactory,
                    DerivedSchemaTypeGenerator typeGenerator, ObjectMapper objectMapper,
-                   ResourceSyncFileLoader resourceSyncFileLoader)
+                   ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService)
     throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
@@ -99,6 +102,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     this.typeGenerator = typeGenerator;
     this.objectMapper = objectMapper;
     this.resourceSyncFileLoader = resourceSyncFileLoader;
+    this.resourceSyncService = resourceSyncService;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
     schemaParser = new SchemaParser();
   }
@@ -120,6 +124,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     final RuntimeWiring.Builder wiring = RuntimeWiring.newRuntimeWiring();
 
     wiring.type("Query", builder -> builder
+      .dataFetcher("discoverResourceSync", new DiscoverResourceSyncDataFetcher(resourceSyncService))
       .dataFetcher("promotedDataSets", env -> dataSetRepository.getPromotedDataSets()
         .stream()
         .map(DataSetWithDatabase::new)

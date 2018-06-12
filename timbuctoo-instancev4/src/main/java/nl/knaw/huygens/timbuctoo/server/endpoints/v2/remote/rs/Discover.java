@@ -39,7 +39,7 @@ public class Discover {
     try {
       SetListBase setListBase = resourceSyncService.listSets(url,
         new Interpreter()
-          .withStackTrace(debug));
+          .withStackTrace(debug), url);
       return Response.ok(setListBase).build();
     } catch (URISyntaxException e) {
       String errorMessage = String.format("Url '%s' is not valid.", url);

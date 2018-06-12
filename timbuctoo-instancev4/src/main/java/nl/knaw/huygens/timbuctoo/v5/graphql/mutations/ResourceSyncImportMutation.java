@@ -28,7 +28,6 @@ public class ResourceSyncImportMutation implements DataFetcher {
     this.resourceSyncFileLoader = resourceSyncFileLoader;
   }
 
-
   @Override
   public Object get(DataFetchingEnvironment env) {
     User user = MutationHelpers.getUser(env);
