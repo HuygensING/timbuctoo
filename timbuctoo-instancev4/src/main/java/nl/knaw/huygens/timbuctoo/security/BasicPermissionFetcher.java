@@ -1,13 +1,12 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
-import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
-import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +42,11 @@ public class BasicPermissionFetcher implements PermissionFetcher {
       if (user != null) {
         Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, user);
         if (vreAuthorization.isPresent()) {
+
           if (vreAuthorization.get().isAllowedToWrite()) {
-            permissions.add(Permission.WRITE);
+            if (!isImportedDataSet(dataSetMetadata)) {
+              permissions.add(Permission.WRITE);
+            }
             permissions.add(Permission.READ);
           }
           if (vreAuthorization.get().hasAdminAccess()) {
@@ -107,4 +109,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     }
   }
 
+  private boolean isImportedDataSet(DataSetMetaData dataSetMetaData) {
+    return dataSetMetaData.getImportSource() != null && !dataSetMetaData.getImportSource().equals("");
+  }
 }

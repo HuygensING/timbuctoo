@@ -66,6 +66,22 @@ public class BasicPermissionFetcherTest {
   }
 
   @Test
+  public void getPermissionsDoesNotReturnWritePermissionsForRsImportedDataSet() throws Exception {
+    VreAuthorization vreAuthorization = mock(VreAuthorization.class);
+    given(vreAuthorization.isAllowedToWrite()).willReturn(true);
+    given(vreAuthorizationCrud.getAuthorization(
+      anyString(),
+      any(User.class))
+    ).willReturn(Optional.of(vreAuthorization));
+    given(dataSetMetaData.getImportSource())
+      .willReturn("http://example.com/resourcesync/user/dataset/capabilitylist.xml");
+
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
+
+    assertThat(permissions, contains(Permission.READ));
+  }
+
+  @Test
   public void getPermissionsReturnsAdminAndReadPermissionsForAdminUserAndDataSet() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
     given(vreAuthorization.hasAdminAccess()).willReturn(true);
