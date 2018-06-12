@@ -47,7 +47,8 @@ public class ResourceSyncUpdateMutation implements DataFetcher {
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(
         resourceSyncFileLoader, dataSet.get(), false);
       String capabilityListUri = dataSet.get().getMetadata().getImportSource();
-      resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, null, true);
+      resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, null, true,
+        null);
     } catch (IOException | CantRetrieveFileException | CantDetermineDataSetException e) {
       LOG.error("Failed to do a resource sync import. ", e);
       throw new RuntimeException(e);

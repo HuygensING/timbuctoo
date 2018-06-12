@@ -35,14 +35,15 @@ public class ResourceSyncImport {
     this.async = async;
   }
 
-  public ResourceSyncReport filterAndImport(String capabilityListUri, String userSpecifiedDataSet, boolean update)
+  public ResourceSyncReport filterAndImport(String capabilityListUri, String userSpecifiedDataSet, boolean update,
+                                            String authString)
     throws CantDetermineDataSetException, IOException, CantRetrieveFileException {
     List<RemoteFile> filesToImport;
 
     if (userSpecifiedDataSet == null) {
-      filesToImport = filter(capabilityListUri, update);
+      filesToImport = filter(capabilityListUri, update,authString);
     } else {
-      filesToImport = filter(capabilityListUri, userSpecifiedDataSet);
+      filesToImport = filter(capabilityListUri, userSpecifiedDataSet,authString);
     }
 
     Iterator<RemoteFile> files = filesToImport.iterator();
@@ -98,11 +99,12 @@ public class ResourceSyncImport {
     }
   }
 
-  private List<RemoteFile> filter(String capabilityListUri, boolean update) throws CantDetermineDataSetException,
+  private List<RemoteFile> filter(String capabilityListUri, boolean update, String authString)
+    throws CantDetermineDataSetException,
     IOException,
     CantRetrieveFileException {
     try {
-      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
+      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri, authString);
 
       List<RemoteFile> resources = new ArrayList<>();
 
@@ -152,10 +154,10 @@ public class ResourceSyncImport {
 
   }
 
-  private List<RemoteFile> filter(String capabilityListUri, String userSpecifiedDataSet)
+  private List<RemoteFile> filter(String capabilityListUri, String userSpecifiedDataSet, String authString)
     throws CantRetrieveFileException {
     try {
-      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
+      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri, authString);
 
       List<RemoteFile> resources = new ArrayList<>();
 

@@ -53,7 +53,7 @@ public class Import {
 
           ResourceSyncImport.ResourceSyncReport resourceSyncReport = resourceSyncImport.filterAndImport(
             importData.source.toString(), dataSetFile,
-            false);
+            false,null);
 
           return Response.ok(resourceSyncReport).build();
         } catch (CantRetrieveFileException e) {

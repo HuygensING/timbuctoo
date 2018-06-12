@@ -36,6 +36,7 @@ public class ResourceSyncImportMutation implements DataFetcher {
     String dataSetName = env.getArgument("dataSetName");
     String capabilityListUri = env.getArgument("capabilityListUri");
     String userSpecifiedDataSet = env.getArgument("userSpecifiedDataSet");
+    String authString = env.getArgument("authorization");
     DataSet dataSet;
 
     ResourceSyncImport.ResourceSyncReport resourceSyncReport;
@@ -43,7 +44,8 @@ public class ResourceSyncImportMutation implements DataFetcher {
     try {
       dataSet = dataSetRepository.createDataSet(user, dataSetName, capabilityListUri);
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader, dataSet, false);
-      resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, userSpecifiedDataSet, false);
+      resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, userSpecifiedDataSet,
+        false, authString);
     } catch (DataStoreCreationException | IllegalDataSetNameException | IOException |
       CantRetrieveFileException | CantDetermineDataSetException e) {
       LOG.error("Failed to do a resource sync import. ", e);

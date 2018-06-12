@@ -77,18 +77,18 @@ public class ResourceSyncFileLoaderTest {
       ResourceSyncFileLoader.RemoteFileRetriever.class
     );
 
-    given(remoteFileRetriever.getFile(baseUrl + "capabilitylist.xml")).willReturn(capabilityListStream);
+    given(remoteFileRetriever.getFile(baseUrl + "capabilitylist.xml", null)).willReturn(capabilityListStream);
 
-    given(remoteFileRetriever.getFile(baseUrl + "resourcelist.xml")).willReturn(resourceListStream);
+    given(remoteFileRetriever.getFile(baseUrl + "resourcelist.xml", null)).willReturn(resourceListStream);
 
-    given(remoteFileRetriever.getFile(baseUrl + "changelist.xml")
+    given(remoteFileRetriever.getFile(baseUrl + "changelist.xml", null)
     ).willReturn(changeListStream);
 
 
     ResourceSyncFileLoader resourceSyncFileLoader = new ResourceSyncFileLoader(remoteFileRetriever);
 
     ResourceSyncFileLoader.RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(
-      baseUrl + "capabilitylist.xml");
+      baseUrl + "capabilitylist.xml", null);
 
     assertThat(remoteFilesList.getChangeList(), containsInAnyOrder(
       hasProperty("url", is(baseUrl + "files/changes1.nqud")),
@@ -141,14 +141,14 @@ public class ResourceSyncFileLoaderTest {
       ResourceSyncFileLoader.RemoteFileRetriever.class
     );
 
-    given(remoteFileRetriever.getFile(baseUrl + "capabilitylist.xml")).willReturn(capabilityListStream);
+    given(remoteFileRetriever.getFile(baseUrl + "capabilitylist.xml", null)).willReturn(capabilityListStream);
 
-    given(remoteFileRetriever.getFile(baseUrl + "resourcelist.xml")).willReturn(resourceListStream);
+    given(remoteFileRetriever.getFile(baseUrl + "resourcelist.xml", null)).willReturn(resourceListStream);
 
     ResourceSyncFileLoader resourceSyncFileLoader = new ResourceSyncFileLoader(remoteFileRetriever);
 
     ResourceSyncFileLoader.RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(
-      baseUrl + "capabilitylist.xml");;
+      baseUrl + "capabilitylist.xml", null);;
 
     assertThat(remoteFilesList.getResourceList(), containsInAnyOrder(
       allOf(
@@ -197,14 +197,14 @@ public class ResourceSyncFileLoaderTest {
       ResourceSyncFileLoader.RemoteFileRetriever.class
     );
 
-    given(remoteFileRetriever.getFile(baseUrl + "capabilitylist.xml")).willReturn(capabilityListStream);
+    given(remoteFileRetriever.getFile(baseUrl + "capabilitylist.xml", null)).willReturn(capabilityListStream);
 
-    given(remoteFileRetriever.getFile(baseUrl + "resourcelist.xml")).willReturn(resourceListStream);
+    given(remoteFileRetriever.getFile(baseUrl + "resourcelist.xml", null)).willReturn(resourceListStream);
 
     ResourceSyncFileLoader resourceSyncFileLoader = new ResourceSyncFileLoader(remoteFileRetriever);
 
     ResourceSyncFileLoader.RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(
-      baseUrl + "capabilitylist.xml");
+      baseUrl + "capabilitylist.xml", null);
     ;
 
     assertThat(remoteFilesList.getResourceList(), contains(

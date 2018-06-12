@@ -91,32 +91,35 @@ public class ResourceSyncFileLoader {
     }
   }
 
-  public RemoteFilesList getRemoteFilesList(String capabilityListUri) throws IOException, CantRetrieveFileException {
-    List<UrlItem> capabilityList = getRsFile(capabilityListUri).getItemList();
+  public RemoteFilesList getRemoteFilesList(String capabilityListUri, String authString)
+    throws IOException, CantRetrieveFileException {
+    List<UrlItem> capabilityList = getRsFile(capabilityListUri, authString).getItemList();
 
     List<RemoteFile> changes = new ArrayList<>();
     List<RemoteFile> resources = new ArrayList<>();
 
     for (UrlItem capabilityListItem : capabilityList) {
       if (capabilityListItem.getMetadata().getCapability().equals(Capability.CHANGELIST.getXmlValue())) {
-        UrlSet rsFile = getRsFile(capabilityListItem.getLoc());
+        UrlSet rsFile = getRsFile(capabilityListItem.getLoc(), authString);
 
         String changeListExtension = ".*.nqud";
 
         for (UrlItem changeListItem : rsFile.getItemList()) {
           if (changeListItem.getMetadata().getMimeType().equals(MIME_TYPE_FOR_EXTENSION.get(changeListExtension)) ||
             changeListItem.getLoc().matches(changeListExtension)) {
-            RemoteFile remoteFile = getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata()));
+            RemoteFile remoteFile = getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata()),
+              authString);
             changes.add(remoteFile);
           }
         }
       } else if (capabilityListItem.getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())) {
-        UrlSet rsFile = getRsFile(capabilityListItem.getLoc());
+        UrlSet rsFile = getRsFile(capabilityListItem.getLoc(), authString);
 
         for (UrlItem resourceListItem : rsFile.getItemList()) {
           if (MIME_TYPE_FOR_EXTENSION.values().contains(resourceListItem.getMetadata().getMimeType()) ||
             RdfExtensions.createFromFile(resourceListItem.getLoc()) != null) {
-            resources.add(getRemoteFile(new Tuple<>(resourceListItem.getLoc(), resourceListItem.getMetadata())));
+            resources.add(getRemoteFile(new Tuple<>(resourceListItem.getLoc(), resourceListItem.getMetadata()),
+              authString));
           }
         }
       }
@@ -126,12 +129,12 @@ public class ResourceSyncFileLoader {
   }
 
 
-  private RemoteFile getRemoteFile(Tuple<String, Metadata> item) {
+  private RemoteFile getRemoteFile(Tuple<String, Metadata> item, String authString) {
     return RemoteFile.create(
       item.getLeft(),
       () -> {
         try {
-          return remoteFileRetriever.getFile(item.getLeft());
+          return remoteFileRetriever.getFile(item.getLeft(), authString);
         } catch (CantRetrieveFileException e) {
           throw e;
         }
@@ -150,9 +153,9 @@ public class ResourceSyncFileLoader {
     }
   }
 
-  private UrlSet getRsFile(String url) throws IOException, CantRetrieveFileException {
+  private UrlSet getRsFile(String url, String authString) throws IOException, CantRetrieveFileException {
     LOG.info("getRsFile '{}'", url);
-    return objectMapper.readValue(IOUtils.toString(remoteFileRetriever.getFile(url))
+    return objectMapper.readValue(IOUtils.toString(remoteFileRetriever.getFile(url, authString))
       .replace("rs.md", "rs:md"), UrlSet.class);
   }
 
@@ -210,10 +213,14 @@ public class ResourceSyncFileLoader {
       this.httpClient = httpClient;
     }
 
-    public InputStream getFile(String url) throws CantRetrieveFileException, IOException {
+    public InputStream getFile(String url, String authString) throws CantRetrieveFileException, IOException {
       HttpGet httpGet = new HttpGet(url);
+
       /*Timeout time is set to 100seconds to prevent socket timeout during changelist import*/
       httpGet.setConfig(RequestConfig.custom().setSocketTimeout(100000).build());
+      if (authString != null) {
+        httpGet.addHeader("Authorization", authString);
+      }
       HttpResponse httpResponse = httpClient.execute(httpGet);
       if (httpResponse.getStatusLine().getStatusCode() == 200) {
         InputStream content = httpResponse.getEntity().getContent();
