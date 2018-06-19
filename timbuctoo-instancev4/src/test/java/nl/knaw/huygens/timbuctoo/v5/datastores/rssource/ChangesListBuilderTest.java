@@ -17,18 +17,18 @@ import static org.hamcrest.Matchers.contains;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class ChangesRetrieverTest {
+public class ChangesListBuilderTest {
 
   @Test
   public void retrieveChangeFilesNamesReturnsCorrectNamesBasedOnSuppliedVersions() {
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
     BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
 
-    ChangesRetriever changesRetriever = new ChangesRetriever(updatedPerPatchStore,bdbTruePatchStore, "graph");
+    ChangeListBuilder changeListBuilder = new ChangeListBuilder(updatedPerPatchStore,bdbTruePatchStore, "graph");
 
     Supplier<List<Integer>> versionsSupplier = () -> Lists.newArrayList(1, 2);
 
-    List<String> changeFileNames = changesRetriever.retrieveChangeFileNames(versionsSupplier);
+    List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(versionsSupplier);
 
     assertThat(changeFileNames, contains("changes1.nqud", "changes2.nqud"));
   }
@@ -47,13 +47,13 @@ public class ChangesRetrieverTest {
 
     given(bdbTruePatchStore.getChanges("s1",1,true)).willReturn(Stream.of(cursorQuad));
 
-    ChangesRetriever changesRetriever = new ChangesRetriever(updatedPerPatchStore,bdbTruePatchStore, "graph");
+    ChangeListBuilder changeListBuilder = new ChangeListBuilder(updatedPerPatchStore,bdbTruePatchStore, "graph");
 
     Integer version = 1;
 
     Supplier<List<String>> subjectsSupplier = () -> Lists.newArrayList("s1");
 
-    List<String> changes = changesRetriever.retrieveChanges(version,subjectsSupplier);
+    List<String> changes = changeListBuilder.retrieveChanges(version,subjectsSupplier);
 
     assertThat(changes, contains("+<s1> <p1> <o1> <graph> .\n"));
   }

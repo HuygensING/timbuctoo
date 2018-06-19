@@ -182,9 +182,9 @@ public class RsDocumentBuilder {
 
       UpdatedPerPatchStore updatedPerPatchStore = maybeDataSet.get().getUpdatedPerPatchStore();
 
-      ChangesRetriever changesRetriever = new ChangesRetriever(
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder(
         updatedPerPatchStore,
-        null,
+        maybeDataSet.get().getTruePatchStore(),
         dataSetMetaData.getBaseUri());
 
       Supplier<List<Integer>> versionsSupplier = () -> {
@@ -193,7 +193,7 @@ public class RsDocumentBuilder {
         }
       };
 
-      List<String> changeFileNames = changesRetriever.retrieveChangeFileNames(versionsSupplier);
+      List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(versionsSupplier);
 
       for (String changeFileName : changeFileNames) {
         LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName));
@@ -218,7 +218,7 @@ public class RsDocumentBuilder {
 
       UpdatedPerPatchStore updatedPerPatchStore = dataSet.getUpdatedPerPatchStore();
 
-      ChangesRetriever changesRetriever = new ChangesRetriever(
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder(
         updatedPerPatchStore,
         dataSet.getTruePatchStore(),
         dataSetMetaData.getBaseUri()
@@ -232,7 +232,7 @@ public class RsDocumentBuilder {
         }
       };
 
-      return Optional.of(changesRetriever.retrieveChanges(version, subjectsSupplier).stream());
+      return Optional.of(changeListBuilder.retrieveChanges(version, subjectsSupplier).stream());
     }
 
     return Optional.empty();
