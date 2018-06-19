@@ -47,7 +47,8 @@ type Query {
   #all mimetypes that you can use when downloading data from a dataSet
   availableExportMimetypes: [MimeType!]!
 
-  #discover resources for resourcesync
+  #Discover resources for resourcesync import. Requires a remote url as input. An optional authorization string starting with
+  #"Bearer " or "Basic "" and followed by the auth token can be provided in case the remote resource is protected.
   discoverResourceSync(url: String!, debug: Boolean, authorization: String): [DiscoverRsResult]!
 
   ##############
@@ -397,9 +398,15 @@ type Mutation {
   setDataSetMetadata(dataSetId: String!, metadata: DataSetMetadataInput!): DataSetMetadata!
   # Set the title or archetype for this collection
   setCollectionMetadata(dataSetId: String!, collectionUri: String!, metadata: CollectionMetadataInput!): CollectionMetadata!
-  #To trigger a resourcesync import.
+  #To trigger a resourcesync import. Inputs required: "dataSetName" is the name you want to call the imported dataset.
+  #"capabilityListUri" is the remote location for the capabilitylist (can be obtained through the "discover" query).
+  #"userSpecifiedDataSet" is an optional location in the remote server for the dataset you want to import (in case there
+  #are more than one dataset available). You can also include an optional "authorization" string that starts with "Bearer "
+  # or "Basic " and is followed by an auth token for the case where the remote resource is protected.
   resourceSyncImport(dataSetName: String!, capabilityListUri: String!, userSpecifiedDataSet: String, authorization: String): ResourceSyncFiles!
-  #To trigger a resourcesync update.
+  #To trigger a resourcesync update. Inputs required: "dataSetId" is the local dataset that you want to update. You can
+  #also include an optional "authorization" string that starts with "Bearer "or "Basic " and is followed by an auth token
+  #for the case where the remote resource is protected.
   resourceSyncUpdate(dataSetId: String!, authorization: String): ResourceSyncFiles!
 }
 
