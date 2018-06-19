@@ -17,7 +17,7 @@ public class RsMd {
   @XmlAttribute() private String capability;
 
   @XmlAttribute() private ZonedDateTime at;
-  @XmlAttribute() private ZonedDateTime datetime;
+  @XmlAttribute() private ZonedDateTime datetime; //Resourcesync spec included datetime property for changelists
   @XmlAttribute() private ZonedDateTime completed;
   @XmlAttribute() private ZonedDateTime from;
   @XmlAttribute() private ZonedDateTime until;

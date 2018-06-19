@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.TimeWithUnit;
-import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,14 +20,14 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Import cycles follow steps of this pattern:
  * <ul>
- *   <li>{@link #start(String, String)} start the import process;</li>
- *   <li>repeat 0 or more times:
- *    <ul>
- *      <li>{@link #startEntry(LogEntry)} start the import of one logEntry;</li>
- *      <li>{@link #finishEntry()} finish the import of one logEntry;</li>
- *    </ul>
- *   </li>
- *   <li>{@link #finishList()} finish the import process.</li>
+ * <li>{@link #start(String, String)} start the import process;</li>
+ * <li>repeat 0 or more times:
+ * <ul>
+ * <li>{@link #startEntry(LogEntry)} start the import of one logEntry;</li>
+ * <li>{@link #finishEntry()} finish the import of one logEntry;</li>
+ * </ul>
+ * </li>
+ * <li>{@link #finishList()} finish the import process.</li>
  * </ul>
  * In between all steps methods {@link #setStatus(String)} and {@link #addError(String, Throwable)} can be called.
  * The last status and all error messages will be persisted via {@link LogList} and {@link LogEntry} respectively.
@@ -72,20 +71,11 @@ public class ImportStatus {
   public synchronized void startEntry(LogEntry logEntry) {
     logEntry.getLogToken().ifPresent(token -> setStatus("Adding entry with token " + token));
     logEntry.getRdfCreator()
-                   .ifPresent(creator -> setStatus("Creating entry with " + creator.getClass().getSimpleName()));
+      .ifPresent(creator -> setStatus("Creating entry with " + creator.getClass().getSimpleName()));
     currentLogEntry = logEntry;
     date = Instant.now().toString();
     currentLogEntry.getImportStatus().setDate(date);
     currentEntryStart = stopwatch.elapsed(TIME_UNIT);
-  }
-
-  public synchronized void setStatus(String status) {
-    if (currentLogEntry != null) {
-      currentLogEntry.getImportStatus().setStatus(status);
-    } else {
-      logList.setLastStatus(status);
-    }
-    messages.add(status);
   }
 
   public synchronized void addError(String message, Throwable error) {
@@ -113,7 +103,7 @@ public class ImportStatus {
       currentLogEntry = null;
       entry.getLogToken().ifPresent(token -> setStatus("Finished adding entry with token " + token));
       entry.getRdfCreator()
-           .ifPresent(creator -> setStatus("Finished creating entry with " + creator.getClass().getSimpleName()));
+        .ifPresent(creator -> setStatus("Finished creating entry with " + creator.getClass().getSimpleName()));
     });
   }
 
@@ -141,6 +131,15 @@ public class ImportStatus {
     } else {
       return messages.getLast();
     }
+  }
+
+  public synchronized void setStatus(String status) {
+    if (currentLogEntry != null) {
+      currentLogEntry.getImportStatus().setStatus(status);
+    } else {
+      logList.setLastStatus(status);
+    }
+    messages.add(status);
   }
 
   public synchronized String getDate() {

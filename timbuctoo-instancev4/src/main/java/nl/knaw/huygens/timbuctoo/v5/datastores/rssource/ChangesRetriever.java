@@ -116,13 +116,3 @@ public class ChangesRetriever {
   }
 
 }
-/*
-if (dataType == null || dataType.isEmpty()) {
-  this.onRelation(subject, predicate, object, graph);
-  } else {
-  if (language != null && !language.isEmpty() && dataType.equals(RdfConstants.LANGSTRING)) {
-  this.onLanguageTaggedString(subject, predicate, object, language, graph);
-  } else {
-  this.onValue(subject, predicate, object, dataType, graph);
-  }
-  }*/
