@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -34,12 +35,12 @@ public class Discover {
   @GET
   @Path("/listsets/")
   @Timed
-  public Response listSets(@QueryParam("url") @NotEmpty String url,
+  public Response listSets(@HeaderParam("Authorization") String authorization, @QueryParam("url") @NotEmpty String url,
                            @QueryParam("debug") @DefaultValue("false") boolean debug) {
     try {
       SetListBase setListBase = resourceSyncService.listSets(url,
         new Interpreter()
-          .withStackTrace(debug), url);
+          .withStackTrace(debug), authorization);
       return Response.ok(setListBase).build();
     } catch (URISyntaxException e) {
       String errorMessage = String.format("Url '%s' is not valid.", url);

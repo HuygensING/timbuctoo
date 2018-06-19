@@ -82,7 +82,7 @@ public class Expedition {
     ExecutorService executor = Executors.newWorkStealingPool();
 
     List<Callable<ResultIndex>> callables = new ArrayList<>();
-    callables.add(() -> exploreWellKnown(uri, ""));
+    callables.add(() -> exploreWellKnown(uri, authString));
     callables.add(() -> exploreLinks(uri));
     callables.add(() -> exploreRobotsTxt(uri));
     callables.add(() -> exploreRsDocumentUri(uri));
@@ -101,7 +101,7 @@ public class Expedition {
 
   public ResultIndex exploreAndMerge(String url, String authString) throws URISyntaxException, InterruptedException {
     // not sure how/whether this can be done on the stream of explore..
-    List<ResultIndex> indexes = explore(url, "");
+    List<ResultIndex> indexes = explore(url, authString);
 
     ResultIndex resultIndex = new ResultIndex();
     indexes.forEach(ri -> resultIndex.merge(ri));

@@ -112,7 +112,7 @@ public class RsExplorer extends AbstractUriExplorer {
       if (parentLink != null && !index.contains(parentLink)) {
         try {
           URI parentUri = new URI(parentLink);
-          Result<RsRoot> parentResult = explore(parentUri, index, null);
+          Result<RsRoot> parentResult = explore(parentUri, index, authString);
           result.addParent(parentResult);
           verifyUpRelation(result, parentResult, capability);
         } catch (URISyntaxException e) {
@@ -129,7 +129,7 @@ public class RsExplorer extends AbstractUriExplorer {
       if (indexLink != null && !index.contains(indexLink)) {
         try {
           URI indexUri = new URI(indexLink);
-          Result<RsRoot> indexResult = explore(indexUri, index, null);
+          Result<RsRoot> indexResult = explore(indexUri, index, authString);
           result.addParent(indexResult);
           verifyIndexRelation(result, indexResult, capability);
         } catch (URISyntaxException e) {
@@ -156,7 +156,7 @@ public class RsExplorer extends AbstractUriExplorer {
           if (childLink != null && !index.contains(childLink)) {
             try {
               URI childUri = new URI(childLink);
-              Result<RsRoot> childResult = explore(childUri, index, null);
+              Result<RsRoot> childResult = explore(childUri, index, authString);
               result.addChild(childResult);
               verifyChildRelation(result, childResult, capability);
               Optional<RsLn> maybeDescribedByLink = item.getLink("describedBy");

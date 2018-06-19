@@ -31,7 +31,7 @@ public class DiscoverResourceSyncDataFetcher implements DataFetcher {
 
     try {
       SetListBase setListBase = resourceSyncService.listSets(url, new Interpreter()
-        .withStackTrace(debug),authString);
+        .withStackTrace(debug), authString);
 
       List<DiscoverRsResult> discoveryResults = new ArrayList<>();
 
@@ -39,17 +39,18 @@ public class DiscoverResourceSyncDataFetcher implements DataFetcher {
 
       for (SetItemView setDetail : setDetails) {
         if (setDetail.getCapability().equals("capabilitylist") && setDetail.getDescribedBy() != null) {
-          //discoveryResults.add(new DiscoverRsResult("location", setDetail.getLocation()));
           JsonNode content = setDetail.getDescribedBy().getDescription().getContent();
           for (JsonNode node : content) {
             discoveryResults.add(new DiscoverRsResult(
-              setDetail.getLocation(),
-              node.get("http://purl.org/dc/terms/description").get(0).get("@value").asText(),
-              node.get("http://purl.org/dc/terms/license").get(0).get("@id").asText(),
-              node.get("http://purl.org/dc/terms/title").get(0).get("@value").asText()
+                setDetail.getLocation(),
+                node.get("http://purl.org/dc/terms/description").get(0).get("@value").asText(),
+                node.get("http://purl.org/dc/terms/license").get(0).get("@id").asText(),
+                node.get("http://purl.org/dc/terms/title").get(0).get("@value").asText()
               )
             );
           }
+        } else { //in case description is not available (Eg. for certain external resource sync)
+          discoveryResults.add(new DiscoverRsResult(setDetail.getLocation(), "N/A", "N/A", "N/A"));
         }
       }
 
