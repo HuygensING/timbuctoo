@@ -93,7 +93,7 @@ public class TabularUpload {
         final DataSet dataSet = userAndDs.getRight();
         ImportManager importManager = dataSet.getImportManager();
 
-        if (StringUtils.isBlank(fileInfo.getName())) {
+        if (StringUtils.isBlank(fileInfo.getFileName())) {
           return Response.status(400).entity("filename cannot be empty.").build();
         }
 
