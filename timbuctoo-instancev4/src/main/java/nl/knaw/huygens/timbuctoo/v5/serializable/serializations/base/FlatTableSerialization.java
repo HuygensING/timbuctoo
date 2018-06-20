@@ -28,7 +28,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public abstract class FlatTableSerialization implements Serialization {
   public static final String SEPARATOR = ".";
-  private static final Logger LOG = getLogger(CsvSerialization.class);
+  private static final Logger LOG = getLogger(FlatTableSerialization.class);
 
   @Override
   public void serialize(SerializableResult data) throws IOException {
