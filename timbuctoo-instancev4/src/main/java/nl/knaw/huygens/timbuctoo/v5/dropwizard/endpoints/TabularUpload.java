@@ -72,6 +72,13 @@ public class TabularUpload {
     final Either<Response, Response> result = authCheck.getOrCreate(authHeader, ownerId, dataSetId, forceCreation)
       .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
       .map(userAndDs -> {
+        if (rdfInputStream == null || body == null || fileInfo == null) {
+          return errorResponseHelper.error(
+            400,
+            "Missing form parameter 'file'. In curl you'd use `-F \"file=@<filename>;type=<mediatype>\"`."
+          );
+        }
+
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
         Optional<Loader> loader = LoaderFactory.createFor(mediaType.toString(), formData.getFields().entrySet().stream()
