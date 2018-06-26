@@ -21,9 +21,6 @@ public class ChangesListBuilderTest {
 
   @Test
   public void retrieveChangeFilesNamesReturnsCorrectNamesBasedOnSuppliedVersions() {
-    UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
-    BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
-
     ChangeListBuilder changeListBuilder = new ChangeListBuilder("graph");
 
     Supplier<List<Integer>> versionsSupplier = () -> Lists.newArrayList(1, 2);

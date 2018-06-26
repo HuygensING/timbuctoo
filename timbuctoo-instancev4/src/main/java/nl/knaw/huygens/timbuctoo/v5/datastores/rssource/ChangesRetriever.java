@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import org.apache.jena.update.Update;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +16,24 @@ public class ChangesRetriever {
 
   private BdbTruePatchStore bdbTruePatchStore;
 
-
   public ChangesRetriever(BdbTruePatchStore bdbTruePatchStore) {
     this.bdbTruePatchStore = bdbTruePatchStore;
+  }
+
+  public Supplier<List<Integer>> getVersions(UpdatedPerPatchStore updatedPerPatchStore) {
+    return () -> {
+      try (Stream<Integer> versions = updatedPerPatchStore.getVersions()) {
+        return versions.collect(Collectors.toList());
+      }
+    };
+  }
+
+  public Supplier<List<String>> getSubjects(UpdatedPerPatchStore updatedPerPatchStore, Integer version) {
+    return () -> {
+      try (Stream<String> subjects = updatedPerPatchStore.ofVersion(version)) {
+        return subjects.collect(Collectors.toList());
+      }
+    };
   }
 
   public List<CursorQuad> retrieveChanges(Integer version, Supplier<List<String>> subjects) {

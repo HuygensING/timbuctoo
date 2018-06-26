@@ -184,13 +184,11 @@ public class RsDocumentBuilder {
 
       ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
 
-      Supplier<List<Integer>> versionsSupplier = () -> {
-        try (Stream<Integer> versions = updatedPerPatchStore.getVersions()) {
-          return versions.collect(Collectors.toList());
-        }
-      };
+      ChangesRetriever changesRetriever = maybeDataSet.get().getChangesRetriever();
 
-      List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(versionsSupplier);
+      List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(
+        changesRetriever.getVersions(updatedPerPatchStore)
+      );
 
       for (String changeFileName : changeFileNames) {
         LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName));
@@ -217,13 +215,11 @@ public class RsDocumentBuilder {
 
       ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
 
+      ChangesRetriever changesRetriever = dataSet.getChangesRetriever();
+
       Integer version = getVersionFromFileId(fileId);
 
-      Supplier<List<String>> subjectsSupplier = () -> {
-        try (Stream<String> subjects = updatedPerPatchStore.ofVersion(version)) {
-          return subjects.collect(Collectors.toList());
-        }
-      };
+      Supplier<List<String>> subjectsSupplier = changesRetriever.getSubjects(updatedPerPatchStore, version);
 
       return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version, subjectsSupplier)
         .stream());

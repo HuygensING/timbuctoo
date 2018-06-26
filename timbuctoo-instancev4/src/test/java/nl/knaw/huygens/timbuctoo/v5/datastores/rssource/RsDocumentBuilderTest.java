@@ -161,6 +161,7 @@ public class RsDocumentBuilderTest {
     given(dataSet.getUpdatedPerPatchStore()).willReturn(updatedPerPatchStore);
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
     given(dataSet.getImportManager()).willReturn(importManager);
+    given(dataSet.getChangesRetriever()).willReturn(new ChangesRetriever(null));
 
     Urlset changeList = rsDocumentBuilder.getChangeList(null, "u1", "ds1").get();
 
