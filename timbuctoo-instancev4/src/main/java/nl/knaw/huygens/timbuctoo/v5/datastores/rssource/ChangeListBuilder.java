@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -13,20 +11,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class ChangeListBuilder {
-  private final UpdatedPerPatchStore updatedPerPatchStore;
-  private final BdbTruePatchStore bdbTruePatchStore;
   private String graph; //pass in graph from the dataset for now as the QuadStore does not currently contain it.
   private ChangesQuadGenerator changesQuadGenerator;
-  private ChangesRetriever changesRetriever;
 
 
-  public ChangeListBuilder(UpdatedPerPatchStore updatedPerPatchStore, BdbTruePatchStore bdbTruePatchStore,
-                           String graph) {
+  public ChangeListBuilder(String graph) {
     this.graph = graph;
     this.changesQuadGenerator = new ChangesQuadGenerator(graph);
-    this.updatedPerPatchStore = updatedPerPatchStore;
-    this.bdbTruePatchStore = bdbTruePatchStore;
-    this.changesRetriever = new ChangesRetriever(bdbTruePatchStore);
   }
 
   public List<String> retrieveChangeFileNames(Supplier<List<Integer>> versions) {
@@ -41,7 +32,9 @@ public class ChangeListBuilder {
   }
 
 
-  public List<String> retrieveChanges(Integer version, Supplier<List<String>> subjects) {
+  public List<String> retrieveChanges(ChangesRetriever changesRetriever,
+                                      Integer version,
+                                      Supplier<List<String>> subjects) {
     List<String> changes = new ArrayList<>();
 
     List<CursorQuad> quads = changesRetriever.retrieveChanges(version, subjects);

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsBuilder;
@@ -18,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPat
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,7 +31,6 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -135,7 +132,7 @@ public class RsDocumentBuilderTest {
 
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
 
-    given(updatedPerPatchStore.getVersions()).willReturn(Stream.of(0,1));
+    given(updatedPerPatchStore.getVersions()).willReturn(Stream.of(0, 1));
 
     LogList logList = new LogList();
     logList.setLastImportDate("2018-03-21T10:11:53.811Z");
@@ -165,7 +162,7 @@ public class RsDocumentBuilderTest {
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
     given(dataSet.getImportManager()).willReturn(importManager);
 
-    Urlset changeList = rsDocumentBuilder.getChangeList(null,"u1","ds1").get();
+    Urlset changeList = rsDocumentBuilder.getChangeList(null, "u1", "ds1").get();
 
     String xml = rsBuilder.toXml(changeList, true);
     rsBuilder.setXmlString(xml).build();
@@ -184,7 +181,7 @@ public class RsDocumentBuilderTest {
 
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
     given(updatedPerPatchStore.getVersions()).willReturn(Stream.of(1));
-    given(updatedPerPatchStore.ofVersion(1)).willReturn(Stream.of("s1","s2"));
+    given(updatedPerPatchStore.ofVersion(1)).willReturn(Stream.of("s1", "s2"));
 
     BdbTruePatchStore truePatchStore = mock(BdbTruePatchStore.class);
 
@@ -202,26 +199,29 @@ public class RsDocumentBuilderTest {
     given(cursorQuad2.getObject()).willReturn("o2");
     given(cursorQuad2.getDirection()).willReturn(Direction.OUT);
 
-    given(truePatchStore.getChanges("s1",1,true)).willReturn(Stream.of(cursorQuad1));
-    given(truePatchStore.getChanges("s2",1,true)).willReturn(Stream.of(cursorQuad2));
+    given(truePatchStore.getChanges("s1", 1, true)).willReturn(Stream.of(cursorQuad1));
+    given(truePatchStore.getChanges("s2", 1, true)).willReturn(Stream.of(cursorQuad2));
 
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     given(dataSetMetaData.getBaseUri()).willReturn("graph");
     given(dataSetMetaData.getOwnerId()).willReturn("u1");
     given(dataSetMetaData.getDataSetId()).willReturn("ds1");
 
+    ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore);
+
     given(dataSet.getUpdatedPerPatchStore()).willReturn(updatedPerPatchStore);
     given(dataSet.getTruePatchStore()).willReturn(truePatchStore);
+    given(dataSet.getChangesRetriever()).willReturn(changesRetriever);
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
 
 
     Optional<Stream<String>> changes = rsDocumentBuilder.getChanges(null, "u1", "ds1", "changes1.nqud");
 
-    assertThat(changes.isPresent(),is(true));
+    assertThat(changes.isPresent(), is(true));
     assertThat(changes.get().collect(Collectors.toList()), Matchers.contains(
       "+<s1> <p1> <o1> <graph> .\n",
       "-<s2> <p2> <o2> <graph> .\n"
-      ));
+    ));
   }
 
 }

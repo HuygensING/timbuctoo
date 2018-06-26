@@ -182,10 +182,7 @@ public class RsDocumentBuilder {
 
       UpdatedPerPatchStore updatedPerPatchStore = maybeDataSet.get().getUpdatedPerPatchStore();
 
-      ChangeListBuilder changeListBuilder = new ChangeListBuilder(
-        updatedPerPatchStore,
-        maybeDataSet.get().getTruePatchStore(),
-        dataSetMetaData.getBaseUri());
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
 
       Supplier<List<Integer>> versionsSupplier = () -> {
         try (Stream<Integer> versions = updatedPerPatchStore.getVersions()) {
@@ -218,11 +215,7 @@ public class RsDocumentBuilder {
 
       UpdatedPerPatchStore updatedPerPatchStore = dataSet.getUpdatedPerPatchStore();
 
-      ChangeListBuilder changeListBuilder = new ChangeListBuilder(
-        updatedPerPatchStore,
-        dataSet.getTruePatchStore(),
-        dataSetMetaData.getBaseUri()
-      );
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
 
       Integer version = getVersionFromFileId(fileId);
 
@@ -232,7 +225,8 @@ public class RsDocumentBuilder {
         }
       };
 
-      return Optional.of(changeListBuilder.retrieveChanges(version, subjectsSupplier).stream());
+      return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version, subjectsSupplier)
+        .stream());
     }
 
     return Optional.empty();

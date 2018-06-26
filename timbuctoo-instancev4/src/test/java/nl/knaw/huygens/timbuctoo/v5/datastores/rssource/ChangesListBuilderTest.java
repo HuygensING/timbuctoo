@@ -24,7 +24,7 @@ public class ChangesListBuilderTest {
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
     BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
 
-    ChangeListBuilder changeListBuilder = new ChangeListBuilder(updatedPerPatchStore,bdbTruePatchStore, "graph");
+    ChangeListBuilder changeListBuilder = new ChangeListBuilder("graph");
 
     Supplier<List<Integer>> versionsSupplier = () -> Lists.newArrayList(1, 2);
 
@@ -35,7 +35,6 @@ public class ChangesListBuilderTest {
 
   @Test
   public void retrieveChangesReturnsQuadsForGivenVersionAndSubjects() {
-    UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
     BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
 
     CursorQuad cursorQuad = mock(CursorQuad.class);
@@ -47,13 +46,15 @@ public class ChangesListBuilderTest {
 
     given(bdbTruePatchStore.getChanges("s1",1,true)).willReturn(Stream.of(cursorQuad));
 
-    ChangeListBuilder changeListBuilder = new ChangeListBuilder(updatedPerPatchStore,bdbTruePatchStore, "graph");
+    ChangeListBuilder changeListBuilder = new ChangeListBuilder("graph");
 
     Integer version = 1;
 
     Supplier<List<String>> subjectsSupplier = () -> Lists.newArrayList("s1");
 
-    List<String> changes = changeListBuilder.retrieveChanges(version,subjectsSupplier);
+    ChangesRetriever changesRetriever = new ChangesRetriever(bdbTruePatchStore);
+
+    List<String> changes = changeListBuilder.retrieveChanges(changesRetriever,version,subjectsSupplier);
 
     assertThat(changes, contains("+<s1> <p1> <o1> <graph> .\n"));
   }
