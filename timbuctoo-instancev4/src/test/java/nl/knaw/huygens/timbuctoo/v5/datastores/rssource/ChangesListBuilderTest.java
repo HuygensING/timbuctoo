@@ -49,7 +49,7 @@ public class ChangesListBuilderTest {
 
     Supplier<List<String>> subjectsSupplier = () -> Lists.newArrayList("s1");
 
-    ChangesRetriever changesRetriever = new ChangesRetriever(bdbTruePatchStore);
+    ChangesRetriever changesRetriever = new ChangesRetriever(bdbTruePatchStore, null);
 
     List<String> changes = changeListBuilder.retrieveChanges(changesRetriever,version,subjectsSupplier);
 

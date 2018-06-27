@@ -183,7 +183,7 @@ public abstract class DataSet {
       );
       importManager.subscribeToRdf(storeUpdater);
 
-      final ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore);
+      final ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore, updatedPerPatchStore);
 
 
       ImmutableDataSet dataSet = ImmutableDataSet.builder()

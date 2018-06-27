@@ -15,12 +15,14 @@ import java.util.stream.Stream;
 public class ChangesRetriever {
 
   private BdbTruePatchStore bdbTruePatchStore;
+  private UpdatedPerPatchStore updatedPerPatchStore;
 
-  public ChangesRetriever(BdbTruePatchStore bdbTruePatchStore) {
+  public ChangesRetriever(BdbTruePatchStore bdbTruePatchStore, UpdatedPerPatchStore updatedPerPatchStore) {
     this.bdbTruePatchStore = bdbTruePatchStore;
+    this.updatedPerPatchStore = updatedPerPatchStore;
   }
 
-  public Supplier<List<Integer>> getVersions(UpdatedPerPatchStore updatedPerPatchStore) {
+  public Supplier<List<Integer>> getVersions() {
     return () -> {
       try (Stream<Integer> versions = updatedPerPatchStore.getVersions()) {
         return versions.collect(Collectors.toList());
@@ -28,7 +30,7 @@ public class ChangesRetriever {
     };
   }
 
-  public Supplier<List<String>> getSubjects(UpdatedPerPatchStore updatedPerPatchStore, Integer version) {
+  public Supplier<List<String>> getSubjects(Integer version) {
     return () -> {
       try (Stream<String> subjects = updatedPerPatchStore.ofVersion(version)) {
         return subjects.collect(Collectors.toList());

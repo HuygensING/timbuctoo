@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -25,7 +24,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -180,14 +178,12 @@ public class RsDocumentBuilder {
       changeList = new Urlset(rsMd)
         .addLink(new RsLn(REL_UP, rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CAPABILITYLIST)));
 
-      UpdatedPerPatchStore updatedPerPatchStore = maybeDataSet.get().getUpdatedPerPatchStore();
-
       ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
 
       ChangesRetriever changesRetriever = maybeDataSet.get().getChangesRetriever();
 
       List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(
-        changesRetriever.getVersions(updatedPerPatchStore)
+        changesRetriever.getVersions()
       );
 
       for (String changeFileName : changeFileNames) {
@@ -211,15 +207,13 @@ public class RsDocumentBuilder {
       DataSet dataSet = maybeDataSet.get();
       DataSetMetaData dataSetMetaData = dataSet.getMetadata();
 
-      UpdatedPerPatchStore updatedPerPatchStore = dataSet.getUpdatedPerPatchStore();
-
       ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
 
       ChangesRetriever changesRetriever = dataSet.getChangesRetriever();
 
       Integer version = getVersionFromFileId(fileId);
 
-      Supplier<List<String>> subjectsSupplier = changesRetriever.getSubjects(updatedPerPatchStore, version);
+      Supplier<List<String>> subjectsSupplier = changesRetriever.getSubjects(version);
 
       return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version, subjectsSupplier)
         .stream());

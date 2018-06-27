@@ -161,7 +161,7 @@ public class RsDocumentBuilderTest {
     given(dataSet.getUpdatedPerPatchStore()).willReturn(updatedPerPatchStore);
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
     given(dataSet.getImportManager()).willReturn(importManager);
-    given(dataSet.getChangesRetriever()).willReturn(new ChangesRetriever(null));
+    given(dataSet.getChangesRetriever()).willReturn(new ChangesRetriever(null, updatedPerPatchStore));
 
     Urlset changeList = rsDocumentBuilder.getChangeList(null, "u1", "ds1").get();
 
@@ -208,7 +208,7 @@ public class RsDocumentBuilderTest {
     given(dataSetMetaData.getOwnerId()).willReturn("u1");
     given(dataSetMetaData.getDataSetId()).willReturn("ds1");
 
-    ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore);
+    ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore, updatedPerPatchStore);
 
     given(dataSet.getUpdatedPerPatchStore()).willReturn(updatedPerPatchStore);
     given(dataSet.getTruePatchStore()).willReturn(truePatchStore);

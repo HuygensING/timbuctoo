@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ChangeListBuilder {
   private String graph; //pass in graph from the dataset for now as the QuadStore does not currently contain it.
