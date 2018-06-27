@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.ImmutableMap;
+import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -88,7 +91,7 @@ public class ResourceSyncFileLoader {
     }
   }
 
-  public RemoteFilesList getRemoteFilesList(String capabilityListUri) throws IOException {
+  public RemoteFilesList getRemoteFilesList(String capabilityListUri) throws IOException, CantRetrieveFileException {
     List<UrlItem> capabilityList = getRsFile(capabilityListUri).getItemList();
 
     List<RemoteFile> changes = new ArrayList<>();
@@ -103,7 +106,8 @@ public class ResourceSyncFileLoader {
         for (UrlItem changeListItem : rsFile.getItemList()) {
           if (changeListItem.getMetadata().getMimeType().equals(MIME_TYPE_FOR_EXTENSION.get(changeListExtension)) ||
             changeListItem.getLoc().matches(changeListExtension)) {
-            changes.add(getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata())));
+            RemoteFile remoteFile = getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata()));
+            changes.add(remoteFile);
           }
         }
       } else if (capabilityListItem.getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())) {
@@ -125,7 +129,13 @@ public class ResourceSyncFileLoader {
   private RemoteFile getRemoteFile(Tuple<String, Metadata> item) {
     return RemoteFile.create(
       item.getLeft(),
-      () -> remoteFileRetriever.getFile(item.getLeft()),
+      () -> {
+        try {
+          return remoteFileRetriever.getFile(item.getLeft());
+        } catch (CantRetrieveFileException e) {
+          throw e;
+        }
+      },
       getUrl(tuple(item.getLeft(), item.getRight())),
       item.getRight()
     );
@@ -140,7 +150,7 @@ public class ResourceSyncFileLoader {
     }
   }
 
-  private UrlSet getRsFile(String url) throws IOException {
+  private UrlSet getRsFile(String url) throws IOException, CantRetrieveFileException {
     LOG.info("getRsFile '{}'", url);
     return objectMapper.readValue(IOUtils.toString(remoteFileRetriever.getFile(url))
       .replace("rs.md", "rs:md"), UrlSet.class);
@@ -200,20 +210,24 @@ public class ResourceSyncFileLoader {
       this.httpClient = httpClient;
     }
 
-    public InputStream getFile(String url) throws IOException {
-      InputStream content = httpClient.execute(new HttpGet(url)).getEntity().getContent();
-      if (content != null) {
-        return maybeDecompress(content);
-      } else {
-        return new ByteArrayInputStream(new byte[0]);
+    public InputStream getFile(String url) throws CantRetrieveFileException, IOException {
+      HttpGet httpGet = new HttpGet(url);
+      /*Timeout time is set to 100seconds to prevent socket timeout during changelist import*/
+      httpGet.setConfig(RequestConfig.custom().setSocketTimeout(100000).build());
+      HttpResponse httpResponse = httpClient.execute(httpGet);
+      if (httpResponse.getStatusLine().getStatusCode() == 200) {
+        InputStream content = httpResponse.getEntity().getContent();
+        if (content != null) {
+          return maybeDecompress(content);
+        } else {
+          return new ByteArrayInputStream(new byte[0]);
+        }
       }
+
+      throw new CantRetrieveFileException(httpResponse.getStatusLine().getStatusCode(),
+        httpResponse.getStatusLine().getReasonPhrase());
     }
   }
 
-  private class RuntimeUpgrader extends RuntimeException {
-    private RuntimeUpgrader(Throwable cause) {
-      super(cause);
-    }
-  }
 }
 

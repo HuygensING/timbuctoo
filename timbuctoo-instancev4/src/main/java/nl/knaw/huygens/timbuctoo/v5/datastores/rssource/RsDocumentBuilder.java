@@ -23,6 +23,8 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Builds ResourceSync documents and provides ResourceSync-related resources.
@@ -44,7 +46,7 @@ public class RsDocumentBuilder {
    * Construct a {@link RsDocumentBuilder}. Construction is usually done on server-configuration level.
    *
    * @param dataSetRepository Repository
-   * @param uriHelper helper class
+   * @param uriHelper         helper class
    */
   public RsDocumentBuilder(DataSetRepository dataSetRepository, UriHelper uriHelper) {
     this.dataSetRepository = dataSetRepository;
@@ -81,8 +83,8 @@ public class RsDocumentBuilder {
    * The {@link Optional} is empty if the dataSet is not published and the given <code>user</code> == <code>null</code>
    * or has no read access for the dataSet or the dataSet does not exist.
    *
-   * @param user User that requests the list, may be <code>null</code>
-   * @param ownerId ownerId
+   * @param user      User that requests the list, may be <code>null</code>
+   * @param ownerId   ownerId
    * @param dataSetId dataSetId
    * @return the capability list for the dataSet denoted by <code>ownerId</code> and <code>dataSetId</code>
    */
@@ -102,6 +104,11 @@ public class RsDocumentBuilder {
       UrlItem item = new UrlItem(loc)
         .withMetadata(new RsMd(Capability.RESOURCELIST.xmlValue));
       capabilityList.addItem(item);
+
+      String loc2 = rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CHANGELIST);
+      UrlItem item2 = new UrlItem(loc2)
+        .withMetadata(new RsMd(Capability.CHANGELIST.xmlValue));
+      capabilityList.addItem(item2);
     }
     return Optional.ofNullable(capabilityList);
   }
@@ -111,8 +118,8 @@ public class RsDocumentBuilder {
    * The {@link Optional} is empty if the dataSet is not published and the given <code>user</code> == <code>null</code>
    * or has no read access for the dataSet or the dataSet does not exist.
    *
-   * @param user User that requests the list, may be <code>null</code>
-   * @param ownerId ownerId
+   * @param user      User that requests the list, may be <code>null</code>
+   * @param ownerId   ownerId
    * @param dataSetId dataSetId
    * @return the resource list for the dataSet denoted by <code>ownerId</code> and <code>dataSetId</code>
    */
@@ -126,6 +133,7 @@ public class RsDocumentBuilder {
         .withAt(ZonedDateTime.parse(loglist.getLastImportDate())); // lastImportDate set on server startup?
       resourceList = new Urlset(rsMd)
         .addLink(new RsLn(REL_UP, rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CAPABILITYLIST)));
+
 
       FileStorage fileStorage = maybeDataSet.get().getFileStorage();
       List<LogEntry> entries = loglist.getEntries();
@@ -153,15 +161,83 @@ public class RsDocumentBuilder {
     return Optional.ofNullable(resourceList);
   }
 
+
+  public Optional<Urlset> getChangeList(@Nullable User user, String ownerId, String dataSetId) throws IOException {
+    Urlset changeList = null;
+
+    Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(user, ownerId, dataSetId);
+    if (maybeDataSet.isPresent()) {
+      DataSetMetaData dataSetMetaData = maybeDataSet.get().getMetadata();
+      LogList loglist = maybeDataSet.get().getImportManager().getLogList();
+
+      RsMd rsMd = new RsMd(Capability.CHANGELIST.xmlValue)
+        .withFrom(ZonedDateTime.parse(loglist.getLastImportDate()));
+
+      List<LogEntry> logEntries = loglist.getEntries();
+
+      changeList = new Urlset(rsMd)
+        .addLink(new RsLn(REL_UP, rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CAPABILITYLIST)));
+
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
+
+      ChangesRetriever changesRetriever = maybeDataSet.get().getChangesRetriever();
+
+      List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(
+        changesRetriever.getVersions()
+      );
+
+      for (String changeFileName : changeFileNames) {
+        LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName));
+        UrlItem item = new UrlItem(rsUriHelper.uriForChanges(dataSetMetaData, changeFileName))
+          .withMetadata(new RsMd()
+            .withChange("updated")
+            .withType("application/vnd.timbuctoo-rdf.nquads_unified_diff")
+            .withDateTime(ZonedDateTime.parse(logEntry.getImportStatus().getDate())));
+        changeList.addItem(item);
+      }
+    }
+
+    return Optional.ofNullable(changeList);
+  }
+
+  public Optional<Stream<String>> getChanges(@Nullable User user, String ownerId, String dataSetId, String fileId) {
+
+    Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(user, ownerId, dataSetId);
+    if (maybeDataSet.isPresent()) {
+      DataSet dataSet = maybeDataSet.get();
+      DataSetMetaData dataSetMetaData = dataSet.getMetadata();
+
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
+
+      ChangesRetriever changesRetriever = dataSet.getChangesRetriever();
+
+      Integer version = getVersionFromFileId(fileId);
+
+      Supplier<List<String>> subjectsSupplier = changesRetriever.getSubjects(version);
+
+      return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version, subjectsSupplier)
+        .stream());
+    }
+
+    return Optional.empty();
+  }
+
+  private Integer getVersionFromFileId(String fileId) {
+    String fileName = fileId.substring(0, fileId.lastIndexOf("."));
+    String fileIndex = fileName.replaceAll("\\D+", "");
+    //return Integer.parseInt(fileName.substring(fileName.length() - 1));
+    return Integer.parseInt(fileIndex);
+  }
+
   /**
    * Get the {@link CachedFile} denoted by <code>ownerId</code>, <code>dataSetId</code> and <code>fileId</code>.
    * The {@link Optional} is empty if the dataSet is not published and the given <code>user</code> == <code>null</code>
    * or has no read access for the dataSet or the dataSet does not exist.
    *
-   * @param user User that requests the file, may be <code>null</code>
-   * @param ownerId ownerId
+   * @param user      User that requests the file, may be <code>null</code>
+   * @param ownerId   ownerId
    * @param dataSetId dataSetId
-   * @param fileId fileId
+   * @param fileId    fileId
    * @return the {@link CachedFile} denoted by <code>ownerId</code>, <code>dataSetId</code> and <code>fileId</code>
    * @throws IOException for FileStorage failure
    */
@@ -179,8 +255,8 @@ public class RsDocumentBuilder {
    * The {@link Optional} is empty if the dataSet is not published and the given <code>user</code> == <code>null</code>
    * or has no read access for the dataSet or the dataSet does not exist.
    *
-   * @param user User that requests the description, may be <code>null</code>
-   * @param ownerId ownerId
+   * @param user      User that requests the description, may be <code>null</code>
+   * @param ownerId   ownerId
    * @param dataSetId datasetId
    * @return the dataSet description for the dataSet denoted by <code>ownerId</code> and <code>dataSetId</code>
    */

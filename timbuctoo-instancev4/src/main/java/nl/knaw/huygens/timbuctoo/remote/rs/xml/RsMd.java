@@ -17,6 +17,7 @@ public class RsMd {
   @XmlAttribute() private String capability;
 
   @XmlAttribute() private ZonedDateTime at;
+  @XmlAttribute() private ZonedDateTime datetime; //Resourcesync spec included datetime property for changelists
   @XmlAttribute() private ZonedDateTime completed;
   @XmlAttribute() private ZonedDateTime from;
   @XmlAttribute() private ZonedDateTime until;
@@ -49,6 +50,15 @@ public class RsMd {
 
   public RsMd withAt(ZonedDateTime at) {
     this.at = at;
+    return this;
+  }
+
+  public Optional<ZonedDateTime> getDateTime() {
+    return Optional.ofNullable(datetime);
+  }
+
+  public RsMd withDateTime(ZonedDateTime datetime) {
+    this.datetime = datetime;
     return this;
   }
 

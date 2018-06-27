@@ -24,6 +24,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
@@ -115,6 +116,16 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
+            public UpdatedPerPatchStore getUpdatedPerPatchStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public BdbTruePatchStore getTruePatchStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
             public TypeNameStore getTypeNameStore() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
@@ -146,6 +157,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
               } catch (IllegalDataSetNameException e) {
                 throw new RuntimeException(e);
               }
+            }
+
+            @Override
+            public ChangesRetriever getChangesRetriever() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
 
             @Override

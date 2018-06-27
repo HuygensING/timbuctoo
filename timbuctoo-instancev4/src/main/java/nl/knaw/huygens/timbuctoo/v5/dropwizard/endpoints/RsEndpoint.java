@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Path("v5/resourcesync")
 public class RsEndpoint {
@@ -72,6 +73,48 @@ public class RsEndpoint {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
   }
+
+  @GET
+  @Path("{ownerId}/{dataSetName}/changelist.xml")
+  @Produces(MediaType.APPLICATION_XML)
+  public Response getChangeList(@HeaderParam("authorization") String authHeader,
+                                @PathParam("ownerId") String owner,
+                                @PathParam("dataSetName") String dataSetName) throws IOException {
+    User user = getUser(authHeader);
+    Optional<Urlset> maybeChangeList = rsDocumentBuilder.getChangeList(user, owner, dataSetName);
+    if (maybeChangeList.isPresent()) {
+      return Response.ok(maybeChangeList.get()).build();
+    } else if (user != null) {
+      return Response.status(Response.Status.FORBIDDEN).build();
+    } else {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+  }
+
+  @GET
+  @Path("{ownerId}/{dataSetName}/changes/{fileId}")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response getChanges(@HeaderParam("authorization") String authHeader,
+                             @PathParam("ownerId") String owner,
+                             @PathParam("dataSetName") String dataSetName,
+                             @PathParam("fileId") String fileId) throws IOException {
+    User user = getUser(authHeader);
+    Optional<Stream<String>> changesStream = rsDocumentBuilder.getChanges(user, owner, dataSetName, fileId);
+
+    if (changesStream.isPresent()) {
+      StringBuilder stringBuilder = new StringBuilder();
+
+      try (Stream<String> changes = changesStream.get()) {
+        changes.forEach(s -> {
+          stringBuilder.append(s);
+        });
+      }
+      return Response.ok(stringBuilder.toString()).build();
+    }
+
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+
 
   @GET
   @Path("{ownerId}/{dataSetName}/files/{fileId}")

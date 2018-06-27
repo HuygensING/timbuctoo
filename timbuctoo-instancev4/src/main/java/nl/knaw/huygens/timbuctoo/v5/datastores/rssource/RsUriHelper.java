@@ -40,5 +40,10 @@ public class RsUriHelper {
       dataSetMetaData.getDataSetId(), FILES_DIR, token);
   }
 
+  public String uriForChanges(DataSetMetaData dataSetMetaData, String changeFileName) {
+    return String.format("%s/%s/%s/%s/changes/%s", uriHelper.getBaseUri(),RESOURCE_SYNC_PATH,
+      dataSetMetaData.getOwnerId(),
+      dataSetMetaData.getDataSetId(), changeFileName);
+  }
 
 }

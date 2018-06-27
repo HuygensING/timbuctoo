@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
+import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
@@ -55,6 +56,8 @@ public class Import {
           );
 
           return Response.ok(resourceSyncReport).build();
+        } catch (CantRetrieveFileException e) {
+          return Response.status(400).entity(e.getMessage()).build();
         } catch (Exception e) {
           LOG.error("Could not read files to import", e);
           return Response.serverError().entity(e).build();
