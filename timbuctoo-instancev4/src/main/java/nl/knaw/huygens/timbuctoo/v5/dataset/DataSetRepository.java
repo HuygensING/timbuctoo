@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
@@ -147,7 +148,8 @@ public class DataSetRepository {
 
 
 
-  public DataSet createDataSet(User user, String dataSetId, String importSource) throws DataStoreCreationException,
+  public DataSet createDataSet(User user, String dataSetId,
+                               List<ImportInfo> importInfos) throws DataStoreCreationException,
     IllegalDataSetNameException {
     //The ownerId might not be valid (i.e. a safe string). We make it safe here:
     //dataSetId is under the control of the user so we simply throw if it's not valid
@@ -185,7 +187,7 @@ public class DataSetRepository {
       uriPrefix,
       false,
       publicByDefault,
-      importSource
+      importInfos
     );
 
     try {

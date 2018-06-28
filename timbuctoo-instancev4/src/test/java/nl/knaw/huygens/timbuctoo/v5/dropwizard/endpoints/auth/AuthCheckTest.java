@@ -46,7 +46,7 @@ public class AuthCheckTest {
       userValidator,
       "auth",
       new BasicDataSetMetaData("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/",
-        false, false,"")
+        false, false)
     );
 
     assertThat(response.getStatus(), is(200));
@@ -61,7 +61,7 @@ public class AuthCheckTest {
       userValidator,
       "auth",
       new BasicDataSetMetaData("ownerid", "datasetid", "http://ex.org",
-        "http://example.org/prefix/", false, false,"")
+        "http://example.org/prefix/", false, false)
     );
 
     assertThat(response.getStatus(), is(UNAUTHORIZED.getStatusCode()));

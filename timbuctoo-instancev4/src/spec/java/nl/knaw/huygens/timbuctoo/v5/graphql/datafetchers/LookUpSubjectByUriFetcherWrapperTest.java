@@ -153,7 +153,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
                   "ownerid",
                   "datasetid",
                   "http://example.org",
-                  "http://example.org/prefix/", false,false,""
+                  "http://example.org/prefix/", false,false
                 );
               } catch (IllegalDataSetNameException e) {
                 throw new RuntimeException(e);

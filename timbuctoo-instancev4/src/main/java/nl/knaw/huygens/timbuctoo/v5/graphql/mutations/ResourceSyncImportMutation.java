@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
+import com.google.common.collect.Lists;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
@@ -8,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileE
 import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -15,6 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 
 public class ResourceSyncImportMutation implements DataFetcher {
@@ -41,7 +48,8 @@ public class ResourceSyncImportMutation implements DataFetcher {
     ResourceSyncImport.ResourceSyncReport resourceSyncReport;
 
     try {
-      dataSet = dataSetRepository.createDataSet(user, dataSetName, capabilityListUri);
+      ImportInfo importInfo = new ImportInfo(capabilityListUri, Date.from(Instant.now()));
+      dataSet = dataSetRepository.createDataSet(user, dataSetName, Lists.newArrayList(importInfo));
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader, dataSet, false);
       resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, userSpecifiedDataSet,
         false, authString);

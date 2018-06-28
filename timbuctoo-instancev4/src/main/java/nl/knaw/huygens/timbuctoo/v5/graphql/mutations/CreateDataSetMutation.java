@@ -27,7 +27,7 @@ public class CreateDataSetMutation implements DataFetcher {
 
     String dataSetName = environment.getArgument("dataSetName");
     try {
-      return new DataSetWithDatabase(dataSetRepository.createDataSet(currentUser, dataSetName, ""));
+      return new DataSetWithDatabase(dataSetRepository.createDataSet(currentUser, dataSetName));
     } catch (DataStoreCreationException e) {
       LOG.error("Data set creation exception", e);
       throw new RuntimeException("Data set could not be created");

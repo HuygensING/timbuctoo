@@ -110,6 +110,6 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   private boolean isImportedDataSet(DataSetMetaData dataSetMetaData) {
-    return dataSetMetaData.getImportSource() != null && !dataSetMetaData.getImportSource().equals("");
+    return dataSetMetaData.getImportInfo() != null && dataSetMetaData.getImportInfo().size() > 0;
   }
 }

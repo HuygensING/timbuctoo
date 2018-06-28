@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
@@ -73,8 +75,9 @@ public class BasicPermissionFetcherTest {
       anyString(),
       any(User.class))
     ).willReturn(Optional.of(vreAuthorization));
-    given(dataSetMetaData.getImportSource())
-      .willReturn("http://example.com/resourcesync/user/dataset/capabilitylist.xml");
+    ImportInfo importInfo = new ImportInfo("http://example.com/resourcesync/user/dataset/capabilitylist.xml",null);
+    given(dataSetMetaData.getImportInfo())
+      .willReturn(Lists.newArrayList(importInfo));
 
     Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
 

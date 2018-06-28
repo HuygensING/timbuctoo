@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import org.immutables.value.Value;
 
-import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCombinedId;
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.isValidId;
@@ -18,9 +19,9 @@ public class BasicDataSetMetaData implements DataSetMetaData {
   private final String baseUri;
   private final String uriPrefix;
   private final String combinedId;
-  private final String importSource;
   private boolean promoted;
   private boolean published;
+  private List<ImportInfo> importInfo;
 
 
   @JsonCreator
@@ -30,7 +31,7 @@ public class BasicDataSetMetaData implements DataSetMetaData {
                               @JsonProperty("uriPrefix") String uriPrefix,
                               @JsonProperty("promoted") boolean promoted,
                               @JsonProperty("published") boolean published,
-                              @JsonProperty("importSource") @Nullable String importSource)
+                              @JsonProperty("importInfo") List<ImportInfo> importInfo)
     throws IllegalDataSetNameException {
     if (!isValidId(ownerId) || !isValidId(dataSetId)) {
       throw new IllegalDataSetNameException("Owner id and dataSet id should " + VALID_ID_DESCRIPTION);
@@ -43,7 +44,7 @@ public class BasicDataSetMetaData implements DataSetMetaData {
     this.uriPrefix = uriPrefix;
     this.promoted = promoted;
     this.published = published;
-    this.importSource = importSource;
+    this.importInfo = importInfo;
   }
 
   public BasicDataSetMetaData(@JsonProperty("ownerId") String ownerId,
@@ -63,7 +64,7 @@ public class BasicDataSetMetaData implements DataSetMetaData {
     this.uriPrefix = uriPrefix;
     this.promoted = promoted;
     this.published = published;
-    this.importSource = null;
+    this.importInfo = new ArrayList<>(); //For dataSets uploaded directly to Timbuctoo there is no importInfo
   }
 
 
@@ -112,8 +113,8 @@ public class BasicDataSetMetaData implements DataSetMetaData {
   }
 
   @Override
-  public String getImportSource() {
-    return importSource;
+  public List<ImportInfo> getImportInfo() {
+    return importInfo;
   }
 
   @Override

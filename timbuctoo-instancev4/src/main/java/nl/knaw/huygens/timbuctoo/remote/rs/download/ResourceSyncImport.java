@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.text.ParseException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -41,9 +41,13 @@ public class ResourceSyncImport {
     List<RemoteFile> filesToImport;
 
     if (userSpecifiedDataSet == null) {
-      filesToImport = filter(capabilityListUri, update,authString);
+      filesToImport = filter(capabilityListUri, update, authString);
     } else {
-      filesToImport = filter(capabilityListUri, userSpecifiedDataSet,authString);
+      filesToImport = filter(capabilityListUri, userSpecifiedDataSet, authString);
+    }
+
+    if (update) {
+      dataSet.getMetadata().getImportInfo().get(0).setLastImportedOn(Date.from(Instant.now()));
     }
 
     Iterator<RemoteFile> files = filesToImport.iterator();
@@ -108,20 +112,12 @@ public class ResourceSyncImport {
 
       List<RemoteFile> resources = new ArrayList<>();
 
-
       if (!remoteFilesList.getChangeList().isEmpty()) {
-
         if (update) {
-          Date lastUpdate = null;
-
-          try {
-            lastUpdate = dataSet.getLogInfo().getDateofLastImport();
-          } catch (ParseException e) {
-            throw new RuntimeException("Can't determine date of last import.", e);
-          }
+          Date lastUpdate = dataSet.getMetadata().getImportInfo().get(0).getLastImportedOn();
 
           for (RemoteFile remoteFile : remoteFilesList.getChangeList()) {
-            if (remoteFile.getMetadata().getDateTime().compareTo(lastUpdate) > 0) {
+            if (remoteFile.getMetadata().getDateTime().after(lastUpdate)) {
               resources.add(remoteFile);
             }
           }
