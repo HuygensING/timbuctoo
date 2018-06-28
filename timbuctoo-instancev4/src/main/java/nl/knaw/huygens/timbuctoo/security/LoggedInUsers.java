@@ -42,7 +42,7 @@ public class LoggedInUsers {
     return CacheBuilder.newBuilder().expireAfterAccess(timeout.duration, timeout.timeUnit).build();
   }
 
-  public Optional<User> userFor(String authHeader) {
+  public synchronized Optional<User> userFor(String authHeader) {
     if (authHeader == null || authHeader.isEmpty()) {
       return Optional.empty();
     } else {
@@ -75,7 +75,7 @@ public class LoggedInUsers {
     }
   }
 
-  public Optional<String> userTokenFor(String username, String password)
+  public synchronized Optional<String> userTokenFor(String username, String password)
     throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     Optional<String> id;
     Optional<String> token = Optional.empty();
