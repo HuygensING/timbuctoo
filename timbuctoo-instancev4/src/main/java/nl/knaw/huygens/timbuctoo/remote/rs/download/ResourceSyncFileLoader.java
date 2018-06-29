@@ -105,7 +105,7 @@ public class ResourceSyncFileLoader {
         String changeListExtension = ".*.nqud";
 
         for (UrlItem changeListItem : rsFile.getItemList()) {
-          if (changeListItem.getMetadata().getMimeType().equals(MIME_TYPE_FOR_EXTENSION.get(changeListExtension)) ||
+          if (changeListItem.getMetadata().getMimeType().equals(MIME_TYPE_FOR_EXTENSION.get("nqud")) ||
             changeListItem.getLoc().matches(changeListExtension)) {
             RemoteFile remoteFile = getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata()),
               authString);
