@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -36,16 +37,7 @@ public class SetListBase {
   @SuppressWarnings("unchecked")
   private void init(ResultIndex resultIndex, Interpreter interpreter) {
 
-    setDetails = resultIndex.getResultMap().values().stream()
-      .filter(result -> result.getContent().isPresent() && result.getContent().orElse(null) instanceof Urlset)
-      .map(result -> (Result<Urlset>) result) // save cast because of previous filter
-      .filter(result -> result.getContent().map(RsRoot::getMetadata)
-        .flatMap(RsMd::getCapability).orElse("invalid").equals(Capability.DESCRIPTION.xmlValue))
-      .map(urlsetResult -> urlsetResult.getContent().orElse(null))
-      .map(Urlset::getItemList)
-      .flatMap(Collection::stream)
-      .map(rsItem -> new SetItemView(resultIndex, rsItem, interpreter))
-      .collect(Collectors.toList());
+    setDetails = filterCapabilityLists(resultIndex, interpreter);
 
     explorationAttempts = resultIndex.getResultMap().values().stream()
       .filter(result -> result.getOrdinal() == 0)
@@ -59,6 +51,23 @@ public class SetListBase {
 
     invalidUris = resultIndex.getInvalidUris();
   }
+
+  static List<SetItemView> filterCapabilityLists(ResultIndex resultIndex, Interpreter interpreter) {
+    return resultIndex.getResultMap().values().stream()
+      .filter(result -> result.getContent().isPresent() && result.getContent().orElse(null) instanceof Urlset)
+      //change  above to result.getContent().ifPresent()
+      .map(result -> (Result<Urlset>) result) // save cast because of previous filter
+      .filter(result -> result.getContent().map(RsRoot::getMetadata)
+        .flatMap(RsMd::getCapability).orElse("invalid").equals(Capability.DESCRIPTION.xmlValue))
+      .map(urlsetResult -> urlsetResult.getContent().orElse(null))
+      .map(Urlset::getItemList)
+      .flatMap(Collection::stream)
+      .map(rsItem -> new SetItemView(resultIndex, rsItem, interpreter))
+      //below is to prevent duplicate locations because of redirection (Eg. with .well-known/resource)
+      .collect(Collectors.toMap(SetItemView::getLocation, loc -> loc, (loc1, loc2) -> loc1)).values().stream()
+      .collect(Collectors.toList());
+  }
+
 
   public List<SetItemView> getSetDetails() {
     return setDetails;

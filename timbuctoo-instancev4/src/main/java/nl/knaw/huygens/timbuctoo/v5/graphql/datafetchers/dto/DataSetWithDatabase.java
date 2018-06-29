@@ -2,7 +2,10 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
+
+import java.util.List;
 
 public class DataSetWithDatabase extends LazyTypeSubjectReference implements DataSetMetaData {
   private final DataSetMetaData dataSetMetaData;
@@ -46,6 +49,12 @@ public class DataSetWithDatabase extends LazyTypeSubjectReference implements Dat
   public boolean isPublished() {
     return dataSetMetaData.isPublished();
   }
+
+  @Override
+  public List<ImportInfo> getImportInfo() {
+    return dataSetMetaData.getImportInfo();
+  }
+
 
   @Override
   public String getSubjectUri() {

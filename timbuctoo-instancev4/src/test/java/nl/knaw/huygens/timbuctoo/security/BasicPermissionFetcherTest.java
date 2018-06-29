@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
@@ -63,6 +65,23 @@ public class BasicPermissionFetcherTest {
     Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
 
     assertThat(permissions, containsInAnyOrder(Permission.WRITE, Permission.READ));
+  }
+
+  @Test
+  public void getPermissionsDoesNotReturnWritePermissionsForRsImportedDataSet() throws Exception {
+    VreAuthorization vreAuthorization = mock(VreAuthorization.class);
+    given(vreAuthorization.isAllowedToWrite()).willReturn(true);
+    given(vreAuthorizationCrud.getAuthorization(
+      anyString(),
+      any(User.class))
+    ).willReturn(Optional.of(vreAuthorization));
+    ImportInfo importInfo = new ImportInfo("http://example.com/resourcesync/user/dataset/capabilitylist.xml",null);
+    given(dataSetMetaData.getImportInfo())
+      .willReturn(Lists.newArrayList(importInfo));
+
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
+
+    assertThat(permissions, contains(Permission.READ));
   }
 
   @Test

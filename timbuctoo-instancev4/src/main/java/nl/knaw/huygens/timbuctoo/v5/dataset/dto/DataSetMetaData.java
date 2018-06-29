@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DataSetMetaData {
@@ -55,6 +56,9 @@ public interface DataSetMetaData {
 
   @Value.Auxiliary
   boolean isPublished();
+
+
+  List<ImportInfo> getImportInfo();
 
   void publish();
 }

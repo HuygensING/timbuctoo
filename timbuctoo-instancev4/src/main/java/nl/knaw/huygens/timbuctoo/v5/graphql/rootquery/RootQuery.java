@@ -8,6 +8,8 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
+import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -22,6 +24,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataSetImportStatusFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DiscoverResourceSyncDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.ImportStatusFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.SummaryPropertiesDataFetcher;
@@ -37,6 +40,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncImportMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncUpdateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
@@ -80,12 +85,15 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final RdfWiringFactory wiringFactory;
   private final DerivedSchemaTypeGenerator typeGenerator;
   private final ObjectMapper objectMapper;
+  private final ResourceSyncFileLoader resourceSyncFileLoader;
+  private final ResourceSyncService resourceSyncService;
   private final SchemaParser schemaParser;
   private final String staticQuery;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
                    String archetypes, RdfWiringFactory wiringFactory,
-                   DerivedSchemaTypeGenerator typeGenerator, ObjectMapper objectMapper)
+                   DerivedSchemaTypeGenerator typeGenerator, ObjectMapper objectMapper,
+                   ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService)
     throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
@@ -93,6 +101,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     this.wiringFactory = wiringFactory;
     this.typeGenerator = typeGenerator;
     this.objectMapper = objectMapper;
+    this.resourceSyncFileLoader = resourceSyncFileLoader;
+    this.resourceSyncService = resourceSyncService;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
     schemaParser = new SchemaParser();
   }
@@ -114,6 +124,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     final RuntimeWiring.Builder wiring = RuntimeWiring.newRuntimeWiring();
 
     wiring.type("Query", builder -> builder
+      .dataFetcher("discoverResourceSync", new DiscoverResourceSyncDataFetcher(resourceSyncService))
       .dataFetcher("promotedDataSets", env -> dataSetRepository.getPromotedDataSets()
         .stream()
         .map(DataSetWithDatabase::new)
@@ -259,6 +270,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("extendSchema", new ExtendSchemaMutation(dataSetRepository))
       .dataFetcher("setDataSetMetadata", new DataSetMetadataMutation(dataSetRepository))
       .dataFetcher("setCollectionMetadata", new CollectionMetadataMutation(dataSetRepository))
+      .dataFetcher("resourceSyncImport",
+        new ResourceSyncImportMutation(dataSetRepository, resourceSyncFileLoader))
+      .dataFetcher("resourceSyncUpdate",
+        new ResourceSyncUpdateMutation(dataSetRepository, resourceSyncFileLoader))
     );
 
     wiring.wiringFactory(wiringFactory);

@@ -60,9 +60,9 @@ public class ResourceSyncImportTest {
     List<RemoteFile> resources = new ArrayList<>();
     resources.add(RemoteFile.create(BASE_URL + "files/dataset.nq", () -> null, "", metadata));
     RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
-    given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI)).willReturn(remoteFilesList);
+    given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI, null)).willReturn(remoteFilesList);
 
-    ResourceSyncReport resourceSyncReport = instance.filterAndImport(CAPABILITY_LIST_URI, null);
+    ResourceSyncReport resourceSyncReport = instance.filterAndImport(CAPABILITY_LIST_URI, null, false, null);
 
     verify(importManager).addLog(any(), any(), endsWith("changes1.nqud"), any(), any(), any());
     verify(importManager).addLog(any(), any(), endsWith("changes2.nqud"), any(), any(), any());
@@ -78,9 +78,9 @@ public class ResourceSyncImportTest {
     List<RemoteFile> resources = new ArrayList<>();
     resources.add(RemoteFile.create(BASE_URL + "files/dataset.nq", () -> null, "", metadata));
     RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
-    given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI)).willReturn(remoteFilesList);
+    given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI, null)).willReturn(remoteFilesList);
 
-    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, null);
+    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, null, false, null);
 
     verify(importManager).addLog(any(), any(), endsWith("dataset.nq"), any(), any(), any());
     assertThat(filteredFiles.importedFiles, contains(BASE_URL + "files/dataset.nq"));
@@ -95,9 +95,9 @@ public class ResourceSyncImportTest {
     resources.add(RemoteFile.create(BASE_URL + "files/dataset.rdf", () -> null, "", metadata2));
     List<RemoteFile> changes = Collections.emptyList();
     RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
-    given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI)).willReturn(remoteFilesList);
+    given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI, null)).willReturn(remoteFilesList);
 
-    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, null);
+    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, null, false, null);
 
     verify(importManager).addLog(any(), any(), endsWith("dataset.rdf"), any(), any(), any());
     assertThat(filteredFiles.importedFiles, contains(BASE_URL + "files/dataset.rdf"));
@@ -110,10 +110,10 @@ public class ResourceSyncImportTest {
     resources.add(RemoteFile.create(BASE_URL + "files/dataset.nq", () -> null, "", metadata));
     resources.add(RemoteFile.create(BASE_URL + "files/dataset.rdf", () -> null, "", metadata));
     RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
-    given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI)).willReturn(remoteFilesList);
+    given(resourceSyncFileLoader.getRemoteFilesList(CAPABILITY_LIST_URI, null)).willReturn(remoteFilesList);
     String userSpecifiedDataSet = BASE_URL + "files/dataset.rdf";
 
-    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, userSpecifiedDataSet);
+    ResourceSyncReport filteredFiles = instance.filterAndImport(CAPABILITY_LIST_URI, userSpecifiedDataSet, false, null);
 
     verify(importManager).addLog(any(), any(), endsWith("dataset.rdf"), any(), any(), any());
     assertThat(filteredFiles.importedFiles, contains(BASE_URL + "files/dataset.rdf"));
@@ -127,10 +127,10 @@ public class ResourceSyncImportTest {
     resources.add(RemoteFile.create(BASE_URL + "files/dataset.nq", () -> null, "", metadata));
     resources.add(RemoteFile.create(BASE_URL + "files/dataset.rdf", () -> null, "", metadata));
     RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
-    given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri)).willReturn(remoteFilesList);
+    given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri, null)).willReturn(remoteFilesList);
 
 
-    instance.filterAndImport(capabilityListUri, null);
+    instance.filterAndImport(capabilityListUri, null, false, null);
 
   }
 }

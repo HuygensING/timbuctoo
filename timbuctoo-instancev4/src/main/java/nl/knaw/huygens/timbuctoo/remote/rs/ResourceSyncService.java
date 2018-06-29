@@ -21,20 +21,22 @@ public class ResourceSyncService {
     this.rsContext = rsContext;
   }
 
-  public SetListBase listSets(String url, Interpreter interpreter) throws URISyntaxException, InterruptedException {
+  public SetListBase listSets(String url, Interpreter interpreter, String authString)
+    throws URISyntaxException, InterruptedException {
+
     Expedition expedition = new Expedition(httpClient, rsContext);
-    return new SetListBase(expedition.exploreAndMerge(url), interpreter);
+    return new SetListBase(expedition.exploreAndMerge(url,authString), interpreter);
   }
 
   public FrameworkBase getFramework(String url, Interpreter interpreter)
     throws URISyntaxException, InterruptedException {
     Expedition expedition = new Expedition(httpClient, rsContext);
-    return new FrameworkBase(expedition.exploreAndMerge(url), interpreter);
+    return new FrameworkBase(expedition.exploreAndMerge(url, null), interpreter);
   }
 
   public TreeBase getTree(String url, Interpreter interpreter) throws URISyntaxException, InterruptedException {
     Expedition expedition = new Expedition(httpClient, rsContext);
-    return new TreeBase(expedition.exploreAndMerge(url), interpreter);
+    return new TreeBase(expedition.exploreAndMerge(url, null), interpreter);
   }
 
 }

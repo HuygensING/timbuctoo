@@ -48,7 +48,7 @@ public class ExpeditionTest extends AbstractRemoteTest {
     Expedition expedition = new Expedition(getHttpclient(), getRsContext());
 
     //
-    List<ResultIndex> indexes = expedition.explore(url);
+    List<ResultIndex> indexes = expedition.explore(url, null);
     /*indexes.forEach(resultIndex -> resultIndex.getResultMap()
       .forEach((uri, result) -> System.out.println(uri + " "
         + result.getStatusCode() + " "
@@ -71,7 +71,7 @@ public class ExpeditionTest extends AbstractRemoteTest {
     // again with merged indexes
     // uri's http://localhost:xxxxx/timbucto will be merged
     setUpServer(path);
-    ResultIndex index = expedition.exploreAndMerge(url);
+    ResultIndex index = expedition.exploreAndMerge(url, null);
     ResultIndexPivot pivot = new ResultIndexPivot((index));
 
     int resultCount = index.getResultMap().size();
@@ -97,7 +97,7 @@ public class ExpeditionTest extends AbstractRemoteTest {
 
     String url = composePath(path);
     Expedition expedition = new Expedition(getHttpclient(), getRsContext());
-    ResultIndex index = expedition.exploreAndMerge(url);
+    ResultIndex index = expedition.exploreAndMerge(url, null);
     ResultIndexPivot pivot = new ResultIndexPivot((index));
     List<String> locs = pivot.listUrlLocations(Capability.CAPABILITYLIST);
 

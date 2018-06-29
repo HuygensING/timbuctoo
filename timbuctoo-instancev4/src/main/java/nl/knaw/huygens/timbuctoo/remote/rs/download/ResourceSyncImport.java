@@ -13,8 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -33,14 +35,19 @@ public class ResourceSyncImport {
     this.async = async;
   }
 
-  public ResourceSyncReport filterAndImport(String capabilityListUri, String userSpecifiedDataSet)
+  public ResourceSyncReport filterAndImport(String capabilityListUri, String userSpecifiedDataSet, boolean update,
+                                            String authString)
     throws CantDetermineDataSetException, IOException, CantRetrieveFileException {
     List<RemoteFile> filesToImport;
 
     if (userSpecifiedDataSet == null) {
-      filesToImport = filter(capabilityListUri);
+      filesToImport = filter(capabilityListUri, update, authString);
     } else {
-      filesToImport = filter(capabilityListUri, userSpecifiedDataSet);
+      filesToImport = filter(capabilityListUri, userSpecifiedDataSet, authString);
+    }
+
+    if (update) {
+      dataSet.getMetadata().getImportInfo().get(0).setLastImportedOn(Date.from(Instant.now()));
     }
 
     Iterator<RemoteFile> files = filesToImport.iterator();
@@ -96,17 +103,28 @@ public class ResourceSyncImport {
     }
   }
 
-  private List<RemoteFile> filter(String capabilityListUri) throws CantDetermineDataSetException, IOException,
+  private List<RemoteFile> filter(String capabilityListUri, boolean update, String authString)
+    throws CantDetermineDataSetException,
+    IOException,
     CantRetrieveFileException {
     try {
-      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
+      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri, authString);
 
       List<RemoteFile> resources = new ArrayList<>();
 
-
       if (!remoteFilesList.getChangeList().isEmpty()) {
+        if (update) {
+          Date lastUpdate = dataSet.getMetadata().getImportInfo().get(0).getLastImportedOn();
 
-        resources.addAll(remoteFilesList.getChangeList());
+          for (RemoteFile remoteFile : remoteFilesList.getChangeList()) {
+            if (remoteFile.getMetadata().getDateTime().after(lastUpdate)) {
+              resources.add(remoteFile);
+            }
+          }
+
+        } else {
+          resources.addAll(remoteFilesList.getChangeList());
+        }
 
         return resources;
       }
@@ -132,10 +150,10 @@ public class ResourceSyncImport {
 
   }
 
-  private List<RemoteFile> filter(String capabilityListUri, String userSpecifiedDataSet)
+  private List<RemoteFile> filter(String capabilityListUri, String userSpecifiedDataSet, String authString)
     throws CantRetrieveFileException {
     try {
-      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri);
+      RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(capabilityListUri, authString);
 
       List<RemoteFile> resources = new ArrayList<>();
 

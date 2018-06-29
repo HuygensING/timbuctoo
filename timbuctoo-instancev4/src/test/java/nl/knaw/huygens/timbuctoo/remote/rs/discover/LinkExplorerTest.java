@@ -50,7 +50,7 @@ public class LinkExplorerTest extends AbstractRemoteTest {
     LinkExplorer explorer = new LinkExplorer(getHttpclient(), getRsContext(), LinkExplorer.linkReader);
     URI uri = composeUri(path);
     ResultIndex index = new ResultIndex();
-    Result<LinkList> result = explorer.explore(uri, index);
+    Result<LinkList> result = explorer.explore(uri, index, null);
 
     result.getErrors().forEach(Throwable::printStackTrace);
 
@@ -108,7 +108,7 @@ public class LinkExplorerTest extends AbstractRemoteTest {
 
     LinkExplorer explorer = new LinkExplorer(getHttpclient(), getRsContext(), LinkExplorer.linkReader);
     ResultIndex index = new ResultIndex();
-    Result<LinkList> result = explorer.explore(composeUri(path), index);
+    Result<LinkList> result = explorer.explore(composeUri(path), index, null);
 
     result.getErrors().forEach(Throwable::printStackTrace);
 
@@ -142,7 +142,7 @@ public class LinkExplorerTest extends AbstractRemoteTest {
 
     LinkExplorer explorer = new LinkExplorer(getHttpclient(), getRsContext(), LinkExplorer.robotsReader);
     ResultIndex index = new ResultIndex();
-    Result<LinkList> result = explorer.explore(composeUri(path), index);
+    Result<LinkList> result = explorer.explore(composeUri(path), index, null);
 
     result.getErrors().forEach(Throwable::printStackTrace);
 
