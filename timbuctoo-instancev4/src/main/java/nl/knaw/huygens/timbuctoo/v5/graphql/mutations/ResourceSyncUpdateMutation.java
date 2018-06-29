@@ -33,6 +33,7 @@ public class ResourceSyncUpdateMutation implements DataFetcher {
     User user = MutationHelpers.getUser(env);
 
     String combinedId = env.getArgument("dataSetId");
+    // the user-specified authorization token for remote server:
     String authString = env.getArgument("authorization");
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(combinedId);
     Optional<DataSet> dataSet;

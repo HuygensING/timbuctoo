@@ -15,11 +15,6 @@ public class CantDetermineDataSetException extends Exception implements GraphQLE
 
   public CantDetermineDataSetException(List<RemoteFile> remoteFiles) {
     this.remoteFiles = remoteFiles;
-//    super("Can not determine dataset file. Please request again with dataset file name specified. The resource files"
-//       + "available are: \n" +
-//      remoteFiles.stream()
-//        .map(RemoteFile::getUrl)
-//        .collect(Collectors.joining(", \n")));
   }
 
   @Override
@@ -43,3 +38,4 @@ public class CantDetermineDataSetException extends Exception implements GraphQLE
     return availableFiles;
   }
 }
+

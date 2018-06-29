@@ -18,9 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 
 
@@ -43,22 +40,26 @@ public class ResourceSyncImportMutation implements DataFetcher {
     String capabilityListUri = env.getArgument("capabilityListUri");
     String userSpecifiedDataSet = env.getArgument("userSpecifiedDataSet");
     String authString = env.getArgument("authorization");
-    DataSet dataSet;
 
-    ResourceSyncImport.ResourceSyncReport resourceSyncReport;
 
     try {
       ImportInfo importInfo = new ImportInfo(capabilityListUri, Date.from(Instant.now()));
-      dataSet = dataSetRepository.createDataSet(user, dataSetName, Lists.newArrayList(importInfo));
+      DataSet dataSet = dataSetRepository.createDataSet(user, dataSetName, Lists.newArrayList(importInfo));
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader, dataSet, false);
-      resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, userSpecifiedDataSet,
-        false, authString);
+
+      return resourceSyncImport.filterAndImport(
+        capabilityListUri,
+        userSpecifiedDataSet,
+        false,
+        authString
+      );
+
     } catch (DataStoreCreationException | IllegalDataSetNameException | IOException |
       CantRetrieveFileException | CantDetermineDataSetException e) {
       LOG.error("Failed to do a resource sync import. ", e);
       throw new RuntimeException(e);
     }
 
-    return resourceSyncReport;
+
   }
 }
