@@ -96,7 +96,7 @@ type DataSetMetadata {
   importStatus(id: String!): ImportStatus!
 }
 
-type ResourceSyncFiles {
+type ResourceSyncReport {
     importedFiles: [String]!
     ignoredFiles: [String]!
 }
@@ -403,11 +403,11 @@ type Mutation {
   #"userSpecifiedDataSet" is an optional location in the remote server for the dataset you want to import (in case there
   #are more than one dataset available). You can also include an optional "authorization" string that starts with "Bearer "
   # or "Basic " and is followed by an auth token for the case where the remote resource is protected.
-  resourceSyncImport(dataSetName: String!, capabilityListUri: String!, userSpecifiedDataSet: String, authorization: String): ResourceSyncFiles!
+  resourceSyncImport(dataSetName: String!, capabilityListUri: String!, userSpecifiedDataSet: String, authorization: String): ResourceSyncReport!
   #To trigger a resourcesync update. Inputs required: "dataSetId" is the local dataset that you want to update. You can
   #also include an optional "authorization" string that starts with "Bearer "or "Basic " and is followed by an auth token
   #for the case where the remote resource is protected.
-  resourceSyncUpdate(dataSetId: String!, authorization: String): ResourceSyncFiles!
+  resourceSyncUpdate(dataSetId: String!, authorization: String): ResourceSyncReport!
 }
 
 
