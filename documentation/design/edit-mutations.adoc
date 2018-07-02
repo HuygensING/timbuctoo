@@ -1,0 +1,37 @@
+= Edit mutations
+
+== Context
+At the moment of writing, Timbuctoo's GraphQL API has several mutations to edit metadata like facets and summary properites.
+But the real data cannot not be edited with the GraphQL API.
+This has to be done with the `JSON-LD endpoint` or uploading NQUD-files to the `RDF upload endpoint`.
+The problem with the ways mentioned in the last sentence is that both can also change the GraphQL schema of a data set.
+A GraphQL edit mutation for each type should protect against unwittingly changing the schema.
+
+== Definition of done
+. Mutations for each collection should be added to the GraphQL schema.
+. Only users with with `WRITE` permissions should be able to see and use the mutations.
+
+== API design
+```
+...
+mutation EditEntity (uri: String! entity: <EntityType>! {
+  dataSets {
+    <DataSetId> {
+      edit<entityName>(uri: $uri entity: $entity) {
+        <EntityTypeField1>
+        <EntityTypeField3>
+        <EntityTypeFieldN>
+      }
+    }
+  }
+}
+...
+```
+
+== Development steps
+. Generate the API
+. Add a DataFetcher mutation that stores the data
+. Hide the API from users without writing permission
+
+== Links
+Organizing mutations: https://medium.freecodecamp.org/organizing-graphql-mutations-653306699f3d
