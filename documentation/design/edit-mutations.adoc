@@ -14,13 +14,15 @@ A GraphQL edit mutation for each type should protect against unwittingly changin
 == API design
 ```
 ...
-mutation EditEntity (uri: String! entity: <EntityType>! {
+mutation EditEntity (uri: String! entity: <entityName>Input! {
   dataSets {
-    <DataSetId> {
-      edit<entityName>(uri: $uri entity: $entity) {
-        <EntityTypeField1>
-        <EntityTypeField3>
-        <EntityTypeFieldN>
+    <dataSetId> {
+      <entityName>
+        edit(uri: $uri entity: $entity) {
+          <entityTypeField1>
+          <entityTypeField3>
+          <entityTypeFieldN>
+        }
       }
     }
   }
