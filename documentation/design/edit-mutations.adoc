@@ -30,6 +30,10 @@ mutation EditEntity (uri: String! entity: <collectionName>Input!) {
 ...
 ```
 
+== Limitations
+* Value fields of the object can be edited.
+* Links to objects can be edited.
+
 == Development steps
 . Generate the API
 . Add a DataFetcher mutation that stores the data
