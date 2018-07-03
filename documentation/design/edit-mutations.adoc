@@ -1,7 +1,7 @@
 = Edit mutations
 
 == Context
-At the moment of writing, Timbuctoo's GraphQL API has several mutations to edit metadata like facets and summary properites.
+At the moment of writing, Timbuctoo's GraphQL API has several mutations to edit metadata like facets and summary properties.
 But the real data cannot not be edited with the GraphQL API.
 This has to be done with the `JSON-LD endpoint` or uploading NQUD-files to the `RDF upload endpoint`.
 The problem with the ways mentioned in the last sentence is that both can also change the GraphQL schema of a data set.
@@ -28,7 +28,7 @@ mutation EditEntity (uri: String! entity: <collectionName>Input!) {
   }
 }
 ...
-``` 
+```
 
 == Development steps
 . Generate the API
