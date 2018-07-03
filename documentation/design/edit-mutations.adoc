@@ -14,10 +14,10 @@ A GraphQL edit mutation for each type should protect against unwittingly changin
 == API design
 ```
 ...
-mutation EditEntity (uri: String! entity: <entityName>Input! {
+mutation EditEntity (uri: String! entity: <collectionName>Input!) {
   dataSets {
     <dataSetId> {
-      <entityName>
+      <collectionName>
         edit(uri: $uri entity: $entity) {
           <entityTypeField1>
           <entityTypeField3>
@@ -28,12 +28,14 @@ mutation EditEntity (uri: String! entity: <entityName>Input! {
   }
 }
 ...
-```
+``` 
 
 == Development steps
 . Generate the API
 . Add a DataFetcher mutation that stores the data
 . Hide the API from users without writing permission
+. Add 'add' functionality
+. Add 'delete' functionality
 
 == Links
 Organizing mutations: https://medium.freecodecamp.org/organizing-graphql-mutations-653306699f3d
