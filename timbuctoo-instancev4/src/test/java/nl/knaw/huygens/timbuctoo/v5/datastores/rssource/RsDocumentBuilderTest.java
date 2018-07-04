@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncConstants;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsBuilder;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
@@ -171,8 +172,10 @@ public class RsDocumentBuilderTest {
     assertThat(changeListSet.getCapability().get(), is(Capability.CHANGELIST));
     assertThat(changeList.getItemList().size(), is(2));
     assertThat(changeList.getItemList().get(0).getLoc(),
+      is("http://example.com/v5/resourcesync/u1/ds1/dataset.nq"));
+    assertThat(changeList.getItemList().get(0).getLink(ResourceSyncConstants.PATCH_LINK).get().getHref(),
       is("http://example.com/v5/resourcesync/u1/ds1/changes/changes0.nqud"));
-    assertThat(changeList.getItemList().get(1).getLoc(),
+    assertThat(changeList.getItemList().get(1).getLink(ResourceSyncConstants.PATCH_LINK).get().getHref(),
       is("http://example.com/v5/resourcesync/u1/ds1/changes/changes1.nqud"));
   }
 

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncConstants;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsLn;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.UrlItem;
@@ -188,10 +189,13 @@ public class RsDocumentBuilder {
 
       for (String changeFileName : changeFileNames) {
         LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName));
-        UrlItem item = new UrlItem(rsUriHelper.uriForChanges(dataSetMetaData, changeFileName))
+        UrlItem item = new UrlItem(rsUriHelper.uriForRsDataSet(dataSetMetaData))
+          .addLink(new RsLn(ResourceSyncConstants.PATCH_LINK,
+            rsUriHelper.uriForChanges(dataSetMetaData, changeFileName))
+            .withType("application/vnd.timbuctoo-rdf.nquads_unified_diff"))
           .withMetadata(new RsMd()
             .withChange("updated")
-            .withType("application/vnd.timbuctoo-rdf.nquads_unified_diff")
+            .withType("application/n-quads")
             .withDateTime(ZonedDateTime.parse(logEntry.getImportStatus().getDate())));
         changeList.addItem(item);
       }

@@ -18,6 +18,7 @@ import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.StringContains;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -447,18 +448,10 @@ public class IntegrationTest {
 
     assertThat(getChangeListCall.getStatus(), is(200));
 
-    Node changeList = streamToXml(getChangeListCall.readEntity(InputStream.class));
+    String changeFiles = getChangeListCall.readEntity(String.class);
 
-    assertThat(
-      changeList,
-      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" +
-        dataSetName + "/changes/changes0.nqud')]")
-    );
-    assertThat(
-      changeList,
-      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" +
-        dataSetName + "/changes/changes1.nqud')]")
-    );
+    assertThat(changeFiles, containsString("/changes/changes0.nqud"));
+    assertThat(changeFiles, containsString("/changes/changes1.nqud"));
 
     Response getChangesCall = call("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/changes/changes1.nqud")
       .get();
