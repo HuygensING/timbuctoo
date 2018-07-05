@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 
 public class NquadsUdParserTest {
 
+  private static final String BASE_URI = "http://example.org";
   private RdfProcessor rdfProcessor;
   private NquadsUdParser instance;
 
@@ -91,6 +92,17 @@ public class NquadsUdParserTest {
     StringReader reader = new StringReader("--- fruits1\t2017-08-16 11:37:47.247741827 +0200");
 
     instance.parse(reader, "http://example.org/");
+
+    verify(rdfProcessor, never()).onQuad(
+      anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
+    );
+  }
+
+  @Test
+  public void itIgnoresLinesThatStartWithABackslash() throws Exception {
+    StringReader reader = new StringReader("\\ No newline at end of file");
+
+    instance.parse(reader, BASE_URI);
 
     verify(rdfProcessor, never()).onQuad(
       anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()

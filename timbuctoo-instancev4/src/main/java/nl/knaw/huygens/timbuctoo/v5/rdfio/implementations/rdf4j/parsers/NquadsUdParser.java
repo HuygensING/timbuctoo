@@ -55,7 +55,7 @@ public class NquadsUdParser extends NQuadsParser {
     try {
       int character = readCodePoint();
       while (character != -1) {
-        if (character == '#' || character == ' ' || character == '@') {
+        if (character == '#' || character == ' ' || character == '@' || character == '\\') {
           // Comment, ignore
           character = skipLine(character);
         } else if (character == '+' || character == '-') {
