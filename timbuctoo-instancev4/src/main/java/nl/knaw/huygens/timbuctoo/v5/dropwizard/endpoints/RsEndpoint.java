@@ -115,6 +115,28 @@ public class RsEndpoint {
     return Response.status(Response.Status.NOT_FOUND).build();
   }
 
+  @GET
+  @Path("{ownerId}/{dataSetName}/dataset.nq")
+  public Response getDataSet(@HeaderParam("authorization") String authHeader,
+                             @PathParam("ownerId") String owner,
+                             @PathParam("dataSetName") String dataSetName) {
+    User user = getUser(authHeader);
+    Optional<Stream<String>> resourceStream = rsDocumentBuilder.getResourceData(user, owner, dataSetName);
+
+    if (resourceStream.isPresent()) {
+      StringBuilder stringBuilder = new StringBuilder();
+
+      try (Stream<String> data = resourceStream.get()) {
+        data.forEach(s -> {
+          stringBuilder.append(s);
+        });
+      }
+      return Response.ok(stringBuilder.toString()).build();
+    }
+
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+
 
   @GET
   @Path("{ownerId}/{dataSetName}/files/{fileId}")

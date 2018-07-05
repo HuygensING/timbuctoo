@@ -22,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.ChangesRetriever;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
@@ -185,6 +186,8 @@ public abstract class DataSet {
 
       final ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore, updatedPerPatchStore);
 
+      final CurrentStateRetriever currentStateRetriever = new CurrentStateRetriever(quadStore);
+
 
       ImmutableDataSet dataSet = ImmutableDataSet.builder()
         .ownerId(userId)
@@ -201,6 +204,7 @@ public abstract class DataSet {
         .importManager(importManager)
         .dataSetStorage(dataSetStorage)
         .changesRetriever(changesRetriever)
+        .currentStateRetriever(currentStateRetriever)
         .build();
       importManager.init(dataSet);
 
@@ -280,6 +284,8 @@ public abstract class DataSet {
   public abstract DataSetMetaData getMetadata();
 
   public abstract ChangesRetriever getChangesRetriever();
+
+  public abstract CurrentStateRetriever getCurrentStateRetriever();
 
   public LogInfo getLogInfo() throws IOException {
     return new LogInfo(getDataSetStorage().getLogList().getData());

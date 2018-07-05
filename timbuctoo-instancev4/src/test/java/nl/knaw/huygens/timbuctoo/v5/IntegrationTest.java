@@ -507,7 +507,7 @@ public class IntegrationTest {
     Node resourceList = streamToXml(resourceListResp.readEntity(InputStream.class));
     assertThat(
       resourceList,
-      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/files/')]")
+      hasXPath("//urlset/url/loc/text()[contains(. , '" + PREFIX + "/" + dataSetName + "/dataset.nq')]")
     );
 
     // call resourceSync without authorization

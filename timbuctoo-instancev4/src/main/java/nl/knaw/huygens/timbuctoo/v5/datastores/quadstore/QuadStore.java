@@ -10,6 +10,8 @@ public interface QuadStore {
 
   Stream<CursorQuad> getQuads(String subject);
 
+  Stream<CursorQuad> getAllQuads();
+
   void close();
 
   void commit();

@@ -468,6 +468,11 @@ public class JsonProvenanceToRdfPatchTest {
     }
 
     @Override
+    public Stream<CursorQuad> getAllQuads() {
+      throw new UnsupportedOperationException("Not implemented"); //TODO: Implement
+    }
+
+    @Override
     public void close() {
 
     }
