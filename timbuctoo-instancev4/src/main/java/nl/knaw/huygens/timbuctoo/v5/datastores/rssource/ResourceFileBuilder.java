@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
@@ -30,7 +31,7 @@ public class ResourceFileBuilder {
         );
       } else {
         Optional<String> language = quad.getLanguage();
-        if (language != null && language.isPresent() && dataType.equals(RdfConstants.LANGSTRING)) {
+        if (language != null && language.isPresent() && dataType.get().equals(RdfConstants.LANGSTRING)) {
           data.add(
             dataSetQuadGenerator.onLanguageTaggedString(
               quad.getSubject(),

@@ -21,8 +21,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPat
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.ChangesRetriever;
-import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.CurrentStateRetriever;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
+import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
