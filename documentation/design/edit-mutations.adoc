@@ -10,6 +10,7 @@ A GraphQL edit mutation for each type should protect against unwittingly changin
 == Definition of done
 . Mutations for each collection should be added to the GraphQL schema.
 . Only users with with `WRITE` permissions should be able to see and use the mutations.
+. Timbuctoo generates a provenance file that contains the changes and adds the data to the data set.
 
 == API design
 ```
@@ -28,18 +29,36 @@ mutation EditEntity (uri: String! entity: <collectionName>Input!) {
   }
 }
 ...
+input <collectionName>Input {
+  additions: <collectionName>PropertiesInput
+  deletions: <collectionName>PropertiesInput
+  replacements: <collectionName>PropertiesInput
+}
+
+input <collectionName>PropertiesInput {
+  <entityTypeField1>: PropertyInput
+  <entityTypeField2>: PropertyInput
+  <entityTypeFieldN>: PropertyInput
+}
+
+input PropertyInput {
+  type: String!
+  value: String!
+}
 ```
+
 
 == Limitations
 * Value fields of the object can be edited.
-* Links to objects can be edited.
+* Links to objects can be changed.
 
 == Development steps
 . Generate the API
 . Add a DataFetcher mutation that stores the data
 . Hide the API from users without writing permission
-. Add 'add' functionality
-. Add 'delete' functionality
+. Generate a provenance file of the changes and add the data to the data set
+. Add functionality for adding new items to collections
+. Add functionality for deleting items from collections
 
 == Links
 Organizing mutations: https://medium.freecodecamp.org/organizing-graphql-mutations-653306699f3d
