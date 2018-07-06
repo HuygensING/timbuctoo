@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
+package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;

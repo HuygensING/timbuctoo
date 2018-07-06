@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsLn;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -105,11 +106,18 @@ public class ResourceSyncFileLoader {
         String changeListExtension = ".*.nqud";
 
         for (UrlItem changeListItem : rsFile.getItemList()) {
-          if (changeListItem.getMetadata().getMimeType().equals(MIME_TYPE_FOR_EXTENSION.get("nqud")) ||
-            changeListItem.getLoc().matches(changeListExtension)) {
-            RemoteFile remoteFile = getRemoteFile(new Tuple<>(changeListItem.getLoc(), changeListItem.getMetadata()),
-              authString);
-            changes.add(remoteFile);
+          RsLn changeLink = changeListItem.getLink();
+          if (changeLink != null) {
+            if ((changeLink.getType().isPresent() &&
+              changeLink.getType().get().equals(MIME_TYPE_FOR_EXTENSION.get("nqud"))) ||
+              changeLink.getHref().matches(changeListExtension)) {
+              Metadata changeMd = new Metadata();
+              changeMd.setMimeType(changeLink.getType().get());
+              changeMd.setDateTime(changeListItem.getMetadata().getDateTime());
+              RemoteFile remoteFile = getRemoteFile(new Tuple<>(changeLink.getHref(), changeMd),
+                authString);
+              changes.add(remoteFile);
+            }
           }
         }
       } else if (capabilityListItem.getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())) {

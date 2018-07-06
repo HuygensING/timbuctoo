@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;

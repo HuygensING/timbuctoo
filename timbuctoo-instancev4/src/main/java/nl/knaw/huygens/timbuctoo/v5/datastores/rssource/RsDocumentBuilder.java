@@ -1,17 +1,19 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncConstants;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsLn;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.UrlItem;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
+import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -20,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -134,28 +135,12 @@ public class RsDocumentBuilder {
       resourceList = new Urlset(rsMd)
         .addLink(new RsLn(REL_UP, rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CAPABILITYLIST)));
 
+      UrlItem item = new UrlItem(rsUriHelper.uriForRsDataSet(dataSetMetaData))
+        .withMetadata(new RsMd()
+          .withType("application/n-quads"));
 
-      FileStorage fileStorage = maybeDataSet.get().getFileStorage();
-      List<LogEntry> entries = loglist.getEntries();
-      entries.sort(Comparator.comparing(e -> e.getImportStatus().getDate()));
-      for (LogEntry logEntry : entries) {
-        Optional<String> maybeToken = logEntry.getLogToken();
-        if (maybeToken.isPresent()) {
-          String loc = rsUriHelper.uriForToken(dataSetMetaData, maybeToken.get());
+      resourceList.addItem(item);
 
-          Optional<CachedFile> maybeCachedFile = fileStorage.getFile(maybeToken.get());
-          if (maybeCachedFile.isPresent()) {
-            UrlItem item = new UrlItem(loc)
-              .withMetadata(new RsMd()
-              .withType(maybeCachedFile.get().getMimeType().toString())
-              //.withEncoding(maybeCachedFile.get().charset()) // charset not handed down from FileInfo to CachedFile
-              //.withHash(maybeCachedFile.get().getHash()) // hash not computed for imported files...
-              //.withLength(maybeCachedFile.get().getLength()) // length not computed ...
-              );
-            resourceList.addItem(item);
-          }
-        }
-      }
       rsMd.withCompleted(ZonedDateTime.now(ZoneOffset.UTC));
     }
     return Optional.ofNullable(resourceList);
@@ -186,14 +171,19 @@ public class RsDocumentBuilder {
         changesRetriever.getVersions()
       );
 
+      boolean isFirst = true;
       for (String changeFileName : changeFileNames) {
         LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName));
-        UrlItem item = new UrlItem(rsUriHelper.uriForChanges(dataSetMetaData, changeFileName))
+        UrlItem item = new UrlItem(rsUriHelper.uriForRsDataSet(dataSetMetaData))
+          .addLink(new RsLn(ResourceSyncConstants.PATCH_LINK,
+            rsUriHelper.uriForChanges(dataSetMetaData, changeFileName))
+            .withType("application/vnd.timbuctoo-rdf.nquads_unified_diff"))
           .withMetadata(new RsMd()
-            .withChange("updated")
-            .withType("application/vnd.timbuctoo-rdf.nquads_unified_diff")
+            .withChange(isFirst ? "created" : "updated")
+            .withType("application/n-quads")
             .withDateTime(ZonedDateTime.parse(logEntry.getImportStatus().getDate())));
         changeList.addItem(item);
+        isFirst = false;
       }
     }
 
@@ -217,6 +207,23 @@ public class RsDocumentBuilder {
 
       return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version, subjectsSupplier)
         .stream());
+    }
+
+    return Optional.empty();
+  }
+
+  public Optional<Stream<String>> getResourceData(@Nullable User user, String ownerId, String dataSetId) {
+
+    Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(user, ownerId, dataSetId);
+    if (maybeDataSet.isPresent()) {
+      DataSet dataSet = maybeDataSet.get();
+      DataSetMetaData dataSetMetaData = dataSet.getMetadata();
+
+      ResourceFileBuilder resourceFileBuilder = new ResourceFileBuilder(dataSetMetaData.getBaseUri());
+
+      CurrentStateRetriever currentStateRetriever = dataSet.getCurrentStateRetriever();
+
+      return Optional.of(resourceFileBuilder.retrieveData(currentStateRetriever).stream());
     }
 
     return Optional.empty();

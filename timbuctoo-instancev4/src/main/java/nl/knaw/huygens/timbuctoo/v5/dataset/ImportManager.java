@@ -240,6 +240,7 @@ public class ImportManager implements DataProvider {
         importStatus.setStatus(msg);
         dataWasAdded = true;
       } catch (Exception e) {
+        LOG.error("Failed for file: {}", entry.getLogToken().get());
         LOG.error("Processing log failed", e);
         importStatus.addError("Processing log failed", e);
       }

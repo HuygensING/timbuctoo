@@ -15,17 +15,14 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogInfo;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.ChangesRetriever;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
+import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
@@ -162,6 +159,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
             @Override
             public ChangesRetriever getChangesRetriever() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public CurrentStateRetriever getCurrentStateRetriever() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
 

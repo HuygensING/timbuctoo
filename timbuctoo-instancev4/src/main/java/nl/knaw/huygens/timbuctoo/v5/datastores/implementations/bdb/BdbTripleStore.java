@@ -15,6 +15,9 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.BACKWARDS;
 import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.FORWARDS;
 
+/**
+ * This datastore determines the current state of the DataSet.
+ */
 public class BdbTripleStore implements QuadStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(BdbTripleStore.class);
@@ -57,6 +60,13 @@ public class BdbTripleStore implements QuadStore {
       .partialKey(subject + "\n", (prefix, key) -> key.startsWith(prefix))
       .dontSkip()
       .forwards()
+      .getKeysAndValues(bdbWrapper.keyValueConverter(this::formatResult));
+  }
+
+  @Override
+  public Stream<CursorQuad> getAllQuads() {
+    return bdbWrapper.databaseGetter()
+      .getAll()
       .getKeysAndValues(bdbWrapper.keyValueConverter(this::formatResult));
   }
 

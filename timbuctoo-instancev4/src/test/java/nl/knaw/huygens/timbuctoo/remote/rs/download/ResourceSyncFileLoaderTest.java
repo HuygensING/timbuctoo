@@ -55,14 +55,18 @@ public class ResourceSyncFileLoaderTest {
       "         from=\"2013-01-02T00:00:00Z\"\n" +
       "         until=\"2013-01-03T00:00:00Z\"/>\n" +
       "  <url>\n" +
-      "      <loc>" + baseUrl + "files/changes1.nqud</loc>\n" +
+      "      <loc>" + baseUrl + "files/dataset.nq</loc>\n" +
       "      <lastmod>2013-01-02T13:00:00Z</lastmod>\n" +
       "      <rs:md change=\"updated\" datetime=\"2013-01-02T13:00:00Z\"/>\n" +
+      "      <rs:ln rel=\"http://www.openarchives.org/rs/terms/patch\" href=\"" + baseUrl + "files/changes1.nqud\" " +
+      "      type=\"application/vnd.timbuctoo-rdf.nquads_unified_diff\" />" +
       "  </url>\n" +
       "  <url>\n" +
-      "      <loc>" + baseUrl + "files/changes2.nqud</loc>\n" +
+      "      <loc>" + baseUrl + "files/dataset.nq</loc>\n" +
       "      <lastmod>2013-01-02T13:00:00Z</lastmod>\n" +
       "      <rs:md change=\"updated\" datetime=\"2013-01-02T13:00:00Z\"/>\n" +
+      "      <rs:ln rel=\"http://www.openarchives.org/rs/terms/patch\" href=\"" + baseUrl + "files/changes2.nqud\" " +
+      "      type=\"application/vnd.timbuctoo-rdf.nquads_unified_diff\" />" +
       "  </url>\n" +
       "</urlset>";
 
