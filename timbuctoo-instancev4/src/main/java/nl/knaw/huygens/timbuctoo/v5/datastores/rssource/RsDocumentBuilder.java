@@ -171,6 +171,7 @@ public class RsDocumentBuilder {
         changesRetriever.getVersions()
       );
 
+      boolean isFirst = true;
       for (String changeFileName : changeFileNames) {
         LogEntry logEntry = logEntries.get(getVersionFromFileId(changeFileName));
         UrlItem item = new UrlItem(rsUriHelper.uriForRsDataSet(dataSetMetaData))
@@ -178,10 +179,11 @@ public class RsDocumentBuilder {
             rsUriHelper.uriForChanges(dataSetMetaData, changeFileName))
             .withType("application/vnd.timbuctoo-rdf.nquads_unified_diff"))
           .withMetadata(new RsMd()
-            .withChange("updated")
+            .withChange(isFirst ? "created" : "updated")
             .withType("application/n-quads")
             .withDateTime(ZonedDateTime.parse(logEntry.getImportStatus().getDate())));
         changeList.addItem(item);
+        isFirst = false;
       }
     }
 
