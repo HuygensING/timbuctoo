@@ -16,7 +16,8 @@ public class  CurrentStateRetriever {
   }
 
   public List<CursorQuad> retrieveData() {
-    Stream<CursorQuad> quads = bdbTripleStore.getAllQuads();
-    return quads.collect(Collectors.toList());
+    try (Stream<CursorQuad> quads = bdbTripleStore.getAllQuads()) {
+      return quads.collect(Collectors.toList());
+    }
   }
 }

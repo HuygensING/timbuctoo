@@ -20,12 +20,10 @@ public class UrlItem {
   }
 
   public Metadata getMetadata() {
-    LoggerFactory.getLogger(UrlItem.class).info("getMetaData");
     return metadata;
   }
 
   public RsLn getLink() {
-    LoggerFactory.getLogger(UrlItem.class).info("getLink");
     return rsLn;
   }
 

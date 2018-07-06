@@ -31,7 +31,8 @@ public class ResourceFileBuilder {
         );
       } else {
         Optional<String> language = quad.getLanguage();
-        if (language != null && language.isPresent() && dataType.get().equals(RdfConstants.LANGSTRING)) {
+        String dataTypeString = dataType.get();
+        if (language != null && language.isPresent() && dataTypeString.equals(RdfConstants.LANGSTRING)) {
           data.add(
             dataSetQuadGenerator.onLanguageTaggedString(
               quad.getSubject(),
@@ -47,7 +48,7 @@ public class ResourceFileBuilder {
               quad.getSubject(),
               quad.getPredicate(),
               quad.getObject(),
-              dataType.get(),
+              dataTypeString,
               graph
             )
           );
