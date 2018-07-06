@@ -1,14 +1,39 @@
 = Edit mutations
 
-== Context
+== The problem
 At the moment of writing, Timbuctoo's GraphQL API has several mutations to edit metadata like facets and summary properties.
 But the real data cannot not be edited with the GraphQL API.
 This has to be done with the `JSON-LD endpoint` or uploading NQUD-files to the `RDF upload endpoint`.
 The problem with the ways mentioned in the last sentence is that both can also change the GraphQL schema of a data set.
 A GraphQL edit mutation for each type should protect against unwittingly changing the schema.
 
+Possible operations the user might execute on the data:
+
+. Change single valued value or link properties (i.e. the birth date of a person or the birthplace of a person)
+.. Overwrite the current value
+.. Clear the current value
+. Change multi valued value or link properties (i.e. the first names of a person or places a person lived in)
+.. Add one or more items to the list
+.. Delete one or more items from the list
+.. Overwrite the complete list with a new value
+.. Clear the complete list
+. For all above points there should be an optional check if the data wasn't changed in the meantime.
+
+
+A mutation on the data might produce an "invalid" dataset. We can have vaildation on
+
+. An entity against the schema (Person's may only have 1 birthdate, it must be EDTF)
+. A value against the type (An xsd:integer may only be [0-9]+)
+. An entity against some local rules (each Person must have a "name")
+. An entity against some global rules (a person may not have the same BSN as another person entity, all person entities must have a birthdate within the early modern period)
+
 == Definition of done
-. Mutations for each collection should be added to the GraphQL schema.
+
+. Mutations for each collection should be added to the GraphQL schema. (point 1 and 2 of possible operations)
+. Non of the mutations can change the schema of the data set.
+.. No new properties can be introduced.
+.. No new types can be added to existing properties.
+.. Single valued properties cannot become multi valued.
 . Only users with with `WRITE` permissions should be able to see and use the mutations.
 . Timbuctoo generates a provenance file that contains the changes and adds the data to the data set.
 
@@ -20,9 +45,15 @@ mutation EditEntity (uri: String! entity: <collectionName>Input!) {
     <dataSetId> {
       <collectionName>
         edit(uri: $uri entity: $entity) {
-          <entityTypeField1>
-          <entityTypeField3>
-          <entityTypeFieldN>
+          <entityTypeField1> {
+            value
+          }
+          <entityTypeField3> {
+            value
+          }
+          <entityTypeFieldN> {
+            value
+          }
         }
       }
     }
@@ -36,21 +67,22 @@ input <collectionName>Input {
 }
 
 input <collectionName>PropertiesInput {
-  <entityTypeField1>: PropertyInput
-  <entityTypeField2>: PropertyInput
-  <entityTypeFieldN>: PropertyInput
+  <entityTypeField1>: PropertyInput # Single value / link property
+  <entityTypeField2>: [PropertyInput!] # List property for values or links
+  <entityTypeFieldN>: PropertyInput # Single value / link property
 }
 
 input PropertyInput {
-  type: String!
+  type: String! "xsd:string" | "URI"
   value: String!
 }
 ```
 
-
 == Limitations
-* Value fields of the object can be edited.
-* Links to objects can be changed.
+* Only value fields of the object can be edited. (like person names, birth date)
+* Only links to objects can be changed. (birthplace, places lived in)
+
+So no values of linked objects can be edited.
 
 == Development steps
 . Generate the API
