@@ -1,0 +1,24 @@
+= Ability to add another User as an Editor or Admin to your Dataset
+
+. Problem:
+* Timbuctoo currently has no provisions to allow a user to give Admin/Editor permissions to another user to their
+dataSet.
+
+. Result:
+* Users will be able to add another User to their dataSet and assign permissions for them using a GraphQl mutation.
+
+. Approach:
+* A graphQL mutation of the following format will be added:
+----
+ mutation assignUser {
+   assignUser (dataSetId: <dataset_id>) {
+     user_id: <user_id>,
+     role: <role>
+   }
+ }
+----
+
+Using the mutation will add the specified role to the specified user for the specified dataSet by adding an entry in
+authorizations.json file.
+
+Note: This mutation/functionality will only be available for someone with Admin permissions to the dataSet.
