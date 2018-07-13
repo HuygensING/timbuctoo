@@ -44,7 +44,9 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
 . Timbuctoo generates a provenance file that contains the changes and adds the data to the data set.
 . A user should be able to add provenance.
 
-== API design
+== Design
+
+=== GraphQL
 ```
 ...
 mutation EditEntity (uri: String! entity: <collectionName>Input!) {
@@ -90,8 +92,8 @@ input ProvenanceInput {
 }
 
 input InformedByFromInput {
-  entity: String!
-  activity: String!
+  entity: ProvenanceEntity!
+  activity: String! # description of the activity
 }
 
 input ProvenanceEntity {
@@ -100,6 +102,42 @@ input ProvenanceEntity {
 }
 
 ```
+=== Provenance schema
+
+----
+
+
+
+
+
+                                                    "Timbuctoo change"                              "Reading book"                     "A book"
+                                                          ^                                              ^                                ^
+                                                          |   schema:description                         | schema:description             | schema:title
+                                                          |                                              |                                |
+                                                          |                                              |                                |
++---------------------+   tim:hasProvenace    +------------------+     prov:informedBy         +---------------------+  prov:used +-------------------+
+|                     |                       |                  |                             |                     |            |                   |
+|  tim:ChangeLog      +---------------------->+ prov:Activity    +---------------------------->+ prov:Activity       +----------->+ prov:Entity       |
+|                     |                       |                  |                             |                     |            |                   |
++---------------------+                       +------------------+                             +---------------------+            +-------------------+
+                                                       |                                       |
+                                                       |                                       |
+                                                       | prov:associatedWith                   |
+                                                       |                                       |  prov:associatedWith
+                                                       |                                       |
+                                              +--------v----------<----------------------------+
+                                              |                  |
+                                              | prov:Agent       |
+                                              |                  |
+                                              +------------------+
+                                                      |
+                                                      | tim:user
+                                                      v
+                                                 "<user id>"
+
+
+
+----
 
 == Limitations
 * Only value fields of the object can be edited. (like person names, birth date)
