@@ -71,6 +71,7 @@ input <collectionName>Input {
   additions: <collectionName>PropertiesInput
   deletions: <collectionName>PropertiesInput
   replacements: <collectionName>PropertiesInput
+  provenance: ProvenanceInput
 }
 
 input <collectionName>PropertiesInput {
@@ -83,6 +84,21 @@ input PropertyInput {
   type: String! "xsd:string" | "URI"
   value: String!
 }
+
+input ProvenanceInput {
+  informedBy: InformedByInput!
+}
+
+input InformedByFromInput {
+  entity: String!
+  activity: String!
+}
+
+input ProvenanceEntity {
+  uri: String # will be generated when absent
+  title: String!
+}
+
 ```
 
 == Limitations
