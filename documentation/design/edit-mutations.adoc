@@ -47,12 +47,13 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
 == Design
 
 === GraphQL
-```
-...
+
+==== Example
+----
 mutation EditEntity (uri: String! entity: <collectionName>Input!) {
   dataSets {
     <dataSetId> {
-      <collectionName>
+      <collectionName>Operations {
         edit(uri: $uri entity: $entity) {
           <entityTypeField1> {
             value
@@ -68,7 +69,15 @@ mutation EditEntity (uri: String! entity: <collectionName>Input!) {
     }
   }
 }
+----
+
+==== Schema
+----
 ...
+type <collectionName>Operations {
+  edit(uri: String! entity: <collectionName>Input!): <collectionName>
+}
+
 input <collectionName>Input {
   additions: <collectionName>PropertiesInput
   deletions: <collectionName>PropertiesInput
@@ -100,8 +109,10 @@ input ProvenanceEntity {
   uri: String # will be generated when absent
   title: String!
 }
+...
 
-```
+----
+
 === Provenance schema
 
 ----
