@@ -46,6 +46,43 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
 
 == Design
 
+=== Provenance schema
+
+----
+
+
+
+
+
+                                                    "Timbuctoo change"                              "Reading book"                     "A book"
+                                                          ^                                              ^                                ^
+                                                          |   schema:description                         | schema:description             | schema:title
+                                                          |                                              |                                |
+                                                          |                                              |                                |
++---------------------+   tim:hasProvenace    +-----------+------+     prov:informedBy         +---------+-----------+  prov:used +-------+-----------+
+|                     |                       |                  |                             |                     |            |                   |
+|  tim:ChangeLog      +---------------------->+ prov:Activity    +---------------------------->+ prov:Activity       +----------->+ prov:Entity       |
+|                     |                       |                  |                             |                     |            |                   |
++---------------------+                       +------------------+                             +---------------------+            +-------------------+
+                                                       |                                       |
+                                                       |                                       |
+                                                       | prov:associatedWith                   |
+                                                       |                                       |  prov:associatedWith
+                                                       v                                       |
+                                              +--------+---------+<----------------------------+
+                                              |                  |
+                                              | prov:Agent       |
+                                              |                  |
+                                              +-------+----------+
+                                                      |
+                                                      | tim:user
+                                                      v
+                                                 "<user id>"
+
+
+
+----
+
 === GraphQL
 
 ==== Example
@@ -110,43 +147,6 @@ input ProvenanceEntity {
   title: String!
 }
 ...
-
-----
-
-=== Provenance schema
-
-----
-
-
-
-
-
-                                                    "Timbuctoo change"                              "Reading book"                     "A book"
-                                                          ^                                              ^                                ^
-                                                          |   schema:description                         | schema:description             | schema:title
-                                                          |                                              |                                |
-                                                          |                                              |                                |
-+---------------------+   tim:hasProvenace    +-----------+------+     prov:informedBy         +---------+-----------+  prov:used +-------+-----------+
-|                     |                       |                  |                             |                     |            |                   |
-|  tim:ChangeLog      +---------------------->+ prov:Activity    +---------------------------->+ prov:Activity       +----------->+ prov:Entity       |
-|                     |                       |                  |                             |                     |            |                   |
-+---------------------+                       +------------------+                             +---------------------+            +-------------------+
-                                                       |                                       |
-                                                       |                                       |
-                                                       | prov:associatedWith                   |
-                                                       |                                       |  prov:associatedWith
-                                                       v                                       |
-                                              +--------+---------+<----------------------------+
-                                              |                  |
-                                              | prov:Agent       |
-                                              |                  |
-                                              +-------+----------+
-                                                      |
-                                                      | tim:user
-                                                      v
-                                                 "<user id>"
-
-
 
 ----
 
