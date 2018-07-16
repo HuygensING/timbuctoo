@@ -115,7 +115,7 @@ input ProvenanceEntity {
                                                           |   schema:description                         | schema:description             | schema:title
                                                           |                                              |                                |
                                                           |                                              |                                |
-+---------------------+   tim:hasProvenace    +------------------+     prov:informedBy         +---------------------+  prov:used +-------------------+
++---------------------+   tim:hasProvenace    +-----------+------+     prov:informedBy         +---------+-----------+  prov:used +-------+-----------+
 |                     |                       |                  |                             |                     |            |                   |
 |  tim:ChangeLog      +---------------------->+ prov:Activity    +---------------------------->+ prov:Activity       +----------->+ prov:Entity       |
 |                     |                       |                  |                             |                     |            |                   |
@@ -124,12 +124,12 @@ input ProvenanceEntity {
                                                        |                                       |
                                                        | prov:associatedWith                   |
                                                        |                                       |  prov:associatedWith
-                                                       |                                       |
-                                              +--------v----------<----------------------------+
+                                                       v                                       |
+                                              +--------+---------+<----------------------------+
                                               |                  |
                                               | prov:Agent       |
                                               |                  |
-                                              +------------------+
+                                              +-------+----------+
                                                       |
                                                       | tim:user
                                                       v
