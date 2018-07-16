@@ -83,7 +83,7 @@ input <collectionName>PropertiesInput {
 }
 
 input PropertyInput {
-  type: String! "xsd:string" | "URI"
+  type: String!
   value: String!
 }
 
