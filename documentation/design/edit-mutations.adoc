@@ -54,34 +54,37 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
 
 
 
-                                                    "Timbuctoo change"                              "Reading book"                     "A book"
-                                                          ^                                              ^                                ^
-                                                          |   schema:description                         | schema:description             | schema:title
-                                                          |                                              |                                |
-                                                          |                                              |                                |
-+---------------------+   tim:hasProvenace    +-----------+------+     prov:informedBy         +---------+-----------+  prov:used +-------+-----------+
-|                     |                       |                  |                             |                     |            |                   |
-|  tim:ChangeLog      +---------------------->+ prov:Activity    +---------------------------->+ prov:Activity       +----------->+ prov:Entity       |
-|                     |                       |                  |                             |                     |            |                   |
-+---------------------+                       +------------------+                             +---------------------+            +-------------------+
-                                                       |                                       |
-                                                       |                                       |
-                                                       | prov:associatedWith                   |
-                                                       |                                       |  prov:associatedWith
-                                                       v                                       |
-                                              +--------+---------+<----------------------------+
-                                              |                  |
-                                              | prov:Agent       |
-                                              |                  |
-                                              +-------+----------+
-                                                      |
-                                                      | tim:user
-                                                      v
-                                                 "<user id>"
+              +---------------+       +---------------+      +------------------+
+              |               |       |               |      |                  |
+              | tim:Additions |       | tim:Deletions |      | tim:Replacements |
+              |               |       |               |      |                  |
+              +-----+---------+       +-----+---------+      +------------------+
+                    ^----------------+      ^                   ^
+                                     |      |                   |                                                   "<user id>"
+              tim:additions          |      |  tim:deletions    | tim:replacements                                       ^
+                                     |      |      +------------+                                                        |
+               prov:SpecializationOf |      |      |                                                                     |
++------------+<----------------------+------+------+                     +---------------+                         +-----+------+
+|            | tim:latestRevision    |             |   prov:generated    |               |  prov:associatedWith    |            |
+| tim:Entity +---------------------->+ prov:Entity +-------------------->+ prov:Activity +------------------------^+ prov:Agent |
+|            |                       |             |                     |               |                         |            |
++------------+     +-------------+   ++-----+------+                     +------+--------+                         +------+-----+
+                   |             |    |     |                                   |                                         ^
+     "2"<----------+ tim:version +<---+     |  prov:wasRevisionOf               | prov:qualifiedAssociation               |      prov:hasAgent
+                   |             |          v                                   |                 +-----------------------+---+
+                   +-------------+   +------+------+                            |                 |                           |
+                                     |             |                            +----------------^+ prov:Association          |
+                                     | prov:Entity |                                              |                           |
+                                     |             |                                              +---------------------------+
+                                     +-------------+
+
 
 
 
 ----
+What is not shown in the diagram is the custom provenance that can differ from data set to data set.
+This custom provenance will be added to each specialization of a `tim:Entity`.
+The `tim:Entity` consists of all different types in a data set.
 
 === GraphQL
 
