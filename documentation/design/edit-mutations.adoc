@@ -66,14 +66,14 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
                prov:SpecializationOf |      |      |                                                                     |
 +------------+<----------------------+------+------+                     +---------------+                         +-----+------+
 |            | tim:latestRevision    |             |   prov:generated    |               |  prov:associatedWith    |            |
-| tim:Entity +---------------------->+ prov:Entity +-------------------->+ prov:Activity +------------------------^+ prov:Agent |
+| tim:Entity +---------------------->+ prov:Entity +-------------------->+ prov:Activity +------------------------>+ prov:Agent |
 |            |                       |             |                     |               |                         |            |
 +------------+     +-------------+   ++-----+------+                     +------+--------+                         +------+-----+
                    |             |    |     |                                   |                                         ^
      "2"<----------+ tim:version +<---+     |  prov:wasRevisionOf               | prov:qualifiedAssociation               |      prov:hasAgent
                    |             |          v                                   |                 +-----------------------+---+
                    +-------------+   +------+------+                            |                 |                           |
-                                     |             |                            +----------------^+ prov:Association          |
+                                     |             |                            +---------------->+ prov:Association          |
                                      | prov:Entity |                                              |                           |
                                      |             |                                              +---------------------------+
                                      +-------------+
