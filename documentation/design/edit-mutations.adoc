@@ -49,42 +49,46 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
 === Provenance schema
 
 ----
-
-
-
-
-
-              +---------------+       +---------------+      +------------------+
-              |               |       |               |      |                  |
-              | tim:Additions |       | tim:Deletions |      | tim:Replacements |
-              |               |       |               |      |                  |
-              +-----+---------+       +-----+---------+      +------------------+
-                    ^----------------+      ^                   ^
-                                     |      |                   |                                                   "<user id>"
-              tim:additions          |      |  tim:deletions    | tim:replacements                                       ^
-                                     |      |      +------------+                                                        |
-               prov:SpecializationOf |      |      |                                                                     |
-+------------+<----------------------+------+------+                     +---------------+                         +-----+------+
-|            | tim:latestRevision    |             |   prov:generated    |               |  prov:associatedWith    |            |
-| tim:Entity +---------------------->+ prov:Entity +-------------------->+ prov:Activity +------------------------>+ prov:Agent |
-|            |                       |             |                     |               |                         |            |
-+------------+     +-------------+   ++-----+------+                     +------+--------+                         +------+-----+
-                   |             |    |     |                                   |                                         ^
-     "2"<----------+ tim:version +<---+     |  prov:wasRevisionOf               | prov:qualifiedAssociation               |      prov:hasAgent
-                   |             |          v                                   |                 +-----------------------+---+
-                   +-------------+   +------+------+                            |                 |                           |
-                                     |             |                            +---------------->+ prov:Association          |
-                                     | prov:Entity |                                              |                           |
-                                     |             |                                              +---------------------------+
-                                     +-------------+
+                                                      "2"                                                                "http://example.org/user"
+                                                       ^                                                                          ^
+                                                       |    tim:version                                                           |  uri
+                                                       |                                                                          |
++--------------+    prov:specializationOf      +-------+------+    prov:generated  +---------------+   prov:associatedWith  +-----+------+
+|              |                               |              |                    |               |                        |            |
+| <tim:Entity> +<------------------------------+ <tim:Entity> +<-------------------+ prov:Activity +----------------------->+ prov:Agent |
+|              |                               |              |                    |               |                        |            |
++----+---------+------------------------------>+-----+--------+                    +--------+------+                        +------------+
+     ^                                               |   prov:wasRevisionOf                 |                                          ^
+     |             tim:latestRevision                |                    prov:qualifiedAssociation   +-------------------             |
+     |                                               ^                                      |         |                  |             | prov:agent
+     |                                         +-----+--------+                             +-------->+ prov:Association +-------------+
+     |                                         |              |                                       |                  |
+     +-----------------------------------------+ <tim:Entity> |                                       +--------+---------+
+                                               |              |                                                |
+                  prov:specializationOf        +-------+------+                                                | prov:hadPlan
+                                                       |                                                       |
+                                                       |  tim:version                                          v
+                                                       |            +---------------+                    +-----+-----+                      +------------------+
+                                                       v            |               |   tim:additions    |           |  tim:replacements    |                  |
+                                                      "1"           | tim:Additions +<-------------------+ prov:Plan +--------------------->+ tim:Replacements |
+                                                                    |               |                    |           |                      |                  |
+                                                                    +---------------+                    +-----+-----+                      +------------------+
+                                                                                                               |
+                                                                                                               |  tim:deletions
+                                                                                                               v
+                                                                                                       +-------+-------+
+                                                                                                       |               |
+                                                                                                       | tim:Deletions |
+                                                                                                       |               |
+                                                                                                       +---------------+
 
 
 
 
 ----
 What is not shown in the diagram is the custom provenance that can differ from data set to data set.
-This custom provenance will be added to each specialization of a `tim:Entity`.
-The `tim:Entity` consists of all different types in a data set.
+This custom provenance will be added to each specialization of a `<tim:Entity>`.
+The `<tim:Entity>` consists of all different types in a data set.
 
 === GraphQL
 
@@ -100,7 +104,7 @@ input <collectionName>Input {
   additions: <collectionName>AdditionsInput
   deletions: <collectionName>DeletionsInput
   replacements: <collectionName>ReplacementsInput
-  provenance: ProvenanceInput
+  provenance: <dataSetName>ProvenanceInput
 }
 
 input <collectionName>AdditionsInput {
@@ -125,16 +129,18 @@ input PropertyInput {
   language: String
 }
 
-input ProvenanceInput {
+# The provenance schema can be different for each data set
+
+input <dataSetName>ProvenanceInput {
   informedBy: InformedByInput!
 }
 
-input InformedByFromInput {
+input <dataSetName>ProvenanceInput {
   entity: ProvenanceEntity!
   activity: String! # description of the activity
 }
 
-input ProvenanceEntity {
+input <dataSetName>ProvenanceInput {
   uri: String # will be generated when absent
   title: String!
 }
