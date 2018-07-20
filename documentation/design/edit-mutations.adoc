@@ -153,7 +153,7 @@ input <dataSetName>ProvenanceInput {
 mutation EditEntity (uri: String! entity: <collectionName>Input!) {
   dataSets {
     <dataSetId> {
-      <collectionName>Operations {
+      <collectionName> {
         edit(uri: $uri entity: $entity) {
           <entityTypeField1> {
             value
