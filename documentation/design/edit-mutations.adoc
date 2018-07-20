@@ -97,21 +97,31 @@ type <collectionName>Operations {
 }
 
 input <collectionName>Input {
-  additions: <collectionName>PropertiesInput
-  deletions: <collectionName>PropertiesInput
-  replacements: <collectionName>PropertiesInput
+  additions: <collectionName>AdditionsInput
+  deletions: <collectionName>DeletionsInput
+  replacements: <collectionName>ReplacementsInput
   provenance: ProvenanceInput
 }
 
-input <collectionName>PropertiesInput {
+input <collectionName>AdditionsInput {
+  <entityTypeField2List>: [PropertyInput!] # List property for values or links
+}
+
+input <collectionName>DeletionsInput {
+  <entityTypeField2List>: [PropertyInput!] # List property for values or links
+}
+
+input <collectionName>ReplacementsInput {
   <entityTypeField1>: PropertyInput # Single value / link property
-  <entityTypeField2>: [PropertyInput!] # List property for values or links
+  <entityTypeField2List>: [PropertyInput!] # List property for values or links
   <entityTypeFieldN>: PropertyInput # Single value / link property
 }
 
 input PropertyInput {
   type: String!
   value: String!
+  # language is required when the type is http://www.w3.org/1999/02/22-rdf-syntax-ns#langString
+  # the language field may only be used with the type http://www.w3.org/1999/02/22-rdf-syntax-ns#langString
   language: String
 }
 
@@ -157,25 +167,10 @@ mutation EditEntity (uri: String! entity: <collectionName>Input!) {
 
 The next examples show the GraphQL query values for the different use cases
 
-Add value to an empty single valued field.
+Change a value of a single valued field.
 ----
 {
-  "uri": "http://example.org/entity
-  "entity": {
-    "additions": {
-      "<entityTypeField1>": {
-        "type": "http://www.w3.org/2001/XMLSchema#string",
-        "value": "Test"
-      }
-    }
-  }
-}
-----
-
-Replace a value of a single valued field.
-----
-{
-  "uri": "http://example.org/entity
+  "uri": "http://example.org/entity"
   "entity": {
     "replacements": {
       "<entityTypeField1>": {
@@ -187,16 +182,13 @@ Replace a value of a single valued field.
 }
 ----
 
-Remove a value from a single valued field.
+Clear the value from a single valued field.
 ----
 {
-  "uri": "http://example.org/entity
+  "uri": "http://example.org/entity"
   "entity": {
-    "deletions": {
-      "<entityTypeField1>": {
-        "type": "http://www.w3.org/2001/XMLSchema#string",
-        "value": "Test"
-      }
+    "replacements": {
+      "<entityTypeField1>": null
     }
   }
 }
@@ -205,13 +197,15 @@ Remove a value from a single valued field.
 Add value to an empty multivalued field.
 ----
 {
-  "uri": "http://example.org/entity
+  "uri": "http://example.org/entity"
   "entity": {
     "additions": {
-      "<entityTypeField2>": {
-        "type": "http://www.w3.org/2001/XMLSchema#string",
-        "value": "Test"
-      }
+      "<entityTypeField2List>": [
+        {
+          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "value": "Test"
+        }
+      ]
     }
   }
 }
@@ -221,19 +215,23 @@ Replace a value of a multivalued field.
 The next example replaces "Test2" with the value "Test".
 ----
 {
-  "uri": "http://example.org/entity
+  "uri": "http://example.org/entity"
   "entity": {
     "additions": {
-      "<entityTypeField2>": {
-        "type": "http://www.w3.org/2001/XMLSchema#string",
-        "value": "Test"
-      }
+      "<entityTypeField2List>": [
+        {
+          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "value": "Test"
+        }
+      ]
     },
     "deletions": {
-      "<entityTypeField2>": {
-        "type": "http://www.w3.org/2001/XMLSchema#string",
-        "value": "Test2"
-      }
+      "<entityTypeField2List>": [
+        {
+          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "value": "Test2"
+        }
+      ]
     }
   }
 }
@@ -242,10 +240,10 @@ The next example replaces "Test2" with the value "Test".
 Replace the whole collection of a multivalued field.
 ----
 {
-  "uri": "http://example.org/entity
+  "uri": "http://example.org/entity"
   "entity": {
     "replacements": {
-      "<entityTypeField2>": [
+      "<entityTypeField2List>": [
         {
           "type": "http://www.w3.org/2001/XMLSchema#string",
           "value": "Test2"
@@ -260,14 +258,15 @@ Remove a value from a multivalued field
 The next example removes "Test2" from the collection.
 ----
 {
-  "uri": "http://example.org/entity
+  "uri": "http://example.org/entity"
   "entity": {
     "deletions": {
-      "<entityTypeField2>": {
-        "type": "http://www.w3.org/2001/XMLSchema#string",
-        "value": "Test2"
+      "<entityTypeField2List>": [
+        {
+          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "value": "Test2"
         }
-      }
+      ]
     }
   }
 }
@@ -277,13 +276,10 @@ Clear a multivalued field.
 Replace the field with an empty array.
 ----
 {
-  "uri": "http://example.org/entity
+  "uri": "http://example.org/entity"
   "entity": {
     "replacements": {
-      "<entityTypeField2>": {
-        "type": "http://www.w3.org/2001/XMLSchema#string",
-        "value": []
-      }
+      "<entityTypeField2List>": []
     }
   }
 }
@@ -306,16 +302,7 @@ The schema will be generated by the `DerivedSchemaGenerator`.
                                                           |                          |  |                           |
                                                           | ValueTypeSchemaGenerator |  | ObjectTypeSchemaGenerator |
                                                           |                          |  |                           |
-                                                          +--------------------------+  ++--------+-------------+---+
-                                                                                         ^        ^             ^
-                                                                                         |        |             |
-                                                                                         |        |             +---------------------+
-                                                                                         |        |                                   |
-                                                              +--------------------------++  +----+---------------------+  +----------+--------------------+
-                                                              |                           |  |                          |  |                               |
-                                                              | QueryTypeSchemaGenerator  |  | InputTypeSchemaGenerator |  | OperationsTypeSchemaGenerator |
-                                                              |                           |  |                          |  |                               |
-                                                              +---------------------------+  +--------------------------+  +-------------------------------+
+                                                          +--------------------------+  +---------------------------+
 
 ----
 
@@ -324,10 +311,6 @@ The schema will be generated by the `DerivedSchemaGenerator`.
 * `TypeSchemaGenerator` is an interface for creating GraphQL schema's from RDF types.
 ** `ValueTypeSchemaGenerator` will generate a schema for value types.
 ** `ObjectTypeSchemaGenerator` will generate a schema for object types (types with properties).
-*** `QueryTypeSchemaGenerator` will create the schema for types used in the GraphQL queries.
-*** `OperationsTypeSchemaGenerator` will create the schema for the types that contain the type specific mutations,
-*** `InputTypeSchemaGenerator` will create the schema for types that are used in the mutations of the `OperationsTypeSchemaGenerator`.
-
 
 == Limitations
 * Only value fields of the object can be edited. (like person names, birth date)
