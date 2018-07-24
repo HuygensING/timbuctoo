@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 
+import java.util.Set;
+
 public class DerivedObjectTypeSchemaGenerator implements DerivedTypeSchemaGenerator {
   private static final String ENTITY_INTERFACE_NAME = "Entity";
 
@@ -47,7 +49,21 @@ public class DerivedObjectTypeSchemaGenerator implements DerivedTypeSchemaGenera
     builder.append("}\n\n");
   }
 
-  void makeFieldAndDeprecations(String description, Predicate predicate, String targetType, boolean isValue,
+  public void objectField(String description, Predicate predicate, String typeUri) {
+    makeFieldAndDeprecations(description, predicate, typeUri, false, true);
+  }
+
+  public void unionField(String description, Predicate predicate, Set<String> typeUris) {
+    String unionType = derivedSchemaContainer.unionType(typeUris);
+    makeFieldAndDeprecations(description, predicate, unionType, true, true);
+  }
+
+  public void valueField(String description, Predicate predicate, String typeUri) {
+    String type = derivedSchemaContainer.valueType(typeUri);
+    makeFieldAndDeprecations(description, predicate, type, true, false);
+  }
+
+  private void makeFieldAndDeprecations(String description, Predicate predicate, String targetType, boolean isValue,
                                         boolean isObject) {
     if (predicate.inUse() || predicate.isExplicit()) {
       //once a list, always a list
@@ -80,7 +96,7 @@ public class DerivedObjectTypeSchemaGenerator implements DerivedTypeSchemaGenera
   }
 
 
-  void makeField(String description, Predicate predicate, String targetType, boolean isValue,
+  private void makeField(String description, Predicate predicate, String targetType, boolean isValue,
                          boolean isObject, boolean asList) {
     String fieldName = typeNameStore.makeGraphQlnameForPredicate(predicate.getName(), predicate.getDirection(), asList);
     if (description != null) {
@@ -112,6 +128,7 @@ public class DerivedObjectTypeSchemaGenerator implements DerivedTypeSchemaGenera
 
   @Override
   public StringBuilder getSchema() {
+
     return builder;
   }
 }

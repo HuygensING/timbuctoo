@@ -31,16 +31,18 @@ public class DerivedSchemaGenerator {
     typesContainer.valueType(RdfConstants.URI);
 
     for (Type type : types.values()) {
-      typesContainer.openObjectType(type.getName());
+      DerivedObjectTypeSchemaGenerator typeSchemaGenerator = typesContainer.addObjectType(type.getName());
+      typeSchemaGenerator.open();
       for (Predicate predicate : type.getPredicates()) {
-        fieldForDerivedType(predicate, typesContainer);
+        fieldForDerivedType(predicate, typesContainer, typeSchemaGenerator);
       }
-      typesContainer.closeObjectType(type.getName());
+      typeSchemaGenerator.close();
     }
     return typesContainer.getSchema();
   }
 
-  private static void fieldForDerivedType(Predicate pred, DerivedSchemaContainer typesContainer) {
+  private static void fieldForDerivedType(Predicate pred, DerivedSchemaContainer typesContainer,
+                                          DerivedObjectTypeSchemaGenerator typeSchemaGenerator) {
     if (pred.getReferenceTypes().size() == 0) {
       if (pred.getValueTypes().size() == 0) {
         LOG.error(
@@ -48,7 +50,7 @@ public class DerivedSchemaGenerator {
           pred.getName()
         );
       } else if (pred.getValueTypes().size() == 1) {
-        typesContainer.valueField(
+        typeSchemaGenerator.valueField(
           null,
           pred,
           pred.getUsedValueTypes().iterator().next()
@@ -58,11 +60,11 @@ public class DerivedSchemaGenerator {
         for (String valueType : pred.getUsedValueTypes()) {
           types.add(typesContainer.valueType(valueType));
         }
-        typesContainer.unionField(null, pred, types);
+        typeSchemaGenerator.unionField(null, pred, types);
       }
     } else {
       if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
-        typesContainer.objectField(
+        typeSchemaGenerator.objectField(
           null,
           pred,
           typesContainer.getObjectTypeName(pred.getUsedReferenceTypes().iterator().next())
@@ -76,7 +78,7 @@ public class DerivedSchemaGenerator {
           refs.add(typesContainer.valueType(valueType));
         }
 
-        typesContainer.unionField(
+        typeSchemaGenerator.unionField(
           null,
           pred,
           refs
