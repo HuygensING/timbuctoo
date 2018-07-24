@@ -96,7 +96,7 @@ The `<tim:Entity>` consists of all different types in a data set.
 
 ----
 ...
-type <collectionName>Operations {
+type <collectionName> {
   edit(uri: String! entity: <collectionName>Input!): <collectionName>
 }
 
