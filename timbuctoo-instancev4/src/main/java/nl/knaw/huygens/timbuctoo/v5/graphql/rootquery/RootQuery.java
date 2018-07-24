@@ -32,7 +32,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
-import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CollectionMetadataMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DataSetMetadataMutation;
@@ -83,7 +83,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final SupportedExportFormats supportedFormats;
   private final String archetypes;
   private final RdfWiringFactory wiringFactory;
-  private final DerivedSchemaTypeGenerator typeGenerator;
+  private final DerivedSchemaGenerator typeGenerator;
   private final ObjectMapper objectMapper;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final ResourceSyncService resourceSyncService;
@@ -92,7 +92,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
                    String archetypes, RdfWiringFactory wiringFactory,
-                   DerivedSchemaTypeGenerator typeGenerator, ObjectMapper objectMapper,
+                   DerivedSchemaGenerator typeGenerator, ObjectMapper objectMapper,
                    ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService)
     throws IOException {
     this.dataSetRepository = dataSetRepository;

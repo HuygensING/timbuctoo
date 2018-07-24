@@ -12,12 +12,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DerivedSchemaTypeGenerator {
+public class DerivedSchemaGenerator {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DerivedSchemaTypeGenerator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DerivedSchemaGenerator.class);
   private final PaginationArgumentsHelper argumentsHelper;
 
-  public DerivedSchemaTypeGenerator(
+  public DerivedSchemaGenerator(
     PaginationArgumentsHelper argumentsHelper) {
     this.argumentsHelper = argumentsHelper;
   }

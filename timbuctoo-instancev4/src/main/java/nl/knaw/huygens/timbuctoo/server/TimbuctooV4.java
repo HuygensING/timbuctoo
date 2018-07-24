@@ -94,7 +94,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StagingBackup;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
-import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
@@ -290,7 +290,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
         new RdfWiringFactory(dataSetRepository, argHelper, configuration.getDefaultSummaryProps()),
-        new DerivedSchemaTypeGenerator(argHelper),
+        new DerivedSchemaGenerator(argHelper),
         environment.getObjectMapper(),
         new ResourceSyncFileLoader(httpClient),
         resourceSyncService
