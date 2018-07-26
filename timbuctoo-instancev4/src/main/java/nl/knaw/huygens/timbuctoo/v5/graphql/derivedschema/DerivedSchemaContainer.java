@@ -76,7 +76,7 @@ public class DerivedSchemaContainer {
   }
 
   public String getValueTypeName(String typeUri) {
-    //dataSetName prefix logic is also present in the ObjectTypeResolver of RdfWiringFactory
+    //rootType prefix logic is also present in the ObjectTypeResolver of RdfWiringFactory
     return rootType + "_" + typeNameStore.makeGraphQlValuename(typeUri);
   }
 
@@ -89,7 +89,7 @@ public class DerivedSchemaContainer {
     final String name = getObjectTypeName(typeUri);
     if (!types.containsKey(name)) {
       DerivedObjectTypeSchemaGenerator value =
-        new DerivedObjectTypeSchemaGenerator(typeUri, typeNameStore, rootType, this);
+        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, typeNameStore, rootType, this);
       types.put(name, value);
       topLevelTypes.add(typeUri);
       return value;

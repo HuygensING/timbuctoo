@@ -386,7 +386,17 @@ input CollectionMetadataInput {
   archeType: String
 }
 
+type DataSetMutations {
+  sillyWorkaroundWhenNoMutationsAreAllowed: Boolean
+}
+
+input PropertyInput {
+  type: String!
+  value: String!
+}
+
 type Mutation {
+  dataSets: DataSetMutations
   setViewConfig(dataSetId: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
   setSummaryProperties(dataSetId: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
   setIndexConfig(dataSetId: String!, collectionUri: String!, indexConfig: IndexConfigInput!): IndexConfig!
