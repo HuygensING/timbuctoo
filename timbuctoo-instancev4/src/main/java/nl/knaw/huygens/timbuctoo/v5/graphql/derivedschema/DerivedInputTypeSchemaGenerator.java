@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 
 import java.util.List;
@@ -11,14 +10,16 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
 
 
   private final String typeUri;
-  private final TypeNameStore typeNameStore;
+  private final String rootType;
+  private final GraphQlNameGenerator graphQlNameGenerator;
   private final List<GraphQlPredicate> replacements;
   private List<GraphQlPredicate> additions;
   private List<GraphQlPredicate> deletions;
 
-  public DerivedInputTypeSchemaGenerator(String typeUri, TypeNameStore typeNameStore) {
+  public DerivedInputTypeSchemaGenerator(String typeUri, String rootType, GraphQlNameGenerator graphQlNameGenerator) {
     this.typeUri = typeUri;
-    this.typeNameStore = typeNameStore;
+    this.rootType = rootType;
+    this.graphQlNameGenerator = graphQlNameGenerator;
     replacements = Lists.newArrayList();
     additions = Lists.newArrayList();
     deletions = Lists.newArrayList();
@@ -63,7 +64,7 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
     if (additions.isEmpty() && deletions.isEmpty() && replacements.isEmpty()) {
       return schema;
     }
-    String name = typeNameStore.makeGraphQlname(typeUri);
+    String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
     schema.append("input ").append(name).append("Input").append(" {\n");
     if (!additions.isEmpty()) {
       schema.append("  additions: ").append(name).append("AdditionsInput\n");
@@ -135,7 +136,7 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
     }
 
     private String predName(boolean asList) {
-      return typeNameStore.makeGraphQlnameForPredicate(predicate.getName(), predicate.getDirection(), asList);
+      return graphQlNameGenerator.createFieldName(predicate.getName(), predicate.getDirection(), asList);
     }
 
     private String getInputType(boolean asList) {

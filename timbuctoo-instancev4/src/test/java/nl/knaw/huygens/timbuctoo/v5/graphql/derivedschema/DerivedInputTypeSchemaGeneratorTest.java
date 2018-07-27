@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -22,14 +21,15 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
   private static final String TYPE_URI = "http://example.org/type";
   private static final String TYPE = "Type";
-  private TypeNameStore typeNameStore;
+  private static final String ROOT_TYPE = "rootType";
   private DerivedInputTypeSchemaGenerator instance;
+  private GraphQlNameGenerator graphQlNameGenerator;
 
   @Before
   public void setUp() throws Exception {
-    typeNameStore = mock(TypeNameStore.class);
-    when(typeNameStore.makeGraphQlname(TYPE_URI)).thenReturn(TYPE);
-    instance = new DerivedInputTypeSchemaGenerator(TYPE_URI, typeNameStore);
+    graphQlNameGenerator = mock(GraphQlNameGenerator.class);
+    when(graphQlNameGenerator.createObjectTypeName(ROOT_TYPE, TYPE_URI)).thenReturn(TYPE);
+    instance = new DerivedInputTypeSchemaGenerator(TYPE_URI, ROOT_TYPE, graphQlNameGenerator);
   }
 
   @Test
@@ -57,8 +57,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
   }
 
   private void graphQlNameForPredicate(String predName, boolean asList, String graphQlName) {
-    when(typeNameStore.makeGraphQlnameForPredicate(predName, Direction.OUT, asList))
-      .thenReturn(graphQlName);
+    when(graphQlNameGenerator.createFieldName(predName, Direction.OUT, asList)).thenReturn(graphQlName);
   }
 
   @Test

@@ -1,19 +1,18 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 
 import java.util.Set;
 
 public class DerivedObjectTypeOperationsSchemaGenerator implements DerivedObjectTypeSchemaGenerator {
   private final String typeUri;
-  private final TypeNameStore typeNameStore;
+  private final GraphQlNameGenerator graphQlNameGenerator;
   private final String rootType;
 
-  public DerivedObjectTypeOperationsSchemaGenerator(String typeUri, TypeNameStore typeNameStore,
-                                                    String rootType) {
+  public DerivedObjectTypeOperationsSchemaGenerator(String typeUri, String rootType,
+                                                    GraphQlNameGenerator graphQlNameGenerator) {
     this.typeUri = typeUri;
-    this.typeNameStore = typeNameStore;
+    this.graphQlNameGenerator = graphQlNameGenerator;
     this.rootType = rootType;
   }
 
@@ -44,7 +43,7 @@ public class DerivedObjectTypeOperationsSchemaGenerator implements DerivedObject
 
   @Override
   public StringBuilder getSchema() {
-    String name = rootType + "_" + typeNameStore.makeGraphQlname(typeUri);
+    String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
     StringBuilder schema = new StringBuilder();
 
     schema.append("type ").append(name).append(" {\n")

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 
 import java.util.Set;
@@ -11,15 +10,15 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
 
   private final String typeUri;
   private StringBuilder builder;
-  private TypeNameStore typeNameStore;
+  private GraphQlNameGenerator graphQlNameGenerator;
   private String rootType;
   private final DerivedSchemaContainer derivedSchemaContainer;
 
   public DerivedQueryObjectTypeSchemaGenerator(String typeUri,
-                                               TypeNameStore typeNameStore, String rootType,
+                                               GraphQlNameGenerator graphQlNameGenerator, String rootType,
                                                DerivedSchemaContainer derivedSchemaContainer) {
     this.typeUri = typeUri;
-    this.typeNameStore = typeNameStore;
+    this.graphQlNameGenerator = graphQlNameGenerator;
     this.rootType = rootType;
     this.derivedSchemaContainer = derivedSchemaContainer;
     this.builder = new StringBuilder();
@@ -27,10 +26,10 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
 
   @Override
   public void open() {
-    String name = rootType + "_" + typeNameStore.makeGraphQlname(typeUri);
+    String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
     builder.append("#")
            .append("Subjects that are a [")
-           .append(typeNameStore.shorten(typeUri))
+           .append(graphQlNameGenerator.shorten(typeUri))
            .append("](")
            .append(typeUri)
            .append(")")
@@ -38,7 +37,7 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
            .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME)
            .append(" @rdfType(uri: \"")
            //quotes and backslashes are not allowed in uri's anyway so this shouldn't happen
-           .append(typeUri.replace("\"", "").replace("\\", ""))
+           .append(graphQlNameGenerator.graphQlUri(typeUri))
            .append("\") {\n")
            .append("  uri: String! @uri\n")
            .append("  title: Value @entityTitle\n")
@@ -104,7 +103,7 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
 
   private void makeField(String description, Predicate predicate, String targetType, boolean isValue,
                          boolean isObject, boolean asList) {
-    String fieldName = typeNameStore.makeGraphQlnameForPredicate(predicate.getName(), predicate.getDirection(), asList);
+    String fieldName = graphQlNameGenerator.createFieldName(predicate.getName(), predicate.getDirection(), asList);
     if (description != null) {
       builder.append("  #").append(description).append("\n");
     }

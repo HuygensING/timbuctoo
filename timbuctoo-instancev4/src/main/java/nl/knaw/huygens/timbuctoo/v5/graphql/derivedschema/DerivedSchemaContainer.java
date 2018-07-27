@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 
 import java.util.HashMap;
@@ -13,13 +12,13 @@ public class DerivedSchemaContainer {
   private final Set<String> topLevelTypes;
 
   private final String rootType;
-  private final TypeNameStore typeNameStore;
+  private final GraphQlNameGenerator nameGenerator;
   private final PaginationArgumentsHelper argumentsHelper;
 
-  DerivedSchemaContainer(String rootType, TypeNameStore typeNameStore,
+  DerivedSchemaContainer(String rootType, GraphQlNameGenerator graphQlNameGenerator,
                          PaginationArgumentsHelper argumentsHelper) {
     this.rootType = rootType;
-    this.typeNameStore = typeNameStore;
+    this.nameGenerator = graphQlNameGenerator;
     this.argumentsHelper = argumentsHelper;
 
     types = new HashMap<>();
@@ -62,7 +61,7 @@ public class DerivedSchemaContainer {
   }
 
   public String valueType(String typeUri) {
-    final String name = getValueTypeName(typeUri);
+    final String name = nameGenerator.createValueTypeName(rootType, typeUri);
     if (!types.containsKey(name)) {
 
       DerivedTypeSchemaGenerator derivedValueTypeSchemaGenerator = new DerivedValueTypeSchemaGenerator(name);
@@ -75,21 +74,12 @@ public class DerivedSchemaContainer {
     return name;
   }
 
-  public String getValueTypeName(String typeUri) {
-    //rootType prefix logic is also present in the ObjectTypeResolver of RdfWiringFactory
-    return rootType + "_" + typeNameStore.makeGraphQlValuename(typeUri);
-  }
-
-  public String getObjectTypeName(String typeUri) {
-    return rootType + "_" + typeNameStore.makeGraphQlname(typeUri);
-  }
-
 
   public DerivedObjectTypeSchemaGenerator addObjectType(String typeUri) {
-    final String name = getObjectTypeName(typeUri);
+    final String name = nameGenerator.createObjectTypeName(rootType, typeUri);
     if (!types.containsKey(name)) {
       DerivedObjectTypeSchemaGenerator value =
-        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, typeNameStore, rootType, this);
+        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, nameGenerator, rootType, this);
       types.put(name, value);
       topLevelTypes.add(typeUri);
       return value;
@@ -119,7 +109,7 @@ public class DerivedSchemaContainer {
     total.append("  metadata: DataSetMetadata!");
 
     for (String uri : topLevelTypes) {
-      String typename = getObjectTypeName(uri);
+      String typename = nameGenerator.createObjectTypeName(rootType, uri);
       String name = typename.substring(rootType.length() + 1);
       total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
         "@fromCollection(uri: \"")

@@ -23,7 +23,9 @@ public class DerivedSchemaGenerator {
   }
 
   public String makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore) {
-    DerivedSchemaContainer typesContainer = new DerivedSchemaContainer(rootType, nameStore, this.argumentsHelper);
+    GraphQlNameGenerator nameGenerator = new GraphQlNameGenerator(nameStore);
+
+    DerivedSchemaContainer typesContainer = new DerivedSchemaContainer(rootType, nameGenerator, this.argumentsHelper);
 
     // FIXME find a better way to register standard types to the schema of a data set
     typesContainer.valueType(RdfConstants.MARKDOWN);
@@ -34,7 +36,7 @@ public class DerivedSchemaGenerator {
       DerivedObjectTypeSchemaGenerator typeSchemaGenerator = typesContainer.addObjectType(type.getName());
       typeSchemaGenerator.open();
       for (Predicate predicate : type.getPredicates()) {
-        fieldForDerivedType(predicate, typesContainer, typeSchemaGenerator);
+        fieldForDerivedType(predicate, typesContainer, typeSchemaGenerator, nameGenerator, rootType);
       }
       typeSchemaGenerator.close();
     }
@@ -42,7 +44,8 @@ public class DerivedSchemaGenerator {
   }
 
   private static void fieldForDerivedType(Predicate pred, DerivedSchemaContainer typesContainer,
-                                          DerivedObjectTypeSchemaGenerator typeSchemaGenerator) {
+                                          DerivedObjectTypeSchemaGenerator typeSchemaGenerator,
+                                          GraphQlNameGenerator nameGenerator, String rootType) {
     if (pred.getReferenceTypes().size() == 0) {
       if (pred.getValueTypes().size() == 0) {
         LOG.error(
@@ -67,12 +70,12 @@ public class DerivedSchemaGenerator {
         typeSchemaGenerator.objectField(
           null,
           pred,
-          typesContainer.getObjectTypeName(pred.getUsedReferenceTypes().iterator().next())
+          nameGenerator.createObjectTypeName(rootType, pred.getUsedReferenceTypes().iterator().next())
         );
       } else {
         Set<String> refs = new HashSet<>();
         for (String referenceType : pred.getUsedReferenceTypes()) {
-          refs.add(typesContainer.getObjectTypeName(referenceType));
+          refs.add(nameGenerator.createObjectTypeName(rootType, referenceType));
         }
         for (String valueType : pred.getUsedValueTypes()) {
           refs.add(typesContainer.valueType(valueType));

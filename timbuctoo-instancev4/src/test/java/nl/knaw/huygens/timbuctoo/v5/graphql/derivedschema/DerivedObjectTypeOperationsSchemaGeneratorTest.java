@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -13,17 +12,17 @@ public class DerivedObjectTypeOperationsSchemaGeneratorTest {
   @Ignore
   @Test
   public void addsEditMethodToType() {
-    TypeNameStore typeNameStore = mock(TypeNameStore.class);
     String uri = "http://example.org/type";
-    when(typeNameStore.makeGraphQlname(uri)).thenReturn("Type");
     String rootType = "RootType";
+    GraphQlNameGenerator graphQlNameGenerator = mock(GraphQlNameGenerator.class);
+    when(graphQlNameGenerator.createObjectTypeName(rootType, uri)).thenReturn("Type");
     DerivedObjectTypeOperationsSchemaGenerator instance =
-      new DerivedObjectTypeOperationsSchemaGenerator(uri, typeNameStore, rootType);
+      new DerivedObjectTypeOperationsSchemaGenerator(uri, rootType, graphQlNameGenerator);
 
     String schema = instance.getSchema().toString();
 
-    assertThat(schema, is("type RootType_Type {\n" +
-      "  edit(uri: String! entity: RootType_TypeInput!): RootType_Type\n" +
+    assertThat(schema, is("type Type {\n" +
+      "  edit(uri: String! entity: TypeInput!): Type\n" +
       "}\n"));
   }
 
