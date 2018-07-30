@@ -108,17 +108,17 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
     public void addToSchema(StringBuilder schema, boolean isReplacements) {
       boolean asList = predicate.isList() || predicate.hasBeenList();
       schema.append("  ").append(predName(asList)).append(": ").append(getInputType(asList))
-            .append(getDeprecation(!predicate.inUse(), asList)).append("\n");
+            .append(getDeprecation(!predicate.inUse(), asList, predicate.isExplicit())).append("\n");
 
       if (isReplacements && predicate.isList() && predicate.isHasBeenSingular()) {
         // add field for deprecated single value field
         schema.append("  ").append(predName(false)).append(": ").append(getInputType(false)).append(
-          getDeprecation(true, false)).append("\n");
+          getDeprecation(true, false, false)).append("\n");
       }
     }
 
-    private String getDeprecation(boolean isDeprecated, boolean asList) {
-      if (isDeprecated) {
+    private String getDeprecation(boolean isDeprecated, boolean asList, boolean explicit) {
+      if (isDeprecated && !explicit) {
         if (asList) {
           return " @deprecated(reason: \"There used to be entities with this property, but that is no longer the case" +
             ".\")";

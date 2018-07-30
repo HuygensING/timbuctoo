@@ -183,6 +183,25 @@ public class DerivedInputTypeSchemaGeneratorTest {
   }
 
   @Test
+  public void doesNotDeprecateWhenTheFieldIsExplicitAndUnused() {
+    Predicate unusedPred = predicate().withName("http://example.com/unused")
+                                      .notInUse()
+                                      .explicit()
+                                      .hasBeenSingular()
+                                      .hasDirection(Direction.OUT)
+                                      .build();
+
+    graphQlNameForPredicate("http://example.com/unused", false, "short_unUsed");
+    instance.valueField(null, unusedPred, RdfConstants.STRING);
+
+    String schema = instance.getSchema().toString();
+
+    assertThat(schema,containsString("input TypeReplacementsInput {\n" +
+      "  short_unUsed: PropertyInput\n" +
+      "}\n\n"));
+  }
+
+  @Test
   public void addObjectFieldAddsField() {
     Predicate valueList = predicate().withName("http://example.com/valueList")
                                      .isList()
@@ -229,8 +248,5 @@ public class DerivedInputTypeSchemaGeneratorTest {
         "}\n\n")
     ));
   }
-
-
-  // TODO add test for isExplicit
 
 }

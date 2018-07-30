@@ -13,6 +13,7 @@ public class PredicateBuilder {
   private boolean hasBeenSingular;
   private boolean inUse = true;
   private boolean hasBeenList;
+  private boolean explicit;
 
   private PredicateBuilder() {
 
@@ -46,6 +47,7 @@ public class PredicateBuilder {
     when(predicate.inUse()).thenReturn(inUse);
     when(predicate.hasBeenList()).thenReturn(hasBeenList);
     when(predicate.getDirection()).thenReturn(direction);
+    when(predicate.isExplicit()).thenReturn(explicit);
 
     return predicate;
   }
@@ -63,6 +65,11 @@ public class PredicateBuilder {
 
   public PredicateBuilder notInUse() {
     this.inUse = false;
+    return this;
+  }
+
+  public PredicateBuilder explicit() {
+    this.explicit = true;
     return this;
   }
 }
