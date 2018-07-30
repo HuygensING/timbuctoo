@@ -97,7 +97,15 @@ The `<tim:Entity>` consists of all different types in a data set.
 
 ----
 ...
-type <collectionName> {
+type DataSetMutations {
+  <dataSetName>: <dataSetName>Mutations
+}
+
+type <dataSetName>Mutations {
+  <collectionName>: <collectionName>Mutations
+}
+
+type <collectionName>Mutations {
   edit(uri: String! entity: <collectionName>Input!): <collectionName>
 }
 
