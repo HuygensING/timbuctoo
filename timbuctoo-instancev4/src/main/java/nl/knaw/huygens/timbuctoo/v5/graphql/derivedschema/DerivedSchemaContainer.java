@@ -78,8 +78,9 @@ public class DerivedSchemaContainer {
   public DerivedObjectTypeSchemaGenerator addObjectType(String typeUri) {
     final String name = nameGenerator.createObjectTypeName(rootType, typeUri);
     if (!types.containsKey(name)) {
+      // TODO make variable so it can be used for generating the input types as wel.
       DerivedObjectTypeSchemaGenerator value =
-        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, nameGenerator, rootType, this);
+        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, rootType, nameGenerator, this);
       types.put(name, value);
       topLevelTypes.add(typeUri);
       return value;
@@ -95,17 +96,34 @@ public class DerivedSchemaContainer {
 
   public String getSchema() {
     StringBuilder total = new StringBuilder();
-    total.append("type ").append(rootType).append("{\n");
+    addRootType(total);
+    addRootTypeMutations(total);
 
-    addDataSetMetadata(total);
     for (DerivedTypeSchemaGenerator derivedObjectTypeSchemaGenerator : types.values()) {
       total.append(derivedObjectTypeSchemaGenerator.getSchema());
     }
 
+
+
     return total.toString();
   }
 
-  private void addDataSetMetadata(StringBuilder total) {
+  private void addRootTypeMutations(StringBuilder total) {
+    if (topLevelTypes.isEmpty()) {
+      return;
+    }
+    total.append("type ").append(rootType).append("Mutations").append("{\n");
+
+    for (String uri : topLevelTypes) {
+      String typename = nameGenerator.createObjectTypeName(rootType, uri);
+      String name = typename.substring(rootType.length() + 1);
+      total.append("  ").append(name).append(": ").append(typename).append("Mutations\n");
+    }
+    total.append("}\n\n");
+  }
+
+  private void addRootType(StringBuilder total) {
+    total.append("type ").append(rootType).append("{\n");
     total.append("  metadata: DataSetMetadata!");
 
     for (String uri : topLevelTypes) {
@@ -120,7 +138,6 @@ public class DerivedSchemaContainer {
            .append(graphQlUri(uri))
            .append("\", listAll: true)\n");
     }
-
     total.append("}\n\n");
   }
 

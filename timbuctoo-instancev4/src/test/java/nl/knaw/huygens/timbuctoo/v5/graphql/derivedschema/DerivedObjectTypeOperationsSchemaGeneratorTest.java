@@ -21,7 +21,7 @@ public class DerivedObjectTypeOperationsSchemaGeneratorTest {
 
     String schema = instance.getSchema().toString();
 
-    assertThat(schema, is("type Type {\n" +
+    assertThat(schema, is("type TypeMutations {\n" +
       "  edit(uri: String! entity: TypeInput!): Type\n" +
       "}\n"));
   }

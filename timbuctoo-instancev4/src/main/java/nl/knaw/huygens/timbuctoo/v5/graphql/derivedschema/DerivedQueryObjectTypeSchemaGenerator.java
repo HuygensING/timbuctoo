@@ -15,7 +15,7 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
   private final DerivedSchemaContainer derivedSchemaContainer;
 
   public DerivedQueryObjectTypeSchemaGenerator(String typeUri,
-                                               GraphQlNameGenerator graphQlNameGenerator, String rootType,
+                                               String rootType, GraphQlNameGenerator graphQlNameGenerator,
                                                DerivedSchemaContainer derivedSchemaContainer) {
     this.typeUri = typeUri;
     this.graphQlNameGenerator = graphQlNameGenerator;

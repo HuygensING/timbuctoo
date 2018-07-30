@@ -11,13 +11,13 @@ public class DerivedCompositeObjectTypeSchemaGenerator implements DerivedObjectT
 
   private final ArrayList<DerivedObjectTypeSchemaGenerator> delegates;
 
-  public DerivedCompositeObjectTypeSchemaGenerator(String typeUri,
-                                                   GraphQlNameGenerator nameStore, String rootType,
+  public DerivedCompositeObjectTypeSchemaGenerator(String typeUri, String rootType,
+                                                   GraphQlNameGenerator nameStore,
                                                    DerivedSchemaContainer derivedSchemaContainer) {
     delegates = Lists.newArrayList(
-      new DerivedQueryObjectTypeSchemaGenerator(typeUri, nameStore, rootType, derivedSchemaContainer)
-    // new DerivedInputTypeSchemaGenerator(typeUri, nameStore),
-    // new DerivedObjectTypeOperationsSchemaGenerator(typeUri, nameStore, rootType)
+      new DerivedQueryObjectTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer),
+      new DerivedInputTypeSchemaGenerator(typeUri, rootType, nameStore),
+      new DerivedObjectTypeOperationsSchemaGenerator(typeUri, rootType, nameStore)
     );
   }
 

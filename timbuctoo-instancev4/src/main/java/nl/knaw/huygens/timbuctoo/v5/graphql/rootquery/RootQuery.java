@@ -277,11 +277,14 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.wiringFactory(wiringFactory);
-    StringBuilder root = new StringBuilder("type DataSets {\n sillyWorkaroundWhenNoDataSetsAreVisible: Boolean\n");
+    StringBuilder rootQuery = new StringBuilder("type DataSets {\n sillyWorkaroundWhenNoDataSetsAreVisible: Boolean\n");
+    StringBuilder rootMut = new StringBuilder("type DataSetMutations {\n")
+      .append("  sillyWorkaroundWhenNoMutationsAreAllowed: Boolean\n");
 
     boolean[] dataSetAvailable = new boolean[]{false};
+    boolean[] hasTypes = new boolean[]{false};
 
-
+    // add data sets query to the schema
     dataSetRepository.getDataSets().forEach(dataSet -> {
       final DataSetMetaData dataSetMetaData = dataSet.getMetadata();
       final String name = dataSetMetaData.getCombinedId();
@@ -305,10 +308,12 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
       types = mergedTypes;
 
+
       if (types != null) {
 
+        // Add to rootQuery
         dataSetAvailable[0] = true;
-        root.append("  ")
+        rootQuery.append("  ")
           .append(name)
           .append(":")
           .append(name)
@@ -317,6 +322,15 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append("\", dataSetId:\"")
           .append(dataSetMetaData.getDataSetId())
           .append("\")\n");
+
+        if (!types.isEmpty()) {
+          hasTypes[0] = true;
+          rootMut.append("  ")
+                 .append(name)
+                 .append(": ")
+                 .append(name).append("Mutations")
+                 .append("\n\n");
+        }
 
         wiring.type(name, c -> c
           .dataFetcher("metadata", env -> new DataSetWithDatabase(dataSet))
@@ -331,10 +345,15 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         staticQuery.merge(schemaParser.parse(schema));
       }
     });
-    root.append("}\n\nextend type Query {\n  #The actual dataSets\n  dataSets: DataSets @passThrough\n}\n\n");
+    rootQuery.append("}\n\nextend type Query {\n  #The actual dataSets\n  dataSets: DataSets @passThrough\n}\n\n");
+    rootMut.append("}\n\nextend type Mutation {\n  #The actual dataSets\n" +
+      "  dataSets: DataSetMutations @passThrough\n}\n\n");
 
     if (dataSetAvailable[0]) {
-      staticQuery.merge(schemaParser.parse(root.toString()));
+      staticQuery.merge(schemaParser.parse(rootQuery.toString()));
+      if (hasTypes[0]) {
+        staticQuery.merge(schemaParser.parse(rootMut.toString()));
+      }
     }
 
     SchemaGenerator schemaGenerator = new SchemaGenerator();
