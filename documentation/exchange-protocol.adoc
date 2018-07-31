@@ -62,28 +62,39 @@ NOTE: each capabilitylist is treated as 1 "dataset". Another instance will impor
 
 A capability list will link to one or more files via a resource (index) list.
 
+*Changelists*
+
 Besides the resourcelist, a capability list should also point to a changelist.
 The changelist should contain a list of files in the nqud format (see below) that when executed in serie construct the current dataset rdf file in the resourcelist.
 
 If such a changelist is available we will import the dataset using those change files.
 
-If a changelist is not available then the dataset will be imported from the resourcelist.
+NOTE: It is very important that every change made to the dataset is included in the patch files (nqud) available
+in the changelist. Otherwise Timbuctoo won't be able to import the full dataset by using the changelist.
+
+If, and only if, a changelist is not available then the dataset will be imported from the resourcelist.
 
 All files in the resource list are considered to be part of the same dataset.
-A single file in the dataset should contain the current version of the full rdf dataset. This can be determined in
-one of three different ways:
+
+NOTE: A single file in the dataset should contain the current version of the full rdf dataset.
+
+*The dataset in a resourcelist can be determined in one of three different ways:*
 
 1. If there is only one file in the list then that is assumed to be the dataset.
 2. If there is more than one file and one has the 'isDataSet' property in the metadata set to true then that file will be used.
 3. If there is more than one file, user can specify the dataset file by using the "dataSetFile" parameter to
 the ResourceSync import call.
 
-Note: If there is more than one file and the dataset cannot be determined either by the user specified 'dataSetFile'
+NOTE: If there is more than one file and the dataset cannot be determined either by the user specified 'dataSetFile'
 parameter or the 'isDataSet' property then an error is returned along with the list of all available files in the
-resourcelist.
+resourcelist. You can then do a call using one of those available files as a 'dataSetFile' as desired.
 
+
+*Resource dump*
 
 Finally, a capability list may also point to a resource dump, this is an optional feature and should be provided in addition to the resource list and the changelist.
+
+=== Resourcesync creation
 
 So to create a resourcesync capable server for timbuctoo you should:
 
