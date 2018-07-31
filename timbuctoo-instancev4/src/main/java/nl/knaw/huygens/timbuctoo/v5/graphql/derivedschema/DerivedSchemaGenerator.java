@@ -34,11 +34,9 @@ public class DerivedSchemaGenerator {
 
     for (Type type : types.values()) {
       DerivedObjectTypeSchemaGenerator typeSchemaGenerator = typesContainer.addObjectType(type.getName());
-      typeSchemaGenerator.open();
       for (Predicate predicate : type.getPredicates()) {
         fieldForDerivedType(predicate, typesContainer, typeSchemaGenerator, nameGenerator, rootType);
       }
-      typeSchemaGenerator.close();
     }
     return typesContainer.getSchema();
   }

@@ -26,16 +26,6 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
   }
 
   @Override
-  public void open() {
-    // nothing to do
-  }
-
-  @Override
-  public void close() {
-    // nothing to do
-  }
-
-  @Override
   public void objectField(String description, Predicate predicate, String typeUri) {
     addPredicate(predicate);
   }

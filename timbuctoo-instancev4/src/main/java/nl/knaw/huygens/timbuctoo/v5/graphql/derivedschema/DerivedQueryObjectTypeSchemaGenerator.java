@@ -4,12 +4,12 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 
 import java.util.Set;
 
-public class DerivedQueryObjectTypeSchemaGenerator implements
-  DerivedObjectTypeSchemaGenerator {
+public class DerivedQueryObjectTypeSchemaGenerator implements DerivedObjectTypeSchemaGenerator {
   private static final String ENTITY_INTERFACE_NAME = "Entity";
 
   private final String typeUri;
   private StringBuilder builder;
+  private StringBuilder predicates;
   private GraphQlNameGenerator graphQlNameGenerator;
   private String rootType;
   private final DerivedSchemaContainer derivedSchemaContainer;
@@ -22,33 +22,7 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
     this.rootType = rootType;
     this.derivedSchemaContainer = derivedSchemaContainer;
     this.builder = new StringBuilder();
-  }
-
-  @Override
-  public void open() {
-    String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
-    builder.append("#")
-           .append("Subjects that are a [")
-           .append(graphQlNameGenerator.shorten(typeUri))
-           .append("](")
-           .append(typeUri)
-           .append(")")
-           .append("\n")
-           .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME)
-           .append(" @rdfType(uri: \"")
-           //quotes and backslashes are not allowed in uri's anyway so this shouldn't happen
-           .append(graphQlNameGenerator.graphQlUri(typeUri))
-           .append("\") {\n")
-           .append("  uri: String! @uri\n")
-           .append("  title: Value @entityTitle\n")
-           .append("  description: Value @entityDescription\n")
-           .append("  image: Value @entityImage\n")
-           .append("  inOtherDataSets(dataSetIds: [String!]): [DataSetLink!]! @otherDataSets\n");
-  }
-
-  @Override
-  public void close() {
-    builder.append("}\n\n");
+    this.predicates = new StringBuilder();
   }
 
   @Override
@@ -76,7 +50,7 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
         makeField(description, predicate, targetType, isValue, isObject, true);
         if (predicate.isHasBeenSingular()) {
           makeField(description, predicate, targetType, isValue, isObject, false);
-          builder.append(
+          predicates.append(
             " @deprecated(reason: \"This property only returns the first value of the list. Use the *List version to " +
               "retrieve all value\")\n");
         }
@@ -87,17 +61,17 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
     } else {
       if (predicate.hasBeenList()) {
         makeField(description, predicate, targetType, isValue, isObject, true);
-        builder.append(" @deprecated(reason: \"There used to be entities with this property, but that is no " +
+        predicates.append(" @deprecated(reason: \"There used to be entities with this property, but that is no " +
           "longer the case.\")\n");
       }
       if (predicate.isHasBeenSingular()) {
         makeField(description, predicate, targetType, isValue, isObject, false);
-        builder.append(" @deprecated(reason: \"There used to be entities with this property, but that is no " +
+        predicates.append(" @deprecated(reason: \"There used to be entities with this property, but that is no " +
           "longer the case.\")\n");
       }
     }
 
-    builder.append("\n");
+    predicates.append("\n");
   }
 
 
@@ -105,17 +79,17 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
                          boolean isObject, boolean asList) {
     String fieldName = graphQlNameGenerator.createFieldName(predicate.getName(), predicate.getDirection(), asList);
     if (description != null) {
-      builder.append("  #").append(description).append("\n");
+      predicates.append("  #").append(description).append("\n");
     }
 
-    builder.append("  ");
+    predicates.append("  ");
     if (asList) {
-      builder.append(derivedSchemaContainer.listType(fieldName, targetType));
+      predicates.append(derivedSchemaContainer.listType(fieldName, targetType));
     } else {
-      builder.append(fieldName).append(": ").append(targetType);
+      predicates.append(fieldName).append(": ").append(targetType);
     }
     final String safeName = predicate.getName().replace("\"", "");
-    builder.append(" ")
+    predicates.append(" ")
            .append("@rdf(predicate: \"")
            .append(safeName)
            .append("\", direction: \"")
@@ -133,7 +107,26 @@ public class DerivedQueryObjectTypeSchemaGenerator implements
 
   @Override
   public StringBuilder getSchema() {
-
+    String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
+    builder.append("#")
+           .append("Subjects that are a [")
+           .append(graphQlNameGenerator.shorten(typeUri))
+           .append("](")
+           .append(typeUri)
+           .append(")")
+           .append("\n")
+           .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME)
+           .append(" @rdfType(uri: \"")
+           //quotes and backslashes are not allowed in uri's anyway so this shouldn't happen
+           .append(graphQlNameGenerator.graphQlUri(typeUri))
+           .append("\") {\n")
+           .append("  uri: String! @uri\n")
+           .append("  title: Value @entityTitle\n")
+           .append("  description: Value @entityDescription\n")
+           .append("  image: Value @entityImage\n")
+           .append("  inOtherDataSets(dataSetIds: [String!]): [DataSetLink!]! @otherDataSets\n");
+    builder.append(predicates);
+    builder.append("}\n\n");
     return builder;
   }
 }

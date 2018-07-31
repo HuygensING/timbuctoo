@@ -17,16 +17,6 @@ public class DerivedObjectTypeOperationsSchemaGenerator implements DerivedObject
   }
 
   @Override
-  public void open() {
-    // no action needed
-  }
-
-  @Override
-  public void close() {
-    // no action needed
-  }
-
-  @Override
   public void objectField(String description, Predicate predicate, String typeUri) {
     // no action needed
   }

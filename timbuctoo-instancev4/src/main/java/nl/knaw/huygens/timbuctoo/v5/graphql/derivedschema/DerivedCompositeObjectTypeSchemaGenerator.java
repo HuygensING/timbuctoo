@@ -22,16 +22,6 @@ public class DerivedCompositeObjectTypeSchemaGenerator implements DerivedObjectT
   }
 
   @Override
-  public void open() {
-    delegates.forEach(DerivedObjectTypeSchemaGenerator::open);
-  }
-
-  @Override
-  public void close() {
-    delegates.forEach(DerivedObjectTypeSchemaGenerator::close);
-  }
-
-  @Override
   public void objectField(String description, Predicate predicate, String typeUri) {
     delegates.forEach(delegate -> delegate.objectField(description, predicate, typeUri));
   }

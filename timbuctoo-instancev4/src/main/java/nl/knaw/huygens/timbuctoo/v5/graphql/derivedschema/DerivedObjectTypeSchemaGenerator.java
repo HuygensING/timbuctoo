@@ -5,9 +5,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import java.util.Set;
 
 public interface DerivedObjectTypeSchemaGenerator extends DerivedTypeSchemaGenerator {
-  void open();
-
-  void close();
 
   void objectField(String description, Predicate predicate, String typeUri);
 
