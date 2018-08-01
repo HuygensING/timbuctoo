@@ -98,11 +98,11 @@ The `<tim:Entity>` consists of all different types in a data set.
 ----
 ...
 type DataSetMutations {
-  <dataSetName>: <dataSetName>Mutations
+  <dataSetName>: <dataSetName>Mutations @passThrough
 }
 
 type <dataSetName>Mutations {
-  <collectionName>: <collectionName>Mutations
+  <collectionName>: <collectionName>Mutations @passThrough
 }
 
 type <collectionName>Mutations {
