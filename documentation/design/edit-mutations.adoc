@@ -159,7 +159,7 @@ input <dataSetName>ProvenanceInput {
 ==== Example
 
 ----
-mutation EditEntity (uri: String! entity: <collectionName>Input!) {
+mutation EditEntity ($uri: String! $entity: <collectionName>Input!) {
   dataSets {
     <dataSetId> {
       <collectionName> {
