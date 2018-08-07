@@ -1,0 +1,77 @@
+= Add support for users to be able to add alternative redirection services (in addition to 'handle') to Timbuctoo
+
+== Problem:
+Currently Timbuctoo only supports the Handle redirection service. We need to figure out if it is easy to add other
+redirection services to Timbuctoo and modify Timbuctoo to make it easy if it's not.
+
+== Result:
+Users will be able to write implementations for their desired redirection service and configure Timbuctoo to use them in
+place of Handle. The user will be able to do so as follows:
+
+=== Steps to add a desired reduction service to Timbuctoo and configure Timbuctoo to use it:
+- Create a new class that implements the PersistentUrlCreator interface. For example, if you want to implement the
+Bit.ly service you might call it BitlyUrlCreator.
+
+- This new implementation class should include the "init" and "add" functions as specified in the interface. 
+
+- In the example_config.yaml file, change  the "redirectionService" property value to your
+new implementation.
+
+For example, Timbuctoo default:
+----
+redirectionService: HandleAdder
+----
+
+can be changed to use your new Bitly implementation as:
+----
+redirectionService: BitlyUrlCreator
+----
+
+== Approach:
+
+- The initial step will be to add support to one more redirection service as a test case, in addition to Handler. Bit.ly
+was chosen as the service as it has a Java library available.
+
+- Currently, handleAdder, specific to the handle service, is added directly to Timbuctoo. We need to change this so that
+the user can configure any implementation of the PersistenceUrlCreator in place of the handleAdder. This can be done
+as follows:
+
+In TimbuctooConfiguration.java we add:
+----
+  @JsonProperty("redirectionService")
+  public PersistentUrlCreator getPersistentUrlCreator();
+----
+
+We then change TImbuctooV4.java as follows:
+
+Currently in TimbuctooV4.java:
+----
+HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
+...
+handleAdder.init(transactionEnforcer);
+----
+
+After changes:
+----
+PersistenceUrlCreator persistenceUrlCreator = configuration.getPersistentUrlCreator();
+...
+persistenceUrlCreator.init(transactionEnforcer);
+----
+
+
+Note: The "init" function (currently in HandleAdder class) will have to be moved to the PersistenceUrlCreator interface.
+
+
+- A new class BitlyUrlCreator that implements the persistenceUrlCreator will be added.
+
+- This BitlyUrlCreator will use the [Bit.ly Java API client](https://github.com/stackmagic/bitly-api-client)
+
+- The Bit.ly client will be used to call the Java client library as follows:
+
+----
+ShortenResponse respShort = new ShortenRequestBuilder("... the access token ...") //
+    .setLongUrl("https://example-timbuctoo-url/") //
+    .call();
+----
+
+
