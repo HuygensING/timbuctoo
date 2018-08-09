@@ -1,68 +1,64 @@
 = Add support for users to be able to add alternative redirection services (in addition to 'handle') to Timbuctoo
 
 == Problem:
-Currently Timbuctoo only supports the Handle redirection service. We need to figure out if it is easy to add other
-redirection services to Timbuctoo and modify Timbuctoo to make it easy if it's not.
+Currently, Timbuctoo only supports the Handle redirection service. It's not easy for Timbuctoo users to integrate other
+redirection services as the configuration for the Handle redirection is hard-coded into Timbuctoo.
 
 == Result:
-Users will be able to write implementations for their desired redirection service and configure Timbuctoo to use them in
-place of Handle. The user will be able to do so as follows:
+The hard-coded integration of Handle redirection service will be removed. Redirection service will now have to be
+specified instead in the Timbuctoo configuration. The users will be able to write implementations for their desired
+redirection service and configure Timbuctoo to use a new redirection service.
+
+The user will be able to do so as follows:
 
 === Steps to add a desired reduction service to Timbuctoo and configure Timbuctoo to use it:
-- Create a new class that implements the PersistentUrlCreator interface. For example, if you want to implement the
-Bit.ly service you might call it BitlyUrlCreator.
-
-- This new implementation class should include the "init" and "add" functions as specified in the interface. 
-
-- In the example_config.yaml file, change  the "redirectionService" property value to your
+- In the example_config.yaml file, change  the "redirectionService" property and child properties values to your
 new implementation.
 
 For example, Timbuctoo default:
 ----
-redirectionService: HandleAdder
+redirectionService:
+    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.HandleRedirectionFactory
+    configFile: ${timbuctoo_dataPath}/configs/redirectionService/handleConfig.yaml
 ----
 
 can be changed to use your new Bitly implementation as:
 ----
-redirectionService: BitlyUrlCreator
+redirectionService:
+    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.BitlyUrlCreatorFactory
+    configFile: ${timbuctoo_dataPath}/configs/redirectionService/bitlyConfig.yaml
 ----
+
+"configFile" above should point to the location of a file containing the configuration information necessary to build
+the redirection service. This can include information such as API authentication key, user information, etc. The factory
+class mentioned above should then be able to use the specified information to build a redirection service.
+
+The factory class should extend the RedirectionFactory interface (new) and thus implement the createRedirectionService
+function to create the new redirection service.
+
+This new implementation class for the redirection service should include the "init" and "add" functions.
+
 
 == Approach:
 
 - The initial step will be to add support to one more redirection service as a test case, in addition to Handler. Bit.ly
 was chosen as the service as it has a Java library available.
 
+NOTE: We are using Bit.ly for testing purposes to make sure that the new way of setting up redirection services works
+with Timbuctoo. Bit.ly will **not** be available as an option in production instances.
+
 - Currently, handleAdder, specific to the handle service, is added directly to Timbuctoo. We need to change this so that
-the user can configure any implementation of the PersistenceUrlCreator in place of the handleAdder. This can be done
-as follows:
+the user can configure any implementation of the PersistenceUrlCreator in place of the handleAdder.
 
-In TimbuctooConfiguration.java we add:
-----
-  @JsonProperty("redirectionService")
-  public PersistentUrlCreator getPersistentUrlCreator();
-----
+- A RedirectionFactory interface will be created that will have a "createRedirectionService" method. This method will
+have to be implemented for each redirection service.
 
-We then change TImbuctooV4.java as follows:
+- Current handle service will be refactored to meet the above specification.
 
-Currently in TimbuctooV4.java:
-----
-HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
-...
-handleAdder.init(transactionEnforcer);
-----
+- A new class BitlyUrlCreatorFactory that implements the RedirectionFactory will be added.
 
-After changes:
-----
-PersistenceUrlCreator persistenceUrlCreator = configuration.getPersistentUrlCreator();
-...
-persistenceUrlCreator.init(transactionEnforcer);
-----
-
-
-Note: The "init" function (currently in HandleAdder class) will have to be moved to the PersistenceUrlCreator interface.
-
-
-- A new class BitlyUrlCreator that implements the persistenceUrlCreator will be added.
+- This factory class will have the "createRedirectionService" method to build the Bitly redirection service using the
+configuration set in the specified file (specified in Timbuctoo yaml configuration).
 
 - This BitlyUrlCreator will use the [Bit.ly Java API client](https://github.com/stackmagic/bitly-api-client)
 
@@ -73,5 +69,4 @@ ShortenResponse respShort = new ShortenRequestBuilder("... the access token ..."
     .setLongUrl("https://example-timbuctoo-url/") //
     .call();
 ----
-
 
