@@ -199,6 +199,7 @@ public abstract class DataSet {
         .schemaStore(schema)
         .updatedPerPatchStore(updatedPerPatchStore)
         .truePatchStore(truePatchStore)
+        .versionStore(versionStore)
         .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
         .schemaStore(schema)
         .importManager(importManager)
@@ -275,6 +276,8 @@ public abstract class DataSet {
 
   public abstract TypeNameStore getTypeNameStore();
 
+  public abstract VersionStore getVersionStore();
+
   public abstract ImportManager getImportManager();
 
   public abstract RdfDataSourceFactory getDataSource();
@@ -290,5 +293,6 @@ public abstract class DataSet {
   public LogInfo getLogInfo() throws IOException {
     return new LogInfo(getDataSetStorage().getLogList().getData());
   }
+
 
 }
