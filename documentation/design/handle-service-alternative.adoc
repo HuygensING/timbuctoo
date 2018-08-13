@@ -11,32 +11,40 @@ redirection service and configure Timbuctoo to use a new redirection service.
 
 The user will be able to do so as follows:
 
-=== Steps to add a desired reduction service to Timbuctoo and configure Timbuctoo to use it:
+=== Steps to add a desired redirection service to Timbuctoo and configure Timbuctoo to use it:
 - In the example_config.yaml file, change  the "redirectionService" property and child properties values to your
 new implementation.
 
 For example, Timbuctoo default:
 ----
 redirectionService:
-    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.HandleRedirectionFactory
-    configFile: ${timbuctoo_dataPath}/configs/redirectionService/handleConfig.yaml
+    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.HandleRedirectionServiceFactory
+    useDummy: yes #set to "no" to connect to a real handle server
+    #  privateKeyFile:
+    #  cypher:
+    #  namingAuthority:
+    #  prefix:
 ----
 
 can be changed to use your new Bitly implementation as:
 ----
 redirectionService:
-    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.BitlyUrlCreatorFactory
-    configFile: ${timbuctoo_dataPath}/configs/redirectionService/bitlyConfig.yaml
+    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.BitlyUrlCreatorServiceFactory
+    user: Example User
+    authKey: ${BITLY_AUTH_KEY}
+    # ...
 ----
 
-"configFile" above should point to the location of a file containing the configuration information necessary to build
-the redirection service. This can include information such as API authentication key, user information, etc. The factory
-class mentioned above should then be able to use the specified information to build a redirection service.
+NOTE: It's the user's responsibility to make sure that the configuration parameters required by the the implementation
+are added to the configuration file.
 
-The factory class should extend the RedirectionFactory interface (new) and thus implement the createRedirectionService
-function to create the new redirection service.
+The factory class mentioned above should then be able to use the specified information to build a redirection service.
 
-This new implementation class for the redirection service should include the "init" and "add" functions.
+The factory class should implement the RedirectionServiceFactory interface (new) and thus implement the
+"makeRedirectionService" function to create the new redirection service.
+
+This new implementation class for the redirection service should implement the RedirectionService interface and thus
+implement the "add" function.
 
 
 == Approach:
@@ -50,17 +58,76 @@ with Timbuctoo. Bit.ly will **not** be available as an option in production inst
 - Currently, handleAdder, specific to the handle service, is added directly to Timbuctoo. We need to change this so that
 the user can configure any implementation of the PersistenceUrlCreator in place of the handleAdder.
 
-- A RedirectionFactory interface will be created that will have a "createRedirectionService" method. This method will
-have to be implemented for each redirection service.
+- A RedirectionServiceFactory interface will be created that will be structured as follows:
+
+----
+public interface RedirectionServiceFactory {
+    RedirectionService makeRedirectionService();
+}
+----
+
+- A RedirectionService interface will also be created and structured as follows:
+
+----
+public interface RedirectionService {
+    void add(URI uriToRedirectTo, EntityLookup entityLookup);
+}
+----
 
 - Current handle service will be refactored to meet the above specification.
 
-- A new class BitlyUrlCreatorFactory that implements the RedirectionFactory will be added.
+This means we will now have a HandleServiceFactory that extends the RedirectionServiceFactory:
+----
+public class HandleServiceFactory implements RedirectionServiceFactory {
+    @JsonCreator
+    public HandleServiceFactory(@JsonProperty("useDummy") boolean useDummy,
+        @JsonProperty("privateKeyFile") String privateKeyFile, ...) {
+        ...
+    }
 
-- This factory class will have the "createRedirectionService" method to build the Bitly redirection service using the
-configuration set in the specified file (specified in Timbuctoo yaml configuration).
+    RedirectionService makeRedirectionService() {
+        ...
+    }
+}
+----
 
-- This BitlyUrlCreator will use the [Bit.ly Java API client](https://github.com/stackmagic/bitly-api-client)
+Here, makeRedirectionService will return a:
+----
+public class HandleService implements RedirectionService {
+    void add(URI uriToRedirectTo, EntityLookup entityLookup){
+        ...
+    }
+}
+----
+
+- Similarly, we will implement the RedirectionServiceFactory and RedirectionService classes for Bit.ly service (for test
+purposes) as follows:
+
+This means we will now have a BitlyServiceFactory that extends the RedirectionServiceFactory:
+----
+public class BitlyServiceFactory implements RedirectionServiceFactory {
+    @JsonCreator
+    public HandleServiceFactory(@JsonProperty("user") String user,
+        @JsonProperty("authKey") String authKey, ...) {
+        ...
+    }
+
+    RedirectionService makeRedirectionService() {
+        ...
+    }
+}
+----
+
+Here, makeRedirectionService will return a:
+----
+public class BitlyService implements RedirectionService {
+    void add(URI uriToRedirectTo, EntityLookup entityLookup){
+        ...
+    }
+}
+----
+
+- This Bit.lyService will use the [Bit.ly Java API client](https://github.com/stackmagic/bitly-api-client)
 
 - The Bit.ly client will be used to call the Java client library as follows:
 
