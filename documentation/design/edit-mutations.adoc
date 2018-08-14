@@ -50,18 +50,18 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
 === Provenance schema
 
 ----
-                                                      "2"                                                                "http://example.org/user"
-                                                       ^                                                                          ^
-                                                       |    tim:version                                                           |  uri
-                                                       |                                                                          |
-+--------------+    prov:specializationOf      +-------+------+    prov:generated  +---------------+   prov:associatedWith  +-----+------+
+ http://example.org/entity                            "2"                                                                "http://example.org/user"
+      ^                                                ^                                                                          ^
+      |  uri                                           |    tim:version                                                           |  uri
+      |                                                |                                                                          |
++-----+--------+    prov:specializationOf      +-------+------+    prov:generated  +---------------+   prov:associatedWith  +-----+------+
 |              |                               |              |                    |               |                        |            |
 | <tim:Entity> +<------------------------------+ <tim:Entity> +<-------------------+ prov:Activity +----------------------->+ prov:Agent |
 |              |                               |              |                    |               |                        |            |
-+----+---------+------------------------------>+-----+--------+                    +--------+------+                        +------------+
++----+---------+------------------------------>+-----+--------+                    +--------+------+                        +----------+-+
      ^                                               |   prov:wasRevisionOf                 |                                          ^
      |             tim:latestRevision                |                    prov:qualifiedAssociation   +-------------------             |
-     |                                               ^                                      |         |                  |             | prov:agent
+     |                                               v                                      |         |                  |             | prov:agent
      |                                         +-----+--------+                             +-------->+ prov:Association +-------------+
      |                                         |              |                                       |                  |
      +-----------------------------------------+ <tim:Entity> |                                       +--------+---------+
@@ -81,15 +81,31 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
                                                                                                        |               |
                                                                                                        | tim:Deletions |
                                                                                                        |               |
-                                                                                                       +---------------+
-
-
-
+                                                                                                       +-------+-------+
+                                                                                                               |
+                                                                                                               | tim:hasDeletion
+                                                                                                               v
+                                                                                                       +-------+------+
+                                                                                                       |              | tim:hasKey
+                                                                                                       | tim:Deletion +----------->"http://example.org/predicate"
+                                                                                                       |              |
+                                                                                                       +--------------+
+                                                                                                       |              |
+                                                                                                 +-----+ tim:hasValue +------+ tim:hasValue
+                                                                                                 |                           |
+                                                                                                 v                           v
+                                                                              tim:type   +-------+---+                 +-----+-----+
+                                                "http://example.org/type"<---------------+           | tim:nextValue   |           |
+                                                                          tim:rawValue   | tim:Value +---------------->+ tim:Value |
+                                              "http://example.org/value"<----------------+           |                 |           |
+                                                                                         +-----------+                 +-----------+
 
 ----
 What is not shown in the diagram is the custom provenance that can differ from data set to data set.
 This custom provenance will be added to each specialization of a `<tim:Entity>`.
 The `<tim:Entity>` consists of all different types in a data set.
+`tim:Additions` and `tim:Replacements` will look like `tim:Deletions`.
+`tim:nextValue` will only appear for multivalued predicates.
 
 === GraphQL
 
