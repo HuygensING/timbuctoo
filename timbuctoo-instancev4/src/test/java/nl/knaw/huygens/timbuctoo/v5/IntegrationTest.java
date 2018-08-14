@@ -21,6 +21,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -44,6 +45,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -1604,6 +1606,155 @@ public class IntegrationTest {
         )
       )
     )));
+  }
+
+  @Test
+  public void editDataWithGraphQl() throws Exception {
+    // upload dataset
+    final String dataSetName = "edit" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "editdataset.nt").toURI()),
+      "application/n-triples",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    // query person before edit
+    Response queryData = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+            "        schema_name {\n" +
+            "          value\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryData.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person",
+            jsnO(
+              "schema_name",
+              jsnO(
+                "value",
+                jsn("Jan Jansen")
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // edit
+    Response edit = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Edit($uri:String! $entity:" + dataSetId + "_schema_PersonInput! ) {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person {\n" +
+            "        edit(uri: $uri entity: $entity) {\n" +
+            "          schema_name {\n" +
+            "            value\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        ),
+        "variables", jsnO(
+          "uri", jsn("http://example.org/person1"),
+          "entity", jsnO(
+            "replacements", jsnO(
+              "schema_name", jsnO(
+                "type", jsn("http://www.w3.org/2001/XMLSchema#string"),
+                "value", jsn("Test2")
+              )
+            )
+          )
+       ),
+      "operationName", jsn("Edit")
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(edit.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "edit", jsnO(
+                "schema_name", jsnO(
+                  "value", jsn("Test2")
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // query person after edit
+    Response queryAfterEdit = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+            "        schema_name {\n" +
+            "          value\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryAfterEdit.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "schema_name", jsnO(
+                "value", jsn("Test2")
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // TODO add test for generated provenance
   }
 
   private List<String> getDataSetNamesOfDummy() {

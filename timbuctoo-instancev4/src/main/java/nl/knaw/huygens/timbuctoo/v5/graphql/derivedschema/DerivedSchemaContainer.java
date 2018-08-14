@@ -78,7 +78,6 @@ public class DerivedSchemaContainer {
   public DerivedObjectTypeSchemaGenerator addObjectType(String typeUri) {
     final String name = nameGenerator.createObjectTypeName(rootType, typeUri);
     if (!types.containsKey(name)) {
-      // TODO make variable so it can be used for generating the input types as wel.
       DerivedObjectTypeSchemaGenerator value =
         new DerivedCompositeObjectTypeSchemaGenerator(typeUri, rootType, nameGenerator, this);
       types.put(name, value);
@@ -117,7 +116,7 @@ public class DerivedSchemaContainer {
     for (String uri : topLevelTypes) {
       String typename = nameGenerator.createObjectTypeName(rootType, uri);
       String name = typename.substring(rootType.length() + 1);
-      total.append("  ").append(name).append(": ").append(typename).append("Mutations\n");
+      total.append("  ").append(name).append(": ").append(typename).append("Mutations").append( " @passThrough\n");
     }
     total.append("}\n\n");
   }

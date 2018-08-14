@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CollectionMetadataMutation
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DataSetMetadataMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicMutation;
@@ -275,7 +276,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("resourceSyncUpdate",
         new ResourceSyncUpdateMutation(dataSetRepository, resourceSyncFileLoader))
     );
-
+    
     wiring.wiringFactory(wiringFactory);
     StringBuilder rootQuery = new StringBuilder("type DataSets {\n sillyWorkaroundWhenNoDataSetsAreVisible: Boolean\n");
     StringBuilder rootMut = new StringBuilder("type DataSetMutations {\n")
@@ -329,6 +330,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
                  .append(name)
                  .append(": ")
                  .append(name).append("Mutations")
+                 .append(" @passThrough")
                  .append("\n\n");
         }
 

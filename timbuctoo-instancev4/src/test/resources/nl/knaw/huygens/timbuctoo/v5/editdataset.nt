@@ -1,0 +1,5 @@
+<http://example.org/person1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> .
+<http://example.org/person1> <http://schema.org/name> "Jan Jansen" .
+
+<http://example.org/person2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> .
+<http://example.org/person2> <http://schema.org/name> "Alexander Willem Michiel van Hasselt" .
