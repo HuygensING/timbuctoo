@@ -1,5 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.util;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+
+import java.util.UUID;
+
 public class RdfConstants {
 
   private static final String TIM = "http://timbuctoo.huygens.knaw.nl/static/v5/";
@@ -58,6 +62,10 @@ public class RdfConstants {
 
   public static String timPredicate(String name) {
     return TIM_PRED + name;
+  }
+
+  public static String dataSetObjectUri(DataSet dataSet, String typeName) {
+    return dataSet.getMetadata().getBaseUri() + "/" + typeName + "/" + UUID.randomUUID();
   }
 
 }
