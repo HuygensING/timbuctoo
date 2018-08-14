@@ -35,10 +35,9 @@ public class DerivedObjectTypeOperationsSchemaGenerator implements DerivedObject
   public StringBuilder getSchema() {
     String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
     StringBuilder schema = new StringBuilder();
-
     schema.append("type ").append(name).append("Mutations").append(" {\n")
           .append("  edit(").append("uri: String! ").append("entity: ").append(name).append("Input!): ")
-          .append(name).append("\n")
+          .append(name).append(" @editMutation(dataSet: ").append(rootType).append(")").append("\n")
           .append("}\n");
 
     return schema;

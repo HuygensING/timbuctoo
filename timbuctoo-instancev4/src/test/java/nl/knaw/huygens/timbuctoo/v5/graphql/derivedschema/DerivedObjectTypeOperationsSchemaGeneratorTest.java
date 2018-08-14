@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -9,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class DerivedObjectTypeOperationsSchemaGeneratorTest {
-  @Ignore
   @Test
   public void addsEditMethodToType() {
     String uri = "http://example.org/type";
@@ -22,7 +20,7 @@ public class DerivedObjectTypeOperationsSchemaGeneratorTest {
     String schema = instance.getSchema().toString();
 
     assertThat(schema, is("type TypeMutations {\n" +
-      "  edit(uri: String! entity: TypeInput!): Type\n" +
+      "  edit(uri: String! entity: TypeInput!): Type @editMutation(dataSet: RootType)\n" +
       "}\n"));
   }
 
