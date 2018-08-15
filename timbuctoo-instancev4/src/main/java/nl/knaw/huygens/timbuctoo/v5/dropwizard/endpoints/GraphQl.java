@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sleepycat.je.DatabaseException;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.GraphQLException;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -22,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -42,6 +44,8 @@ import java.util.function.Supplier;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static graphql.ExecutionInput.newExecutionInput;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData.contextData;
 
 @Path("/v5/graphql")
@@ -182,35 +186,42 @@ public class GraphQl {
 
     GraphQL graphQl = builder.build();
 
-    final ExecutionResult result = graphQl
-      .execute(newExecutionInput()
-        .root(new RootData(user))
-        .context(contextData(userPermissionCheck, user))
-        .query(queryFromBody)
-        .operationName(operationName)
-        .variables(variables == null ? Collections.emptyMap() : variables)
-        .build());
-    if (serializerWriter == null) {
-      return Response
-        .ok()
-        .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(result.toSpecification())
-        .build();
-    } else {
-      if (result.getErrors() != null && !result.getErrors().isEmpty()) {
+    try {
+      final ExecutionResult result = graphQl
+        .execute(newExecutionInput()
+          .root(new RootData(user))
+          .context(contextData(userPermissionCheck, user))
+          .query(queryFromBody)
+          .operationName(operationName)
+          .variables(variables == null ? Collections.emptyMap() : variables)
+          .build());
+
+      if (serializerWriter == null) {
         return Response
-          .status(415)
+          .ok()
           .type(MediaType.APPLICATION_JSON_TYPE)
           .entity(result.toSpecification())
           .build();
+      } else {
+        if (result.getErrors() != null && !result.getErrors().isEmpty()) {
+          return Response
+            .status(415)
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(result.toSpecification())
+            .build();
+        }
+        return Response
+          .ok()
+          .type(serializerWriter.getMimeType())
+          .entity((StreamingOutput) os -> {
+            serializerWriter.getSerializationFactory().create(os).serialize(new SerializableResult(result.getData()));
+          })
+          .build();
       }
-      return Response
-        .ok()
-        .type(serializerWriter.getMimeType())
-        .entity((StreamingOutput) os -> {
-          serializerWriter.getSerializationFactory().create(os).serialize(new SerializableResult(result.getData()));
-        })
-        .build();
+    } catch (GraphQLException e) {
+      LoggerFactory.getLogger(GraphQl.class).error("GraphQL execution failed", e);
+      return Response.status(500).entity(jsnO("code", jsn(500), "message", jsn(e.getMessage()))).build();
+      // throw e;
     }
   }
 
