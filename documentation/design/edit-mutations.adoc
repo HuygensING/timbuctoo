@@ -146,12 +146,17 @@ input <collectionName>ReplacementsInput {
   <entityTypeFieldN>: PropertyInput # Single value / link property
 }
 
-input PropertyInput {
-  type: String!
+input <collectionName>_xsd_stringPropertyInput {
+  type: <collectionName>_xsd_stringPropertyEnum!
   value: String!
   # language is required when the type is http://www.w3.org/1999/02/22-rdf-syntax-ns#langString
   # the language field may only be used with the type http://www.w3.org/1999/02/22-rdf-syntax-ns#langString
   language: String
+}
+
+# each type of property will get its own enum that contains the possible property types
+enum <collectionName>_xsd_stringPropertyEnum {
+  xsd_string
 }
 
 # The provenance schema can be different for each data set

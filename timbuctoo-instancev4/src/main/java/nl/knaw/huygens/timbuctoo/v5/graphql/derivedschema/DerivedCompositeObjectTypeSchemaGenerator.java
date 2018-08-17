@@ -15,7 +15,7 @@ public class DerivedCompositeObjectTypeSchemaGenerator implements DerivedObjectT
                                                    DerivedSchemaContainer derivedSchemaContainer) {
     delegates = Lists.newArrayList(
       new DerivedQueryObjectTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer),
-      new DerivedInputTypeSchemaGenerator(typeUri, rootType, nameStore),
+      new DerivedInputTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer),
       new DerivedObjectTypeOperationsSchemaGenerator(typeUri, rootType, nameStore)
     );
   }

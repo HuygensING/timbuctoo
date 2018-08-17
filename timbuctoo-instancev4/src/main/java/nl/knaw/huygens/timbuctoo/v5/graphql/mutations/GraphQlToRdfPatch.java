@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.util.UserUriCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PatchRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -120,11 +121,12 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private void processPlanValues(RdfPatchSerializer saver, DataSet dataSet,
                                  String actionUri, JsonNode value) throws LogStorageFailedException {
     String prefValueUri = null;
+    TypeNameStore typeNameStore = dataSet.getTypeNameStore();
     if (value.isArray()) {
       for (JsonNode propertyInput : value) {
         String uri = dataSetObjectUri(dataSet, "value");
         saver.addDelQuad(true, actionUri, timPredicate("hasValue"), uri, null, null, null);
-        saver.addDelQuad(true, uri, timPredicate("type"), propertyInput.get("type").asText(), STRING, null, null);
+        saver.addDelQuad(true, uri, timPredicate("type"), getType(propertyInput, typeNameStore), STRING, null, null);
         saver.addDelQuad(true, uri, timPredicate("rawValue"), propertyInput.get("value").asText(), STRING, null, null);
         if (prefValueUri != null) {
           saver.addDelQuad(true, prefValueUri, timPredicate("nextValue"), uri, null, null, null);
@@ -134,9 +136,13 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     } else {
       String valueUri = dataSetObjectUri(dataSet, "value");
       saver.addDelQuad(true, actionUri, timPredicate("hasValue"), valueUri, null, null, null);
-      saver.addDelQuad(true, valueUri, timPredicate("type"), value.get("type").asText(), STRING, null, null);
+      saver.addDelQuad(true, valueUri, timPredicate("type"), getType(value, typeNameStore), STRING, null, null);
       saver.addDelQuad(true, valueUri, timPredicate("rawValue"), value.get("value").asText(), STRING, null, null);
     }
+  }
+
+  private String getType(JsonNode propertyInput, TypeNameStore typeNameStore) {
+    return typeNameStore.makeUri(propertyInput.get("type").asText());
   }
 
   private void addRevision(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
@@ -156,14 +162,14 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
       JsonNode value = addition.getValue();
       String predicate = dataSet.getTypeNameStore().makeUri(addition.getKey());
       // Process the user input
-      processValues(saver, value, predicate, true);
+      processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
     }
 
     for (Map.Entry<String, ArrayNode> deletion : changeLog.getDeletions().entrySet()) {
       JsonNode value = deletion.getValue();
       String predicate = dataSet.getTypeNameStore().makeUri(deletion.getKey());
       // Process the user input
-      processValues(saver, value, predicate, false);
+      processValues(saver, value, predicate, false, dataSet.getTypeNameStore());
     }
 
     for (Map.Entry<String, JsonNode> replacement : changeLog.getReplacements().entrySet()) {
@@ -171,7 +177,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
       String predicate = dataSet.getTypeNameStore().makeUri(replacement.getKey());
 
       // Process the user input
-      processValues(saver, value, predicate, true);
+      processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
 
       removePrevious(saver, dataSet, predicate);
     }
@@ -195,7 +201,8 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     }
   }
 
-  private void processValues(RdfPatchSerializer saver, JsonNode value, String predicate, boolean isAddition)
+  private void processValues(RdfPatchSerializer saver, JsonNode value, String predicate, boolean isAddition,
+                             TypeNameStore typeNameStore)
     throws LogStorageFailedException {
     if (value.isArray()) {
       for (JsonNode propertyInput : value) {
@@ -204,14 +211,21 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
           subjectUri,
           predicate,
           propertyInput.get("value").asText(),
-          propertyInput.get("type").asText(),
+          getType(propertyInput, typeNameStore),
           null,
           null
         );
       }
     } else {
-      saver
-        .addDelQuad(true, subjectUri, predicate, value.get("value").asText(), value.get("type").asText(), null, null);
+      saver.addDelQuad(
+        true,
+        subjectUri,
+        predicate,
+        value.get("value").asText(),
+        getType(value, typeNameStore),
+        null,
+        null
+      );
     }
   }
 

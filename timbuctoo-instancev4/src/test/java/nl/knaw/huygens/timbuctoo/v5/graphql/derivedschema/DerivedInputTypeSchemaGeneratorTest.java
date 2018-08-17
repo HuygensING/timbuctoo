@@ -13,9 +13,9 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 
 public class DerivedInputTypeSchemaGeneratorTest {
 
@@ -29,7 +29,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
   public void setUp() throws Exception {
     graphQlNameGenerator = mock(GraphQlNameGenerator.class);
     when(graphQlNameGenerator.createObjectTypeName(ROOT_TYPE, TYPE_URI)).thenReturn(TYPE);
-    instance = new DerivedInputTypeSchemaGenerator(TYPE_URI, ROOT_TYPE, graphQlNameGenerator);
+    DerivedSchemaContainer derivedSchemaContainer = mock(DerivedSchemaContainer.class);
+    when(derivedSchemaContainer.propertyInputType(anyList())).thenReturn("PropertyInput");
+    instance = new DerivedInputTypeSchemaGenerator(TYPE_URI, ROOT_TYPE, graphQlNameGenerator, derivedSchemaContainer);
   }
 
   @Test
@@ -64,11 +66,13 @@ public class DerivedInputTypeSchemaGeneratorTest {
   public void addsAdditionsDeletionsAndReplacementsInput() {
     Predicate valueNonList = predicate().withName("http://example.com/valueNonList")
                                         .hasDirection(Direction.OUT)
+                                        .withValueType(RdfConstants.STRING)
                                         .build();
     graphQlNameForPredicate("http://example.com/valueNonList", false, "short_singleValue");
     Predicate valueList = predicate().withName("http://example.com/valueList")
                                      .isList()
                                      .hasDirection(Direction.OUT)
+                                     .withValueType(RdfConstants.STRING)
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
     instance.valueField(null, valueNonList, RdfConstants.STRING);
@@ -227,13 +231,17 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
   @Test
   public void addUnionAddsField() {
+    String type1 = "http://example.org/type1";
+    String type2 = "http://example.org/type2";
     Predicate valueList = predicate().withName("http://example.com/valueList")
                                      .isList()
                                      .hasDirection(Direction.OUT)
+                                     .withValueType(type1)
+                                     .withValueType(type2)
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
 
-    instance.unionField(null, valueList, Sets.newHashSet("http://example.org/person", "http://example.org/person2"));
+    instance.unionField(null, valueList, Sets.newHashSet(type1, type2));
     String schema = instance.getSchema().toString();
 
     assertThat(schema, allOf(

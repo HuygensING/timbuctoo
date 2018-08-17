@@ -1689,7 +1689,7 @@ public class IntegrationTest {
           "entity", jsnO(
             "replacements", jsnO(
               "schema_name", jsnO(
-                "type", jsn("http://www.w3.org/2001/XMLSchema#string"),
+                "type", jsn("xsd_string"),
                 "value", jsn("Test2")
               )
             )

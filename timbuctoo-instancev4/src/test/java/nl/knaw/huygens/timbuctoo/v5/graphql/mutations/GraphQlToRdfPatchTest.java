@@ -40,6 +40,7 @@ public class GraphQlToRdfPatchTest {
   private static final User USER = mock(User.class);
   private static final String USER_URI = "http://example.org/user";
   private static final String DATA_SET_URI = "http://example.org/dataset";
+  private static final String GRAPH_QL_STRING = "xsd_string";
   private DataSet dataSet;
   private QuadStore quadStore;
   private RdfPatchSerializer serializer;
@@ -59,6 +60,7 @@ public class GraphQlToRdfPatchTest {
     when(dataSetMetaData.getBaseUri()).thenReturn(DATA_SET_URI);
     typeNameStore = mock(TypeNameStore.class);
     when(typeNameStore.makeUri(NAMES_FIELD)).thenReturn(NAMES_PRED);
+    when(typeNameStore.makeUri(GRAPH_QL_STRING)).thenReturn(STRING);
 
     when(dataSet.getQuadStore()).thenReturn(quadStore);
     when(dataSet.getVersionStore()).thenReturn(versionStore);
@@ -596,37 +598,9 @@ public class GraphQlToRdfPatchTest {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
-  @Ignore
-  @Test
-  public void throwsAnExceptionWhenASingleValueFieldIsInAdditions() {
-    throw new UnsupportedOperationException("Yet to be implemented");
-
-  }
-
-  @Ignore
-  @Test
-  public void throwsAnExceptionWhenASingleValueFieldIsInDeletions() {
-    throw new UnsupportedOperationException("Yet to be implemented");
-
-  }
-
-  @Ignore
-  @Test
-  public void throwsAnExceptionWhenASingleValueContainsMultipleNewValues() {
-    throw new UnsupportedOperationException("Yet to be implemented");
-
-  }
-
-  @Ignore
-  @Test
-  public void throwsAnExceptionWhenAListValueContainsASingleValueAsReplacement() {
-    throw new UnsupportedOperationException("Yet to be implemented");
-
-  }
-
   private Map<Object, Object> createPropertyInput(String value) {
     Map<Object, Object> propertyInput = Maps.newHashMap();
-    propertyInput.put("type", STRING);
+    propertyInput.put("type", GRAPH_QL_STRING);
     propertyInput.put("value", value);
     return propertyInput;
   }

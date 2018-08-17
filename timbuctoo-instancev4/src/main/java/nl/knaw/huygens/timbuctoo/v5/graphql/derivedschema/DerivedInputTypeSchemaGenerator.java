@@ -12,14 +12,17 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
   private final String typeUri;
   private final String rootType;
   private final GraphQlNameGenerator graphQlNameGenerator;
+  private final DerivedSchemaContainer derivedSchemaContainer;
   private final List<GraphQlPredicate> replacements;
   private List<GraphQlPredicate> additions;
   private List<GraphQlPredicate> deletions;
 
-  public DerivedInputTypeSchemaGenerator(String typeUri, String rootType, GraphQlNameGenerator graphQlNameGenerator) {
+  public DerivedInputTypeSchemaGenerator(String typeUri, String rootType, GraphQlNameGenerator graphQlNameGenerator,
+                                         DerivedSchemaContainer derivedSchemaContainer) {
     this.typeUri = typeUri;
     this.rootType = rootType;
     this.graphQlNameGenerator = graphQlNameGenerator;
+    this.derivedSchemaContainer = derivedSchemaContainer;
     replacements = Lists.newArrayList();
     additions = Lists.newArrayList();
     deletions = Lists.newArrayList();
@@ -90,9 +93,14 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
 
   private class GraphQlPredicate {
     private final Predicate predicate;
+    private String typeName;
 
     private GraphQlPredicate(Predicate predicate) {
       this.predicate = predicate;
+      List<String> allTypes = Lists.newArrayList();
+      allTypes.addAll(predicate.getUsedValueTypes());
+      allTypes.addAll(predicate.getUsedReferenceTypes());
+      typeName = derivedSchemaContainer.propertyInputType(allTypes);
     }
 
     public void addToSchema(StringBuilder schema, boolean isReplacements) {
@@ -130,7 +138,7 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
     }
 
     private String getInputType(boolean asList) {
-      return asList ? "[PropertyInput!]" : "PropertyInput";
+      return asList ? "[" + typeName + "!]" : typeName;
     }
   }
 }

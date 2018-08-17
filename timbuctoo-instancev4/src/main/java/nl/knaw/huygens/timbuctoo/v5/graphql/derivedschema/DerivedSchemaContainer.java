@@ -4,8 +4,12 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class DerivedSchemaContainer {
   private final Map<String, DerivedTypeSchemaGenerator> types;
@@ -23,6 +27,36 @@ public class DerivedSchemaContainer {
 
     types = new HashMap<>();
     topLevelTypes = new HashSet<>();
+  }
+
+  String propertyInputType(List<String> refs) {
+    String typeName = nameGenerator.createObjectTypeName(rootType, refs.stream().sorted(String::compareTo)
+                                                                       .reduce("", String::concat));
+
+    String inputTypeName = typeName + "PropertyInput";
+
+    if (!types.keySet().contains(inputTypeName)) {
+      String enumTypeName = typeName + "PropertyInputEnum";
+      types.put(inputTypeName, new DerivedTypeSchemaGenerator() {
+        @Override
+        public StringBuilder getSchema() {
+          StringBuilder schema = new StringBuilder("input ").append(inputTypeName).append("{\n")
+                                     .append("  type: ").append(enumTypeName).append("!\n")
+                                     .append("  value: ").append(" String!\n")
+                                     .append("}\n\n");
+          schema.append("enum ").append(enumTypeName).append("{\n");
+          refs.stream().map(nameGenerator::graphQlName)
+                     .forEach(ref -> schema.append("  ").append(ref).append("\n"));
+          schema.append("}\n\n");
+          return schema;
+        }
+      });
+    }
+
+
+
+
+    return inputTypeName;
   }
 
   String listType(String fieldName, String typeName) {

@@ -17,6 +17,10 @@ public class GraphQlNameGenerator {
     return uri.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 
+  public String graphQlName(String uri) {
+    return  typeNameStore.makeGraphQlname(uri);
+  }
+
   public String createObjectTypeName(String rootType, String typeUri) {
     return rootType + "_" + typeNameStore.makeGraphQlname(typeUri);
   }
@@ -33,4 +37,5 @@ public class GraphQlNameGenerator {
   public String shorten(String typeUri) {
     return typeNameStore.shorten(typeUri);
   }
+
 }
