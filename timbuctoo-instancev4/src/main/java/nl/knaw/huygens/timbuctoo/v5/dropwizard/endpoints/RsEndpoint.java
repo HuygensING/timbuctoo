@@ -14,10 +14,16 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -102,14 +108,7 @@ public class RsEndpoint {
     Optional<Stream<String>> changesStream = rsDocumentBuilder.getChanges(user, owner, dataSetName, fileId);
 
     if (changesStream.isPresent()) {
-      StringBuilder stringBuilder = new StringBuilder();
-
-      try (Stream<String> changes = changesStream.get()) {
-        changes.forEach(s -> {
-          stringBuilder.append(s);
-        });
-      }
-      return Response.ok(stringBuilder.toString()).build();
+      return streamToStreamingResponse(changesStream.get());
     }
 
     return Response.status(Response.Status.NOT_FOUND).build();
@@ -124,17 +123,25 @@ public class RsEndpoint {
     Optional<Stream<String>> resourceStream = rsDocumentBuilder.getResourceData(user, owner, dataSetName);
 
     if (resourceStream.isPresent()) {
-      StringBuilder stringBuilder = new StringBuilder();
-
-      try (Stream<String> data = resourceStream.get()) {
-        data.forEach(s -> {
-          stringBuilder.append(s);
-        });
-      }
-      return Response.ok(stringBuilder.toString()).build();
+      return streamToStreamingResponse(resourceStream.get());
     }
 
     return Response.status(Response.Status.NOT_FOUND).build();
+  }
+
+  private Response streamToStreamingResponse(final Stream<String> dataStream) {
+    StreamingOutput streamingData = output -> {
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
+      try (Stream<String> data = dataStream) {
+
+        for (Iterator<String> dataIt = data.iterator(); dataIt.hasNext(); ) {
+          writer.write(dataIt.next());
+        }
+        writer.flush();
+      }
+    };
+
+    return Response.ok(streamingData).build();
   }
 
 
