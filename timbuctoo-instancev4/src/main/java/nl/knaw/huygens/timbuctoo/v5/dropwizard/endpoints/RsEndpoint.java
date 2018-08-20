@@ -135,8 +135,8 @@ public class RsEndpoint {
         for (Iterator<String> dataIt = data.iterator(); dataIt.hasNext(); ) {
           writer.write(dataIt.next());
         }
-        writer.flush();
       }
+      writer.flush();
     };
 
     return Response.ok(streamingData).build();

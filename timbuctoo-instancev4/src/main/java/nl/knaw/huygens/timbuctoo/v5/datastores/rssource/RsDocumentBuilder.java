@@ -223,7 +223,7 @@ public class RsDocumentBuilder {
 
       CurrentStateRetriever currentStateRetriever = dataSet.getCurrentStateRetriever();
 
-      return Optional.of(resourceFileBuilder.retrieveData(currentStateRetriever).stream());
+      return Optional.of(resourceFileBuilder.retrieveData(currentStateRetriever));
     }
 
     return Optional.empty();
