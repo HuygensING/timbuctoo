@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ChangeListBuilder {
   private String graph; //pass in graph from the dataset for now as the QuadStore does not currently contain it.
@@ -33,75 +34,58 @@ public class ChangeListBuilder {
   }
 
 
-  public List<String> retrieveChanges(ChangesRetriever changesRetriever,
-                                      Integer version,
-                                      Supplier<List<String>> subjects) {
-    List<String> changes = new ArrayList<>();
-
-    List<CursorQuad> quads = changesRetriever.retrieveChanges(version, subjects);
-
-    quads.forEach(quad -> {
+  public Stream<String> retrieveChanges(ChangesRetriever changesRetriever,
+                                        Integer version) {
+    Stream<CursorQuad> quads = changesRetriever.retrieveChanges(version);
+    return quads.map(quad -> {
       Optional<String> dataType = quad.getValuetype();
       if (dataType == null || !dataType.isPresent()) {
         if (quad.getChangeType() == ChangeType.ASSERTED) {
-          changes.add(
-            changesQuadGenerator.onRelation(quad.getSubject(), quad.getPredicate(), quad.getObject(), graph)
-          );
+          return changesQuadGenerator.onRelation(quad.getSubject(), quad.getPredicate(), quad.getObject(), graph);
         } else if (quad.getChangeType() == ChangeType.RETRACTED) {
-          changes.add(
-            changesQuadGenerator.delRelation(quad.getSubject(), quad.getPredicate(), quad.getObject(), graph)
-          );
+          return changesQuadGenerator.delRelation(quad.getSubject(), quad.getPredicate(), quad.getObject(), graph);
         }
       } else {
         Optional<String> language = quad.getLanguage();
         if (language != null && language.isPresent() && dataType.equals(RdfConstants.LANGSTRING)) {
           if (quad.getChangeType() == ChangeType.ASSERTED) {
-            changes.add(
-              changesQuadGenerator.onLanguageTaggedString(
-                quad.getSubject(),
-                quad.getPredicate(),
-                quad.getObject(),
-                language.get(),
-                graph
-              )
+            return changesQuadGenerator.onLanguageTaggedString(
+              quad.getSubject(),
+              quad.getPredicate(),
+              quad.getObject(),
+              language.get(),
+              graph
             );
           } else if (quad.getChangeType() == ChangeType.RETRACTED) {
-            changes.add(
-              changesQuadGenerator.delLanguageTaggedString(
-                quad.getSubject(),
-                quad.getPredicate(),
-                quad.getObject(),
-                language.get(),
-                graph
-              )
+            return changesQuadGenerator.delLanguageTaggedString(
+              quad.getSubject(),
+              quad.getPredicate(),
+              quad.getObject(),
+              language.get(),
+              graph
             );
           } else {
             if (quad.getChangeType() == ChangeType.ASSERTED) {
-              changes.add(
-                changesQuadGenerator.onValue(
-                  quad.getSubject(),
-                  quad.getPredicate(),
-                  quad.getObject(),
-                  dataType.get(),
-                  graph
-                )
+              return changesQuadGenerator.onValue(
+                quad.getSubject(),
+                quad.getPredicate(),
+                quad.getObject(),
+                dataType.get(),
+                graph
               );
             } else if (quad.getChangeType() == ChangeType.RETRACTED) {
-              changes.add(
-                changesQuadGenerator.delValue(
-                  quad.getSubject(),
-                  quad.getPredicate(),
-                  quad.getObject(),
-                  dataType.get(),
-                  graph
-                )
+              return changesQuadGenerator.delValue(
+                quad.getSubject(),
+                quad.getPredicate(),
+                quad.getObject(),
+                dataType.get(),
+                graph
               );
             }
           }
         }
       }
+      return ""; // return empty string for unchanged quads
     });
-
-    return changes;
   }
 }

@@ -204,8 +204,7 @@ public class RsDocumentBuilderTest {
     given(cursorQuad2.getObject()).willReturn("o2");
     given(cursorQuad2.getDirection()).willReturn(Direction.OUT);
 
-    given(truePatchStore.getChanges("s1", 1, true)).willReturn(Stream.of(cursorQuad1));
-    given(truePatchStore.getChanges("s2", 1, true)).willReturn(Stream.of(cursorQuad2));
+    given(truePatchStore.getChangesOfVersion(1, true)).willReturn(Stream.of(cursorQuad1, cursorQuad2));
 
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     given(dataSetMetaData.getBaseUri()).willReturn("graph");

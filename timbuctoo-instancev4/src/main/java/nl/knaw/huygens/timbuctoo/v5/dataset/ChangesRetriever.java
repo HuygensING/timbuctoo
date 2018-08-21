@@ -4,9 +4,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchS
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import org.apache.jena.update.Update;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -30,27 +28,10 @@ public class ChangesRetriever {
     };
   }
 
-  public Supplier<List<String>> getSubjects(Integer version) {
-    return () -> {
-      try (Stream<String> subjects = updatedPerPatchStore.ofVersion(version)) {
-        return subjects.collect(Collectors.toList());
-      }
-    };
-  }
+  public Stream<CursorQuad> retrieveChanges(Integer version) {
 
-  public List<CursorQuad> retrieveChanges(Integer version, Supplier<List<String>> subjects) {
-    List<CursorQuad> changes = new ArrayList<>();
-
-    for (String subject : subjects.get()) {
-      try (Stream<CursorQuad> quads = bdbTruePatchStore.getChanges(subject, version, true)) {
-        // Filtering on direction is needed as the TruePatchStore contains the inverse relations as well.
-        // The original relations are always in the "OUT" direction.
-        // See StoreUpdater.addRelation
-        changes.addAll(quads.filter(quad -> quad.getDirection().equals(Direction.OUT)).collect(Collectors.toList()));
-      }
-    }
-
-    return changes;
+    return bdbTruePatchStore.getChangesOfVersion(version, true)
+                            .filter(quad -> quad.getDirection().equals(Direction.OUT));
   }
 }
 

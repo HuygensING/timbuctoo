@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -45,6 +46,19 @@ public class BdbTruePatchStore {
         (language == null ? "" : language) + "\n" +
         object
     );
+  }
+
+  public Stream<CursorQuad> getChangesOfVersion(int version, boolean assertions) {
+    // FIXME partialKey does not work well with endsWidth, it stops the iterator with the first match
+    // See issue T141 on https://github.com/knaw-huc/backlogs/blob/master/structured-data.txt
+    return bdbWrapper.databaseGetter()
+                     .getAll()
+                     // .partialKey("\n" + version + "\n" + (assertions ? "1" : "0"), (pf, key) -> key.endsWith(pf))
+                     // .dontSkip()
+                     // .forwards()
+                     .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::tuple))
+                     .filter(kv -> kv.getLeft().endsWith(version + "\n" + (assertions ? "1" : "0")))
+                     .map((value) -> makeCursorQuad(value.getLeft().split("\n")[0], assertions, value.getRight()));
   }
 
   public Stream<CursorQuad> getChanges(String subject, int version, boolean assertions) {

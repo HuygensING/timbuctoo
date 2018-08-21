@@ -199,14 +199,9 @@ public class RsDocumentBuilder {
 
       ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
 
-      ChangesRetriever changesRetriever = dataSet.getChangesRetriever();
-
       Integer version = getVersionFromFileId(fileId);
 
-      Supplier<List<String>> subjectsSupplier = changesRetriever.getSubjects(version);
-
-      return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version, subjectsSupplier)
-        .stream());
+      return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version));
     }
 
     return Optional.empty();

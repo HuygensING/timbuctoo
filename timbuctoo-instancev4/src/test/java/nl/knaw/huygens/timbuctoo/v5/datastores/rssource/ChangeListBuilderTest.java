@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,7 +18,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class ChangesListBuilderTest {
+public class ChangeListBuilderTest {
 
   @Test
   public void retrieveChangeFilesNamesReturnsCorrectNamesBasedOnSuppliedVersions() {
@@ -41,17 +42,15 @@ public class ChangesListBuilderTest {
     given(cursorQuad.getObject()).willReturn("o1");
     given(cursorQuad.getDirection()).willReturn(Direction.OUT);
 
-    given(bdbTruePatchStore.getChanges("s1",1,true)).willReturn(Stream.of(cursorQuad));
+    given(bdbTruePatchStore.getChangesOfVersion(1, true)).willReturn(Stream.of(cursorQuad));
 
     ChangeListBuilder changeListBuilder = new ChangeListBuilder("graph");
 
     Integer version = 1;
 
-    Supplier<List<String>> subjectsSupplier = () -> Lists.newArrayList("s1");
-
     ChangesRetriever changesRetriever = new ChangesRetriever(bdbTruePatchStore, null);
 
-    List<String> changes = changeListBuilder.retrieveChanges(changesRetriever,version,subjectsSupplier);
+    List<String> changes = changeListBuilder.retrieveChanges(changesRetriever,version).collect(Collectors.toList());
 
     assertThat(changes, contains("+<s1> <p1> <o1> <graph> .\n"));
   }
