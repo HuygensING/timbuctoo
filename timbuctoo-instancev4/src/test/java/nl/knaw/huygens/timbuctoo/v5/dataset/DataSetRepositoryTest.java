@@ -47,9 +47,6 @@ public class DataSetRepositoryTest {
     return new DataSetRepository(
       Executors.newSingleThreadExecutor(),
       permissionFetcher,
-      ImmutableDataSetConfiguration.builder()
-        .dataStorage(mock(DataStorage.class, RETURNS_DEEP_STUBS))
-        .build(),
       new BdbNonPersistentEnvironmentCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
       combinedId -> {

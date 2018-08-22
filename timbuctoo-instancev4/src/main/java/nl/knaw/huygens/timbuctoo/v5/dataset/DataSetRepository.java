@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
-
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
@@ -22,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +56,7 @@ public class DataSetRepository {
 
 
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
-                           DataSetConfiguration configuration, BdbEnvironmentCreator dataStoreFactory,
+                           BdbEnvironmentCreator dataStoreFactory,
                            TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated,
                            boolean publicByDefault, DataStorage dataStorage) {
     this.executorService = executorService;

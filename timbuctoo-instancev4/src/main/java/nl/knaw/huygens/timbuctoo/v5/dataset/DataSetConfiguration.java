@@ -30,7 +30,6 @@ public interface DataSetConfiguration {
     return new DataSetRepository(
       executorService,
       permissionFetcher,
-      this,
       databases,
       rdfIdHelper,
       onUpdated,
