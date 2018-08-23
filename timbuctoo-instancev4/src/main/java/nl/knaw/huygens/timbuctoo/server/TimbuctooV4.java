@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
+import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -96,6 +97,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
@@ -189,7 +192,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
     final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
-    final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
+
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
@@ -198,13 +201,15 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final UrlGenerator uriWithoutRev = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
-    HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
+    RedirectionServiceFactory redirectionServiceFactory = configuration.getRedirectionServiceFactory();
+    RedirectionService redirectionService = redirectionServiceFactory.makeRedirectionService(activeMqBundle);
+
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
       securityConfig.getPermissionFetcher(),
       Clock.systemDefaultZone(),
-      handleAdder,
+      redirectionService,
       uriToRedirectToFromPersistentUrls,
       () -> new TinkerPopOperations(graphManager)
     );
@@ -212,7 +217,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(graphManager).execute());
-    handleAdder.init(transactionEnforcer);
+
+    redirectionService.init(transactionEnforcer);
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
     migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, graphManager));
