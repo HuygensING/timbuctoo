@@ -49,8 +49,8 @@ implement the "add" function.
 
 == Approach:
 
-- The initial step will be to add support to one more redirection service as a test case, in addition to Handler. Bit.ly
-was chosen as the service as it has a Java library available.
+- The initial step will be to add support to one more redirection service as a test case, in addition to Handle.
+Bit.ly was chosen as the service as it has a Java library available.
 
 NOTE: We are using Bit.ly for testing purposes to make sure that the new way of setting up redirection services works
 with Timbuctoo. Bit.ly will **not** be available as an option in production instances.
