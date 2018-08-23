@@ -137,3 +137,43 @@ ShortenResponse respShort = new ShortenRequestBuilder("... the access token ..."
     .call();
 ----
 
+== Testing Redirection
+
+To test that the Redirection Service is working correctly in Timbuctoo after the refactoring a GraphQL mutation will
+be added. A REST endpoint for entity retrieval is also necessary.
+
+=== GraphQL endpoint:
+
+The GraphQL mutation structure will be as follows;
+----
+persistEntity(dataSetId: String!, entityUri: String!): String! #persistentUri
+----
+
+This mutation will be implemented in the persistEntityMutation class that implements DataFetcher.
+The mutation will validate if the entity at the given entityUri exists and will call the 'add' function in the currently configured RedirectionService class (HandleService by default).
+
+The GraphQL endpoint will be tested manually by making sure that the persistentUri that is returned, when called in a web browser, redirects to a Timbuctoo entity.
+
+=== REST endpoint
+
+A REST endpoint called getEntity will be created as well. It will have the structure:
+----
+<timbuctoo_uri>/v5/{dataSetId}/{collection}/{id}
+----
+
+NOTE: The 'id' should be Url-encoded.
+
+Normal case (user has access to dataSet and provided collection and id are valid):
+
+. The given id will be decoded and the QuadStore will be used to retrieve the CursorQuads for the subject (id).
+. The CursorQuads will be converted to Triples and then to Json-LD using Rdf4j and the Json-LD will be returned.
+
+Case where user has no access to dataSet:
+
+. If the dataSet is public then proceed as 'normal case' above if not return 'Unauthorized'
+
+Case where collection and/or id are incorrect:
+
+. Return 'Collection/Id not found'
+
+The various cases for the REST endpoint will be tested manually by calling the endpoint Url.
