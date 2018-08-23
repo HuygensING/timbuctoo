@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 
 import java.util.Set;
 
-public class DerivedQueryObjectTypeSchemaGenerator implements DerivedObjectTypeSchemaGenerator {
+class DerivedQueryObjectTypeSchemaGenerator {
   private static final String ENTITY_INTERFACE_NAME = "Entity";
 
   private final String typeUri;
@@ -25,18 +25,15 @@ public class DerivedQueryObjectTypeSchemaGenerator implements DerivedObjectTypeS
     this.predicates = new StringBuilder();
   }
 
-  @Override
   public void objectField(String description, Predicate predicate, String typeUri) {
     makeFieldAndDeprecations(description, predicate, typeUri, false, true);
   }
 
-  @Override
   public void unionField(String description, Predicate predicate, Set<String> typeUris) {
     String unionType = derivedSchemaContainer.unionType(typeUris);
     makeFieldAndDeprecations(description, predicate, unionType, true, true);
   }
 
-  @Override
   public void valueField(String description, Predicate predicate, String typeUri) {
     String type = derivedSchemaContainer.valueType(typeUri);
     makeFieldAndDeprecations(description, predicate, type, true, false);
@@ -105,7 +102,6 @@ public class DerivedQueryObjectTypeSchemaGenerator implements DerivedObjectTypeS
   }
 
 
-  @Override
   public StringBuilder getSchema() {
     String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
     builder.append("#")
@@ -128,5 +124,18 @@ public class DerivedQueryObjectTypeSchemaGenerator implements DerivedObjectTypeS
     builder.append(predicates);
     builder.append("}\n\n");
     return builder;
+  }
+
+  public void addQueryToSchema(StringBuilder schema) {
+    String typename = graphQlNameGenerator.createObjectTypeName(rootType, typeUri );
+    String name = typename.substring(rootType.length() + 1);
+    schema.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
+      "@fromCollection(uri: \"")
+         .append(derivedSchemaContainer.graphQlUri(typeUri)).append("\", listAll: false)\n");
+    schema.append("  ")
+         .append(derivedSchemaContainer.collectionType(name, typename))
+         .append(" " + "@fromCollection(uri: \"")
+         .append(derivedSchemaContainer.graphQlUri(typeUri))
+         .append("\", listAll: true)\n");
   }
 }

@@ -2,45 +2,62 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 
 import java.util.ArrayList;
 import java.util.Set;
 
 public class DerivedCompositeObjectTypeSchemaGenerator implements DerivedObjectTypeSchemaGenerator {
 
-  private final ArrayList<DerivedObjectTypeSchemaGenerator> delegates;
+  private final DerivedQueryObjectTypeSchemaGenerator querySchemaGenerator;
+  private final DerivedInputTypeSchemaGenerator mutationSchemaGenerator;
 
   public DerivedCompositeObjectTypeSchemaGenerator(String typeUri, String rootType,
                                                    GraphQlNameGenerator nameStore,
-                                                   DerivedSchemaContainer derivedSchemaContainer) {
-    delegates = Lists.newArrayList(
-      new DerivedQueryObjectTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer),
-      new DerivedInputTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer),
-      new DerivedObjectTypeOperationsSchemaGenerator(typeUri, rootType, nameStore)
-    );
+                                                   DerivedSchemaContainer derivedSchemaContainer,
+                                                   ReadOnlyChecker readOnlyChecker) {
+    querySchemaGenerator =
+      new DerivedQueryObjectTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer);
+    mutationSchemaGenerator =
+      new DerivedInputTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer, readOnlyChecker);
   }
 
   @Override
   public void objectField(String description, Predicate predicate, String typeUri) {
-    delegates.forEach(delegate -> delegate.objectField(description, predicate, typeUri));
+    querySchemaGenerator.objectField(description, predicate, typeUri);
+    mutationSchemaGenerator.objectField(description, predicate, typeUri);
+
   }
 
   @Override
   public void unionField(String description, Predicate predicate, Set<String> typeUris) {
-    delegates.forEach(delegate -> delegate.unionField(description, predicate, typeUris));
+    querySchemaGenerator.unionField(description, predicate, typeUris);
+    mutationSchemaGenerator.unionField(description, predicate, typeUris);
   }
 
   @Override
   public void valueField(String description, Predicate predicate, String typeUri) {
-    delegates.forEach(delegate -> delegate.valueField(description, predicate, typeUri));
+    querySchemaGenerator.valueField(description, predicate, typeUri);
+    mutationSchemaGenerator.valueField(description, predicate, typeUri);
   }
 
   @Override
   public StringBuilder getSchema() {
     StringBuilder schema = new StringBuilder();
 
-    delegates.forEach(delegate -> schema.append(delegate.getSchema()).append("\n"));
+    schema.append(querySchemaGenerator.getSchema()).append("\n");
+    schema.append(mutationSchemaGenerator.getSchema()).append("\n");
 
     return schema;
+  }
+
+  @Override
+  public void addMutationToSchema(StringBuilder schema) {
+    mutationSchemaGenerator.addMutationToSchema(schema);
+  }
+
+  @Override
+  public void addQueryToSchema(StringBuilder schema) {
+    querySchemaGenerator.addQueryToSchema(schema);
   }
 }

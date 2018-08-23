@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,7 @@ public class DataSetRepository {
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
   private final boolean publicByDefault;
+  private final ReadOnlyChecker readOnlyChecker;
   private Consumer<String> onUpdated;
   private final DataStorage dataStorage;
 
@@ -69,6 +71,11 @@ public class DataSetRepository {
     dataSetMap = new HashMap<>();
     this.onUpdated = onUpdated;
     this.dataStorage = dataStorage;
+    readOnlyChecker = predName -> {
+      return predName.equals(RdfConstants.RDF_TYPE) ||
+        predName.equals(RdfConstants.timPredicate("latestRevision")) ||
+        RdfConstants.isProvenance(predName);
+    };
   }
 
   private void loadDataSetsFromJson() throws IOException {
@@ -90,7 +97,7 @@ public class DataSetRepository {
                 rdfBaseUri,
                 dataStoreFactory,
                 () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
-                dataStorage.getDataSetStorage(ownerId, dataSetName)
+                dataStorage.getDataSetStorage(ownerId, dataSetName), readOnlyChecker
               )
             );
           } catch (DataStoreCreationException e) {
@@ -209,7 +216,7 @@ public class DataSetRepository {
               rdfBaseUri,
               dataStoreFactory,
               () -> onUpdated.accept(dataSet.getCombinedId()),
-              dataStorage.getDataSetStorage(ownerPrefix, dataSetId))
+              dataStorage.getDataSetStorage(ownerPrefix, dataSetId), readOnlyChecker)
           );
         } catch (PermissionFetchingException | AuthorizationCreationException | IOException e) {
           throw new DataStoreCreationException(e);

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 
 import java.util.HashMap;
@@ -7,26 +8,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 public class DerivedSchemaContainer {
   private final Map<String, DerivedTypeSchemaGenerator> types;
-  private final Set<String> topLevelTypes;
+  private final Map<String, DerivedObjectTypeSchemaGenerator> topLevelTypes;
 
   private final String rootType;
   private final GraphQlNameGenerator nameGenerator;
   private final PaginationArgumentsHelper argumentsHelper;
+  private final ReadOnlyChecker readOnlyChecker;
 
   DerivedSchemaContainer(String rootType, GraphQlNameGenerator graphQlNameGenerator,
-                         PaginationArgumentsHelper argumentsHelper) {
+                         PaginationArgumentsHelper argumentsHelper,
+                         ReadOnlyChecker readOnlyChecker) {
     this.rootType = rootType;
     this.nameGenerator = graphQlNameGenerator;
     this.argumentsHelper = argumentsHelper;
 
     types = new HashMap<>();
-    topLevelTypes = new HashSet<>();
+    topLevelTypes = new HashMap<>();
+    this.readOnlyChecker = readOnlyChecker;
   }
 
   String propertyInputType(List<String> refs) {
@@ -110,21 +111,14 @@ public class DerivedSchemaContainer {
 
 
   public DerivedObjectTypeSchemaGenerator addObjectType(String typeUri) {
-    final String name = nameGenerator.createObjectTypeName(rootType, typeUri);
-    if (!types.containsKey(name)) {
+    if (!topLevelTypes.containsKey(typeUri)) {
       DerivedObjectTypeSchemaGenerator value =
-        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, rootType, nameGenerator, this);
-      types.put(name, value);
-      topLevelTypes.add(typeUri);
+        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, rootType, nameGenerator, this, readOnlyChecker);
+      topLevelTypes.put(typeUri, value);
       return value;
     }
 
-    DerivedTypeSchemaGenerator derivedTypeSchemaGenerator = types.get(name);
-    if (derivedTypeSchemaGenerator instanceof DerivedObjectTypeSchemaGenerator) {
-      return (DerivedObjectTypeSchemaGenerator) derivedTypeSchemaGenerator;
-    }
-    // this should not happen
-    throw new RuntimeException("Type with uri \"" + typeUri + "\" is not an object type");
+    return topLevelTypes.get(typeUri);
   }
 
   public String getSchema() {
@@ -136,7 +130,9 @@ public class DerivedSchemaContainer {
       total.append(derivedObjectTypeSchemaGenerator.getSchema());
     }
 
-
+    for (DerivedTypeSchemaGenerator derivedObjectTypeSchemaGenerator : topLevelTypes.values()) {
+      total.append(derivedObjectTypeSchemaGenerator.getSchema());
+    }
 
     return total.toString();
   }
@@ -145,13 +141,16 @@ public class DerivedSchemaContainer {
     if (topLevelTypes.isEmpty()) {
       return;
     }
-    total.append("type ").append(rootType).append("Mutations").append("{\n");
+    StringBuilder mutationsSchema = new StringBuilder();
 
-    for (String uri : topLevelTypes) {
-      String typename = nameGenerator.createObjectTypeName(rootType, uri);
-      String name = typename.substring(rootType.length() + 1);
-      total.append("  ").append(name).append(": ").append(typename).append("Mutations").append( " @passThrough\n");
+    topLevelTypes.values().forEach(schemaGenerator -> schemaGenerator.addMutationToSchema(mutationsSchema));
+
+    if (mutationsSchema.length() <= 0) {
+      return;
     }
+
+    total.append("type ").append(rootType).append("Mutations").append("{\n");
+    total.append(mutationsSchema);
     total.append("}\n\n");
   }
 
@@ -159,17 +158,8 @@ public class DerivedSchemaContainer {
     total.append("type ").append(rootType).append("{\n");
     total.append("  metadata: DataSetMetadata!");
 
-    for (String uri : topLevelTypes) {
-      String typename = nameGenerator.createObjectTypeName(rootType, uri);
-      String name = typename.substring(rootType.length() + 1);
-      total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
-        "@fromCollection(uri: \"")
-           .append(graphQlUri(uri)).append("\", listAll: false)\n");
-      total.append("  ")
-           .append(collectionType(name, typename))
-           .append(" " + "@fromCollection(uri: \"")
-           .append(graphQlUri(uri))
-           .append("\", listAll: true)\n");
+    for (DerivedObjectTypeSchemaGenerator schemaGenerator : topLevelTypes.values()) {
+      schemaGenerator.addQueryToSchema(total);
     }
     total.append("}\n\n");
   }

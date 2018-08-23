@@ -12,6 +12,7 @@ import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
@@ -170,6 +171,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
             @Override
             public CurrentStateRetriever getCurrentStateRetriever() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public ReadOnlyChecker getReadOnlyChecker() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
 

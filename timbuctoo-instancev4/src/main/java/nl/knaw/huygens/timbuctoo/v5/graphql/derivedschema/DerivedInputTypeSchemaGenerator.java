@@ -1,57 +1,59 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 
 import java.util.List;
 import java.util.Set;
 
-public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaGenerator {
+class DerivedInputTypeSchemaGenerator {
 
 
   private final String typeUri;
   private final String rootType;
   private final GraphQlNameGenerator graphQlNameGenerator;
   private final DerivedSchemaContainer derivedSchemaContainer;
+  private final ReadOnlyChecker readOnlyChecker;
   private final List<GraphQlPredicate> replacements;
   private List<GraphQlPredicate> additions;
   private List<GraphQlPredicate> deletions;
 
   public DerivedInputTypeSchemaGenerator(String typeUri, String rootType, GraphQlNameGenerator graphQlNameGenerator,
-                                         DerivedSchemaContainer derivedSchemaContainer) {
+                                         DerivedSchemaContainer derivedSchemaContainer,
+                                         ReadOnlyChecker readOnlyChecker) {
     this.typeUri = typeUri;
     this.rootType = rootType;
     this.graphQlNameGenerator = graphQlNameGenerator;
     this.derivedSchemaContainer = derivedSchemaContainer;
+    this.readOnlyChecker = readOnlyChecker;
     replacements = Lists.newArrayList();
     additions = Lists.newArrayList();
     deletions = Lists.newArrayList();
   }
 
-  @Override
   public void objectField(String description, Predicate predicate, String typeUri) {
     addPredicate(predicate);
   }
 
-  @Override
   public void unionField(String description, Predicate predicate, Set<String> typeUris) {
     addPredicate(predicate);
   }
 
-  @Override
   public void valueField(String description, Predicate predicate, String typeUri) {
     addPredicate(predicate);
   }
 
   private void addPredicate(Predicate predicate) {
-    replacements.add(new GraphQlPredicate(predicate));
-    if (predicate.isList()) {
-      additions.add(new GraphQlPredicate(predicate));
-      deletions.add(new GraphQlPredicate(predicate));
+    if (!readOnlyChecker.isReadonlyPredicate(predicate.getName())) {
+      replacements.add(new GraphQlPredicate(predicate));
+      if (predicate.isList()) {
+        additions.add(new GraphQlPredicate(predicate));
+        deletions.add(new GraphQlPredicate(predicate));
+      }
     }
   }
 
-  @Override
   public StringBuilder getSchema() {
     StringBuilder schema = new StringBuilder();
     if (additions.isEmpty() && deletions.isEmpty() && replacements.isEmpty()) {
@@ -79,7 +81,20 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
       inputFields(schema, name, "DeletionsInput", deletions);
     }
 
+    schema.append("type ").append(name).append("Mutations").append(" {\n")
+          .append("  edit(").append("uri: String! ").append("entity: ").append(name).append("Input!): ")
+          .append(name).append(" @editMutation(dataSet: ").append(rootType).append(")").append("\n")
+          .append("}\n");
+
     return schema;
+  }
+
+  public void addMutationToSchema(StringBuilder schema) {
+    if (!replacements.isEmpty()) {
+      String typename = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
+      String name = typename.substring(rootType.length() + 1);
+      schema.append("  ").append(name).append(": ").append(typename).append("Mutations").append( " @passThrough\n");
+    }
   }
 
   private void inputFields(StringBuilder schema, String name, String actionName, List<GraphQlPredicate> predicates) {
@@ -141,4 +156,5 @@ public class DerivedInputTypeSchemaGenerator implements DerivedObjectTypeSchemaG
       return asList ? "[" + typeName + "!]" : typeName;
     }
   }
+
 }

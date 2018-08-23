@@ -14,4 +14,9 @@ public interface DerivedObjectTypeSchemaGenerator extends DerivedTypeSchemaGener
 
   @Override
   StringBuilder getSchema();
+
+  void addMutationToSchema(StringBuilder schema);
+
+  void addQueryToSchema(StringBuilder schema);
+
 }

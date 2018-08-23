@@ -46,7 +46,8 @@ public class RdfConstants {
   public static final String HAS_VIEW_CONFIG = TIM_VOCAB + "hasViewConfig";
 
   public static final String PROV_DERIVED_FROM = "http://www.w3.org/ns/prov#wasDerivedFrom";
-  public static final String PROV_ATTIME = "http://www.w3.org/ns/prov#atTime";
+  private static final String PROV_BASE = "http://www.w3.org/ns/prov#";
+  public static final String PROV_ATTIME = PROV_BASE + "atTime";
   public static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   public static final String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
   public static final String LANGSTRING = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString";
@@ -68,4 +69,7 @@ public class RdfConstants {
     return dataSet.getMetadata().getBaseUri() + "/" + typeName + "/" + UUID.randomUUID();
   }
 
+  public static boolean isProvenance(String propertyName) {
+    return propertyName.startsWith(PROV_BASE);
+  }
 }

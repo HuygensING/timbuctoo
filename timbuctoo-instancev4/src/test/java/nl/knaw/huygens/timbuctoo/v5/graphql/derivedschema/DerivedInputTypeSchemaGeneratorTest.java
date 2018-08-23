@@ -11,6 +11,7 @@ import static nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.PredicateBuilde
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -22,6 +23,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
   private static final String TYPE_URI = "http://example.org/type";
   private static final String TYPE = "Type";
   private static final String ROOT_TYPE = "rootType";
+  private static final String READ_ONLY_PRED = "http://example.org/readOnly";
   private DerivedInputTypeSchemaGenerator instance;
   private GraphQlNameGenerator graphQlNameGenerator;
 
@@ -31,7 +33,13 @@ public class DerivedInputTypeSchemaGeneratorTest {
     when(graphQlNameGenerator.createObjectTypeName(ROOT_TYPE, TYPE_URI)).thenReturn(TYPE);
     DerivedSchemaContainer derivedSchemaContainer = mock(DerivedSchemaContainer.class);
     when(derivedSchemaContainer.propertyInputType(anyList())).thenReturn("PropertyInput");
-    instance = new DerivedInputTypeSchemaGenerator(TYPE_URI, ROOT_TYPE, graphQlNameGenerator, derivedSchemaContainer);
+    instance = new DerivedInputTypeSchemaGenerator(
+      TYPE_URI,
+      ROOT_TYPE,
+      graphQlNameGenerator,
+      derivedSchemaContainer,
+      READ_ONLY_PRED::equals
+    );
   }
 
   @Test
@@ -255,6 +263,34 @@ public class DerivedInputTypeSchemaGeneratorTest {
         "  short_multiValueList: [PropertyInput!]\n" +
         "}\n\n")
     ));
+  }
+
+  @Test
+  public void doesNotAddReadOnlyProperties() {
+    Predicate predicate = predicate().withName(READ_ONLY_PRED)
+                                     .hasDirection(Direction.OUT)
+                                     .withValueType(RdfConstants.STRING)
+                                     .build();
+    instance.valueField(null, predicate, RdfConstants.STRING);
+
+    String schema = instance.getSchema().toString();
+    assertThat(schema, isEmptyString());
+  }
+
+  @Test
+  public void addsEditMethodToType() {
+    Predicate valueList = predicate().withName("http://example.com/valueList")
+                                     .isList()
+                                     .hasDirection(Direction.OUT)
+                                     .build();
+    graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
+    instance.objectField(null, valueList, "http://example.org/person");
+
+    String schema = instance.getSchema().toString();
+
+    assertThat(schema, containsString("}\n\ntype TypeMutations {\n" +
+      "  edit(uri: String! entity: TypeInput!): Type @editMutation(dataSet: rootType)\n" +
+      "}\n"));
   }
 
 }

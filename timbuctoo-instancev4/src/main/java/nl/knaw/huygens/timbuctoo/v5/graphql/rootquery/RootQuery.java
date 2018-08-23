@@ -37,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CollectionMetadataMutation
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DataSetMetadataMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicMutation;
@@ -341,7 +340,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         final String schema = typeGenerator.makeGraphQlTypes(
           name,
           types,
-          dataSet.getTypeNameStore()
+          dataSet.getTypeNameStore(),
+          dataSet.getReadOnlyChecker()
         );
 
         staticQuery.merge(schemaParser.parse(schema));

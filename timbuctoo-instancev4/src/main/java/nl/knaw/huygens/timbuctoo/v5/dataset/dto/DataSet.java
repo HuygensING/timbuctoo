@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ public abstract class DataSet {
 
   public static DataSet dataSet(DataSetMetaData metadata, ExecutorService executorService,
                                 String rdfPrefix, BdbEnvironmentCreator dataStoreFactory,
-                                Runnable onUpdated, DataSetStorage dataSetStorage)
+                                Runnable onUpdated, DataSetStorage dataSetStorage, ReadOnlyChecker readOnlyChecker)
     throws IOException, DataStoreCreationException {
 
     String userId = metadata.getOwnerId();
@@ -206,6 +207,7 @@ public abstract class DataSet {
         .dataSetStorage(dataSetStorage)
         .changesRetriever(changesRetriever)
         .currentStateRetriever(currentStateRetriever)
+        .readOnlyChecker(readOnlyChecker)
         .build();
       importManager.init(dataSet);
 
@@ -289,6 +291,8 @@ public abstract class DataSet {
   public abstract ChangesRetriever getChangesRetriever();
 
   public abstract CurrentStateRetriever getCurrentStateRetriever();
+
+  public abstract ReadOnlyChecker getReadOnlyChecker();
 
   public LogInfo getLogInfo() throws IOException {
     return new LogInfo(getDataSetStorage().getLogList().getData());
