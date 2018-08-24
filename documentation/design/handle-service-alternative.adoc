@@ -66,11 +66,19 @@ public interface RedirectionServiceFactory {
 }
 ----
 
-- A RedirectionService interface will also be created and structured as follows:
+- A RedirectionService abstract calss will also be created and structured as follows:
 
 ----
-public interface RedirectionService {
+public abstract class RedirectionService {
+    void init();
+
+    void old_add(URI uriToRedirectTo, EntityLookup entityLookup);
+
     void add(URI uriToRedirectTo, EntityLookup entityLookup);
+
+    abstract x(): //handle specific/bitly specific code
+
+    private queue(); //Queing is handled here and not by individual implementations
 }
 ----
 
@@ -78,7 +86,7 @@ public interface RedirectionService {
 
 This means we will now have a HandleServiceFactory that extends the RedirectionServiceFactory:
 ----
-public class HandleServiceFactory implements RedirectionServiceFactory {
+public class HandleServiceFactory extends RedirectionServiceFactory {
     @JsonCreator
     public HandleServiceFactory(@JsonProperty("useDummy") boolean useDummy,
         @JsonProperty("privateKeyFile") String privateKeyFile, ...) {
