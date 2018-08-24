@@ -177,3 +177,21 @@ Case where collection and/or id are incorrect:
 . Return 'Collection/Id not found'
 
 The various cases for the REST endpoint will be tested manually by calling the endpoint Url.
+
+NOTE: After the service creates the persistent id it should be saved to the entity in the dataSet.
+(refer to addPid use by HandleService)
+
+=== Handle service support for new Timbuctoo
+
+Currently, the Handle service is only used by old Timbuctoo so the same functionality also needs to be added to new Timbuctoo.
+This will require some refactoring in addition to the new 'add' function.
+
+. The RedirectionService interface (from initial refactoring) will be converted to an abstract class.
+. The 'add' method will be changed to 'old_add' and a new 'add' method will be added.
+These will correspond respectively to 'add' functions for old and new Timbuctoos.
+Every new implementation of a redirection service will have to implement methods.
+. RedirectionService will also contain abstract methods that have to be implemented specifically by interfaces.
+. Queuing will be handled in the RedirectionService abstract class (so that implementations do not have to worry about it).
+. The HandleService class will now extend this abstract class.
+. The new 'add' function will have to write generated persistent ids to the triple store.
+
