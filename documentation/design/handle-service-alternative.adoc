@@ -72,13 +72,20 @@ public interface RedirectionServiceFactory {
 public abstract class RedirectionService {
     void init();
 
-    void old_add(URI uriToRedirectTo, EntityLookup entityLookup);
+    public final void oldAdd(URI uriToRedirectTo, EntityLookup entityLookup){
+        ..do queing
+        call processRequestOld
+    }
 
-    void add(URI uriToRedirectTo, EntityLookup entityLookup);
+    public final void add(URI uriToRedirectTo, EntityLookup entityLookup){
+        ..do queing
+        call processRequest
+    }
 
-    abstract x(): //handle specific/bitly specific code
+    protected abstract processRequest(); //handle specific/bitly specific code
 
-    private queue(); //Queing is handled here and not by individual implementations
+    protected abstract processRequestOld(); //handle specific/bitly specific code
+
 }
 ----
 
@@ -86,7 +93,7 @@ public abstract class RedirectionService {
 
 This means we will now have a HandleServiceFactory that extends the RedirectionServiceFactory:
 ----
-public class HandleServiceFactory extends RedirectionServiceFactory {
+public class HandleServiceFactory implements RedirectionServiceFactory {
     @JsonCreator
     public HandleServiceFactory(@JsonProperty("useDummy") boolean useDummy,
         @JsonProperty("privateKeyFile") String privateKeyFile, ...) {
@@ -101,8 +108,11 @@ public class HandleServiceFactory extends RedirectionServiceFactory {
 
 Here, makeRedirectionService will return a:
 ----
-public class HandleService implements RedirectionService {
-    void add(URI uriToRedirectTo, EntityLookup entityLookup){
+public class HandleService extends RedirectionService {
+    void processRequest(..){
+        ...
+    }
+    void processOldRequest(...){
         ...
     }
 }
@@ -128,8 +138,11 @@ public class BitlyServiceFactory implements RedirectionServiceFactory {
 
 Here, makeRedirectionService will return a:
 ----
-public class BitlyService implements RedirectionService {
-    void add(URI uriToRedirectTo, EntityLookup entityLookup){
+public class BitlyService extends RedirectionService {
+    void processRequest(..){
+        ...
+    }
+    void processOldRequest(...){
         ...
     }
 }
