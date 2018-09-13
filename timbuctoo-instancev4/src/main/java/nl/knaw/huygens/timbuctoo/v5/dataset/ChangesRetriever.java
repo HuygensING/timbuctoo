@@ -29,9 +29,14 @@ public class ChangesRetriever {
   }
 
   public Stream<CursorQuad> retrieveChanges(Integer version) {
-
     return bdbTruePatchStore.getChangesOfVersion(version, true)
-                            .filter(quad -> quad.getDirection().equals(Direction.OUT));
+      .filter(quad -> quad.getDirection().equals(Direction.OUT));
+  }
+
+  public boolean versionExists(Integer requestedVersion) {
+    try (Stream<Integer> versions = updatedPerPatchStore.getVersions()) {
+      return versions.anyMatch(version -> version.equals(requestedVersion));
+    }
   }
 }
 
