@@ -201,7 +201,9 @@ public class RsDocumentBuilder {
 
       Integer version = getVersionFromFileId(fileId);
 
-      return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version));
+      if (dataSet.getChangesRetriever().versionExists(version)) {
+        return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version));
+      }
     }
 
     return Optional.empty();
