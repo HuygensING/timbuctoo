@@ -18,10 +18,8 @@ import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
-import org.hamcrest.core.StringContains;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -45,7 +43,6 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -83,8 +80,9 @@ public class IntegrationTest {
     Paths.get(resourceFilePath("integrationtest"), "datasets")
   );
   private static final String AUTH = "FAKE_AUTH_TOKEN";
+  private static final String USER_ID = "33707283d426f900d4d33707283d426f900d4d0d";
   private static Client client;
-  private static String PREFIX = "u33707283d426f900d4d33707283d426f900d4d0d";
+  private static String PREFIX = "u" + USER_ID;
 
   static {
     EvilEnvironmentVariableHacker.setEnv(
@@ -263,16 +261,16 @@ public class IntegrationTest {
         PREFIX, vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     String status = objectNode.get("data")
-      .get("dataSetMetadata")
-      .get("importStatus")
-      .get("status").asText();
+                              .get("dataSetMetadata")
+                              .get("importStatus")
+                              .get("status").asText();
     assertThat(status, is("DONE"));
 
     List<String> errors = Lists.newArrayList();
     objectNode.get("data")
-      .get("dataSetMetadata")
-      .get("importStatus")
-      .get("errors").forEach(error -> errors.add(error.asText()));
+              .get("dataSetMetadata")
+              .get("importStatus")
+              .get("errors").forEach(error -> errors.add(error.asText()));
 
     assertThat(errors, hasSize(1));
   }
@@ -590,11 +588,11 @@ public class IntegrationTest {
     ObjectNode data = query.readEntity(ObjectNode.class);
     List<JsonNode> tabularFile = stream(
       data.get("data")
-        .get("dataSets")
-        .get(dataSetId)
-        .get("http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList")
-        .get("items")
-        .iterator()
+          .get("dataSets")
+          .get(dataSetId)
+          .get("http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList")
+          .get("items")
+          .iterator()
     ).collect(toList());
 
     Stream<JsonNode> rawCollections = stream(tabularFile.get(0).get("tim_hasCollectionList").get("items").iterator());
@@ -754,8 +752,8 @@ public class IntegrationTest {
 
 
     Response createResponse = updateLoadJsonLdTarget.request()
-      .header(HttpHeaders.AUTHORIZATION, "fake")
-      .put(Entity.json(testRdfReader));
+                                                    .header(HttpHeaders.AUTHORIZATION, "fake")
+                                                    .put(Entity.json(testRdfReader));
 
     if (createResponse.getStatus() != 201) {
       System.out.println(createResponse.readEntity(String.class));
@@ -818,8 +816,8 @@ public class IntegrationTest {
 
 
     Response createResponse2 = createTarget2.request()
-      .header(HttpHeaders.AUTHORIZATION, "fake")
-      .put(Entity.json(testRdfReader2));
+                                            .header(HttpHeaders.AUTHORIZATION, "fake")
+                                            .put(Entity.json(testRdfReader2));
 
     if (createResponse2.getStatus() != 201) {
       System.out.println(createResponse2.readEntity(String.class));
@@ -1024,8 +1022,8 @@ public class IntegrationTest {
     ObjectNode retrievedData = retrieveExtendedSchema.readEntity(ObjectNode.class);
 
     assertThat(retrievedData.get("data").get("dataSets").get(dataSetId)
-        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
-        .get("items").get(0).get("test_test").isNull(),
+                            .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
+                            .get("items").get(0).get("test_test").isNull(),
       is(true));
 
     ObjectNode customSchemaField3 = jsnO(
@@ -1086,8 +1084,8 @@ public class IntegrationTest {
     ObjectNode retrievedData2 = retrieveExtendedSchema2.readEntity(ObjectNode.class);
 
     assertThat(retrievedData2.get("data").get("dataSets").get(dataSetId)
-        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
-        .get("items").get(0).get("test_test3").isNull(),
+                             .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
+                             .get("items").get(0).get("test_test3").isNull(),
       is(true));
 
   }
@@ -1694,8 +1692,8 @@ public class IntegrationTest {
               )
             )
           )
-       ),
-      "operationName", jsn("Edit")
+        ),
+        "operationName", jsn("Edit")
       ).toString(), MediaType.APPLICATION_JSON));
 
     assertThat(edit.readEntity(ObjectNode.class), is(jsnO(
@@ -1730,6 +1728,32 @@ public class IntegrationTest {
             "        schema_name {\n" +
             "          value\n" +
             "        }\n" +
+            "        tim_pred_latestRevision {\n" +
+            "          _inverse_prov_generated {\n" +
+            "            prov_associatedWith {\n" +
+            "              uri\n" +
+            "            }\n" +
+            "            prov_qualifiedAssociation {\n" +
+            "              prov_hadPlan {\n" +
+            "                tim_pred_replacements {\n" +
+            "                  tim_pred_hasReplacement {\n" +
+            "                    tim_pred_hasKey {\n" +
+            "                      uri\n" +
+            "                    }\n" +
+            "                    tim_pred_hasValue {\n" +
+            "                      tim_pred_rawValue {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                      tim_pred_type {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "              }\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
             "      }\n" +
             "    }\n" +
             "  }\n" +
@@ -1747,14 +1771,38 @@ public class IntegrationTest {
             "schema_Person", jsnO(
               "schema_name", jsnO(
                 "value", jsn("Test2")
+              ),
+              "tim_pred_latestRevision", jsnO(
+                "_inverse_prov_generated", jsnO(
+                  "prov_associatedWith", jsnO(
+                    "uri", jsn(format("http://127.0.0.1:%d/users/" + USER_ID, APP.getLocalPort()))
+                  ),
+                  "prov_qualifiedAssociation", jsnO(
+                    "prov_hadPlan", jsnO(
+                      "tim_pred_replacements", jsnO(
+                        "tim_pred_hasReplacement", jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/name")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Test2")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
               )
             )
           )
         )
       )
     )));
-
-    // TODO add test for generated provenance
   }
 
   private List<String> getDataSetNamesOfDummy() {

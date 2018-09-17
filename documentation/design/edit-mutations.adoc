@@ -50,7 +50,7 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
 === Provenance schema
 
 ----
- http://example.org/entity                            "2"                                                                "http://example.org/user"
+"http://example.org/entity"                           "2"                                                                "http://example.org/user"
       ^                                                ^                                                                          ^
       |  uri                                           |    tim:version                                                           |  uri
       |                                                |                                                                          |

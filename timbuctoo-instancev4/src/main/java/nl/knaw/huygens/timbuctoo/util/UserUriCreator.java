@@ -14,6 +14,6 @@ public class UserUriCreator {
   }
 
   public String create(User user) {
-    return UriBuilder.fromUri(uriHelper.getBaseUri()).path("users").path(user.getId()).build().toString();
+    return UriBuilder.fromUri(uriHelper.getBaseUri()).path("users").path(user.getPersistentId()).build().toString();
   }
 }
