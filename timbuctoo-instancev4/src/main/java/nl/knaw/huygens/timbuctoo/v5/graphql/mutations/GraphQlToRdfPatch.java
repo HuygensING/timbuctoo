@@ -83,38 +83,69 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     saver.addDelQuad(true, association, RDF_TYPE, PROV_ASSOCIATION, null, null, null);
     saver.addDelQuad(true, association, PROV_AGENT_PRED, agent, null, null, null);
 
-    String plan = dataSetObjectUri(dataSet, "plan");
-    saver.addDelQuad(true, association, PROV_HAD_PLAN, plan, null, null, null);
-    saver.addDelQuad(true, plan, RDF_TYPE, PROV_PLAN, null, null, null);
+    String planUri = dataSetObjectUri(dataSet, "plan");
+    saver.addDelQuad(true, association, PROV_HAD_PLAN, planUri, null, null, null);
+    saver.addDelQuad(true, planUri, RDF_TYPE, PROV_PLAN, null, null, null);
 
-    addAction(saver, dataSet, plan, changeLog.getAdditions(), "additions", "Additions", "addition", "hasAddition",
-      "Addition");
+    addAction(saver, dataSet, planUri, changeLog.getAdditions(), new Action("addition"));
 
-    addAction(saver, dataSet, plan, changeLog.getDeletions(), "deletions", "Deletions", "deletion", "hasDeletion",
-      "Deletion");
+    addAction(saver, dataSet, planUri, changeLog.getDeletions(), new Action("deletion"));
 
-    addAction(saver, dataSet, plan, changeLog.getReplacements(), "replacements", "Replacements", "replacement",
-      "hasReplacement", "Replacement");
+    addAction(saver, dataSet, planUri, changeLog.getReplacements(), new Action("replacement"));
   }
 
-  private void addAction(RdfPatchSerializer saver, DataSet dataSet, String plan,
-                         Map<String, ? extends JsonNode> actions, String actionPredPlural, String actionTypePlural,
-                         String actionPred, String hasAddition, String actionType) throws LogStorageFailedException {
-    if (!actions.isEmpty()) {
-      String additions = dataSetObjectUri(dataSet, actionPredPlural);
-      saver.addDelQuad(true, plan, timPredicate(actionPredPlural), additions, null, null, null);
-      saver.addDelQuad(true, additions, RDF_TYPE, TIM_VOCAB + actionTypePlural, null, null, null);
+  private void addAction(RdfPatchSerializer saver, DataSet dataSet, String planUri,
+                         Map<String, ? extends JsonNode> changes, Action action) throws LogStorageFailedException {
+    if (!changes.isEmpty()) {
+      String actionPluralUri = action.uniquePluralUri(dataSet);
+      saver.addDelQuad(true, planUri, action.predicateToActionCollection(), actionPluralUri, null, null, null);
+      saver.addDelQuad(true, actionPluralUri, RDF_TYPE, action.typePluralUri(), null, null, null);
 
-      for (Map.Entry<String, ? extends JsonNode> action : actions.entrySet()) {
-        String additionUri = dataSetObjectUri(dataSet, actionPred);
-        saver.addDelQuad(true, additions, timPredicate(hasAddition), additionUri, null, null, null);
-        saver.addDelQuad(true, additionUri, RDF_TYPE, TIM_VOCAB + actionType, null, null, null);
-        String predicate = dataSet.getTypeNameStore().makeUri(action.getKey());
-        saver.addDelQuad(true, additionUri, timPredicate("hasKey"), predicate, null, null, null);
+      for (Map.Entry<String, ? extends JsonNode> change : changes.entrySet()) {
+        String changeUri = action.uniqueSingularUri(dataSet);
+        saver.addDelQuad(true, actionPluralUri, action.predicateToSingleChange(), changeUri, null, null, null);
+        saver.addDelQuad(true, changeUri, RDF_TYPE, action.typeSingularUri(), null, null, null);
+        String predicate = dataSet.getTypeNameStore().makeUri(change.getKey());
+        saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
+        saver.addDelQuad(true, predicate, RDF_TYPE, TIM_VOCAB + "ChangeKey", null, null, null);
 
-        processPlanValues(saver, dataSet, additionUri, action.getValue());
+        processPlanValues(saver, dataSet, changeUri, change.getValue());
 
       }
+    }
+  }
+
+  private static class Action {
+    private final String lowerCaseName;
+    private final String upperCaseName;
+
+    private Action(String name) {
+      this.lowerCaseName = name.substring(0, 1).toLowerCase() + name.substring(1);
+      this.upperCaseName = name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    public String uniquePluralUri(DataSet dataSet) {
+      return dataSetObjectUri(dataSet, lowerCaseName + "s");
+    }
+
+    public String uniqueSingularUri(DataSet dataSet) {
+      return dataSetObjectUri(dataSet, lowerCaseName);
+    }
+
+    public String predicateToActionCollection() {
+      return timPredicate(lowerCaseName + "s");
+    }
+
+    public String predicateToSingleChange() {
+      return timPredicate("has" + upperCaseName);
+    }
+
+    public String typePluralUri() {
+      return TIM_VOCAB + upperCaseName + "s";
+    }
+
+    public String typeSingularUri() {
+      return TIM_VOCAB + upperCaseName;
     }
   }
 
