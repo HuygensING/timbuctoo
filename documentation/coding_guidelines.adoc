@@ -1,0 +1,14 @@
+= Coding guidelines
+
+== General
+
+=== Using Streams
+Always use `try-with-resources` when using `Streams`, because the `Streams` can contain an open database connection.
+
+```
+try (Stream<String> data = database.getData()) {
+...
+}
+```
+
+== Timbuctoo specific
