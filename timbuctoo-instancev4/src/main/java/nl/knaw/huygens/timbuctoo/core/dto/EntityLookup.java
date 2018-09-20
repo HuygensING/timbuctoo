@@ -1,9 +1,13 @@
 package nl.knaw.huygens.timbuctoo.core.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.immutables.value.Value;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Value.Immutable
@@ -11,9 +15,15 @@ import java.util.UUID;
 @JsonDeserialize(as = ImmutableEntityLookup.class)
 public interface EntityLookup {
 
-  int getRev();
+  Optional<Integer> getRev();
 
-  String getCollection();
+  Optional<String> getCollection();
 
-  UUID getTimId();
+  Optional<UUID> getTimId();
+
+  Optional<String> getDataSetId();
+
+  Optional<String> getUri();
+
+  Optional<User> getUser();
 }

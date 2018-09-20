@@ -205,7 +205,8 @@ public class TimbuctooActions implements AutoCloseable {
 
 
   public void addPid(URI pidUri, EntityLookup entityLookup) throws NotFoundException {
-    dataStoreOperations.addPid(entityLookup.getTimId(), entityLookup.getRev(), pidUri); //no collection?
+    //TODO: add checks for entityLookup properties
+    dataStoreOperations.addPid(entityLookup.getTimId().get(), entityLookup.getRev().get(), pidUri); //no collection?
   }
 
   //================== Metadata ==================
@@ -354,7 +355,7 @@ public class TimbuctooActions implements AutoCloseable {
 
     @Override
     public void execute() throws Exception {
-      redirectionService.add(uriToRedirectTo, entityLookup);
+      redirectionService.oldAdd(uriToRedirectTo, entityLookup);
     }
 
     @Override

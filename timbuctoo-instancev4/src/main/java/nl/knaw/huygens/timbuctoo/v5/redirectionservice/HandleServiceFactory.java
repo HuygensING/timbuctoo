@@ -2,12 +2,14 @@ package nl.knaw.huygens.timbuctoo.v5.redirectionservice;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
 
 
 public class HandleServiceFactory implements RedirectionServiceFactory {
   private final PersistenceManager manager;
+
 
   @JsonCreator
   public HandleServiceFactory(@JsonProperty("useDummy") Boolean useDummy,
@@ -28,8 +30,8 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
   }
 
   @Override
-  public RedirectionService makeRedirectionService(ActiveMQBundle activeMqBundle) {
-    HandleService handleService = new HandleService(manager, activeMqBundle);
+  public RedirectionService makeRedirectionService(QueueManager queueManager, DataSetRepository dataSetRepository) {
+    HandleService handleService = new HandleService(manager, queueManager, dataSetRepository);
 
     return handleService;
   }

@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.handle;
 
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
-import com.kjetland.dropwizard.activemq.ActiveMQSender;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
@@ -10,18 +9,18 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionState;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.queued.ActiveMqQueueCreator;
+import nl.knaw.huygens.timbuctoo.queued.activemq.ActiveMqQueueCreator;
+import nl.knaw.huygens.timbuctoo.v5.queue.QueueSender;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 public class HandleAdder implements PersistentUrlCreator {
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleAdder.class);
   public static final String HANDLE_QUEUE = "pids";
-
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleAdder.class);
   private final PersistenceManager manager;
-  private final ActiveMQSender sender;
+  private final QueueSender sender;
   private TransactionEnforcer transactionEnforcer;
 
   public HandleAdder(PersistenceManager manager, ActiveMQBundle activeMqBundle) {

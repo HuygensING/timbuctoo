@@ -28,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
+import nl.knaw.huygens.timbuctoo.queued.activemq.ActiveMqManager;
 import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
@@ -201,8 +202,29 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final UrlGenerator uriWithoutRev = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
+    final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
+    DataSetRepository dataSetRepository = configuration.getDataSetConfiguration().createRepository(
+      environment.lifecycle().executorService("dataSet").build(),
+      securityConfig.getPermissionFetcher(),
+      configuration.getDatabases(),
+      configuration.getRdfIdHelper(),
+      (combinedId -> {
+        try {
+          webhooks.dataSetUpdated(combinedId);
+        } catch (IOException e) {
+          LOG.error("Webhook call failed", e);
+        }
+      }),
+      configuration.dataSetsArePublicByDefault()
+    );
+
+
+    environment.lifecycle().manage(new DataSetRepositoryManager(dataSetRepository));
+
     RedirectionServiceFactory redirectionServiceFactory = configuration.getRedirectionServiceFactory();
-    RedirectionService redirectionService = redirectionServiceFactory.makeRedirectionService(activeMqBundle);
+    RedirectionService redirectionService = redirectionServiceFactory.makeRedirectionService(
+      new ActiveMqManager(activeMqBundle), dataSetRepository
+      );
 
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
@@ -241,25 +263,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getUserValidator(),
       pathWithoutVersionAndRevision
     );
-
-    final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
-    DataSetRepository dataSetRepository = configuration.getDataSetConfiguration().createRepository(
-      environment.lifecycle().executorService("dataSet").build(),
-      securityConfig.getPermissionFetcher(),
-      configuration.getDatabases(),
-      configuration.getRdfIdHelper(),
-      (combinedId -> {
-        try {
-          webhooks.dataSetUpdated(combinedId);
-        } catch (IOException e) {
-          LOG.error("Webhook call failed", e);
-        }
-      }),
-      configuration.dataSetsArePublicByDefault()
-    );
-
-
-    environment.lifecycle().manage(new DataSetRepositoryManager(dataSetRepository));
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     AuthCheck authCheck = new AuthCheck(

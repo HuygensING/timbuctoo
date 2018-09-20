@@ -1,31 +1,38 @@
 package nl.knaw.huygens.timbuctoo.v5.redirectionservice;
 
-import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
-import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionState;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 public class HandleService extends RedirectionService {
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleService.class);
   public static final String HANDLE_QUEUE = "pids";
-
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleService.class);
+  private static final String PERSISTENT_ID = "persistent_id_of";
   private final PersistenceManager manager;
-  private TransactionEnforcer transactionEnforcer;
+  private final DataSetRepository dataSetRepository;
 
-  public HandleService(PersistenceManager manager, ActiveMQBundle activeMqBundle) {
-    super(activeMqBundle, HANDLE_QUEUE);
+  public HandleService(PersistenceManager manager, QueueManager queueManager, DataSetRepository dataSetRepository) {
+    super(HANDLE_QUEUE, queueManager);
     this.manager = manager;
-    this.transactionEnforcer = null;
+    this.dataSetRepository = dataSetRepository;
   }
 
-  protected void savePid(HandleAdderParameters params) throws PersistenceException, URISyntaxException {
+  protected void oldSavePid(RedirectionServiceParameters params) throws PersistenceException, URISyntaxException {
     URI uri = params.getUrlToRedirectTo();
     LOG.info(String.format("Retrieving persistent url for '%s'", uri));
     String persistentId = (manager.persistURL(uri.toString()));
@@ -47,6 +54,47 @@ public class HandleService extends RedirectionService {
         }
       }
     );
+  }
+
+  @Override
+  protected void savePid(RedirectionServiceParameters params) throws PersistenceException, URISyntaxException {
+    URI uri = params.getUrlToRedirectTo();
+    LOG.info(String.format("Retrieving persistent url for '%s'", uri));
+    String persistentId = (manager.persistURL(uri.toString()));
+    URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
+
+    EntityLookup entityLookup = params.getEntityLookup();
+
+    String dataSetId = entityLookup.getDataSetId().get();
+
+    Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(dataSetId);
+
+    Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(
+      entityLookup.getUser().get(),
+      ownerIdDataSetId.getLeft(),
+      ownerIdDataSetId.getRight());
+
+    if (!maybeDataSet.isPresent()) {
+      throw new PersistenceException("Can't retrieve DataSet");
+    }
+
+    DataSet dataSet = maybeDataSet.get();
+
+    final ImportManager importManager = dataSet.getImportManager();
+
+    try {
+      importManager.generateLog(dataSet.getMetadata().getBaseUri(),
+        dataSet.getMetadata().getBaseUri(),
+        new HandleServicePatcher(
+          entityLookup.getUri().get(),
+          PERSISTENT_ID,
+          persistentUrl.toString(),
+          RdfConstants.STRING)
+      );
+    } catch (LogStorageFailedException e) {
+      throw new PersistenceException("Log Storage Failed.");
+    }
+
   }
 
 }

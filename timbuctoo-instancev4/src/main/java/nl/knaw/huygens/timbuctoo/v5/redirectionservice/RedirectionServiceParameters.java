@@ -9,20 +9,20 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.net.URI;
 
-class HandleAdderParameters {
+class RedirectionServiceParameters {
   private final int retries;
   private final URI urlToRedirectTo;
   private final EntityLookup entityLookup;
 
 
-  public HandleAdderParameters(URI urlToRedirectTo, EntityLookup entityLookup) {
+  public RedirectionServiceParameters(URI urlToRedirectTo, EntityLookup entityLookup) {
     this.urlToRedirectTo = urlToRedirectTo;
     this.entityLookup = entityLookup;
     this.retries = 0;
   }
 
   @JsonCreator
-  public HandleAdderParameters(
+  public RedirectionServiceParameters(
     @JsonProperty("urlToRedirectTo") URI urlToRedirectTo,
     @JsonProperty("entityLookup") EntityLookup entityLookup,
     @JsonProperty("retries") int retries
@@ -59,7 +59,7 @@ class HandleAdderParameters {
     return entityLookup;
   }
 
-  public HandleAdderParameters nextTry() {
-    return new HandleAdderParameters(urlToRedirectTo, entityLookup, retries + 1);
+  public RedirectionServiceParameters nextTry() {
+    return new RedirectionServiceParameters(urlToRedirectTo, entityLookup, retries + 1);
   }
 }
