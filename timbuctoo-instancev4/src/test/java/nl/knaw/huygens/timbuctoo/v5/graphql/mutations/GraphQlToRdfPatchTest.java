@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_VOCAB;
@@ -584,18 +585,6 @@ public class GraphQlToRdfPatchTest {
   @Ignore
   @Test
   public void throwsAnExceptionForDeletionsTriplesThatDoNotExist() {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
-
-  @Ignore
-  @Test
-  public void throwsAnExceptionWhenTheEntityDoesNotExist() {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
-
-  @Ignore
-  @Test
-  public void throwsAnWhenTheDataIsTheWrongType() {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
