@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
 import javax.ws.rs.core.UriBuilder;

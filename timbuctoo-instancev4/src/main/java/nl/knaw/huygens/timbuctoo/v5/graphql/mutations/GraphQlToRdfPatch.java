@@ -44,18 +44,30 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private static final String PROV_AGENT_PRED = "http://www.w3.org/ns/prov#agent";
   private static final String PROV_HAD_PLAN = "http://www.w3.org/ns/prov#hadPlan";
   private static final String PROV_PLAN = "http://www.w3.org/ns/prov#Plan";
-  private final User user;
   private final String subjectUri;
-  private final UserUriCreator userUriCreator;
   private final ChangeLog changeLog;
+  private final String userUri;
 
-  GraphQlToRdfPatch(User user, String subjectUri, UserUriCreator userUriCreator, Map entity)
+  GraphQlToRdfPatch(String subjectUri, String userUri, Map entity)
     throws JsonProcessingException {
-    this.user = user;
     this.subjectUri = subjectUri;
-    this.userUriCreator = userUriCreator;
+    this.userUri = userUri;
     TreeNode jsonNode = OBJECT_MAPPER.valueToTree(entity);
     changeLog = OBJECT_MAPPER.treeToValue(jsonNode, ChangeLog.class);
+  }
+
+  GraphQlToRdfPatch(String subjectUri, String userUri, ChangeLog changeLog) {
+    this.subjectUri = subjectUri;
+    this.userUri = userUri;
+    this.changeLog = changeLog;
+  }
+
+
+  @JsonCreator
+  public static GraphQlToRdfPatch fromJson(@JsonProperty("subjectUri") String subjectUri,
+                                           @JsonProperty("userUri") String userUri,
+                                           @JsonProperty("changeLog") ChangeLog changeLog) {
+    return new GraphQlToRdfPatch(subjectUri, userUri, changeLog);
   }
 
   @Override
@@ -74,14 +86,13 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     saver.addDelQuad(true, activity, PROV_GENERATED, newRevision, null, null, null);
     saver.addDelQuad(true, activity, RDF_TYPE, PROV_ACTIVITY, null, null, null);
 
-    String agent = userUriCreator.create(user);
-    saver.addDelQuad(true, activity, PROV_ASSOCIATED_WITH, agent, null, null, null);
-    saver.addDelQuad(true, agent, RDF_TYPE, PROV_AGENT, null, null, null);
+    saver.addDelQuad(true, activity, PROV_ASSOCIATED_WITH, userUri, null, null, null);
+    saver.addDelQuad(true, userUri, RDF_TYPE, PROV_AGENT, null, null, null);
 
     String association = dataSetObjectUri(dataSet, "association");
     saver.addDelQuad(true, activity, PROV_QUALIFIED_ASSOCIATION, association, null, null, null);
     saver.addDelQuad(true, association, RDF_TYPE, PROV_ASSOCIATION, null, null, null);
-    saver.addDelQuad(true, association, PROV_AGENT_PRED, agent, null, null, null);
+    saver.addDelQuad(true, association, PROV_AGENT_PRED, userUri, null, null, null);
 
     String planUri = dataSetObjectUri(dataSet, "plan");
     saver.addDelQuad(true, association, PROV_HAD_PLAN, planUri, null, null, null);

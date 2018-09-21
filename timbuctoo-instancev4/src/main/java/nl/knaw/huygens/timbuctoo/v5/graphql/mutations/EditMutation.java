@@ -70,7 +70,7 @@ public class EditMutation implements DataFetcher {
       dataSet.getImportManager().generateLog(
         dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
-        new GraphQlToRdfPatch(user, uri, userUriCreator, entity)
+        new GraphQlToRdfPatch(uri, userUriCreator.create(user), entity)
       ).get(); // Wait until the data is processed
     } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);

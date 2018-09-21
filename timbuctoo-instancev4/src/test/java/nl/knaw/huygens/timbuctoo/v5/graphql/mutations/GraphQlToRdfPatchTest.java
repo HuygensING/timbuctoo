@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
@@ -78,7 +79,7 @@ public class GraphQlToRdfPatchTest {
     additions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(addedValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("additions", additions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
@@ -94,7 +95,7 @@ public class GraphQlToRdfPatchTest {
     deletions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(deletedValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("deletions", deletions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
@@ -109,7 +110,7 @@ public class GraphQlToRdfPatchTest {
     replacements.put(NAMES_FIELD, createPropertyInput(newValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
     String oldValue = "oldValue";
     valuesInQuadStore(NAMES_PRED, oldValue);
 
@@ -128,7 +129,7 @@ public class GraphQlToRdfPatchTest {
     replacements.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(newValue1), createPropertyInput(newValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
     String oldValue1 = "oldValue1";
     String oldValue2 = "oldValue2";
     valuesInQuadStore(NAMES_PRED, oldValue1, oldValue2);
@@ -151,7 +152,7 @@ public class GraphQlToRdfPatchTest {
     replacements.put(NAMES_FIELD, createPropertyInput(newValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
     String oldValue = "oldValue";
     valuesInQuadStore(NAMES_PRED, oldValue);
     valuesInQuadStore(timPredicate("latestRevision"), prevRevision);
@@ -175,7 +176,7 @@ public class GraphQlToRdfPatchTest {
     replacements.put(NAMES_FIELD, createPropertyInput(newValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
     String oldValue = "oldValue";
     valuesInQuadStore(NAMES_PRED, oldValue);
     when(versionStore.getVersion()).thenReturn(1);
@@ -268,7 +269,7 @@ public class GraphQlToRdfPatchTest {
     additions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(newValue), createPropertyInput(newValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("additions", additions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
@@ -375,7 +376,7 @@ public class GraphQlToRdfPatchTest {
     deletions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(delValue), createPropertyInput(delValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("deletions", deletions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
@@ -481,7 +482,7 @@ public class GraphQlToRdfPatchTest {
     replacements.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(newValue), createPropertyInput(newValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(USER, SUBJECT, userUriCreator, entity);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
