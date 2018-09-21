@@ -1632,8 +1632,13 @@ public class IntegrationTest {
             "  dataSets {\n" +
             "    " + dataSetId + "{\n" +
             "      schema_Person(uri: \"http://example.org/person1\") {\n" +
-            "        schema_name {\n" +
+            "        schema_familyName {\n" +
             "          value\n" +
+            "        }\n" +
+            "        schema_givenNameList {\n" +
+            "          items {\n" +
+            "            value\n" +
+            "          }\n" +
             "        }\n" +
             "      }\n" +
             "    }\n" +
@@ -1649,12 +1654,17 @@ public class IntegrationTest {
         jsnO(
           dataSetId,
           jsnO(
-            "schema_Person",
-            jsnO(
-              "schema_name",
+            "schema_Person", jsnO(
+              "schema_familyName",
               jsnO(
-                "value",
-                jsn("Jan Jansen")
+                "value", jsn("Jansen")
+              ),
+              "schema_givenNameList", jsnO(
+                "items", jsnA(
+                  jsnO(
+                    "value", jsn("Jan")
+                  )
+                )
               )
             )
           )
@@ -1673,8 +1683,13 @@ public class IntegrationTest {
             "    " + dataSetId + "{\n" +
             "      schema_Person {\n" +
             "        edit(uri: $uri entity: $entity) {\n" +
-            "          schema_name {\n" +
+            "          schema_familyName {\n" +
             "            value\n" +
+            "          }\n" +
+            "          schema_givenNameList {\n" +
+            "            items {\n" +
+            "              value\n" +
+            "            }\n" +
             "          }\n" +
             "        }\n" +
             "      }\n" +
@@ -1686,10 +1701,22 @@ public class IntegrationTest {
           "uri", jsn("http://example.org/person1"),
           "entity", jsnO(
             "replacements", jsnO(
-              "schema_name", jsnO(
+              "schema_familyName", jsnO(
                 "type", jsn("xsd_string"),
                 "value", jsn("Test2")
               )
+            ),
+            "additions", jsnO(
+              "schema_givenNameList", jsnA(jsnO(
+                "type", jsn("xsd_string"),
+                "value", jsn("Janus")
+              ))
+            ),
+            "deletions", jsnO(
+              "schema_givenNameList", jsnA(jsnO(
+                "type", jsn("xsd_string"),
+                "value", jsn("Jan")
+              ))
             )
           )
         ),
@@ -1705,8 +1732,15 @@ public class IntegrationTest {
           jsnO(
             "schema_Person", jsnO(
               "edit", jsnO(
-                "schema_name", jsnO(
+                "schema_familyName", jsnO(
                   "value", jsn("Test2")
+                ),
+                "schema_givenNameList", jsnO(
+                  "items", jsnA(
+                    jsnO(
+                      "value", jsn("Janus")
+                    )
+                  )
                 )
               )
             )
@@ -1725,8 +1759,13 @@ public class IntegrationTest {
             "  dataSets {\n" +
             "    " + dataSetId + "{\n" +
             "      schema_Person(uri: \"http://example.org/person1\") {\n" +
-            "        schema_name {\n" +
+            "        schema_familyName {\n" +
             "          value\n" +
+            "        }\n" +
+            "        schema_givenNameList {\n" +
+            "          items {\n" +
+            "            value\n" +
+            "          }\n" +
             "        }\n" +
             "        tim_pred_latestRevision {\n" +
             "          _inverse_prov_generated {\n" +
@@ -1737,6 +1776,36 @@ public class IntegrationTest {
             "              prov_hadPlan {\n" +
             "                tim_pred_replacements {\n" +
             "                  tim_pred_hasReplacement {\n" +
+            "                    tim_pred_hasKey {\n" +
+            "                      uri\n" +
+            "                    }\n" +
+            "                    tim_pred_hasValue {\n" +
+            "                      tim_pred_rawValue {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                      tim_pred_type {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "                tim_pred_additions {\n" +
+            "                  tim_pred_hasAddition {\n" +
+            "                    tim_pred_hasKey {\n" +
+            "                      uri\n" +
+            "                    }\n" +
+            "                    tim_pred_hasValue {\n" +
+            "                      tim_pred_rawValue {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                      tim_pred_type {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "                tim_pred_deletions {\n" +
+            "                  tim_pred_hasDeletion {\n" +
             "                    tim_pred_hasKey {\n" +
             "                      uri\n" +
             "                    }\n" +
@@ -1769,8 +1838,15 @@ public class IntegrationTest {
           dataSetId,
           jsnO(
             "schema_Person", jsnO(
-              "schema_name", jsnO(
+              "schema_familyName", jsnO(
                 "value", jsn("Test2")
+              ),
+              "schema_givenNameList", jsnO(
+                "items", jsnA(
+                  jsnO(
+                    "value", jsn("Janus")
+                  )
+                )
               ),
               "tim_pred_latestRevision", jsnO(
                 "_inverse_prov_generated", jsnO(
@@ -1782,11 +1858,41 @@ public class IntegrationTest {
                       "tim_pred_replacements", jsnO(
                         "tim_pred_hasReplacement", jsnO(
                           "tim_pred_hasKey", jsnO(
-                            "uri", jsn("http://schema.org/name")
+                            "uri", jsn("http://schema.org/familyName")
                           ),
                           "tim_pred_hasValue", jsnO(
                             "tim_pred_rawValue", jsnO(
                               "value", jsn("Test2")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        )
+                      ),
+                      "tim_pred_additions", jsnO(
+                        "tim_pred_hasAddition", jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/givenName")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Janus")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        )
+                      ),
+                      "tim_pred_deletions", jsnO(
+                        "tim_pred_hasDeletion", jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/givenName")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Jan")
                             ),
                             "tim_pred_type", jsnO(
                               "value", jsn("http://www.w3.org/2001/XMLSchema#string")

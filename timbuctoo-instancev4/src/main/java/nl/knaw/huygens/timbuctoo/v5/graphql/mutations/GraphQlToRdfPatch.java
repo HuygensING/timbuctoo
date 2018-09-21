@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.util.UserUriCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PatchRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -16,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.util.Iterator;
@@ -116,7 +114,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         String changeUri = action.uniqueSingularUri(dataSet);
         saver.addDelQuad(true, actionPluralUri, action.predicateToSingleChange(), changeUri, null, null, null);
         saver.addDelQuad(true, changeUri, RDF_TYPE, action.typeSingularUri(), null, null, null);
-        String predicate = dataSet.getTypeNameStore().makeUri(change.getKey());
+        String predicate = getPredicate(dataSet, change);
         saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
         saver.addDelQuad(true, predicate, RDF_TYPE, TIM_VOCAB + "ChangeKey", null, null, null);
 
@@ -202,27 +200,33 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private void updateData(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
     for (Map.Entry<String, ArrayNode> addition : changeLog.getAdditions().entrySet()) {
       JsonNode value = addition.getValue();
-      String predicate = dataSet.getTypeNameStore().makeUri(addition.getKey());
+      String predicate = getPredicate(dataSet, addition);
+
       // Process the user input
       processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
     }
 
     for (Map.Entry<String, ArrayNode> deletion : changeLog.getDeletions().entrySet()) {
       JsonNode value = deletion.getValue();
-      String predicate = dataSet.getTypeNameStore().makeUri(deletion.getKey());
+      String predicate = getPredicate(dataSet, deletion);
       // Process the user input
       processValues(saver, value, predicate, false, dataSet.getTypeNameStore());
     }
 
     for (Map.Entry<String, JsonNode> replacement : changeLog.getReplacements().entrySet()) {
       JsonNode value = replacement.getValue();
-      String predicate = dataSet.getTypeNameStore().makeUri(replacement.getKey());
+      String predicate = getPredicate(dataSet, replacement);
 
       // Process the user input
       processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
 
       removePrevious(saver, dataSet, predicate);
     }
+  }
+
+  private String getPredicate(DataSet dataSet, Map.Entry<String, ? extends JsonNode> addition) {
+    // the GraphQl API should protect us from unknown predicates.
+    return dataSet.getTypeNameStore().makeUriForPredicate(addition.getKey()).get().getLeft();
   }
 
   private void removePrevious(RdfPatchSerializer saver, DataSet dataSet, String predicate)

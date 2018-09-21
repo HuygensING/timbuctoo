@@ -60,7 +60,7 @@ public class GraphQlToRdfPatchTest {
     dataSetMetaData = mock(DataSetMetaData.class);
     when(dataSetMetaData.getBaseUri()).thenReturn(DATA_SET_URI);
     typeNameStore = mock(TypeNameStore.class);
-    when(typeNameStore.makeUri(NAMES_FIELD)).thenReturn(NAMES_PRED);
+    when(typeNameStore.makeUriForPredicate(NAMES_FIELD)).thenReturn(Optional.of(tuple(NAMES_PRED, Direction.OUT)));
     when(typeNameStore.makeUri(GRAPH_QL_STRING)).thenReturn(STRING);
 
     when(dataSet.getQuadStore()).thenReturn(quadStore);
