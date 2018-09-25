@@ -1,10 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.util;
 
-import com.google.common.base.Joiner;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 
-import javax.ws.rs.core.UriBuilder;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 import static javax.ws.rs.core.UriBuilder.fromUri;
@@ -65,22 +62,21 @@ public class RdfConstants {
   public static final String MARKDOWN = "https://daringfireball.net/projects/markdown/syntax";
 
 
-
   // helper methods
 
   public static String timPredicate(String name) {
     return TIM_PRED + name;
   }
 
+  public static String timType(String name) {
+    return TIM_VOCAB + name;
+  }
+
   public static String dataSetObjectUri(DataSet dataSet, String typeName) {
     return fromUri(dataSet.getMetadata().getBaseUri()).path(typeName).path(UUID.randomUUID().toString()).toString();
   }
 
-  public static String dataSetPredicate(DataSet dataSet, String predicate) {
-    return fromUri(dataSet.getMetadata().getBaseUri()).path("predicate").fragment(predicate).toString();
-  }
-
-  public static boolean isProvenance(String propertyName) {
-    return propertyName.startsWith(PROV_BASE);
+  public static boolean isProvenance(String iri) {
+    return iri.startsWith(PROV_BASE);
   }
 }

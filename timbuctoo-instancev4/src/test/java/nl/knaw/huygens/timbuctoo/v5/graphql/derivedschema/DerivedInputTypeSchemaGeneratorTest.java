@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -24,21 +25,35 @@ public class DerivedInputTypeSchemaGeneratorTest {
   private static final String TYPE = "Type";
   private static final String ROOT_TYPE = "rootType";
   private static final String READ_ONLY_PRED = "http://example.org/readOnly";
+  private static final String READ_ONLY_TYPE = "http://example.org/readOnlyType";
   private DerivedInputTypeSchemaGenerator instance;
   private GraphQlNameGenerator graphQlNameGenerator;
+  private ReadOnlyChecker readOnlyChecker;
+  private DerivedSchemaContainer derivedSchemaContainer;
 
   @Before
   public void setUp() throws Exception {
     graphQlNameGenerator = mock(GraphQlNameGenerator.class);
     when(graphQlNameGenerator.createObjectTypeName(ROOT_TYPE, TYPE_URI)).thenReturn(TYPE);
-    DerivedSchemaContainer derivedSchemaContainer = mock(DerivedSchemaContainer.class);
+    derivedSchemaContainer = mock(DerivedSchemaContainer.class);
     when(derivedSchemaContainer.propertyInputType(anyList())).thenReturn("PropertyInput");
+    readOnlyChecker = new ReadOnlyChecker() {
+      @Override
+      public boolean isReadonlyPredicate(String predicateIri) {
+        return READ_ONLY_PRED.equals(predicateIri);
+      }
+
+      @Override
+      public boolean isReadonlyType(String typeUri) {
+        return READ_ONLY_TYPE.equals(typeUri);
+      }
+    };
     instance = new DerivedInputTypeSchemaGenerator(
       TYPE_URI,
       ROOT_TYPE,
       graphQlNameGenerator,
       derivedSchemaContainer,
-      READ_ONLY_PRED::equals
+      readOnlyChecker
     );
   }
 
@@ -263,6 +278,25 @@ public class DerivedInputTypeSchemaGeneratorTest {
         "  short_multiValueList: [PropertyInput!]\n" +
         "}\n\n")
     ));
+  }
+
+  @Test
+  public void returnsAnEmptyStringForReadOnlyTypes() {
+    DerivedInputTypeSchemaGenerator instance = new DerivedInputTypeSchemaGenerator(
+      READ_ONLY_TYPE,
+      ROOT_TYPE,
+      graphQlNameGenerator,
+      derivedSchemaContainer,
+      readOnlyChecker
+    );
+    Predicate predicate = predicate().withName("http://example.com/value")
+                                     .hasDirection(Direction.OUT)
+                                     .withValueType(RdfConstants.STRING)
+                                     .build();
+    instance.valueField(null, predicate, RdfConstants.STRING);
+
+    String schema = instance.getSchema().toString();
+    assertThat(schema, isEmptyString());
   }
 
   @Test

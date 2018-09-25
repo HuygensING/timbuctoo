@@ -16,6 +16,7 @@ class DerivedInputTypeSchemaGenerator {
   private final DerivedSchemaContainer derivedSchemaContainer;
   private final ReadOnlyChecker readOnlyChecker;
   private final List<GraphQlPredicate> replacements;
+  private final boolean isReadOnly;
   private List<GraphQlPredicate> additions;
   private List<GraphQlPredicate> deletions;
 
@@ -30,6 +31,7 @@ class DerivedInputTypeSchemaGenerator {
     replacements = Lists.newArrayList();
     additions = Lists.newArrayList();
     deletions = Lists.newArrayList();
+    isReadOnly = readOnlyChecker.isReadonlyType(typeUri);
   }
 
   public void objectField(String description, Predicate predicate, String typeUri) {
@@ -45,7 +47,7 @@ class DerivedInputTypeSchemaGenerator {
   }
 
   private void addPredicate(Predicate predicate) {
-    if (!readOnlyChecker.isReadonlyPredicate(predicate.getName())) {
+    if (!isReadOnly && !readOnlyChecker.isReadonlyPredicate(predicate.getName())) {
       replacements.add(new GraphQlPredicate(predicate));
       if (predicate.isList()) {
         additions.add(new GraphQlPredicate(predicate));

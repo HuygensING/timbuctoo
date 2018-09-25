@@ -71,10 +71,40 @@ public class DataSetRepository {
     dataSetMap = new HashMap<>();
     this.onUpdated = onUpdated;
     this.dataStorage = dataStorage;
-    readOnlyChecker = predName -> {
-      return predName.equals(RdfConstants.RDF_TYPE) ||
-        predName.equals(RdfConstants.timPredicate("latestRevision")) ||
-        RdfConstants.isProvenance(predName);
+    readOnlyChecker = new ReadOnlyChecker() {
+      @Override
+      public boolean isReadonlyPredicate(String predicateIri) {
+        return predicateIri.equals(RdfConstants.RDF_TYPE) ||
+          predicateIri.equals(RdfConstants.timPredicate("latestRevision")) ||
+          predicateIri.equals(RdfConstants.timPredicate("version")) ||
+          predicateIri.equals(RdfConstants.timPredicate("deletions")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasDeletion")) ||
+          predicateIri.equals(RdfConstants.timPredicate("additions")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasAddition")) ||
+          predicateIri.equals(RdfConstants.timPredicate("replacements")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasReplacement")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasKey")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasValue")) ||
+          predicateIri.equals(RdfConstants.timPredicate("type")) ||
+          predicateIri.equals(RdfConstants.timPredicate("rawValue")) ||
+          predicateIri.equals(RdfConstants.timPredicate("nextValue")) ||
+          RdfConstants.isProvenance(predicateIri);
+      }
+
+      @Override
+      public boolean isReadonlyType(String typeUri) {
+        return RdfConstants.isProvenance(typeUri) ||
+          RdfConstants.UNKNOWN.equals(typeUri) ||
+          RdfConstants.timType("Additions").equals(typeUri) ||
+          RdfConstants.timType("Addition").equals(typeUri) ||
+          RdfConstants.timType("Deletions").equals(typeUri) ||
+          RdfConstants.timType("Deletion").equals(typeUri) ||
+          RdfConstants.timType("Replacements").equals(typeUri) ||
+          RdfConstants.timType("Replacement").equals(typeUri) ||
+          RdfConstants.timType("ChangeKey").equals(typeUri) ||
+          RdfConstants.timType("Value").equals(typeUri);
+      }
+
     };
   }
 

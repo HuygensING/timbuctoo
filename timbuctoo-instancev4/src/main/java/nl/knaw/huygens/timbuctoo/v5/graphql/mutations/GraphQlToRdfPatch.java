@@ -25,9 +25,9 @@ import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_VOCAB;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.dataSetObjectUri;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timPredicate;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timType;
 
 public class GraphQlToRdfPatch implements PatchRdfCreator {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -116,7 +116,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         saver.addDelQuad(true, changeUri, RDF_TYPE, action.typeSingularUri(), null, null, null);
         String predicate = getPredicate(dataSet, change);
         saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
-        saver.addDelQuad(true, predicate, RDF_TYPE, TIM_VOCAB + "ChangeKey", null, null, null);
+        saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
 
         processPlanValues(saver, dataSet, changeUri, change.getValue());
 
@@ -150,11 +150,11 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     }
 
     public String typePluralUri() {
-      return TIM_VOCAB + upperCaseName + "s";
+      return timType(upperCaseName + "s");
     }
 
     public String typeSingularUri() {
-      return TIM_VOCAB + upperCaseName;
+      return timType(upperCaseName);
     }
   }
 
