@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.v5.queue.QueueCreator;
 import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
 import nl.knaw.huygens.timbuctoo.v5.queue.QueueSender;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.exceptions.RedirectionServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +23,14 @@ public abstract class RedirectionService {
   public RedirectionService(String queueName, QueueManager queueManager) {
     QueueCreator<RedirectionServiceParameters> queueCreator =
       queueManager.createQueue(RedirectionServiceParameters.class, queueName);
+    QueueCreator<RedirectionServiceParameters> oldQueueCreator =
+      queueManager.createQueue(RedirectionServiceParameters.class, queueName + "Old");
 
     queueCreator.registerReceiver(this::actualExecution);
     this.sender = queueCreator.createSender();
-    this.oldSender = queueCreator.createSender();
+
+    oldQueueCreator.registerReceiver(this::oldActualExecution);
+    this.oldSender = oldQueueCreator.createSender();
   }
 
   private void oldActualExecution(RedirectionServiceParameters params) {
@@ -47,7 +52,7 @@ public abstract class RedirectionService {
   private void actualExecution(RedirectionServiceParameters params) {
     try {
       savePid(params);
-    } catch (PersistenceException | URISyntaxException e) {
+    } catch (PersistenceException | URISyntaxException | RedirectionServiceException e) {
       LOG.error(Logmarkers.serviceUnavailable, "Could not create handle", e);
       if (params.getRetries() < 5) {
         LOG.warn(String.format("Re-adding %s%s job to the queue for '%s' '%s'",
@@ -83,7 +88,8 @@ public abstract class RedirectionService {
   protected abstract void oldSavePid(RedirectionServiceParameters params)
     throws PersistenceException, URISyntaxException;
 
-  protected abstract void savePid(RedirectionServiceParameters params) throws PersistenceException, URISyntaxException;
+  protected abstract void savePid(RedirectionServiceParameters params) throws
+    PersistenceException, URISyntaxException, RedirectionServiceException;
 
   public final void oldAdd(URI uriToRedirectTo, EntityLookup entityLookup) {
     if (transactionEnforcer == null) {
