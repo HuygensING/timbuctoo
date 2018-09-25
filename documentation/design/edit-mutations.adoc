@@ -45,6 +45,16 @@ A mutation on the data might produce an "invalid" dataset. We can have vaildatio
 . A user should be able to add provenance.
 . A bulk edit must be possible.
 
+=== Current state 2018-09-24
+Currently the users with 'WRITE' permissions are able to edit the every collections except from the provenance.
+No new resources (entities) can be added.
+The schema prohibits adding new properties and changing types of properties.
+
+The next features still have to be implemented:
+
+. Custom provenance per data set
+. Bulk edit for editing multiple resources
+
 == Design
 
 === Provenance schema
