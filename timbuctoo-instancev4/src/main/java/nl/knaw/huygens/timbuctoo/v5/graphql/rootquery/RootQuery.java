@@ -32,7 +32,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
-import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CollectionMetadataMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DataSetMetadataMutation;
@@ -83,7 +83,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final SupportedExportFormats supportedFormats;
   private final String archetypes;
   private final RdfWiringFactory wiringFactory;
-  private final DerivedSchemaTypeGenerator typeGenerator;
+  private final DerivedSchemaGenerator typeGenerator;
   private final ObjectMapper objectMapper;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final ResourceSyncService resourceSyncService;
@@ -92,7 +92,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
                    String archetypes, RdfWiringFactory wiringFactory,
-                   DerivedSchemaTypeGenerator typeGenerator, ObjectMapper objectMapper,
+                   DerivedSchemaGenerator typeGenerator, ObjectMapper objectMapper,
                    ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService)
     throws IOException {
     this.dataSetRepository = dataSetRepository;
@@ -275,13 +275,16 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("resourceSyncUpdate",
         new ResourceSyncUpdateMutation(dataSetRepository, resourceSyncFileLoader))
     );
-
+    
     wiring.wiringFactory(wiringFactory);
-    StringBuilder root = new StringBuilder("type DataSets {\n sillyWorkaroundWhenNoDataSetsAreVisible: Boolean\n");
+    StringBuilder rootQuery = new StringBuilder("type DataSets {\n sillyWorkaroundWhenNoDataSetsAreVisible: Boolean\n");
+    StringBuilder rootMut = new StringBuilder("type DataSetMutations {\n")
+      .append("  sillyWorkaroundWhenNoMutationsAreAllowed: Boolean\n");
 
     boolean[] dataSetAvailable = new boolean[]{false};
+    boolean[] hasTypes = new boolean[]{false};
 
-
+    // add data sets query to the schema
     dataSetRepository.getDataSets().forEach(dataSet -> {
       final DataSetMetaData dataSetMetaData = dataSet.getMetadata();
       final String name = dataSetMetaData.getCombinedId();
@@ -305,10 +308,12 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
       types = mergedTypes;
 
+
       if (types != null) {
 
+        // Add to rootQuery
         dataSetAvailable[0] = true;
-        root.append("  ")
+        rootQuery.append("  ")
           .append(name)
           .append(":")
           .append(name)
@@ -318,6 +323,16 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append(dataSetMetaData.getDataSetId())
           .append("\")\n");
 
+        if (!types.isEmpty()) {
+          hasTypes[0] = true;
+          rootMut.append("  ")
+                 .append(name)
+                 .append(": ")
+                 .append(name).append("Mutations")
+                 .append(" @passThrough")
+                 .append("\n\n");
+        }
+
         wiring.type(name, c -> c
           .dataFetcher("metadata", env -> new DataSetWithDatabase(dataSet))
         );
@@ -325,16 +340,22 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         final String schema = typeGenerator.makeGraphQlTypes(
           name,
           types,
-          dataSet.getTypeNameStore()
+          dataSet.getTypeNameStore(),
+          dataSet.getReadOnlyChecker()
         );
 
         staticQuery.merge(schemaParser.parse(schema));
       }
     });
-    root.append("}\n\nextend type Query {\n  #The actual dataSets\n  dataSets: DataSets @passThrough\n}\n\n");
+    rootQuery.append("}\n\nextend type Query {\n  #The actual dataSets\n  dataSets: DataSets @passThrough\n}\n\n");
+    rootMut.append("}\n\nextend type Mutation {\n  #The actual dataSets\n" +
+      "  dataSets: DataSetMutations @passThrough\n}\n\n");
 
     if (dataSetAvailable[0]) {
-      staticQuery.merge(schemaParser.parse(root.toString()));
+      staticQuery.merge(schemaParser.parse(rootQuery.toString()));
+      if (hasTypes[0]) {
+        staticQuery.merge(schemaParser.parse(rootMut.toString()));
+      }
     }
 
     SchemaGenerator schemaGenerator = new SchemaGenerator();

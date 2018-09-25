@@ -92,6 +92,10 @@ public class BdbTypeNameStore implements TypeNameStore {
   @Override
   public Optional<Tuple<String, Direction>> makeUriForPredicate(String graphQlName) {
     String uri = makeUri(graphQlName);
+    // check if the graphQlName is of a List property.
+    if (uri == null && graphQlName.endsWith("List")) {
+      uri = makeUri(graphQlName.replace("List", ""));
+    }
     if (uri == null) {
       return Optional.empty();
     } else {

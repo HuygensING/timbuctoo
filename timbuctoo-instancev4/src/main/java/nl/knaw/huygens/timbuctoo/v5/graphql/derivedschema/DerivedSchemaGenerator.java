@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,18 +13,22 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DerivedSchemaTypeGenerator {
+public class DerivedSchemaGenerator {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DerivedSchemaTypeGenerator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DerivedSchemaGenerator.class);
   private final PaginationArgumentsHelper argumentsHelper;
 
-  public DerivedSchemaTypeGenerator(
+  public DerivedSchemaGenerator(
     PaginationArgumentsHelper argumentsHelper) {
     this.argumentsHelper = argumentsHelper;
   }
 
-  public String makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore) {
-    DerivedSchemaContainer typesContainer = new DerivedSchemaContainer(rootType, nameStore, this.argumentsHelper);
+  public String makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore,
+                                 ReadOnlyChecker readOnlyChecker) {
+    GraphQlNameGenerator nameGenerator = new GraphQlNameGenerator(nameStore);
+
+    DerivedSchemaContainer typesContainer = new DerivedSchemaContainer(rootType, nameGenerator, this.argumentsHelper,
+      readOnlyChecker);
 
     // FIXME find a better way to register standard types to the schema of a data set
     typesContainer.valueType(RdfConstants.MARKDOWN);
@@ -31,16 +36,17 @@ public class DerivedSchemaTypeGenerator {
     typesContainer.valueType(RdfConstants.URI);
 
     for (Type type : types.values()) {
-      typesContainer.openObjectType(type.getName());
+      DerivedObjectTypeSchemaGenerator typeSchemaGenerator = typesContainer.addObjectType(type.getName());
       for (Predicate predicate : type.getPredicates()) {
-        fieldForDerivedType(predicate, typesContainer);
+        fieldForDerivedType(predicate, typesContainer, typeSchemaGenerator, nameGenerator, rootType);
       }
-      typesContainer.closeObjectType(type.getName());
     }
     return typesContainer.getSchema();
   }
 
-  private static void fieldForDerivedType(Predicate pred, DerivedSchemaContainer typesContainer) {
+  private static void fieldForDerivedType(Predicate pred, DerivedSchemaContainer typesContainer,
+                                          DerivedObjectTypeSchemaGenerator typeSchemaGenerator,
+                                          GraphQlNameGenerator nameGenerator, String rootType) {
     if (pred.getReferenceTypes().size() == 0) {
       if (pred.getValueTypes().size() == 0) {
         LOG.error(
@@ -48,7 +54,7 @@ public class DerivedSchemaTypeGenerator {
           pred.getName()
         );
       } else if (pred.getValueTypes().size() == 1) {
-        typesContainer.valueField(
+        typeSchemaGenerator.valueField(
           null,
           pred,
           pred.getUsedValueTypes().iterator().next()
@@ -58,25 +64,25 @@ public class DerivedSchemaTypeGenerator {
         for (String valueType : pred.getUsedValueTypes()) {
           types.add(typesContainer.valueType(valueType));
         }
-        typesContainer.unionField(null, pred, types);
+        typeSchemaGenerator.unionField(null, pred, types);
       }
     } else {
       if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
-        typesContainer.objectField(
+        typeSchemaGenerator.objectField(
           null,
           pred,
-          typesContainer.getObjectTypeName(pred.getUsedReferenceTypes().iterator().next())
+          nameGenerator.createObjectTypeName(rootType, pred.getUsedReferenceTypes().iterator().next())
         );
       } else {
         Set<String> refs = new HashSet<>();
         for (String referenceType : pred.getUsedReferenceTypes()) {
-          refs.add(typesContainer.getObjectTypeName(referenceType));
+          refs.add(nameGenerator.createObjectTypeName(rootType, referenceType));
         }
         for (String valueType : pred.getUsedValueTypes()) {
           refs.add(typesContainer.valueType(valueType));
         }
 
-        typesContainer.unionField(
+        typeSchemaGenerator.unionField(
           null,
           pred,
           refs

@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,7 @@ public class DataSetRepository {
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
   private final boolean publicByDefault;
+  private final ReadOnlyChecker readOnlyChecker;
   private Consumer<String> onUpdated;
   private final DataStorage dataStorage;
 
@@ -69,6 +71,41 @@ public class DataSetRepository {
     dataSetMap = new HashMap<>();
     this.onUpdated = onUpdated;
     this.dataStorage = dataStorage;
+    readOnlyChecker = new ReadOnlyChecker() {
+      @Override
+      public boolean isReadonlyPredicate(String predicateIri) {
+        return predicateIri.equals(RdfConstants.RDF_TYPE) ||
+          predicateIri.equals(RdfConstants.timPredicate("latestRevision")) ||
+          predicateIri.equals(RdfConstants.timPredicate("version")) ||
+          predicateIri.equals(RdfConstants.timPredicate("deletions")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasDeletion")) ||
+          predicateIri.equals(RdfConstants.timPredicate("additions")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasAddition")) ||
+          predicateIri.equals(RdfConstants.timPredicate("replacements")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasReplacement")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasKey")) ||
+          predicateIri.equals(RdfConstants.timPredicate("hasValue")) ||
+          predicateIri.equals(RdfConstants.timPredicate("type")) ||
+          predicateIri.equals(RdfConstants.timPredicate("rawValue")) ||
+          predicateIri.equals(RdfConstants.timPredicate("nextValue")) ||
+          RdfConstants.isProvenance(predicateIri);
+      }
+
+      @Override
+      public boolean isReadonlyType(String typeUri) {
+        return RdfConstants.isProvenance(typeUri) ||
+          RdfConstants.UNKNOWN.equals(typeUri) ||
+          RdfConstants.timType("Additions").equals(typeUri) ||
+          RdfConstants.timType("Addition").equals(typeUri) ||
+          RdfConstants.timType("Deletions").equals(typeUri) ||
+          RdfConstants.timType("Deletion").equals(typeUri) ||
+          RdfConstants.timType("Replacements").equals(typeUri) ||
+          RdfConstants.timType("Replacement").equals(typeUri) ||
+          RdfConstants.timType("ChangeKey").equals(typeUri) ||
+          RdfConstants.timType("Value").equals(typeUri);
+      }
+
+    };
   }
 
   private void loadDataSetsFromJson() throws IOException {
@@ -90,7 +127,7 @@ public class DataSetRepository {
                 rdfBaseUri,
                 dataStoreFactory,
                 () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
-                dataStorage.getDataSetStorage(ownerId, dataSetName)
+                dataStorage.getDataSetStorage(ownerId, dataSetName), readOnlyChecker
               )
             );
           } catch (DataStoreCreationException e) {
@@ -209,7 +246,7 @@ public class DataSetRepository {
               rdfBaseUri,
               dataStoreFactory,
               () -> onUpdated.accept(dataSet.getCombinedId()),
-              dataStorage.getDataSetStorage(ownerPrefix, dataSetId))
+              dataStorage.getDataSetStorage(ownerPrefix, dataSetId), readOnlyChecker)
           );
         } catch (PermissionFetchingException | AuthorizationCreationException | IOException e) {
           throw new DataStoreCreationException(e);

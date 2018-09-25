@@ -18,7 +18,6 @@ import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
-import org.hamcrest.core.StringContains;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -81,8 +80,9 @@ public class IntegrationTest {
     Paths.get(resourceFilePath("integrationtest"), "datasets")
   );
   private static final String AUTH = "FAKE_AUTH_TOKEN";
+  private static final String USER_ID = "33707283d426f900d4d33707283d426f900d4d0d";
   private static Client client;
-  private static String PREFIX = "u33707283d426f900d4d33707283d426f900d4d0d";
+  private static String PREFIX = "u" + USER_ID;
 
   static {
     EvilEnvironmentVariableHacker.setEnv(
@@ -261,16 +261,16 @@ public class IntegrationTest {
         PREFIX, vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     String status = objectNode.get("data")
-      .get("dataSetMetadata")
-      .get("importStatus")
-      .get("status").asText();
+                              .get("dataSetMetadata")
+                              .get("importStatus")
+                              .get("status").asText();
     assertThat(status, is("DONE"));
 
     List<String> errors = Lists.newArrayList();
     objectNode.get("data")
-      .get("dataSetMetadata")
-      .get("importStatus")
-      .get("errors").forEach(error -> errors.add(error.asText()));
+              .get("dataSetMetadata")
+              .get("importStatus")
+              .get("errors").forEach(error -> errors.add(error.asText()));
 
     assertThat(errors, hasSize(1));
   }
@@ -588,11 +588,11 @@ public class IntegrationTest {
     ObjectNode data = query.readEntity(ObjectNode.class);
     List<JsonNode> tabularFile = stream(
       data.get("data")
-        .get("dataSets")
-        .get(dataSetId)
-        .get("http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList")
-        .get("items")
-        .iterator()
+          .get("dataSets")
+          .get(dataSetId)
+          .get("http___timbuctoo_huygens_knaw_nl_static_v5_types_tabularFileList")
+          .get("items")
+          .iterator()
     ).collect(toList());
 
     Stream<JsonNode> rawCollections = stream(tabularFile.get(0).get("tim_hasCollectionList").get("items").iterator());
@@ -752,8 +752,8 @@ public class IntegrationTest {
 
 
     Response createResponse = updateLoadJsonLdTarget.request()
-      .header(HttpHeaders.AUTHORIZATION, "fake")
-      .put(Entity.json(testRdfReader));
+                                                    .header(HttpHeaders.AUTHORIZATION, "fake")
+                                                    .put(Entity.json(testRdfReader));
 
     if (createResponse.getStatus() != 201) {
       System.out.println(createResponse.readEntity(String.class));
@@ -816,8 +816,8 @@ public class IntegrationTest {
 
 
     Response createResponse2 = createTarget2.request()
-      .header(HttpHeaders.AUTHORIZATION, "fake")
-      .put(Entity.json(testRdfReader2));
+                                            .header(HttpHeaders.AUTHORIZATION, "fake")
+                                            .put(Entity.json(testRdfReader2));
 
     if (createResponse2.getStatus() != 201) {
       System.out.println(createResponse2.readEntity(String.class));
@@ -1022,8 +1022,8 @@ public class IntegrationTest {
     ObjectNode retrievedData = retrieveExtendedSchema.readEntity(ObjectNode.class);
 
     assertThat(retrievedData.get("data").get("dataSets").get(dataSetId)
-        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
-        .get("items").get(0).get("test_test").isNull(),
+                            .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
+                            .get("items").get(0).get("test_test").isNull(),
       is(true));
 
     ObjectNode customSchemaField3 = jsnO(
@@ -1084,8 +1084,8 @@ public class IntegrationTest {
     ObjectNode retrievedData2 = retrieveExtendedSchema2.readEntity(ObjectNode.class);
 
     assertThat(retrievedData2.get("data").get("dataSets").get(dataSetId)
-        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
-        .get("items").get(0).get("test_test3").isNull(),
+                             .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList")
+                             .get("items").get(0).get("test_test3").isNull(),
       is(true));
 
   }
@@ -1598,6 +1598,311 @@ public class IntegrationTest {
               jsnO(
                 "value",
                 jsn("1538")
+              )
+            )
+          )
+        )
+      )
+    )));
+  }
+
+  @Test
+  public void editDataWithGraphQl() throws Exception {
+    // upload dataset
+    final String dataSetName = "edit" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "editdataset.nt").toURI()),
+      "application/n-triples",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    // query person before edit
+    Response queryData = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+            "        schema_familyName {\n" +
+            "          value\n" +
+            "        }\n" +
+            "        schema_givenNameList {\n" +
+            "          items {\n" +
+            "            value\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryData.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "schema_familyName",
+              jsnO(
+                "value", jsn("Jansen")
+              ),
+              "schema_givenNameList", jsnO(
+                "items", jsnA(
+                  jsnO(
+                    "value", jsn("Jan")
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // edit
+    Response edit = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Edit($uri:String! $entity:" + dataSetId + "_schema_PersonInput! ) {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person {\n" +
+            "        edit(uri: $uri entity: $entity) {\n" +
+            "          schema_familyName {\n" +
+            "            value\n" +
+            "          }\n" +
+            "          schema_givenNameList {\n" +
+            "            items {\n" +
+            "              value\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        ),
+        "variables", jsnO(
+          "uri", jsn("http://example.org/person1"),
+          "entity", jsnO(
+            "replacements", jsnO(
+              "schema_familyName", jsnO(
+                "type", jsn("xsd_string"),
+                "value", jsn("Test2")
+              )
+            ),
+            "additions", jsnO(
+              "schema_givenNameList", jsnA(jsnO(
+                "type", jsn("xsd_string"),
+                "value", jsn("Janus")
+              ))
+            ),
+            "deletions", jsnO(
+              "schema_givenNameList", jsnA(jsnO(
+                "type", jsn("xsd_string"),
+                "value", jsn("Jan")
+              ))
+            )
+          )
+        ),
+        "operationName", jsn("Edit")
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(edit.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "edit", jsnO(
+                "schema_familyName", jsnO(
+                  "value", jsn("Test2")
+                ),
+                "schema_givenNameList", jsnO(
+                  "items", jsnA(
+                    jsnO(
+                      "value", jsn("Janus")
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // query person after edit
+    Response queryAfterEdit = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+            "        schema_familyName {\n" +
+            "          value\n" +
+            "        }\n" +
+            "        schema_givenNameList {\n" +
+            "          items {\n" +
+            "            value\n" +
+            "          }\n" +
+            "        }\n" +
+            "        tim_pred_latestRevision {\n" +
+            "          _inverse_prov_generated {\n" +
+            "            prov_associatedWith {\n" +
+            "              uri\n" +
+            "            }\n" +
+            "            prov_qualifiedAssociation {\n" +
+            "              prov_hadPlan {\n" +
+            "                tim_pred_replacements {\n" +
+            "                  tim_pred_hasReplacement {\n" +
+            "                    tim_pred_hasKey {\n" +
+            "                      uri\n" +
+            "                    }\n" +
+            "                    tim_pred_hasValue {\n" +
+            "                      tim_pred_rawValue {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                      tim_pred_type {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "                tim_pred_additions {\n" +
+            "                  tim_pred_hasAddition {\n" +
+            "                    tim_pred_hasKey {\n" +
+            "                      uri\n" +
+            "                    }\n" +
+            "                    tim_pred_hasValue {\n" +
+            "                      tim_pred_rawValue {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                      tim_pred_type {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "                tim_pred_deletions {\n" +
+            "                  tim_pred_hasDeletion {\n" +
+            "                    tim_pred_hasKey {\n" +
+            "                      uri\n" +
+            "                    }\n" +
+            "                    tim_pred_hasValue {\n" +
+            "                      tim_pred_rawValue {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                      tim_pred_type {\n" +
+            "                        value\n" +
+            "                      }\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "              }\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryAfterEdit.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "schema_familyName", jsnO(
+                "value", jsn("Test2")
+              ),
+              "schema_givenNameList", jsnO(
+                "items", jsnA(
+                  jsnO(
+                    "value", jsn("Janus")
+                  )
+                )
+              ),
+              "tim_pred_latestRevision", jsnO(
+                "_inverse_prov_generated", jsnO(
+                  "prov_associatedWith", jsnO(
+                    "uri", jsn(format("http://127.0.0.1:%d/users/" + USER_ID, APP.getLocalPort()))
+                  ),
+                  "prov_qualifiedAssociation", jsnO(
+                    "prov_hadPlan", jsnO(
+                      "tim_pred_replacements", jsnO(
+                        "tim_pred_hasReplacement", jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/familyName")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Test2")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        )
+                      ),
+                      "tim_pred_additions", jsnO(
+                        "tim_pred_hasAddition", jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/givenName")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Janus")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        )
+                      ),
+                      "tim_pred_deletions", jsnO(
+                        "tim_pred_hasDeletion", jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/givenName")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Jan")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
               )
             )
           )

@@ -386,7 +386,13 @@ input CollectionMetadataInput {
   archeType: String
 }
 
+input PropertyInput {
+  type: String!
+  value: String!
+}
+
 type Mutation {
+  # dataSets: DataSetMutations is added in RootQuery
   setViewConfig(dataSetId: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
   setSummaryProperties(dataSetId: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
   setIndexConfig(dataSetId: String!, collectionUri: String!, indexConfig: IndexConfigInput!): IndexConfig!
