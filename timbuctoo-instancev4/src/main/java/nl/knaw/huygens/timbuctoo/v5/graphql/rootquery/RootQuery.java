@@ -325,7 +325,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append("\")\n");
 
         // No mutations are build for resources with an unknown type
-        if (!types.isEmpty() && types.size() == 1 && !types.keySet().contains(RdfConstants.UNKNOWN)) {
+        if (!types.isEmpty() && (types.size() > 1 || !types.keySet().contains(RdfConstants.UNKNOWN))) {
           hasTypes[0] = true;
           rootMut.append("  ")
                  .append(name)

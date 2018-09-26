@@ -43,6 +43,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -52,6 +53,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.io.Resources.getResource;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
@@ -1909,6 +1911,45 @@ public class IntegrationTest {
         )
       )
     )));
+  }
+
+  @Test
+  public void dataSetWithJustUnknownsMustNotCorruptTheGraphQlSchema() throws Exception {
+    // upload dataset
+    final String dataSetName = "unknown" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "unknowndataset.nt").toURI()),
+      "application/n-triples",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    // query graphql
+    Response queryData = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "dataSetMetadataList(promotedOnly:false publishedOnly:false) {\n" +
+            "    dataSetId\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    Iterable<JsonNode> datasets = () -> queryData.readEntity(ObjectNode.class)
+                                                 .get("data")
+                                                 .get("dataSetMetadataList")
+                                                 .elements();
+    List<String> dataSetIds =
+      StreamSupport.stream(datasets.spliterator(), false).map(dataSet -> dataSet.get("dataSetId").asText())
+                   .collect(toList());
+    assertThat(dataSetIds, hasItem(dataSetId));
   }
 
   private List<String> getDataSetNamesOfDummy() {
