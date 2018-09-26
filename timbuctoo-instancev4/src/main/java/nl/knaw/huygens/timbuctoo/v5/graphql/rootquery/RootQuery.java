@@ -57,6 +57,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ViewConfigFe
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -323,7 +324,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append(dataSetMetaData.getDataSetId())
           .append("\")\n");
 
-        if (!types.isEmpty()) {
+        // No mutations are build for resources with an unknown type
+        if (!types.isEmpty() && types.size() == 1 && !types.keySet().contains(RdfConstants.UNKNOWN)) {
           hasTypes[0] = true;
           rootMut.append("  ")
                  .append(name)
