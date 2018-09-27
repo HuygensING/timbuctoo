@@ -12,6 +12,11 @@ import java.util.UUID;
 @JsonSerialize(as = ImmutableEntityLookup.class)
 @JsonDeserialize(as = ImmutableEntityLookup.class)
 public interface EntityLookup {
+  /**
+   * The fields here all have Optional as saving persistent Id for an entity works differently for old Timbuctoo
+   * and new Timbuctoo.
+   * Rev, Collection and TimId are required for the old implementation while DataSetId, Uri and User for the new one.
+   */
 
   Optional<Integer> getRev();
 
