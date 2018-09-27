@@ -1,0 +1,36 @@
+= Configurable Permissions
+
+== The problem
+* All permissions hardcoded to roles
+** All instances of Timbuctoo have the same permissions for the same roles
+
+=== Scope
+* Only RDF Timbuctoo not the legacy version that is supporting Women Writers.
+
+=== User Roles
+. __**L0: Anonymous user**__: only published datasets
+. *L1: Reader - datasets*: both all published + spec. assigned datasets
+. *L2: Contributor - datasets*: both all published + spec. assigned datasets
+. *L3: Editor - datasets*: both all published + spec. assigned datasets
+. *L4: Administrator - datasets*: both all published + spec. assigned datasets
+. __**L5: Site administrator**__: Timbuctoo instance
+
+=== Allowed actions
+* Upload RDF
+* Update resourcesync
+* Edit existing data (GraphQL mutation)
+* Give users permission to data set
+* Create a new data set
+*
+
+
+== Definition of done
+. The owner of the Timbuctoo instance can assign all the permissions to roles of her of his liking.
+. All permissions are defined in the code.
+
+== Tasks
+. Identify the spots Timbuctoo needs limited accessibility.
+.. Add permission checks, if no checks are available.
+. Think of a way how the permissions are going to be checked.
+. Make the permissions configurable.
+. Add a migration from the old to the new structure.
