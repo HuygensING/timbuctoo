@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.ImmutableCreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
@@ -41,7 +42,7 @@ public class TimbuctooActionsCreateTest {
   private Collection collection;
   private String userId;
   private Optional<Collection> baseCollection;
-  private PersistentUrlCreator persistentUrlCreator;
+  private RedirectionService redirectionService;
   private DataStoreOperations dataStoreOperations;
   private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
@@ -54,7 +55,7 @@ public class TimbuctooActionsCreateTest {
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
     userId = USER_ID;
     baseCollection = Optional.empty();
-    persistentUrlCreator = mock(PersistentUrlCreator.class);
+    redirectionService = mock(RedirectionService.class);
     dataStoreOperations = mock(DataStoreOperations.class);
     afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
@@ -109,7 +110,7 @@ public class TimbuctooActionsCreateTest {
 
     verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddPersistentUrlTask(
-        persistentUrlCreator,
+        redirectionService,
         URI.create("http://example.org/persistent"),
         ImmutableEntityLookup.builder().collection(COLLECTION_NAME).timId(id).rev(1).build()
       )
@@ -135,7 +136,7 @@ public class TimbuctooActionsCreateTest {
       given(permissionFetcher.getOldPermissions(any(),any())).willReturn(
         Sets.newHashSet(Permission.READ));
     }
-    return new TimbuctooActions(permissionFetcher, clock, persistentUrlCreator,
+    return new TimbuctooActions(permissionFetcher, clock, redirectionService,
       (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, afterSuccessTaskExecutor);
   }
 

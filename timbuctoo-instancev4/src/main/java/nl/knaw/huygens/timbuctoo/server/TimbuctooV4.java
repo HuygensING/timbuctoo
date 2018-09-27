@@ -23,10 +23,12 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
+import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
+import nl.knaw.huygens.timbuctoo.queued.activemq.ActiveMqManager;
 import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
@@ -96,6 +98,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
@@ -189,7 +193,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
     final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
-    final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
+
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
@@ -198,13 +202,36 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final UrlGenerator uriWithoutRev = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
-    HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
+    final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
+    DataSetRepository dataSetRepository = configuration.getDataSetConfiguration().createRepository(
+      environment.lifecycle().executorService("dataSet").build(),
+      securityConfig.getPermissionFetcher(),
+      configuration.getDatabases(),
+      configuration.getRdfIdHelper(),
+      (combinedId -> {
+        try {
+          webhooks.dataSetUpdated(combinedId);
+        } catch (IOException e) {
+          LOG.error("Webhook call failed", e);
+        }
+      }),
+      configuration.dataSetsArePublicByDefault()
+    );
+
+
+    environment.lifecycle().manage(new DataSetRepositoryManager(dataSetRepository));
+
+    RedirectionServiceFactory redirectionServiceFactory = configuration.getRedirectionServiceFactory();
+    RedirectionService redirectionService = redirectionServiceFactory.makeRedirectionService(
+      new ActiveMqManager(activeMqBundle), dataSetRepository
+      );
+
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
       securityConfig.getPermissionFetcher(),
       Clock.systemDefaultZone(),
-      handleAdder,
+      redirectionService,
       uriToRedirectToFromPersistentUrls,
       () -> new TinkerPopOperations(graphManager)
     );
@@ -212,7 +239,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(graphManager).execute());
-    handleAdder.init(transactionEnforcer);
+
+    redirectionService.init(transactionEnforcer);
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
     migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, graphManager));
@@ -235,25 +263,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getUserValidator(),
       pathWithoutVersionAndRevision
     );
-
-    final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
-    DataSetRepository dataSetRepository = configuration.getDataSetConfiguration().createRepository(
-      environment.lifecycle().executorService("dataSet").build(),
-      securityConfig.getPermissionFetcher(),
-      configuration.getDatabases(),
-      configuration.getRdfIdHelper(),
-      (combinedId -> {
-        try {
-          webhooks.dataSetUpdated(combinedId);
-        } catch (IOException e) {
-          LOG.error("Webhook call failed", e);
-        }
-      }),
-      configuration.dataSetsArePublicByDefault()
-    );
-
-
-    environment.lifecycle().manage(new DataSetRepositoryManager(dataSetRepository));
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     AuthCheck authCheck = new AuthCheck(

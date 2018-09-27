@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
@@ -31,7 +32,7 @@ public class TimbuctooActionsDeleteTest {
   public static final int REV = 1;
   public static final String COLLECTION_NAME = "collectionName";
   private Clock clock;
-  private PersistentUrlCreator persistentUrlCreator;
+  private RedirectionService redirectionService;
   private Collection collection;
   private Instant instant;
   private Change change;
@@ -43,7 +44,7 @@ public class TimbuctooActionsDeleteTest {
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    persistentUrlCreator = mock(PersistentUrlCreator.class);
+    redirectionService = mock(RedirectionService.class);
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
     change = new Change();
@@ -90,7 +91,7 @@ public class TimbuctooActionsDeleteTest {
 
     verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddPersistentUrlTask(
-        persistentUrlCreator,
+        redirectionService,
         URI.create("http://example.org/persistent"),
         ImmutableEntityLookup.builder().collection(COLLECTION_NAME).timId(ID).rev(REV).build()
       )
@@ -106,7 +107,7 @@ public class TimbuctooActionsDeleteTest {
       given(permissionFetcher.getOldPermissions(any(),any())).willReturn(
         Sets.newHashSet(Permission.READ));
     }
-    return new TimbuctooActions(permissionFetcher, clock, persistentUrlCreator,
+    return new TimbuctooActions(permissionFetcher, clock, redirectionService,
       (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, afterSuccessTaskExecutor);
   }
 

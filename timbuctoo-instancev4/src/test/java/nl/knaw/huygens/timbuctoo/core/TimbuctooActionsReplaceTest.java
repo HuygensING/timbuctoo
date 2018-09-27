@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
@@ -36,7 +37,7 @@ public class TimbuctooActionsReplaceTest {
   private static final String USER_ID = "userId";
   private DataStoreOperations dataStoreOperations;
   private Clock clock;
-  private PersistentUrlCreator persistentUrlCreator;
+  private RedirectionService redirectionService;
   private UpdateEntity updateEntity;
   private Collection collection;
   private Instant instant;
@@ -47,7 +48,7 @@ public class TimbuctooActionsReplaceTest {
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    persistentUrlCreator = mock(PersistentUrlCreator.class);
+    redirectionService = mock(RedirectionService.class);
     updateEntity = mock(UpdateEntity.class);
     when(updateEntity.getId()).thenReturn(ID);
     collection = mock(Collection.class);
@@ -74,11 +75,11 @@ public class TimbuctooActionsReplaceTest {
 
     instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
 
-    InOrder inOrder = inOrder(dataStoreOperations, persistentUrlCreator, afterSuccessTaskExecutor);
+    InOrder inOrder = inOrder(dataStoreOperations, redirectionService, afterSuccessTaskExecutor);
     inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
     inOrder.verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddPersistentUrlTask(
-        persistentUrlCreator,
+        redirectionService,
         URI.create("http://example.org/persistent"),
         ImmutableEntityLookup.builder().collection(COLLECTION_NAME).timId(ID).rev(NEW_REV).build()
       )
@@ -127,7 +128,7 @@ public class TimbuctooActionsReplaceTest {
       given(permissionFetcher.getOldPermissions(any(), any())).willReturn(
         Sets.newHashSet(Permission.READ));
     }
-    return new TimbuctooActions(permissionFetcher, clock, persistentUrlCreator,
+    return new TimbuctooActions(permissionFetcher, clock, redirectionService,
       (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, afterSuccessTaskExecutor);
   }
 

@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.config.SecurityFactoryConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DefaultSummaryProps;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
 
@@ -89,8 +90,9 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract Optional<DatabaseBackupperFactory> getDatabaseBackupper();
 
   @Valid
-  @JsonProperty("persistenceManager")
-  public abstract PersistenceManagerFactory getPersistenceManagerFactory();
+  @JsonProperty("redirectionService")
+  public abstract RedirectionServiceFactory getRedirectionServiceFactory();
+
 
   public abstract String getArchetypesSchema();
 

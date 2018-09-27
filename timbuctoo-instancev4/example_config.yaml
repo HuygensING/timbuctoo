@@ -117,7 +117,8 @@ activeMq:
   brokerUrl: vm://timbuctoo?broker.persistent=false&broker.useShutdownHook=false
   shutdownWaitInSeconds: 1 #use for debug runs only!
 
-persistenceManager:
+redirectionService:
+  "@class": nl.knaw.huygens.timbuctoo.v5.redirectionservice.HandleServiceFactory
   useDummy: yes #set to "no" to connect to a real handle server
 #  privateKeyFile:
 #  cypher:

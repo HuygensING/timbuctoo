@@ -22,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -47,17 +48,17 @@ public class TimbuctooActions implements AutoCloseable {
 
   private final PermissionFetcher permissionFetcher;
   private final Clock clock;
-  private final PersistentUrlCreator persistentUrlCreator;
+  private final RedirectionService redirectionService;
   private final UrlGenerator uriToRedirectToFromPersistentUrls;
   private final DataStoreOperations dataStoreOperations;
   private final AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
-  public TimbuctooActions(PermissionFetcher permissionFetcher, Clock clock, PersistentUrlCreator persistentUrlCreator,
+  public TimbuctooActions(PermissionFetcher permissionFetcher, Clock clock, RedirectionService redirectionService,
                           UrlGenerator uriToRedirectToFromPersistentUrls, DataStoreOperations dataStoreOperations,
                           AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
     this.permissionFetcher = permissionFetcher;
     this.clock = clock;
-    this.persistentUrlCreator = persistentUrlCreator;
+    this.redirectionService = redirectionService;
     this.uriToRedirectToFromPersistentUrls = uriToRedirectToFromPersistentUrls;
     this.dataStoreOperations = dataStoreOperations;
     this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
@@ -79,7 +80,7 @@ public class TimbuctooActions implements AutoCloseable {
 
     afterSuccessTaskExecutor.addTask(
       new AddPersistentUrlTask(
-        persistentUrlCreator,
+        redirectionService,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), id, 1),
         ImmutableEntityLookup.builder()
           .rev(1)
@@ -102,7 +103,7 @@ public class TimbuctooActions implements AutoCloseable {
     int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
     afterSuccessTaskExecutor.addTask(
       new AddPersistentUrlTask(
-        persistentUrlCreator,
+        redirectionService,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), updateEntity.getId(), rev),
         ImmutableEntityLookup.builder()
           .rev(rev)
@@ -125,7 +126,7 @@ public class TimbuctooActions implements AutoCloseable {
 
     afterSuccessTaskExecutor.addTask(
       new AddPersistentUrlTask(
-        persistentUrlCreator,
+        redirectionService,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), uuid, rev),
         ImmutableEntityLookup.builder()
           .rev(rev)
@@ -204,7 +205,8 @@ public class TimbuctooActions implements AutoCloseable {
 
 
   public void addPid(URI pidUri, EntityLookup entityLookup) throws NotFoundException {
-    dataStoreOperations.addPid(entityLookup.getTimId(), entityLookup.getRev(), pidUri); //no collection?
+    //TODO: add checks for entityLookup properties
+    dataStoreOperations.addPid(entityLookup.getTimId().get(), entityLookup.getRev().get(), pidUri); //no collection?
   }
 
   //================== Metadata ==================
@@ -340,20 +342,20 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {
-    private final PersistentUrlCreator persistentUrlCreator;
+    private final RedirectionService redirectionService;
     private final URI uriToRedirectTo;
     private final EntityLookup entityLookup;
 
-    public AddPersistentUrlTask(PersistentUrlCreator persistentUrlCreator, URI uriToRedirectTo,
+    public AddPersistentUrlTask(RedirectionService redirectionService, URI uriToRedirectTo,
                                 EntityLookup entityLookup) {
-      this.persistentUrlCreator = persistentUrlCreator;
+      this.redirectionService = redirectionService;
       this.uriToRedirectTo = uriToRedirectTo;
       this.entityLookup = entityLookup;
     }
 
     @Override
     public void execute() throws Exception {
-      persistentUrlCreator.add(uriToRedirectTo, entityLookup);
+      redirectionService.oldAdd(uriToRedirectTo, entityLookup);
     }
 
     @Override
@@ -375,17 +377,17 @@ public class TimbuctooActions implements AutoCloseable {
   public static class TimbuctooActionsFactoryImpl implements TimbuctooActionsFactory {
     private final PermissionFetcher permissionFetcher;
     private final Clock clock;
-    private final PersistentUrlCreator persistentUrlCreator;
+    private final RedirectionService redirectionService;
     private final UrlGenerator uriToRedirectToFromPersistentUrls;
     private final Supplier<DataStoreOperations> dataStoreOperationsSupplier;
 
     public TimbuctooActionsFactoryImpl(PermissionFetcher permissionFetcher, Clock clock,
-                                       PersistentUrlCreator persistentUrlCreator,
+                                       RedirectionService redirectionService,
                                        UrlGenerator uriToRedirectToFromPersistentUrls,
                                        Supplier<DataStoreOperations> dataStoreOperationsSupplier) {
       this.permissionFetcher = permissionFetcher;
       this.clock = clock;
-      this.persistentUrlCreator = persistentUrlCreator;
+      this.redirectionService = redirectionService;
       this.uriToRedirectToFromPersistentUrls = uriToRedirectToFromPersistentUrls;
       this.dataStoreOperationsSupplier = dataStoreOperationsSupplier;
     }
@@ -395,7 +397,7 @@ public class TimbuctooActions implements AutoCloseable {
       return new TimbuctooActions(
         permissionFetcher,
         clock,
-        persistentUrlCreator,
+        redirectionService,
         uriToRedirectToFromPersistentUrls,
         dataStoreOperationsSupplier.get(),
         afterSuccessTaskExecutor
