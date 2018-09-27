@@ -19,9 +19,19 @@
 * Upload RDF
 * Update resourcesync
 * Edit existing data (GraphQL mutation)
+* Delete specific data fom a data set (GraphQL mutation) [Future]
+* Add new data to a data set (GraphQL mutation) [Future]
 * Give users permission to data set
 * Create a new data set
-*
+* Edit dataset metadata
+* Read non-published data set
+* Change view config for the GUI
+* Change search config for the GUI
+* Publish an unpublished data set
+* Promote a published data set
+* Delete a data set
+* Change the schema of a collection / data set
+* Change collection metadata
 
 
 == Definition of done
