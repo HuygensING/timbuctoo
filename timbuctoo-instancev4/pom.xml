@@ -604,6 +604,13 @@
       <artifactId>twitter4j-core</artifactId>
       <version>[4.0,)</version>
     </dependency>
+
+    <!-- Bit.ly java client -->
+    <dependency>
+      <groupId>net.swisstech</groupId>
+      <artifactId>bitly-api-client</artifactId>
+      <version>0.8.0</version>
+    </dependency>
     <!-- ## End of test dependencies ## -->
   </dependencies>
 
@@ -653,6 +660,11 @@
     <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
+    </repository>
+    <repository>
+      <id>jcenter</id>
+      <name>bintray</name>
+      <url>http://jcenter.bintray.com</url>
     </repository>
   </repositories>
 
