@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,7 +82,7 @@ public class DerivedSchemaContainer {
   }
 
 
-  public String unionType(Set<String> refs) {
+  String unionType(Set<String> refs) {
     String unionName = "Union_";
     for (String type : refs) {
       unionName += type + "__";
@@ -95,7 +94,7 @@ public class DerivedSchemaContainer {
     return unionName;
   }
 
-  public String valueType(String typeUri) {
+  String valueType(String typeUri) {
     final String name = nameGenerator.createValueTypeName(rootType, typeUri);
     if (!types.containsKey(name)) {
 
@@ -110,7 +109,7 @@ public class DerivedSchemaContainer {
   }
 
 
-  public DerivedObjectTypeSchemaGenerator addObjectType(String typeUri) {
+  DerivedObjectTypeSchemaGenerator addObjectType(String typeUri) {
     if (!topLevelTypes.containsKey(typeUri)) {
       DerivedObjectTypeSchemaGenerator value =
         new DerivedCompositeObjectTypeSchemaGenerator(typeUri, rootType, nameGenerator, this, readOnlyChecker);
@@ -135,6 +134,13 @@ public class DerivedSchemaContainer {
     }
 
     return total.toString();
+  }
+
+  public boolean hasMutationTypes() {
+    StringBuilder mutationsSchema = new StringBuilder();
+    topLevelTypes.values().forEach(schemaGenerator -> schemaGenerator.addMutationToSchema(mutationsSchema));
+
+    return mutationsSchema.length() > 0;
   }
 
   private void addRootTypeMutations(StringBuilder total) {
@@ -169,6 +175,7 @@ public class DerivedSchemaContainer {
     // http://facebook.github.io/graphql/October2016/#sec-String-Value
     return uri.replace("\\", "\\\\").replace("\"", "\\\"");
   }
+
 
 
 }

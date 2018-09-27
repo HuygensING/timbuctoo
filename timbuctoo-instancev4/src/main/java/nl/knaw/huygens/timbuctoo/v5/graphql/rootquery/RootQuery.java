@@ -32,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaContainer;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CollectionMetadataMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
@@ -57,7 +58,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ViewConfigFe
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
-import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -276,7 +276,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("resourceSyncUpdate",
         new ResourceSyncUpdateMutation(dataSetRepository, resourceSyncFileLoader))
     );
-    
+
     wiring.wiringFactory(wiringFactory);
     StringBuilder rootQuery = new StringBuilder("type DataSets {\n sillyWorkaroundWhenNoDataSetsAreVisible: Boolean\n");
     StringBuilder rootMut = new StringBuilder("type DataSetMutations {\n")
@@ -324,8 +324,18 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append(dataSetMetaData.getDataSetId())
           .append("\")\n");
 
-        // No mutations are build for resources with an unknown type
-        if (!types.isEmpty() && (types.size() > 1 || !types.keySet().contains(RdfConstants.UNKNOWN))) {
+        wiring.type(name, c -> c
+          .dataFetcher("metadata", env -> new DataSetWithDatabase(dataSet))
+        );
+
+        final DerivedSchemaContainer schema = typeGenerator.makeGraphQlTypes(
+          name,
+          types,
+          dataSet.getTypeNameStore(),
+          dataSet.getReadOnlyChecker()
+        );
+
+        if (schema.hasMutationTypes()) {
           hasTypes[0] = true;
           rootMut.append("  ")
                  .append(name)
@@ -335,18 +345,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
                  .append("\n\n");
         }
 
-        wiring.type(name, c -> c
-          .dataFetcher("metadata", env -> new DataSetWithDatabase(dataSet))
-        );
-
-        final String schema = typeGenerator.makeGraphQlTypes(
-          name,
-          types,
-          dataSet.getTypeNameStore(),
-          dataSet.getReadOnlyChecker()
-        );
-
-        staticQuery.merge(schemaParser.parse(schema));
+        staticQuery.merge(schemaParser.parse(schema.getSchema()));
       }
     });
     rootQuery.append("}\n\nextend type Query {\n  #The actual dataSets\n  dataSets: DataSets @passThrough\n}\n\n");

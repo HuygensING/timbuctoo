@@ -23,8 +23,8 @@ public class DerivedSchemaGenerator {
     this.argumentsHelper = argumentsHelper;
   }
 
-  public String makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore,
-                                 ReadOnlyChecker readOnlyChecker) {
+  public DerivedSchemaContainer makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore,
+                                                 ReadOnlyChecker readOnlyChecker) {
     GraphQlNameGenerator nameGenerator = new GraphQlNameGenerator(nameStore);
 
     DerivedSchemaContainer typesContainer = new DerivedSchemaContainer(rootType, nameGenerator, this.argumentsHelper,
@@ -41,7 +41,7 @@ public class DerivedSchemaGenerator {
         fieldForDerivedType(predicate, typesContainer, typeSchemaGenerator, nameGenerator, rootType);
       }
     }
-    return typesContainer.getSchema();
+    return typesContainer;
   }
 
   private static void fieldForDerivedType(Predicate pred, DerivedSchemaContainer typesContainer,
