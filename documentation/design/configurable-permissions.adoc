@@ -8,20 +8,17 @@
 * Only RDF Timbuctoo not the legacy version that is supporting Women Writers.
 
 === User Roles
-. __**L0: Anonymous user**__: only published datasets
-. *L1: Reader - datasets*: both all published + spec. assigned datasets
-. *L2: Contributor - datasets*: both all published + spec. assigned datasets
-. *L3: Editor - datasets*: both all published + spec. assigned datasets
-. *L4: Administrator - datasets*: both all published + spec. assigned datasets
-. __**L5: Site administrator**__: Timbuctoo instance
+* __**L0: Anonymous user**__: only published datasets
+* *L1: Reader - datasets*: both all published + spec. assigned datasets
+* *L2: Contributor - datasets*: both all published + spec. assigned datasets
+* *L3: Editor - datasets*: both all published + spec. assigned datasets
+* *L4: Administrator - datasets*: both all published + spec. assigned datasets
+* __**L5: Site administrator**__: Timbuctoo instance
+** The super users of the instances, these should be configured with a system administrator
 
-=== Allowed actions
-* Upload RDF
-* Update resourcesync
-* Edit existing data (GraphQL mutation)
-* Delete specific data fom a data set (GraphQL mutation) [Future]
-* Add new data to a data set (GraphQL mutation) [Future]
-* Give users permission to data set
+The list above is an example to give an impression what could be possible.
+Though every application will have multiple _Anonymous users_ and one or more _Site administrators_.
+
 === Actions
 GraphQL
 
