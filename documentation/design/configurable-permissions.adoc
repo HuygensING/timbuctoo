@@ -55,8 +55,12 @@ Other / unknown
 * Configure user roles [Future] (This might be done by the system administrator)
 
 == Definition of done
-. The owner of the Timbuctoo instance can assign all the permissions to roles of her of his liking.
-. All permissions are defined in the code.
+* The owner of the Timbuctoo instance can assign all the permissions to roles of her of his liking.
+* All permissions are defined in the code.
+* Make it possible for each instance of TImbuctoo to have its own user roles.
+* Allow multiple implementations.
+** Create a filesystem based implementation
+* GraphQL should list permission of a single person
 
 
 == Structure
@@ -69,9 +73,15 @@ Other / unknown
 +------+                +------+           +------------+           +-----------+
 ----
 
-== Tasks
-. Identify the spots Timbuctoo needs limited accessibility.
-.. Add permission checks, if no checks are available.
-. Think of a way how the permissions are going to be checked.
+== Steps
+. Identify the actions Timbuctoo needs limited accessibility.
+.. Give each action its own permission.
+.. Add checks for the specific actions.
 . Make the permissions configurable.
+.. Make a matrix where the user roles can be connected to the authorized actions
+. Design a default Timbuctoo user roles to support the current instances of Timbuctoo
+.. Make the current implementations work with the new schema, without any functionality changes
 . Add a migration from the old to the new structure.
+
+== Links
+How To Structure Permissions In A SaaS App: https://heapanalytics.com/blog/engineering/structure-permissions-saas-app
