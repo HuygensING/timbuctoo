@@ -22,17 +22,40 @@
 * Delete specific data fom a data set (GraphQL mutation) [Future]
 * Add new data to a data set (GraphQL mutation) [Future]
 * Give users permission to data set
+=== Actions
+GraphQL
+
 * Create a new data set
 * Edit dataset metadata
-* Read non-published data set
+* Update resourcesync
+* Delete a data set
+* Edit existing data
 * Change view config for the GUI
 * Change search config for the GUI
 * Publish an unpublished data set
 * Promote a published data set
-* Delete a data set
-* Change the schema of a collection / data set
 * Change collection metadata
+* Change the schema of a collection / data set
+* Read data of non-published data set via GraphQL
+* Resourcesync
+** Import initial data
+** Synchronize with remote
+* Delete specific data fom a data set [Future]
+* Add new data to a data set [Future]
 
+REST / HTTP
+
+* Upload RDF
+** Upload initial data
+** Upload an update of the data
+* Read resourcesync of a non-published data set
+* Read resourcesync of a published data set
+
+Other / unknown
+
+* Give users permission to data set [Future]
+* Limit the users that can create new data sets [Future]
+* Configure user roles [Future] (This might be done by the system administrator)
 
 == Definition of done
 . The owner of the Timbuctoo instance can assign all the permissions to roles of her of his liking.
