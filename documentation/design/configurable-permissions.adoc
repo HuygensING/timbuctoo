@@ -58,6 +58,17 @@ Other / unknown
 . The owner of the Timbuctoo instance can assign all the permissions to roles of her of his liking.
 . All permissions are defined in the code.
 
+
+== Structure
+
+----
++------+                +------+           +------------+           +-----------+
+|      |*          1...*|      |*     1...*|            |1         1|           |
+| User +--------------->+ Role +---------->+ Permission +---------->+ Operation |
+|      |                |      |           |            |           |           |
++------+                +------+           +------------+           +-----------+
+----
+
 == Tasks
 . Identify the spots Timbuctoo needs limited accessibility.
 .. Add permission checks, if no checks are available.
