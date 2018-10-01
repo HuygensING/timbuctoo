@@ -35,6 +35,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
+import static nl.knaw.huygens.timbuctoo.v5.security.dto.Permission.READ;
 
 /**
  * - stores all configuration parameters so it can inject them in the dataset constructor
@@ -150,8 +151,7 @@ public class DataSetRepository {
     synchronized (dataSetMap) {
       if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
         try {
-          if (permissionFetcher.getPermissions(user, dataSetMap.get(ownerId).get(dataSetId).getMetadata()
-          ).contains(Permission.READ)) {
+          if (permissionFetcher.hasPermission(user, dataSetMap.get(ownerId).get(dataSetId).getMetadata(), READ)) {
             return Optional.ofNullable(dataSetMap.get(ownerId).get(dataSetId));
           }
         } catch (PermissionFetchingException e) {
@@ -262,11 +262,9 @@ public class DataSetRepository {
 
   public void publishDataSet(User user, String ownerId, String dataSetName)
     throws DataSetPublishException {
-    Optional<DataSet> dataSet = getDataSet(user,
-      ownerId, dataSetName);
+    Optional<DataSet> dataSet = getDataSet(user, ownerId, dataSetName);
     try {
-      if (dataSet.isPresent() &&
-        permissionFetcher.getPermissions(user,dataSet.get().getMetadata()).contains(Permission.ADMIN)) {
+      if (dataSet.isPresent() && permissionFetcher.hasPermission(user, dataSet.get().getMetadata(), Permission.ADMIN)) {
         DataSetMetaData dataSetMetaData = dataSet.get().getMetadata();
 
         dataSetMetaData.publish();
@@ -299,9 +297,7 @@ public class DataSetRepository {
     for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
       for (DataSet dataSet : userDataSets.values()) {
         try {
-          boolean isAllowedToWrite = permissionFetcher.getPermissions(user, dataSet.getMetadata())
-            .contains(Permission.WRITE);
-          if (isAllowedToWrite) {
+          if (permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.WRITE)) {
             dataSetsWithWriteAccess.add(dataSet);
           }
         } catch (PermissionFetchingException e) {
@@ -322,7 +318,7 @@ public class DataSetRepository {
     for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
       for (DataSet dataSet : userDataSets.values()) {
         try {
-          if (permissionFetcher.getPermissions(user, dataSet.getMetadata()).contains(Permission.READ)) {
+          if (permissionFetcher.hasPermission(user, dataSet.getMetadata(), READ)) {
             dataSetsWithReadAccess.add(dataSet);
           }
         } catch (PermissionFetchingException e) {
@@ -342,7 +338,7 @@ public class DataSetRepository {
         throw new DataSetDoesNotExistException(dataSetName, ownerId);
       }
       String combinedId = dataSet.getMetadata().getCombinedId();
-      if (!permissionFetcher.getPermissions(user, dataSet.getMetadata()).contains(Permission.ADMIN)) {
+      if (!permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.ADMIN)) {
         throw new NotEnoughPermissionsException(
           String.format(
             "User '%s' is not allowed to remove dataset '%s'",

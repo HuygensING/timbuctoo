@@ -71,8 +71,7 @@ public class AuthCheck {
 
   public Either<Response, Tuple<User, DataSet>> hasAdminAccess(User user, DataSet dataSet) {
     try {
-      if (permissionFetcher.getPermissions(user,
-        dataSet.getMetadata()).contains(Permission.ADMIN)) {
+      if (permissionFetcher.hasPermission(user,dataSet.getMetadata(), Permission.ADMIN)) {
         return Either.right(Tuple.tuple(user, dataSet));
       } else {
         return Either.left(Response.status(Response.Status.FORBIDDEN).build());

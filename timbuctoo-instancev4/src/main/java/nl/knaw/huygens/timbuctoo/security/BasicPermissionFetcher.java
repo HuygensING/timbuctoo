@@ -63,6 +63,12 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
+  public boolean hasPermission(User user, DataSetMetaData dataSet, Permission permission)
+    throws PermissionFetchingException {
+    return getPermissions(user, dataSet).contains(permission);
+  }
+
+  @Override
   @Deprecated
   public Set<Permission> getOldPermissions(User user, String vreId)
     throws PermissionFetchingException {

@@ -54,6 +54,12 @@ public class TwitterSecurityFactory implements SecurityFactory {
       }
 
       @Override
+      public boolean hasPermission(User user, DataSetMetaData dataSet, Permission permission)
+        throws PermissionFetchingException {
+        return getPermissions(user, dataSet).contains(permission);
+      }
+
+      @Override
       public Set<Permission> getOldPermissions(User user, String vreId) throws PermissionFetchingException {
         HashSet<Permission> result = new HashSet<>();
         result.add(Permission.READ);
