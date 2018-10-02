@@ -56,7 +56,7 @@ public class EditMutation implements DataFetcher {
     }
 
     DataSet dataSet = dataSetOpt.get();
-    if (!contextData.getUserPermissionCheck().getPermissions(dataSet.getMetadata()).contains(Permission.WRITE)) {
+    if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.WRITE)) {
       throw new RuntimeException("User should have data 'write' permissions on the data set.");
     }
 

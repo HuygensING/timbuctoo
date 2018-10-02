@@ -141,7 +141,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           } else {
             ContextData contextData = env.getContext();
             UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
-            return userPermissionCheck.getPermissions(x.getDataSet().getMetadata()).contains(Permission.READ);
+            return userPermissionCheck.hasPermission(x.getDataSet().getMetadata(), Permission.READ);
           }
         })
         .collect(Collectors.toList()))
@@ -169,7 +169,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .filter(x -> {
             ContextData contextData = env.getContext();
             UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
-            return userPermissionCheck.getPermissions(x.getDataSet().getMetadata()).contains(Permission.READ);
+            return userPermissionCheck.hasPermission(x.getDataSet().getMetadata(), Permission.READ);
           })
           .collect(Collectors.toList());
       })
@@ -252,7 +252,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         Permission permission = Permission.valueOf(env.getArgument("permission"));
         if (permission != Permission.READ) { //Read is implied
           UserPermissionCheck check = ((ContextData) env.getContext()).getUserPermissionCheck();
-          dataSets = dataSets.filter(d -> check.getPermissions(d).contains(permission));
+          dataSets = dataSets.filter(d -> check.hasPermission(d, permission));
         }
 
         return dataSets.iterator();

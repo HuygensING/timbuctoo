@@ -47,4 +47,8 @@ public class UserPermissionCheck {
     }
     return permissions;
   }
+
+  public boolean hasPermission(DataSetMetaData dataSet, Permission permission) {
+    return getPermissions(dataSet).contains(permission);
+  }
 }
