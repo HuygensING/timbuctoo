@@ -4,9 +4,6 @@
 * All permissions hardcoded to roles
 ** All instances of Timbuctoo have the same permissions for the same roles
 
-=== Scope
-* Only RDF Timbuctoo not the legacy version that is supporting Women Writers.
-
 === User Roles
 * __**L0: Anonymous user**__: only published datasets
 * *L1: Reader - datasets*: both all published + spec. assigned datasets
@@ -82,6 +79,7 @@ Other / unknown
 . Design a default Timbuctoo user roles to support the current instances of Timbuctoo
 .. Make the current implementations work with the new schema, without any functionality changes
 . Add a migration from the old to the new structure.
+. Let legacy Timbuctoo use new Permissions
 
 == Code changes
 The first two code changes are  refactoring that will remove a lot of duplication and will make the code on a lot of places a bit more readable.
