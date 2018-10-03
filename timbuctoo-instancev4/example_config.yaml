@@ -6,7 +6,6 @@ securityConfiguration:
   localAuthentication:
     "@class": nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory
     authorizationsPath: ${timbuctoo_dataPath}/datasets
-    oldAuthorizationsPath: ${timbuctoo_authPath}/authorizations
     loginsFilePath: ${timbuctoo_authPath}/logins.json
     usersFilePath: ${timbuctoo_authPath}/users.json
   autoLogoutTimeout:

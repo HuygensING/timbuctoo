@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.security.healthchecks.DirectoryHealthCheck;
 import nl.knaw.huygens.timbuctoo.security.healthchecks.FileHealthCheck;
@@ -25,32 +26,20 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class LocalfileAccessFactory implements AccessFactory {
   private static final Logger LOG = getLogger(LocalfileAccessFactory.class);
 
-  public LocalfileAccessFactory(
-    String authorizationsPath,
-    String oldAuthorizationsPath,
-    String loginsFilePath,
-    String usersFilePath
+  private String authorizationsPath;
+  private String loginsFilePath;
+  private String usersFilePath;
+
+
+  @JsonCreator
+  public LocalfileAccessFactory(@JsonProperty("authorizationsPath") String authorizationsPath,
+                                @JsonProperty("loginsFilePath") String loginsFilePath,
+                                @JsonProperty("usersFilePath") String usersFilePath
   ) {
     this.authorizationsPath = authorizationsPath;
-    this.oldAuthorizationsPath = oldAuthorizationsPath;
     this.loginsFilePath = loginsFilePath;
     this.usersFilePath = usersFilePath;
   }
-
-  public LocalfileAccessFactory() {
-  }
-
-  @JsonProperty
-  private String oldAuthorizationsPath;
-
-  @JsonProperty
-  private String authorizationsPath;
-
-  @JsonProperty
-  private String loginsFilePath;
-
-  @JsonProperty
-  private String usersFilePath;
 
   @Override
   public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
@@ -93,7 +82,4 @@ public class LocalfileAccessFactory implements AccessFactory {
     return new LocalFileVreAuthorizationAccess(authorizationsFolder);
   }
 
-  public String getAuthorizationsPathForMigration() {
-    return oldAuthorizationsPath;
-  }
 }
