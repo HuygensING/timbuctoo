@@ -13,7 +13,6 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
@@ -22,8 +21,6 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
-import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -86,7 +83,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RsEndpoint;
@@ -316,12 +312,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       register(environment, twitterLogin);
     }
 
-    register(environment, new JsonLdEditEndpoint(
-      securityConfig.getUserValidator(),
-      securityConfig.getPermissionFetcher(),
-      dataSetRepository,
-      new HttpClientBuilder(environment).build("json-ld")
-    ));
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     if (securityConfig instanceof OldStyleSecurityFactory) {
       register(environment, new Authenticate(((OldStyleSecurityFactory) securityConfig).getLoggedInUsers()));

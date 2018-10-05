@@ -32,50 +32,7 @@ public class AuthCheck {
     this.dataSetRepository = dataSetRepository;
   }
 
-  public static Response checkWriteAccess(DataSet dataSet, Optional<User> user, PermissionFetcher permissionFetcher) {
-    if (!user.isPresent()) {
-      return Response.status(Response.Status.UNAUTHORIZED).build();
-    }
-    try {
-      if (!permissionFetcher.getPermissions(user.get(), dataSet.getMetadata()).contains(Permission.WRITE)) {
-        return Response.status(Response.Status.FORBIDDEN).build();
-      }
-    } catch (PermissionFetchingException e) {
-      LOG.error("Authorization unavailable", e);
-      //The dataset should already exist, so this is a weird error
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-    }
-    return null;
-  }
-
-  public static Response checkAdminAccess(PermissionFetcher permissionFetcher, UserValidator userValidator,
-                                          String authHeader,
-                                          DataSetMetaData dataSetMetadata) {
-
-    Optional<User> user;
-    try {
-      user = userValidator.getUserFromAccessToken(authHeader);
-    } catch (UserValidationException e) {
-      user = Optional.empty();
-    }
-    if (!user.isPresent()) {
-      return Response.status(Response.Status.UNAUTHORIZED).build();
-    }
-
-    try {
-      if (!permissionFetcher.getPermissions(user.get(), dataSetMetadata)
-        .contains(Permission.ADMIN)) {
-        return Response.status(Response.Status.FORBIDDEN).build();
-      }
-    } catch (PermissionFetchingException e) {
-      return Response.status(Response.Status.FORBIDDEN).build();
-    }
-
-    return Response.status(200).build();
-
-  }
-
-  public static Either<Response, User> getUser(String authHeader, UserValidator userValidator) {
+  private static Either<Response, User> getUser(String authHeader, UserValidator userValidator) {
     try {
       return userValidator.getUserFromAccessToken(authHeader)
         .map(Either::<Response, User>right)
@@ -85,7 +42,7 @@ public class AuthCheck {
     }
   }
 
-  public Either<Response, Tuple<User, DataSet>> handleForceCreate(String ownerId, String dataSetId,
+  private Either<Response, Tuple<User, DataSet>> handleForceCreate(String ownerId, String dataSetId,
                                                                   boolean forceCreation, User user) {
     if (forceCreation) {
       if (dataSetRepository.userMatchesPrefix(user, ownerId)) {
