@@ -34,6 +34,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DefaultSummaryProps;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +52,7 @@ public class RdfWiringFactory implements WiringFactory {
   private final DataSetRepository dataSetRepository;
   private final PaginationArgumentsHelper argumentsHelper;
   private final UriHelper uriHelper;
+  private final RedirectionService redirectionService;
   private final EntityTitleFetcher entityTitleFetcher;
   private final EntityDescriptionFetcher entityDescriptionFetcher;
   private final EntityImageFetcher entityImageFetcher;
@@ -58,10 +61,12 @@ public class RdfWiringFactory implements WiringFactory {
   private final Map<String, EditMutation> editMutationMap = Maps.newHashMap();
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
-                          DefaultSummaryProps defaultSummaryProps, UriHelper uriHelper) {
+                          DefaultSummaryProps defaultSummaryProps, UriHelper uriHelper,
+                          RedirectionService redirectionService) {
     this.dataSetRepository = dataSetRepository;
     this.argumentsHelper = argumentsHelper;
     this.uriHelper = uriHelper;
+    this.redirectionService = redirectionService;
     objectTypeResolver = new ObjectTypeResolver();
     uriFetcher = new UriFetcher();
     subjectFetcher = new QuadStoreLookUpSubjectByUriFetcher();
@@ -104,7 +109,8 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("entityDescription") != null ||
       environment.getFieldDefinition().getDirective("entityImage") != null ||
       environment.getFieldDefinition().getDirective("otherDataSets") != null ||
-      environment.getFieldDefinition().getDirective("editMutation") != null;
+      environment.getFieldDefinition().getDirective("editMutation") != null ||
+      environment.getFieldDefinition().getDirective("persistEntityMutation") != null;
   }
 
   @Override
@@ -177,6 +183,11 @@ public class RdfWiringFactory implements WiringFactory {
       return editMutationMap.computeIfAbsent(dataSetName, s -> {
         return new EditMutation(dataSetRepository, uriHelper, subjectFetcher, dataSetName);
       });
+    } else if (environment.getFieldDefinition().getDirective("persistEntityMutation") != null) {
+      Directive directive = environment.getFieldDefinition().getDirective("persistEntityMutation");
+      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
+      String dataSetName = dataSet.getName();
+      return new PersistEntityMutation(redirectionService, dataSetName, uriHelper);
     }
     return null;
   }

@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.TransactionState;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.dataset.AddTriplePatchRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -88,7 +89,7 @@ public class HandleService extends RedirectionService {
     try {
       importManager.generateLog(dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
-        new HandleServicePatcher(
+        new AddTriplePatchRdfCreator(
           entityLookup.getUri().get(),
           PERSISTENT_ID,
           persistentUrl.toString(),

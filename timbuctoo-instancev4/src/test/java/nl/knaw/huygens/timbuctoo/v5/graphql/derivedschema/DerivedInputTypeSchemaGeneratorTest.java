@@ -323,8 +323,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instance.getSchema().toString();
 
     assertThat(schema, containsString("}\n\ntype TypeMutations {\n" +
-      "  edit(uri: String! entity: TypeInput!): Type @editMutation(dataSet: rootType)\n" +
-      "}\n"));
+      "  edit(uri: String! entity: TypeInput!): Type @editMutation(dataSet: rootType)\n"));
   }
 
 }

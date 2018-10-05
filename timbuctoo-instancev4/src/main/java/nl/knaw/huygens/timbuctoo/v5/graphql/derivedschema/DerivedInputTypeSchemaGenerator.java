@@ -86,6 +86,9 @@ class DerivedInputTypeSchemaGenerator {
     schema.append("type ").append(name).append("Mutations").append(" {\n")
           .append("  edit(").append("uri: String! ").append("entity: ").append(name).append("Input!): ")
           .append(name).append(" @editMutation(dataSet: ").append(rootType).append(")").append("\n")
+          .append("  persistEntity(").append("entityUri: String!): ").append("Message")
+          .append(" @persistEntityMutation(dataSet: ").append(rootType)
+          .append(")")
           .append("}\n");
 
     return schema;

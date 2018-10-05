@@ -41,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncImportMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncUpdateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutation;
@@ -56,6 +57,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDesc
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ViewConfigFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;

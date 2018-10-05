@@ -82,6 +82,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntity;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
@@ -294,7 +295,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetRepository,
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
-        new RdfWiringFactory(dataSetRepository, argHelper, configuration.getDefaultSummaryProps(), uriHelper),
+        new RdfWiringFactory(
+          dataSetRepository,
+          argHelper,
+          configuration.getDefaultSummaryProps(),
+          uriHelper,
+          redirectionService
+        ),
         new DerivedSchemaGenerator(argHelper),
         environment.getObjectMapper(),
         new ResourceSyncFileLoader(httpClient),
@@ -362,6 +369,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     RsDocumentBuilder rsDocumentBuilder =
       new RsDocumentBuilder(dataSetRepository, configuration.getUriHelper());
     register(environment, new RsEndpoint(rsDocumentBuilder, securityConfig.getUserValidator()));
+
+    GetEntity getEntity = new GetEntity(dataSetRepository, securityConfig.getUserValidator());
+    register(environment, getEntity);
 
     // Admin resources
     if (securityConfig instanceof OldStyleSecurityFactory) {

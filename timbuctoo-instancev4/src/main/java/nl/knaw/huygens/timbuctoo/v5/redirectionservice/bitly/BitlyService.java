@@ -6,8 +6,15 @@ import net.swisstech.bitly.model.v3.ShortenResponse;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.TransactionState;
+import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.dataset.AddTriplePatchRdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
-import nl.knaw.huygens.timbuctoo.v5.redirectionservice.HandleService;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceParameters;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.exceptions.RedirectionServiceException;
@@ -15,22 +22,25 @@ import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 public class BitlyService extends RedirectionService {
   public static final String BITLY_QUEUE = "bitly";
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleService.class);
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(BitlyService.class);
   private static final String PERSISTENT_ID = RdfConstants.timPredicate("persistentUri");
   private final BitlyClient bitlyClient;
+  private final DataSetRepository dataSetRepository;
 
-  public BitlyService(QueueManager queueManager) {
+  public BitlyService(QueueManager queueManager, DataSetRepository dataSetRepository,
+                      String accessToken) {
     super(BITLY_QUEUE, queueManager);
-    //TODO: move token to config!
-    bitlyClient = new BitlyClient("f349c930b3d6fe64622d83ff44209f44c1eabc1f");
+    this.dataSetRepository = dataSetRepository;
+    bitlyClient = new BitlyClient(accessToken);
   }
 
   @Override
-  protected void oldSavePid(RedirectionServiceParameters params) throws PersistenceException, URISyntaxException {
+  protected void oldSavePid(RedirectionServiceParameters params) {
     URI uri = params.getUrlToRedirectTo();
     String persistentUrl = retrieveBitlyUri(uri.toString());
     transactionEnforcer.execute(timbuctooActions -> {
@@ -49,10 +59,44 @@ public class BitlyService extends RedirectionService {
   }
 
   @Override
-  protected void savePid(RedirectionServiceParameters params)
-    throws PersistenceException, URISyntaxException, RedirectionServiceException {
+  protected void savePid(RedirectionServiceParameters params) throws PersistenceException,
+    RedirectionServiceException {
     URI uri = params.getUrlToRedirectTo();
-    retrieveBitlyUri(uri.toString());
+    LOG.info(String.format("Retrieving persistent url for '%s'", uri));
+    String persistentUrl = retrieveBitlyUri(uri.toString());
+
+    EntityLookup entityLookup = params.getEntityLookup();
+
+    String dataSetId = entityLookup.getDataSetId().get();
+
+    Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(dataSetId);
+
+    Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(
+      entityLookup.getUser().get(),
+      ownerIdDataSetId.getLeft(),
+      ownerIdDataSetId.getRight());
+
+    if (!maybeDataSet.isPresent()) {
+      throw new PersistenceException("Can't retrieve DataSet");
+    }
+
+    DataSet dataSet = maybeDataSet.get();
+
+    final ImportManager importManager = dataSet.getImportManager();
+
+    try {
+      importManager.generateLog(dataSet.getMetadata().getBaseUri(),
+        dataSet.getMetadata().getBaseUri(),
+        new AddTriplePatchRdfCreator(
+          entityLookup.getUri().get(),
+          PERSISTENT_ID,
+          persistentUrl,
+          RdfConstants.STRING)
+      ).get();
+    } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
+      throw new RedirectionServiceException(e);
+    }
+
   }
 
   public String retrieveBitlyUri(String uri) {
