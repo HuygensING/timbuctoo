@@ -15,6 +15,7 @@
 
 The list above is an example to give an impression what could be possible.
 Though every application will have multiple _Anonymous users_ and one or more _Site administrators_.
+Another role that will be in every instance is the _data set administrator_.
 
 === Actions
 GraphQL
