@@ -93,7 +93,20 @@ public class BasicPermissionFetcherTest {
 
     Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
 
-    assertThat(permissions, containsInAnyOrder(Permission.ADMIN, Permission.READ));
+    assertThat(permissions, containsInAnyOrder(
+      Permission.IMPORT_DATA,
+      Permission.READ,
+      Permission.PUBLISH_DATASET,
+      Permission.REMOVE_DATASET,
+      Permission.EDIT_COLLECTION_METADATA,
+      Permission.EDIT_DATASET_METADATA,
+      Permission.EXTEND_SCHEMA,
+      Permission.CONFIG_INDEX,
+      Permission.CONFIG_VIEW,
+      Permission.CHANGE_SUMMARYPROPS,
+      Permission.IMPORT_RESOURCESYNC,
+      Permission.UPDATE_RESOURCESYNC
+    ));
   }
 
   @Test
@@ -154,7 +167,20 @@ public class BasicPermissionFetcherTest {
 
     Set<Permission> permissions = permissionFetcher.getPermissions(userWithId("testadminId"), dataSetMetaData2);
 
-    assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.ADMIN));
+    assertThat(permissions, containsInAnyOrder(
+      Permission.READ,
+      Permission.IMPORT_DATA,
+      Permission.PUBLISH_DATASET,
+      Permission.REMOVE_DATASET,
+      Permission.EDIT_COLLECTION_METADATA,
+      Permission.EDIT_DATASET_METADATA,
+      Permission.EXTEND_SCHEMA,
+      Permission.CONFIG_INDEX,
+      Permission.CONFIG_VIEW,
+      Permission.CHANGE_SUMMARYPROPS,
+      Permission.IMPORT_RESOURCESYNC,
+      Permission.UPDATE_RESOURCESYNC
+    ));
   }
 
   @Test

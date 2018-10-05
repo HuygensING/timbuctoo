@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class ResourceSyncImportMutation implements DataFetcher {
       ImportInfo importInfo = new ImportInfo(capabilityListUri, Date.from(Instant.now()));
       DataSet dataSet = dataSetRepository.createDataSet(user, dataSetName, Lists.newArrayList(importInfo));
 
-      MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+      MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.IMPORT_RESOURCESYNC);
 
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader, dataSet, false);
 

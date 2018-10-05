@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class ResourceSyncUpdateMutation implements DataFetcher {
         throw new RuntimeException("DataSet does not exist.");
       }
       DataSet dataSet = dataSetOpt.get();
-      MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+      MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.UPDATE_RESOURCESYNC);
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(
         resourceSyncFileLoader, dataSet, false);
       String capabilityListUri = dataSet.getMetadata().getImportInfo().get(0).getImportSource();

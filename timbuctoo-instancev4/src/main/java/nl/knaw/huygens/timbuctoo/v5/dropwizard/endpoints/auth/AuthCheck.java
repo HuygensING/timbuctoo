@@ -4,7 +4,6 @@ import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
-import java.util.Optional;
 
 public class AuthCheck {
   private static final Logger LOG = LoggerFactory.getLogger(AuthCheck.class);
@@ -69,9 +67,9 @@ public class AuthCheck {
       );
   }
 
-  public Either<Response, Tuple<User, DataSet>> hasAdminAccess(User user, DataSet dataSet) {
+  public Either<Response, Tuple<User, DataSet>> allowedToImport(User user, DataSet dataSet) {
     try {
-      if (permissionFetcher.hasPermission(user,dataSet.getMetadata(), Permission.ADMIN)) {
+      if (permissionFetcher.hasPermission(user,dataSet.getMetadata(), Permission.IMPORT_DATA)) {
         return Either.right(Tuple.tuple(user, dataSet));
       } else {
         return Either.left(Response.status(Response.Status.FORBIDDEN).build());

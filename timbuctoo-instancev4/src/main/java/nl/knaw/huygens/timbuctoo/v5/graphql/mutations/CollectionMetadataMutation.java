@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class CollectionMetadataMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkPermission(env, dataSet.getMetadata(),Permission.EDIT_COLLECTION_METADATA);
     try {
       String collectionUri = env.getArgument("collectionUri");
       Map data = env.getArgument("metadata");

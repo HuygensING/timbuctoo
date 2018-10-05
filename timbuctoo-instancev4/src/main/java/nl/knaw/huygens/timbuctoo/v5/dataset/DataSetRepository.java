@@ -35,6 +35,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
+import static nl.knaw.huygens.timbuctoo.v5.security.dto.Permission.PUBLISH_DATASET;
 import static nl.knaw.huygens.timbuctoo.v5.security.dto.Permission.READ;
 
 /**
@@ -264,7 +265,7 @@ public class DataSetRepository {
     throws DataSetPublishException {
     Optional<DataSet> dataSet = getDataSet(user, ownerId, dataSetName);
     try {
-      if (dataSet.isPresent() && permissionFetcher.hasPermission(user, dataSet.get().getMetadata(), Permission.ADMIN)) {
+      if (dataSet.isPresent() && permissionFetcher.hasPermission(user, dataSet.get().getMetadata(), PUBLISH_DATASET)) {
         DataSetMetaData dataSetMetaData = dataSet.get().getMetadata();
 
         dataSetMetaData.publish();
@@ -338,7 +339,7 @@ public class DataSetRepository {
         throw new DataSetDoesNotExistException(dataSetName, ownerId);
       }
       String combinedId = dataSet.getMetadata().getCombinedId();
-      if (!permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.ADMIN)) {
+      if (!permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.REMOVE_DATASET)) {
         throw new NotEnoughPermissionsException(
           String.format(
             "User '%s' is not allowed to remove dataset '%s'",

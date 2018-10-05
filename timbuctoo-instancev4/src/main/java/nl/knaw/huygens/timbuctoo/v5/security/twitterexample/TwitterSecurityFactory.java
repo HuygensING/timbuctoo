@@ -45,7 +45,7 @@ public class TwitterSecurityFactory implements SecurityFactory {
         throws PermissionFetchingException {
         HashSet<Permission> result = new HashSet<>();
         if (user != null && user.equals(dataSetMetaData.getOwnerId())) {
-          result.add(Permission.ADMIN);
+          result.add(Permission.IMPORT_DATA);
           result.add(Permission.WRITE);
         } else {
           result.add(Permission.READ);

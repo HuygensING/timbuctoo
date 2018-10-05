@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.MutationOperation;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -30,7 +31,7 @@ public class DataSetMetadataMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkPermission(env, dataSet.getMetadata(),Permission.EDIT_DATASET_METADATA);
 
     try {
       Map md = env.getArgument("metadata");

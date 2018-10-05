@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +40,7 @@ public class SummaryPropsMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkPermission(env, dataSet.getMetadata(),Permission.CHANGE_SUMMARYPROPS);
     try {
       String collectionUri = env.getArgument("collectionUri");
       Map data = env.getArgument("summaryProperties");

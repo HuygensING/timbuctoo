@@ -50,7 +50,17 @@ public class BasicPermissionFetcher implements PermissionFetcher {
             permissions.add(Permission.READ);
           }
           if (vreAuthorization.get().hasAdminAccess()) {
-            permissions.add(Permission.ADMIN);
+            permissions.add(Permission.IMPORT_DATA);
+            permissions.add(Permission.REMOVE_DATASET);
+            permissions.add(Permission.PUBLISH_DATASET);
+            permissions.add(Permission.EDIT_COLLECTION_METADATA);
+            permissions.add(Permission.EDIT_DATASET_METADATA);
+            permissions.add(Permission.EXTEND_SCHEMA);
+            permissions.add(Permission.CONFIG_INDEX);
+            permissions.add(Permission.CONFIG_VIEW);
+            permissions.add(Permission.CHANGE_SUMMARYPROPS);
+            permissions.add(Permission.IMPORT_RESOURCESYNC);
+            permissions.add(Permission.UPDATE_RESOURCESYNC);
             permissions.add(Permission.READ);
           }
         }
@@ -83,7 +93,8 @@ public class BasicPermissionFetcher implements PermissionFetcher {
           permissions.add(Permission.WRITE);
         }
         if (vreAuthorization.get().hasAdminAccess()) {
-          permissions.add(Permission.ADMIN);
+          permissions.add(Permission.IMPORT_DATA);
+          permissions.add(Permission.REMOVE_DATASET);
         }
       }
       return permissions;

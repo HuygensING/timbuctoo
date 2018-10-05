@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,7 @@ public class ExtendSchemaMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.EXTEND_SCHEMA);
     final SchemaStore generatedSchema = dataSet.getSchemaStore();
 
     Map<String, Type> customTypes = new HashMap<>();
