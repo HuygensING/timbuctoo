@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.redirectionservice;
 
 import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.TransactionState;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
@@ -19,29 +18,28 @@ import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-public class DummyService extends RedirectionService {
+public class DummyRedirectionService extends RedirectionService {
   public static final String DUMMY_QUEUE = "dummy";
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(RedirectionService.class);
   private static final String PERSISTENT_ID = RdfConstants.timPredicate("persistentUri");
   private final DataSetRepository dataSetRepository;
-  private PersistenceManager manager;
 
-  public DummyService(QueueManager queueManager, DataSetRepository dataSetRepository) {
+  public DummyRedirectionService(QueueManager queueManager, DataSetRepository dataSetRepository) {
     super(DUMMY_QUEUE, queueManager);
     this.dataSetRepository = dataSetRepository;
     LOG.info("Using dummy persistence manager instead of real server");
-    manager = new DummyPersistenceManager();
   }
 
   @Override
-  protected void oldSavePid(RedirectionServiceParameters params) throws PersistenceException, URISyntaxException {
+  protected void oldSavePid(RedirectionServiceParameters params) throws URISyntaxException {
     URI uri = params.getUrlToRedirectTo();
     LOG.info(String.format("Retrieving persistent url for '%s'", uri));
-    String persistentId = (manager.persistURL(uri.toString()));
-    URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
+    String persistentId = uri.toString();
+    URI persistentUrl = new URI("http://example.org/persistentid#" + URLEncoder.encode(persistentId));
 
     transactionEnforcer.execute(timbuctooActions -> {
         try {
@@ -50,11 +48,7 @@ public class DummyService extends RedirectionService {
           return TransactionState.commit();
         } catch (NotFoundException e) {
           LOG.warn("Entity for entityLookup '{}' cannot be found", params.getEntityLookup());
-          try {
-            manager.deletePersistentId(persistentId);
-          } catch (PersistenceException e1) {
-            LOG.error("Cannot remove url with id '{}'", persistentId);
-          }
+
           return TransactionState.rollback();
         }
       }
@@ -66,8 +60,8 @@ public class DummyService extends RedirectionService {
     RedirectionServiceException {
     URI uri = params.getUrlToRedirectTo();
     LOG.info(String.format("Retrieving persistent url for '%s'", uri));
-    String persistentId = (manager.persistURL(uri.toString()));
-    URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
+    String persistentId = uri.toString();
+    URI persistentUrl = new URI("http://example.org/persistentid#" + URLEncoder.encode(persistentId));
 
     EntityLookup entityLookup = params.getEntityLookup();
 

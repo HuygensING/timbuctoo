@@ -118,7 +118,7 @@ activeMq:
   shutdownWaitInSeconds: 1 #use for debug runs only!
 
 redirectionService:
-  "@class": nl.knaw.huygens.timbuctoo.v5.redirectionservice.DummyServiceFactory
+  "@class": nl.knaw.huygens.timbuctoo.v5.redirectionservice.DummyRedirectionServiceFactory
 # If using HandleServiceFactory you need:
 #  privateKeyFile:
 #  cypher:
