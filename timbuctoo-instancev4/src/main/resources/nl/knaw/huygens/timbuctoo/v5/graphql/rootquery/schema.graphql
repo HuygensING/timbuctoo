@@ -357,6 +357,10 @@ type ExtendSchemaMessage {
   message: String!
 }
 
+type Message {
+  message: String!
+}
+
 input DataSetMetadataInput {
   title: String
   description: String

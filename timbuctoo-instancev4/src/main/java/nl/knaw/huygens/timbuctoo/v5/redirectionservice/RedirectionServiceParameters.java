@@ -9,7 +9,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.net.URI;
 
-class RedirectionServiceParameters {
+public class RedirectionServiceParameters {
   private final int retries;
   private final URI urlToRedirectTo;
   private final EntityLookup entityLookup;

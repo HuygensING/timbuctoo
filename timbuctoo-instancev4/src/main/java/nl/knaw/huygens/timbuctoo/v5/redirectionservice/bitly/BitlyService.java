@@ -1,7 +1,9 @@
-package nl.knaw.huygens.timbuctoo.v5.redirectionservice;
+package nl.knaw.huygens.timbuctoo.v5.redirectionservice.bitly;
 
+import net.swisstech.bitly.BitlyClient;
+import net.swisstech.bitly.model.Response;
+import net.swisstech.bitly.model.v3.ShortenResponse;
 import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.TransactionState;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
@@ -13,46 +15,43 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceParameters;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.exceptions.RedirectionServiceException;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-public class HandleService extends RedirectionService {
-  public static final String HANDLE_QUEUE = "pids";
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleService.class);
+public class BitlyService extends RedirectionService {
+  public static final String BITLY_QUEUE = "bitly";
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(BitlyService.class);
   private static final String PERSISTENT_ID = RdfConstants.timPredicate("persistentUri");
-  private final PersistenceManager manager;
+  private final BitlyClient bitlyClient;
   private final DataSetRepository dataSetRepository;
 
-  public HandleService(PersistenceManager manager, QueueManager queueManager, DataSetRepository dataSetRepository) {
-    super(HANDLE_QUEUE, queueManager);
-    this.manager = manager;
+  public BitlyService(QueueManager queueManager, DataSetRepository dataSetRepository,
+                      String accessToken) {
+    super(BITLY_QUEUE, queueManager);
     this.dataSetRepository = dataSetRepository;
+    bitlyClient = new BitlyClient(accessToken);
   }
 
-  protected void oldSavePid(RedirectionServiceParameters params) throws PersistenceException, URISyntaxException {
+  @Override
+  protected void oldSavePid(RedirectionServiceParameters params) {
     URI uri = params.getUrlToRedirectTo();
-    LOG.info(String.format("Retrieving persistent url for '%s'", uri));
-    String persistentId = (manager.persistURL(uri.toString()));
-    URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
-
+    String persistentUrl = retrieveBitlyUri(uri.toString());
     transactionEnforcer.execute(timbuctooActions -> {
         try {
-          timbuctooActions.addPid(persistentUrl, params.getEntityLookup());
+          timbuctooActions.addPid(URI.create(persistentUrl), params.getEntityLookup());
           LOG.info("committed pid");
           return TransactionState.commit();
         } catch (NotFoundException e) {
           LOG.warn("Entity for entityLookup '{}' cannot be found", params.getEntityLookup());
-          try {
-            manager.deletePersistentId(persistentId);
-          } catch (PersistenceException e1) {
-            LOG.error("Cannot remove handle with id '{}'", persistentId);
-          }
+          bitlyClient.userLinkEdit().setArchived(true);
+
           return TransactionState.rollback();
         }
       }
@@ -61,11 +60,10 @@ public class HandleService extends RedirectionService {
 
   @Override
   protected void savePid(RedirectionServiceParameters params) throws PersistenceException,
-    URISyntaxException, RedirectionServiceException {
+    RedirectionServiceException {
     URI uri = params.getUrlToRedirectTo();
     LOG.info(String.format("Retrieving persistent url for '%s'", uri));
-    String persistentId = (manager.persistURL(uri.toString()));
-    URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
+    String persistentUrl = retrieveBitlyUri(uri.toString());
 
     EntityLookup entityLookup = params.getEntityLookup();
 
@@ -92,7 +90,7 @@ public class HandleService extends RedirectionService {
         new AddTriplePatchRdfCreator(
           entityLookup.getUri().get(),
           PERSISTENT_ID,
-          persistentUrl.toString(),
+          persistentUrl,
           RdfConstants.STRING)
       ).get();
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
@@ -101,4 +99,12 @@ public class HandleService extends RedirectionService {
 
   }
 
+  public String retrieveBitlyUri(String uri) {
+    Response<ShortenResponse> call = bitlyClient.shorten().setLongUrl(uri).call();
+
+    if (call.status_code != 200) {
+      return null;
+    }
+    return call.data.url;
+  }
 }
