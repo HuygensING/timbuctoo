@@ -118,12 +118,14 @@ activeMq:
   shutdownWaitInSeconds: 1 #use for debug runs only!
 
 redirectionService:
-  "@class": nl.knaw.huygens.timbuctoo.v5.redirectionservice.HandleServiceFactory
-  useDummy: yes #set to "no" to connect to a real handle server
+  "@class": nl.knaw.huygens.timbuctoo.v5.redirectionservice.DummyRedirectionServiceFactory
+# If using HandleServiceFactory you need:
 #  privateKeyFile:
 #  cypher:
 #  namingAuthority:
 #  prefix:
+# If using BitlyServiceFactory you need:
+#  accessToken:
 
 #Note! disable this for production builds
 allowGremlinEndpoint: true
