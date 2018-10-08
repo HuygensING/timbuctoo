@@ -124,6 +124,8 @@ redirectionService:
 #  cypher:
 #  namingAuthority:
 #  prefix:
+# If using BitlyServiceFactory you need:
+#  accessToken:
 
 #Note! disable this for production builds
 allowGremlinEndpoint: true

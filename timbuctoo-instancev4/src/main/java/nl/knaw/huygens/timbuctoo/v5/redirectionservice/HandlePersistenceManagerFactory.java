@@ -8,16 +8,13 @@ import org.slf4j.Logger;
 
 public class HandlePersistenceManagerFactory {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandlePersistenceManagerFactory.class);
-
-  private Boolean useDummy;
   private String privateKeyFile;
   private String cypher;
   private String namingAuthority;
   private String prefix;
 
-  public HandlePersistenceManagerFactory(Boolean useDummy, String privateKeyFile, String cypher,
+  public HandlePersistenceManagerFactory(String privateKeyFile, String cypher,
                                          String namingAuthority, String prefix) {
-    this.useDummy = useDummy;
     this.privateKeyFile = privateKeyFile;
     this.cypher = cypher;
     this.namingAuthority = namingAuthority;
@@ -25,31 +22,19 @@ public class HandlePersistenceManagerFactory {
   }
 
   public PersistenceManager build() {
-    if (useDummy == null) {
-      if (Strings.isNullOrEmpty(privateKeyFile) ||
-        Strings.isNullOrEmpty(cypher) ||
-        Strings.isNullOrEmpty(namingAuthority) ||
-        Strings.isNullOrEmpty(prefix)) {
-        LOG.error("Configuration must have either: \n" +
-          "\n" +
-          "    persistenceManager:\n" +
-          "      useDummy: on\n" +
-          "\n" +
-          "or\n" +
-          "\n" +
-          "    persistenceManager:\n" +
-          "      privateKeyFile: ...\n" +
-          "      cypher: ...\n" +
-          "      namingAuthority: ...\n" +
-          "      prefix: ...\n");
-        throw new IllegalArgumentException(
-          "'useDummy' must be yes or else 'privateKeyFile', 'cypher', 'namingAuthority' and 'prefix' must be provided"
-        );
-      }
-    }
-    if (useDummy != null && useDummy) {
-      LOG.info("Using dummy persistence manager instead of real handle server");
-      return new DummyPersistenceManager();
+    if (Strings.isNullOrEmpty(privateKeyFile) ||
+      Strings.isNullOrEmpty(cypher) ||
+      Strings.isNullOrEmpty(namingAuthority) ||
+      Strings.isNullOrEmpty(prefix)) {
+      LOG.error("Configuration must have: \n" +
+        "    persistenceManager:\n" +
+        "      privateKeyFile: ...\n" +
+        "      cypher: ...\n" +
+        "      namingAuthority: ...\n" +
+        "      prefix: ...\n");
+      throw new IllegalArgumentException(
+        "'privateKeyFile', 'cypher', 'namingAuthority' and 'prefix' must be provided"
+      );
     } else {
       LOG.info("Using real handle server");
       try {
@@ -67,6 +52,5 @@ public class HandlePersistenceManagerFactory {
         return null;
       }
     }
-
   }
 }

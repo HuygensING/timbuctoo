@@ -12,14 +12,12 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
 
 
   @JsonCreator
-  public HandleServiceFactory(@JsonProperty("useDummy") Boolean useDummy,
-                              @JsonProperty("privateKeyFile") String privateKeyFile,
+  public HandleServiceFactory(@JsonProperty("privateKeyFile") String privateKeyFile,
                               @JsonProperty("cypher") String cypher,
                               @JsonProperty("namingAuthority") String namingAuthority,
                               @JsonProperty("prefix") String prefix) {
 
     HandlePersistenceManagerFactory handleManagerFactory = new HandlePersistenceManagerFactory(
-      useDummy,
       privateKeyFile,
       cypher,
       namingAuthority,
