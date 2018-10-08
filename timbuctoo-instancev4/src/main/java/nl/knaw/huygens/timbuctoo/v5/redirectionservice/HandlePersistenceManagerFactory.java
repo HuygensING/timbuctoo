@@ -4,11 +4,10 @@ import com.google.common.base.Strings;
 import nl.knaw.huygens.persistence.HandleManager;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
-import nl.knaw.huygens.timbuctoo.handle.DummyPersistenceManager;
 import org.slf4j.Logger;
 
-public class PersistenceManagerFactory {
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(PersistenceManagerFactory.class);
+public class HandlePersistenceManagerFactory {
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandlePersistenceManagerFactory.class);
 
   private Boolean useDummy;
   private String privateKeyFile;
@@ -16,8 +15,8 @@ public class PersistenceManagerFactory {
   private String namingAuthority;
   private String prefix;
 
-  public PersistenceManagerFactory(Boolean useDummy, String privateKeyFile, String cypher,
-                                   String namingAuthority, String prefix) {
+  public HandlePersistenceManagerFactory(Boolean useDummy, String privateKeyFile, String cypher,
+                                         String namingAuthority, String prefix) {
     this.useDummy = useDummy;
     this.privateKeyFile = privateKeyFile;
     this.cypher = cypher;

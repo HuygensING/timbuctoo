@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.handle;
+package nl.knaw.huygens.timbuctoo.v5.redirectionservice;
 
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;

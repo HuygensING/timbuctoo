@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import nl.knaw.huygens.persistence.HandleManager;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.DummyPersistenceManager;
 import org.slf4j.Logger;
 
 public class PersistenceManagerFactory {

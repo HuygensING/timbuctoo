@@ -18,7 +18,7 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
                               @JsonProperty("namingAuthority") String namingAuthority,
                               @JsonProperty("prefix") String prefix) {
 
-    PersistenceManagerFactory persistenceManagerFactory = new PersistenceManagerFactory(
+    HandlePersistenceManagerFactory handleManagerFactory = new HandlePersistenceManagerFactory(
       useDummy,
       privateKeyFile,
       cypher,
@@ -26,7 +26,7 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
       prefix
     );
 
-    manager = persistenceManagerFactory.build();
+    manager = handleManagerFactory.build();
   }
 
   @Override
