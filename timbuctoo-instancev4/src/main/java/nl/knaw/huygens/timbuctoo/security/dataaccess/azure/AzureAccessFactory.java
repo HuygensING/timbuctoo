@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.table.CloudTableClient;
+import nl.knaw.huygens.timbuctoo.security.PermissionConfiguration;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.LoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
@@ -64,5 +65,10 @@ public class AzureAccessFactory implements AccessFactory {
   @Override
   public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
     return Collections.emptyIterator();
+  }
+
+  @Override
+  public PermissionConfiguration getPermissionConfig() throws AzureAccessNotPossibleException {
+    return new AzurePermissionConfiguration(getCloudTableClient(connectionString));
   }
 }

@@ -147,8 +147,11 @@ public class OldStyleSecurityFactory implements SecurityFactory {
   }
 
   @Override
-  public PermissionFetcher getPermissionFetcher()
-    throws AccessNotPossibleException {
-    return new BasicPermissionFetcher(getVreAuthorizationCreator());
+  public PermissionFetcher getPermissionFetcher() throws AccessNotPossibleException {
+    return new BasicPermissionFetcher(getVreAuthorizationCreator(), getPermissionConfig());
+  }
+
+  private PermissionConfiguration getPermissionConfig() throws AccessNotPossibleException {
+    return localAuthentication.getPermissionConfig();
   }
 }

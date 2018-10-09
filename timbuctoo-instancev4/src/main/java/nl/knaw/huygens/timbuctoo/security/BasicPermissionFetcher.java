@@ -20,9 +20,11 @@ import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCom
 public class BasicPermissionFetcher implements PermissionFetcher {
   private static final Logger LOG = LoggerFactory.getLogger(BasicPermissionFetcher.class);
   private final VreAuthorizationCrud vreAuthorizationCrud;
+  private final PermissionConfiguration permissionConfig;
 
-  public BasicPermissionFetcher(VreAuthorizationCrud vreAuthorizationCrud) {
+  public BasicPermissionFetcher(VreAuthorizationCrud vreAuthorizationCrud, PermissionConfiguration permissionConfig) {
     this.vreAuthorizationCrud = vreAuthorizationCrud;
+    this.permissionConfig = permissionConfig;
   }
 
   @Override
@@ -42,26 +44,9 @@ public class BasicPermissionFetcher implements PermissionFetcher {
       if (user != null) {
         Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, user);
         if (vreAuthorization.isPresent()) {
-
-          if (vreAuthorization.get().isAllowedToWrite()) {
-            if (!isImportedDataSet(dataSetMetadata)) {
-              permissions.add(Permission.WRITE);
-            }
-            permissions.add(Permission.READ);
-          }
-          if (vreAuthorization.get().hasAdminAccess()) {
-            permissions.add(Permission.IMPORT_DATA);
-            permissions.add(Permission.REMOVE_DATASET);
-            permissions.add(Permission.PUBLISH_DATASET);
-            permissions.add(Permission.EDIT_COLLECTION_METADATA);
-            permissions.add(Permission.EDIT_DATASET_METADATA);
-            permissions.add(Permission.EXTEND_SCHEMA);
-            permissions.add(Permission.CONFIG_INDEX);
-            permissions.add(Permission.CONFIG_VIEW);
-            permissions.add(Permission.CHANGE_SUMMARYPROPS);
-            permissions.add(Permission.IMPORT_RESOURCESYNC);
-            permissions.add(Permission.UPDATE_RESOURCESYNC);
-            permissions.add(Permission.READ);
+          permissions.addAll(permissionConfig.getPermissionsForRoles(vreAuthorization.get().getRoles()));
+          if (isResourceSyncCopy(dataSetMetadata)) {
+            permissions.remove(Permission.WRITE);
           }
         }
       }
@@ -126,7 +111,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     }
   }
 
-  private boolean isImportedDataSet(DataSetMetaData dataSetMetaData) {
+  private boolean isResourceSyncCopy(DataSetMetaData dataSetMetaData) {
     return dataSetMetaData.getImportInfo() != null && dataSetMetaData.getImportInfo().size() > 0;
   }
 }

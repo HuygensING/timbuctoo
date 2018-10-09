@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import nl.knaw.huygens.timbuctoo.security.PermissionConfiguration;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AccessNotPossibleException;
 
@@ -17,4 +18,6 @@ public interface AccessFactory {
   VreAuthorizationAccess getVreAuthorizationAccess() throws AccessNotPossibleException;
 
   Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks();
+
+  PermissionConfiguration getPermissionConfig() throws AccessNotPossibleException;
 }
