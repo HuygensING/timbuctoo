@@ -35,6 +35,7 @@ or, can be changed to use *Bit.ly* implementation as:
 redirectionService:
     "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.Bitly.BitlyServiceFactory
     accessToken: <bitly_access_token>
+
 ----
 
 NOTE: While using a custom redirection service, it's the user's responsibility to make sure that the configuration
