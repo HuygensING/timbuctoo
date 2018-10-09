@@ -58,7 +58,7 @@ Other / unknown
 * Make it possible for each instance of TImbuctoo to have its own user roles.
 * Allow multiple implementations.
 ** Create a filesystem based implementation
-* GraphQL should list permission of a single person
+* GraphQL should list permission of a single user
 
 
 == Structure
@@ -81,6 +81,7 @@ Other / unknown
 .. Make the current implementations work with the new schema, without any functionality changes
 . Add a migration from the old to the new structure.
 . Let legacy Timbuctoo use new Permissions
+. Add a GraphQL query for listing permissions of a user.
 
 == Code changes
 The first two code changes are  refactoring that will remove a lot of duplication and will make the code on a lot of places a bit more readable.
