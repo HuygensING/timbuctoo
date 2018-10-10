@@ -1,7 +1,87 @@
 = Timbuctoo GraphQL API Guide
 :toc:
 
-== Publish a DataSet
+== Queries
+
+=== General instructions for querying:
+
+- You can use a query of the following basic format to query for data from the selected dataset:
+
+----
+query queryName($dataSet:ID!){
+    field(arg: "value") {
+             subField{value}
+    }
+}
+----
+
+- You will have to provide query variables used for the query in the "Query Variables" pane as follows:
+
+----
+{
+      "dataSet": <dataSet>,
+      <queryVariable1Name>: <queryVariable1Value>,
+      <queryVariable2Name>: <queryVariable2Value>,
+      ....
+}
+----
+
+- Press "Ctrl + Enter" or the "play button" on the top of the IDE window to run your query.
+The result (or error information in case of an error) will be displayed on the right pane.
+
+NOTE: You can check for auto-complete options in your graphQL query by pressing "Ctrl + Space" at any time.
+
+Some examples of common queries are given in the following few sub-sections.
+
+=== Querying for DataSet metadata information:
+
+----
+query retrieveMetadata($dataSet:ID!){
+  dataSetMetadata(dataSetId:$dataSet){
+    <metadataproperty1>{
+        <metadatavalue1>
+    }
+    <metadataproperty2>{
+        <metadatavalue2>
+        ...
+    }
+    ...
+  }
+}
+----
+
+NOTE: The "import status" of a dataSet can be queried as a metadata property.
+
+=== Querying for entities in a DataSet collection:
+
+----
+query retrieveData($dataSet:ID!){
+  dataSet(dataSetId:$dataSet){
+    <collection>{
+        <items>{
+            <property1>
+            <property2>
+            ...
+        }
+    }
+  }
+}
+----
+
+=== Querying for (logged-in) User information:
+
+----
+{
+  aboutMe{
+    <property1>
+    <property2>
+    ...
+  }
+}
+----
+
+== Mutations
+=== Publish a DataSet
 
 You can publish a DataSet (admin access required) by using the following mutation:
 
@@ -14,7 +94,7 @@ mutation publish($dataSet: String!) {
 ----
 
 
-== Delete a DataSet
+=== Delete a DataSet
 
 You can delete a DataSet (admin access required) by using the following mutation:
 
@@ -27,9 +107,9 @@ mutation deleteDataSet($dataSet: String!) {
 ----
 
 
-== Editing Metadata information in a Timbuctoo DataSet
+=== Editing Metadata information in a Timbuctoo DataSet
 
-=== SetDataSetMetadata mutation
+==== SetDataSetMetadata mutation
 You can set or update the metadata information for any dataset in Timbuctoo by using the SetDataSetMetadata mutation.
 
 The "setDataSetMetadata" mutation accepts a "dataSetId" parameter and a "metadata" parameter. The "dataSetId" is the
@@ -79,9 +159,9 @@ Example query variables (for above query):
 NOTE: The metadata fields that you omit from your 'setDataSetMetadata" query will have the same values as before the
 query.
 
-== ResourceSync discover, import and update
+=== ResourceSync discover, import and update
 
-=== Discover Query
+==== Discover Query
 You can do a resource sync discover request by using the "discoverResourceSync" query that accepts a "url" parameter.
 The url should be for the resource sync source. Optionally, you can also include a "authorization" token in your query.
 This is necessary when the remote source is protected by OAuth or SimpleAuth.
@@ -100,7 +180,7 @@ discoverResourceSync(url: "http://example.org/.well-known/resourcesync",
 
 The query will return location, description, license and the title of the found resource.
 
-=== Import Query
+==== Import Query
 
 You can do a resource sync import by using the "resourceSyncImport" mutation.
 You will have to provide a capability list uri ("capabilityListUri" param).
@@ -136,7 +216,7 @@ mutation resourceSyncImport2 {
 
 The query will return a list of imported files and ignored files.
 
-=== Update Query
+==== Update Query
 You can update a dataset previously imported using ResourceSync import by using the "resourceSyncUpdate" mutation.
 You will need to  provide the "dataSetId" parameter which is the id of the dataSet that is to be updated.
 Optionally, you can also include a "authorization" token in your query. This is necessary when the remote source
@@ -156,7 +236,7 @@ mutation resourceSyncUpdate {
 
 The query will return a list of imported files and ignored files.
 
-== Request persistentId for an Entity
+=== Request persistentId for an Entity
 
 You can request a persistentId for an entity in a dataset with the persistEntity mutation:
 
@@ -179,7 +259,7 @@ You will need to provide the entityUri as a query variable.
 NOTE: The request is submitted to the configured RedirectionService and stored in the dataset only when the redirection server processes it.
 
 
-== Edit mutations
+=== Edit mutations
 
 The general format for the Edit mutation is as follows:
 

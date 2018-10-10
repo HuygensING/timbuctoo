@@ -79,7 +79,7 @@ After the above requirements are fulfilled you can follow the following instruct
       
     - On the "/devtools/debugrun" directory within your Timbuctoo repository, run:
 
-      ./debugrun.sh 
+        ./timbuctoo_only.sh
 
 === Uploading data
     - You can run a curl command of the following format to upload data into Timbuctoo:
@@ -97,22 +97,14 @@ After the above requirements are fulfilled you can follow the following instruct
     "<host>/v5/dataSets/{userId}/{dataSetId}/create"
 
 
-=== Querying data
+=== Querying data and Applying Mutations
+
     - With Timbuctoo running, you can access the https://github.com/graphql/graphiql[GraphIQL in-browser IDE] by pointing your web-browser to the following address:
 
     http://localhost:8080/static/graphiql
 
-    - Choose the appropriate dataset from the "select dataset" dropdown and the appropriate type from the "select accept media type" dropdown
 
-    - Use a query of the following basic format to query for data from the selected dataset:
-
-         {
-           field(arg: "value") {
-             subField
-           }
-         }
-
-    - Press "Ctrl + Enter" or the "play button" on the top of the IDE window to run your query. The result will be displayed on the right pane.
+    - You can then refer to https://github.com/HuygensING/timbuctoo/documentation/timbuctoo-graphql-api-guide.adoc[this Timbuctoo GraphQL API guide] for querying and mutation instructions with examples.
 
 //end::gettingstarted[]
 
