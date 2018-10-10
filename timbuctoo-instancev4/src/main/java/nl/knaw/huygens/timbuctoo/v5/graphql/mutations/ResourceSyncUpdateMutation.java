@@ -36,19 +36,21 @@ public class ResourceSyncUpdateMutation implements DataFetcher {
     // the user-specified authorization token for remote server:
     String authString = env.getArgument("authorization");
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(combinedId);
-    Optional<DataSet> dataSet;
+    Optional<DataSet> dataSetOpt;
 
     ResourceSyncImport.ResourceSyncReport resourceSyncReport;
 
     try {
-      dataSet = dataSetRepository.getDataSet(user, userAndDataSet.getLeft(), userAndDataSet.getRight());
-      if (!dataSet.isPresent()) {
+      dataSetOpt = dataSetRepository.getDataSet(user, userAndDataSet.getLeft(), userAndDataSet.getRight());
+      if (!dataSetOpt.isPresent()) {
         LOG.error("DataSet does not exist.");
         throw new RuntimeException("DataSet does not exist.");
       }
+      DataSet dataSet = dataSetOpt.get();
+      MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(
-        resourceSyncFileLoader, dataSet.get(), false);
-      String capabilityListUri = dataSet.get().getMetadata().getImportInfo().get(0).getImportSource();
+        resourceSyncFileLoader, dataSet, false);
+      String capabilityListUri = dataSet.getMetadata().getImportInfo().get(0).getImportSource();
       resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, null, true,
         authString);
     } catch (IOException | CantRetrieveFileException | CantDetermineDataSetException e) {

@@ -45,6 +45,9 @@ public class ResourceSyncImportMutation implements DataFetcher {
     try {
       ImportInfo importInfo = new ImportInfo(capabilityListUri, Date.from(Instant.now()));
       DataSet dataSet = dataSetRepository.createDataSet(user, dataSetName, Lists.newArrayList(importInfo));
+
+      MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader, dataSet, false);
 
       return resourceSyncImport.filterAndImport(
