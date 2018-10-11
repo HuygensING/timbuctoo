@@ -75,13 +75,13 @@ Other / unknown
 . Identify the actions Timbuctoo needs limited accessibility.
 .. Give each action its own permission.
 .. Add checks for the specific actions.
+.. Let legacy Timbuctoo use new Permissions
 . Make the permissions configurable.
 .. Make a matrix where the user roles can be connected to the authorized actions
 . Design a default Timbuctoo user roles to support the current instances of Timbuctoo
 .. Make the current implementations work with the new schema, without any functionality changes
 . Add a migration from the old to the new structure.
-. Let legacy Timbuctoo use new Permissions
-. Add a GraphQL query for listing permissions of a user.
+. Add a GraphQL query for listing permissions of a user per data set.
 
 == Code changes
 The first two code changes are  refactoring that will remove a lot of duplication and will make the code on a lot of places a bit more readable.

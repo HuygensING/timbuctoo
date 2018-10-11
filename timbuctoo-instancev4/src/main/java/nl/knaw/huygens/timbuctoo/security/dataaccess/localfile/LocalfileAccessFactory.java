@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -61,6 +62,10 @@ public class LocalfileAccessFactory implements AccessFactory {
   @Override
   public PermissionConfiguration getPermissionConfig() {
     try {
+      Path permissionConfigPath = Paths.get(permissionConfig);
+      if (!Files.exists(permissionConfigPath)) {
+        new PermissionConfigMigrator(permissionConfigPath).execute();
+      }
       return new JsonPermissionConfiguration(new FileInputStream(permissionConfig));
     } catch (IOException e) {
       throw new RuntimeException(e);
