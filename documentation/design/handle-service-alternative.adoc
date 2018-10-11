@@ -12,39 +12,44 @@ redirection service and configure Timbuctoo to use a new redirection service.
 The user will be able to do so as follows:
 
 === Steps to add a desired redirection service to Timbuctoo and configure Timbuctoo to use it:
-- In the example_config.yaml file, change  the "redirectionService" property and child properties values to your
-new implementation.
+- In the example_config.yaml file, change  the "redirectionService" property and child properties values to your new implementation.
 
-For example, Timbuctoo default:
+For example, Timbuctoo default (uses a *dummy* redirection service):
+----
+redirectionService:
+    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.DummyRedirectionServiceFactory
+----
+
+can be changed to use *Handle* with the following configuration:
 ----
 redirectionService:
     "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.HandleRedirectionServiceFactory
-    useDummy: yes #set to "no" to connect to a real handle server
-    #  privateKeyFile:
-    #  cypher:
-    #  namingAuthority:
-    #  prefix:
+    privateKeyFile: <private_key_file>
+    cypher: <cypher>
+    namingAuthority: <naming_authority>
+    prefix: <prefix>
 ----
 
-can be changed to use your new Bitly implementation as:
+or, can be changed to use *Bit.ly* implementation as:
 ----
 redirectionService:
-    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.BitlyUrlCreatorServiceFactory
-    user: Example User
-    authKey: ${BITLY_AUTH_KEY}
-    # ...
+    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.Bitly.BitlyServiceFactory
+    accessToken: <bitly_access_token>
+
 ----
 
-NOTE: It's the user's responsibility to make sure that the configuration parameters required by the the implementation
-are added to the configuration file.
+NOTE: While using a custom redirection service, it's the user's responsibility to make sure that the configuration
+parameters required by the implementation are added to the configuration file (as demonstrated above for Handle and Bit.ly).
 
 The factory class mentioned above should then be able to use the specified information to build a redirection service.
 
-The factory class should implement the RedirectionServiceFactory interface (new) and thus implement the
-"makeRedirectionService" function to create the new redirection service.
+The factory class should implement the RedirectionServiceFactory interface and thus implement the "makeRedirectionService" function to create the new redirection service.
 
 This new implementation class for the redirection service should implement the RedirectionService interface and thus
-implement the "add" function.
+implement the "savePid" function.
+
+There is also an "oldSavePid" function that can be implemented to write to the old Timbuctoo.
+You can leave this function empty as the old part of Timbuctoo has been deprecated.
 
 
 == Approach:
@@ -52,8 +57,9 @@ implement the "add" function.
 - The initial step will be to add support to one more redirection service as a test case, in addition to Handle.
 Bit.ly was chosen as the service as it has a Java library available.
 
-NOTE: We are using Bit.ly for testing purposes to make sure that the new way of setting up redirection services works
-with Timbuctoo. Bit.ly will **not** be available as an option in production instances.
+NOTE: We are using Bit.ly primarily for testing purposes. We have however left the Bit.ly test implementation available
+as an option. Using it requires the user to obtain their own authorization key from Bit.ly and configure it in their
+Timbuctoo instance.
 
 - Currently, handleAdder, specific to the handle service, is added directly to Timbuctoo. We need to change this so that
 the user can configure any implementation of the PersistenceUrlCreator in place of the handleAdder.
