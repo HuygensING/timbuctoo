@@ -84,6 +84,8 @@ Other / unknown
 . Add a GraphQL query for listing permissions of a user per data set.
 
 == Code changes
+
+=== Java
 The first two code changes are  refactoring that will remove a lot of duplication and will make the code on a lot of places a bit more readable.
 Method added because getPermissions is only used like `getPermissions(user, dataset).contains(Permission.WRITE)`
 [source, java]
@@ -114,6 +116,15 @@ public interface RoleToPermissionTranslator {
 }
 ----
 
+=== GraphQL
+----
+
+type DataSetMetaData {
+  ...
+  usersPermissions: [String!]
+  ...
+}
+----
 
 == Links
 How To Structure Permissions In A SaaS App: https://heapanalytics.com/blog/engineering/structure-permissions-saas-app

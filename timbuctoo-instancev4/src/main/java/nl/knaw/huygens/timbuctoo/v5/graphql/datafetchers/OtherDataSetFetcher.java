@@ -53,7 +53,7 @@ public class OtherDataSetFetcher implements DataFetcher<List<Map>> {
         })
         .filter(i -> i.getRight().isPresent())
         .map(i -> ImmutableMap.of(
-          "metadata", new DataSetWithDatabase(i.getLeft()),
+          "metadata", new DataSetWithDatabase(i.getLeft(), env.<ContextData>getContext().getUserPermissionCheck()),
           "entity", new LazyTypeSubjectReference(i.getRight().get().getSubject(), i.getLeft())
         ))
         .collect(toList());

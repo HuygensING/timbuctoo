@@ -41,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.IndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MakePublicMutation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncImportMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncUpdateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutation;
@@ -57,7 +56,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDesc
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ViewConfigFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
-import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
@@ -70,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -130,11 +129,19 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("discoverResourceSync", new DiscoverResourceSyncDataFetcher(resourceSyncService))
       .dataFetcher("promotedDataSets", env -> dataSetRepository.getPromotedDataSets()
         .stream()
-        .map(DataSetWithDatabase::new)
+        .map(dataSet -> {
+          ContextData contextData = env.getContext();
+          UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+          return new DataSetWithDatabase(dataSet, userPermissionCheck);
+        })
         .collect(Collectors.toList()))
       .dataFetcher("allDataSets", env -> dataSetRepository.getDataSets()
         .stream()
-        .map(DataSetWithDatabase::new)
+        .map(dataSet -> {
+          ContextData contextData = env.getContext();
+          UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+          return new DataSetWithDatabase(dataSet, userPermissionCheck);
+        })
         .filter(x -> {
           if (x.isPublished()) {
             return true;
@@ -153,12 +160,17 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         Tuple<String, String> splitCombinedId = DataSetMetaData.splitCombinedId(dataSetId);
 
         return dataSetRepository.getDataSet(user, splitCombinedId.getLeft(), splitCombinedId.getRight())
-          .map(DataSetWithDatabase::new);
+                                .map(dataSet -> {
+                                  ContextData contextData = env.getContext();
+                                  UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+                                  return new DataSetWithDatabase(dataSet, userPermissionCheck);
+                                });
       })
       .dataFetcher("dataSetMetadataList", env -> {
+        UserPermissionCheck userPermissionCheck = ((ContextData) env.getContext()).getUserPermissionCheck();
         Stream<DataSetWithDatabase> dataSets = dataSetRepository.getDataSets()
           .stream()
-          .map(DataSetWithDatabase::new);
+          .map(dataSet -> new DataSetWithDatabase(dataSet, userPermissionCheck));
         if (env.getArgument("promotedOnly")) {
           dataSets = dataSets.filter(DataSetWithDatabase::isPromoted);
         }
@@ -166,11 +178,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           dataSets = dataSets.filter(DataSetWithDatabase::isPublished);
         }
         return dataSets
-          .filter(x -> {
-            ContextData contextData = env.getContext();
-            UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
-            return userPermissionCheck.hasPermission(x.getDataSet().getMetadata(), Permission.READ);
-          })
+          .filter(x -> userPermissionCheck.hasPermission(x.getDataSet().getMetadata(), Permission.READ))
           .collect(Collectors.toList());
       })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
@@ -206,6 +214,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("dataSetId", env -> ((DataSetMetaData) env.getSource()).getCombinedId())
       .dataFetcher("dataSetName", env -> ((DataSetMetaData) env.getSource()).getDataSetId())
       .dataFetcher("ownerId", env -> ((DataSetMetaData) env.getSource()).getOwnerId())
+      .dataFetcher("userPermissions", env -> ((DataSetWithDatabase) env.getSource()).getUserPermissions())
     );
 
     wiring.type("CollectionMetadata", builder -> builder
@@ -239,20 +248,24 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     wiring.type("AboutMe", builder -> builder
       .dataFetcher("dataSets", env -> (Iterable) () -> dataSetRepository
         .getDataSetsWithWriteAccess(env.getSource())
-        .stream().map(DataSetWithDatabase::new).iterator()
+        .stream().map(dataSet -> {
+          ContextData contextData = env.getContext();
+          UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+          return new DataSetWithDatabase(dataSet, userPermissionCheck);
+        }).iterator()
       )
       .dataFetcher("dataSetMetadataList", env -> (Iterable) () -> {
         Stream<DataSetWithDatabase> dataSets = dataSetRepository.getDataSets()
           .stream()
-          .map(DataSetWithDatabase::new);
+          .map(dataSet -> new DataSetWithDatabase(dataSet, ((ContextData) env.getContext()).getUserPermissionCheck()));
         if (env.getArgument("ownOnly")) {
           String userId = ((ContextData) env.getContext()).getUser().map(u -> "u" + u.getPersistentId()).orElse(null);
           dataSets = dataSets.filter(d -> d.getOwnerId().equals(userId));
         }
         Permission permission = Permission.valueOf(env.getArgument("permission"));
         if (permission != Permission.READ) { //Read is implied
-          UserPermissionCheck check = ((ContextData) env.getContext()).getUserPermissionCheck();
-          dataSets = dataSets.filter(d -> check.hasPermission(d, permission));
+          dataSets = dataSets.filter(d -> ((ContextData) env.getContext()).getUserPermissionCheck()
+                                                                          .hasPermission(d, permission));
         }
 
         return dataSets.iterator();
@@ -327,7 +340,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append("\")\n");
 
         wiring.type(name, c -> c
-          .dataFetcher("metadata", env -> new DataSetWithDatabase(dataSet))
+          .dataFetcher("metadata", env -> {
+            return new DataSetWithDatabase(dataSet, env.<ContextData>getContext().getUserPermissionCheck());
+          })
         );
 
         final DerivedSchemaContainer schema = typeGenerator.makeGraphQlTypes(
