@@ -64,7 +64,7 @@ The following prerequisites need to be installed on the machine before running t
     * https://maven.apache.org/download.cgi[Maven] 
     * https://git-scm.com/downloads[Git]
     * https://www.docker.com/[Docker]
-    * http://xmlsoft.org/downloads.html [libxml2(-utils)]
+    * http://xmlsoft.org/downloads.html[libxml2-utils]
 
 === Installation
 After the above requirements are fulfilled you can follow the following instructions to install Timbuctoo:
