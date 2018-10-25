@@ -21,7 +21,8 @@ public class PermissionConfigMigrator {
       "    \"roleName\": \"USER\",\n" +
       "    \"permissions\": [\n" +
       "      \"READ\",\n" +
-      "      \"WRITE\"\n" +
+      "      \"WRITE\",\n" +
+      "      \"READ_IMPORT_STATUS\"\n" +
       "    ]\n" +
       "  },\n" +
       "  {\n" +
@@ -39,7 +40,8 @@ public class PermissionConfigMigrator {
       "      \"READ\",\n" +
       "      \"WRITE\",\n" +
       "      \"UPDATE_RESOURCESYNC\",\n" +
-      "      \"IMPORT_RESOURCESYNC\"\n" +
+      "      \"IMPORT_RESOURCESYNC\",\n" +
+      "      \"READ_IMPORT_STATUS\"\n" +
       "    ]\n" +
       "  }\n" +
       "]";

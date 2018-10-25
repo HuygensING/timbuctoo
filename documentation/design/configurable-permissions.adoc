@@ -35,6 +35,7 @@ GraphQL
 * Resourcesync
 ** Import initial data
 ** Synchronize with remote
+* Read import status
 * Delete specific data fom a data set [Future]
 * Add new data to a data set [Future]
 

@@ -3,7 +3,8 @@
     "roleName": "USER",
     "permissions": [
       "READ",
-      "WRITE"
+      "WRITE",
+      "READ_IMPORT_STATUS"
     ]
   },
   {
@@ -21,7 +22,8 @@
       "READ",
       "WRITE",
       "UPDATE_RESOURCESYNC",
-      "IMPORT_RESOURCESYNC"
+      "IMPORT_RESOURCESYNC",
+      "READ_IMPORT_STATUS"
     ]
   }
 ]
