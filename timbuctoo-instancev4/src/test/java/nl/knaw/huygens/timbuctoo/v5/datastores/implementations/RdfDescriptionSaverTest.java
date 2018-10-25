@@ -48,11 +48,10 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
       (
-        "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-          ">\n" +
+        "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
           "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data</title> \n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+          "DWC Data</title> \n" +
           "  </rdf:Description>\n" +
           "</rdf:RDF>\n"
       ).getBytes(StandardCharsets.UTF_8)
@@ -74,14 +73,11 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
       (
-        "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-          ">\n" +
+        "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
           "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-          "    <description xmlns=\"http://purl.org/dc/terms/\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">" +
+          "    <description xmlns=\"http://purl.org/dc/terms/\">" +
           "Biographical data of the Digital Web Centre for the History of Science (DWC)</description> \n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data</title> \n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\">DWC Data</title> \n" +
           "  </rdf:Description>\n" +
           "</rdf:RDF>\n"
       ).getBytes(StandardCharsets.UTF_8)
@@ -107,11 +103,9 @@ public class RdfDescriptionSaverTest {
         "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
           ">\n" +
           "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-          "    <description xmlns=\"http://purl.org/dc/terms/\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">" +
-          "Biographical data of the Digital Web Centre for the History of Science (DWC)</description> \n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data</title> \n" +
+          "    <description xmlns=\"http://purl.org/dc/terms/\">" +
+          "Biographical data of the Digital Web Centre for the History of Science (DWC)</description>\n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\">DWC Data</title>\n" +
           "  </rdf:Description>\n" +
           "</rdf:RDF>\n"
       ).getBytes(StandardCharsets.UTF_8)
@@ -137,10 +131,10 @@ public class RdfDescriptionSaverTest {
         "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
           ">\n" +
           "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data</title> \n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data 2</title> \n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+          "DWC Data</title> \n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+          "DWC Data 2</title> \n" +
           "  </rdf:Description>\n" +
           "</rdf:RDF>\n"
       ).getBytes(StandardCharsets.UTF_8)
@@ -165,8 +159,8 @@ public class RdfDescriptionSaverTest {
         "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
           ">\n" +
           "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data</title> \n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+          "DWC Data</title> \n" +
           "  </rdf:Description>\n" +
           "</rdf:RDF>\n"
       ).getBytes(StandardCharsets.UTF_8)
@@ -445,8 +439,8 @@ public class RdfDescriptionSaverTest {
         "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
           ">\n" +
           "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data</title> \n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+          "DWC Data</title> \n" +
           "  </rdf:Description>\n" +
           "</rdf:RDF>\n"
       ).getBytes(StandardCharsets.UTF_8)
@@ -470,8 +464,8 @@ public class RdfDescriptionSaverTest {
         "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
           ">\n" +
           "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data</title> \n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+          "DWC Data</title> \n" +
           "  </rdf:Description>\n" +
           "</rdf:RDF>\n"
       ).getBytes(StandardCharsets.UTF_8)
@@ -495,8 +489,8 @@ public class RdfDescriptionSaverTest {
         "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
           ">\n" +
           "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" " +
-          "rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC Data New</title> \n" +
+          "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+          "DWC Data New</title> \n" +
           "  </rdf:Description>\n" +
           "</rdf:RDF>\n"
       ).getBytes(StandardCharsets.UTF_8)

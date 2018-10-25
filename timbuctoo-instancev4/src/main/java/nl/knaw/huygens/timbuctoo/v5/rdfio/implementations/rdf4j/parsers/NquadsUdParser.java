@@ -11,6 +11,7 @@ import org.eclipse.rdf4j.rio.helpers.NTriplesParserSettings;
 import org.eclipse.rdf4j.rio.nquads.NQuadsParser;
 
 import java.io.IOException;
+import java.io.PushbackReader;
 import java.io.Reader;
 import java.util.Stack;
 
@@ -47,7 +48,7 @@ public class NquadsUdParser extends NQuadsParser {
       rdfHandler.startRDF();
     }
 
-    this.reader = reader;
+    this.reader = new PushbackReader(reader);
     lineNo = 1;
 
     reportLocation(lineNo, 1);
