@@ -19,7 +19,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
@@ -171,8 +170,7 @@ public class GraphQl {
 
     UserPermissionCheck userPermissionCheck = new UserPermissionCheck(
       user,
-      permissionFetcher,
-      newHashSet(Permission.READ)
+      permissionFetcher
     );
 
     final GraphQLSchema transform = graphqlGetter

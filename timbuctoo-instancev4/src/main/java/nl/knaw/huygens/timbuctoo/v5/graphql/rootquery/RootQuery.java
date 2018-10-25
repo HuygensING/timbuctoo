@@ -68,7 +68,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -263,10 +262,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           dataSets = dataSets.filter(d -> d.getOwnerId().equals(userId));
         }
         Permission permission = Permission.valueOf(env.getArgument("permission"));
-        if (permission != Permission.READ) { //Read is implied
-          dataSets = dataSets.filter(d -> ((ContextData) env.getContext()).getUserPermissionCheck()
-                                                                          .hasPermission(d, permission));
-        }
+        dataSets = dataSets.filter(d -> ((ContextData) env.getContext()).getUserPermissionCheck()
+                                                                        .hasPermission(d, permission));
 
         return dataSets.iterator();
       })
