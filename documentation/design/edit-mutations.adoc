@@ -166,6 +166,7 @@ input <collectionName>_xsd_stringPropertyInput {
 
 # each type of property will get its own enum that contains the possible property types
 enum <collectionName>_xsd_stringPropertyEnum {
+  # these are RDF type URI's modified by Timbuctoo to work as GraphQL enums
   xsd_string
 }
 
@@ -187,7 +188,7 @@ input <dataSetName>ProvenanceInput {
 ...
 ----
 
-==== Example
+==== Examples
 
 ----
 mutation EditEntity ($uri: String! $entity: <collectionName>Input!) {
@@ -220,7 +221,7 @@ Change a value of a single valued field.
   "entity": {
     "replacements": {
       "<entityTypeField1>": {
-        "type": "http://www.w3.org/2001/XMLSchema#string",
+        "type": "xsd_string",
         "value": "Test2"
       }
     }
@@ -248,7 +249,7 @@ Add value to an empty multivalued field.
     "additions": {
       "<entityTypeField2List>": [
         {
-          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "type": "xsd_string",
           "value": "Test"
         }
       ]
@@ -266,7 +267,7 @@ The next example replaces "Test2" with the value "Test".
     "additions": {
       "<entityTypeField2List>": [
         {
-          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "type": "xsd_string",
           "value": "Test"
         }
       ]
@@ -274,7 +275,7 @@ The next example replaces "Test2" with the value "Test".
     "deletions": {
       "<entityTypeField2List>": [
         {
-          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "type": "xsd_string",
           "value": "Test2"
         }
       ]
@@ -291,7 +292,7 @@ Replace the whole collection of a multivalued field.
     "replacements": {
       "<entityTypeField2List>": [
         {
-          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "type": "xsd_string",
           "value": "Test2"
         }
       ]
@@ -309,7 +310,7 @@ The next example removes "Test2" from the collection.
     "deletions": {
       "<entityTypeField2List>": [
         {
-          "type": "http://www.w3.org/2001/XMLSchema#string",
+          "type": "xsd_string",
           "value": "Test2"
         }
       ]
