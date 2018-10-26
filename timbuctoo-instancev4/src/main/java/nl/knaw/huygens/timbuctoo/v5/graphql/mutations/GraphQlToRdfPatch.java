@@ -198,6 +198,13 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   }
 
   private void updateData(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
+    for (Map.Entry<String, ArrayNode> deletion : changeLog.getDeletions().entrySet()) {
+      JsonNode value = deletion.getValue();
+      String predicate = getPredicate(dataSet, deletion);
+      // Process the user input
+      processValues(saver, value, predicate, false, dataSet.getTypeNameStore());
+    }
+
     for (Map.Entry<String, ArrayNode> addition : changeLog.getAdditions().entrySet()) {
       JsonNode value = addition.getValue();
       String predicate = getPredicate(dataSet, addition);
@@ -206,21 +213,14 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
       processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
     }
 
-    for (Map.Entry<String, ArrayNode> deletion : changeLog.getDeletions().entrySet()) {
-      JsonNode value = deletion.getValue();
-      String predicate = getPredicate(dataSet, deletion);
-      // Process the user input
-      processValues(saver, value, predicate, false, dataSet.getTypeNameStore());
-    }
-
     for (Map.Entry<String, JsonNode> replacement : changeLog.getReplacements().entrySet()) {
       JsonNode value = replacement.getValue();
       String predicate = getPredicate(dataSet, replacement);
 
       // Process the user input
-      processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
-
       removePrevious(saver, dataSet, predicate);
+
+      processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
     }
   }
 
