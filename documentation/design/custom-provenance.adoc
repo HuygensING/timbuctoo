@@ -1,0 +1,21 @@
+= Edit mutations custom provenance
+
+== Use case
+This feature is an expansion on the link:edit-mutations.adoc[Edit mutations] feature.
+The current edit mutations will add some standard Timbuctoo / PROV-O provenance.
+With this feature we would like to give the use the opportunity to add some extra documentation on why the change is made.
+
+== Requirements
+* The admin of a data set should be able to define a structure of the custom provenance.
+* The GraphQL schema should limit the user to the defined schema. (like how the rest of the edit mutations work)
+
+
+== Design
+
+=== GraphQL
+
+=== Java
+
+== Links
+
+* https://www.w3.org/TR/2013/REC-prov-o-20130430/[PROV-O]
