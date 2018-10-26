@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timPredicate;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -118,8 +120,9 @@ public class GraphQlToRdfPatchTest {
     instance.sendQuads(serializer, s -> {
     }, dataSet);
 
-    verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue, STRING, null, null);
-    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue, STRING, null, null);
+    InOrder inOrder = inOrder(serializer);
+    inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue, STRING, null, null);
+    inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue, STRING, null, null);
   }
 
   @Test
@@ -138,10 +141,32 @@ public class GraphQlToRdfPatchTest {
     instance.sendQuads(serializer, s -> {
     }, dataSet);
 
-    verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue1, STRING, null, null);
-    verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue2, STRING, null, null);
-    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue1, STRING, null, null);
-    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue2, STRING, null, null);
+    InOrder inOrder = inOrder(serializer);
+    inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue1, STRING, null, null);
+    inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue2, STRING, null, null);
+    inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue1, STRING, null, null);
+    inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue2, STRING, null, null);
+  }
+
+  @Test
+  public void deletionsAreExecutedBeforeAdditions() throws Exception {
+    String addedValue = "newValue";
+    String deletedValue = "oldValue";
+    Map<Object, Object> additions = Maps.newHashMap();
+    additions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(addedValue)));
+    Map<Object, Object> deletions = Maps.newHashMap();
+    deletions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(deletedValue)));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("deletions", deletions);
+    entity.put("additions", additions);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    InOrder inOrder = inOrder(serializer);
+    inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, deletedValue, STRING, null, null);
+    inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, addedValue, STRING, null, null);
   }
 
   @Test
