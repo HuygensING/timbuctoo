@@ -326,7 +326,7 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public void deleteVre(String vreName, User user) throws PermissionFetchingException {
-    boolean isAdmin = permissionFetcher.getOldPermissions(user, vreName).contains(Permission.ADMIN);
+    boolean isAdmin = permissionFetcher.getOldPermissions(user, vreName).contains(Permission.REMOVE_DATASET);
     if (isAdmin) {
       dataStoreOperations.deleteVre(vreName);
     } else {

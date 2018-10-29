@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
@@ -14,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,7 +39,8 @@ public class BasicPermissionFetcherTest {
   private PermissionFetcher permissionFetcher;
   private UserValidator userValidator;
   private User testUser;
-  private DataSetMetaData dataSetMetaData;
+  private DataSetMetaData publishedDataSetMetaData;
+  private PermissionConfiguration permissionConfig;
 
   @Before
   public void setUp() throws Exception {
@@ -46,23 +49,29 @@ public class BasicPermissionFetcherTest {
     testUser = mock(User.class);
     given(testUser.getId()).willReturn("testownerid");
     given(userValidator.getUserFromUserId("testownerid")).willReturn(Optional.of(testUser));
-    permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud);
-    dataSetMetaData = mock(BasicDataSetMetaData.class);
-    given(dataSetMetaData.getDataSetId()).willReturn("testdatasetid");
-    given(dataSetMetaData.getOwnerId()).willReturn("testownerid");
-    given(dataSetMetaData.isPublished()).willReturn(true);
+    permissionConfig = mock(PermissionConfiguration.class);
+    permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, permissionConfig);
+    publishedDataSetMetaData = mock(BasicDataSetMetaData.class);
+    given(publishedDataSetMetaData.getDataSetId()).willReturn("testdatasetid");
+    given(publishedDataSetMetaData.getOwnerId()).willReturn("testownerid");
+    given(publishedDataSetMetaData.isPublished()).willReturn(true);
   }
 
   @Test
   public void getPermissionsReturnsPermissionsForGivenUserAndDataSet() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
-    given(vreAuthorization.isAllowedToWrite()).willReturn(true);
+    List<String> userRoles = Lists.newArrayList("USER");
+    given(vreAuthorization.getRoles()).willReturn(userRoles);
+    given(permissionConfig.getPermissionsForRoles(userRoles)).willReturn(Sets.newHashSet(
+      Permission.WRITE,
+      Permission.READ
+    ));
     given(vreAuthorizationCrud.getAuthorization(
       anyString(),
       any(User.class))
     ).willReturn(Optional.of(vreAuthorization));
 
-    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), publishedDataSetMetaData);
 
     assertThat(permissions, containsInAnyOrder(Permission.WRITE, Permission.READ));
   }
@@ -70,30 +79,23 @@ public class BasicPermissionFetcherTest {
   @Test
   public void getPermissionsDoesNotReturnWritePermissionsForRsImportedDataSet() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
-    given(vreAuthorization.isAllowedToWrite()).willReturn(true);
+    List<String> userRoles = Lists.newArrayList("USER");
+    given(vreAuthorization.getRoles()).willReturn(userRoles);
+    given(permissionConfig.getPermissionsForRoles(userRoles)).willReturn(Sets.newHashSet(
+      Permission.WRITE,
+      Permission.READ
+    ));
     given(vreAuthorizationCrud.getAuthorization(
       anyString(),
       any(User.class))
     ).willReturn(Optional.of(vreAuthorization));
     ImportInfo importInfo = new ImportInfo("http://example.com/resourcesync/user/dataset/capabilitylist.xml",null);
-    given(dataSetMetaData.getImportInfo())
+    given(publishedDataSetMetaData.getImportInfo())
       .willReturn(Lists.newArrayList(importInfo));
 
-    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), publishedDataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
-  }
-
-  @Test
-  public void getPermissionsReturnsAdminAndReadPermissionsForAdminUserAndDataSet() throws Exception {
-    VreAuthorization vreAuthorization = mock(VreAuthorization.class);
-    given(vreAuthorization.hasAdminAccess()).willReturn(true);
-    given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class)))
-      .willReturn(Optional.of(vreAuthorization));
-
-    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
-
-    assertThat(permissions, containsInAnyOrder(Permission.ADMIN, Permission.READ));
   }
 
   @Test
@@ -103,7 +105,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class)))
       .willReturn(Optional.of(vreAuthorization));
 
-    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), publishedDataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
@@ -114,7 +116,7 @@ public class BasicPermissionFetcherTest {
       AuthorizationUnavailableException.class
     );
 
-    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), publishedDataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
@@ -123,44 +125,32 @@ public class BasicPermissionFetcherTest {
   public void getPermissionsReturnsReadPermissionWhenUserNotPresent() throws Exception {
     given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class))).willReturn(Optional.empty());
 
-    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), publishedDataSetMetaData);
 
     assertThat(permissions, contains(Permission.READ));
   }
 
   @Test
   public void getPermissionsDoesNotReturnReadPermissionForUnauthorizedUserInPrivateDataset() throws Exception {
-    DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
-    given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
-    given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
-    given(dataSetMetaData2.isPublished()).willReturn(false);
+    DataSetMetaData privateDataSetMetaData = mock(BasicDataSetMetaData.class);
+    given(privateDataSetMetaData.getDataSetId()).willReturn("testdatasetid");
+    given(privateDataSetMetaData.getOwnerId()).willReturn("testownerid");
+    given(privateDataSetMetaData.isPublished()).willReturn(false);
 
-    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), dataSetMetaData2);
+    Set<Permission> permissions = permissionFetcher.getPermissions(mock(User.class), privateDataSetMetaData);
 
     assertThat(permissions, is(empty()));
   }
 
   @Test
-  public void getPermissionsReturnsPermissionsForAdminInPrivateDataset() throws Exception {
-    VreAuthorization vreAuthorization = mock(VreAuthorization.class);
-    given(vreAuthorization.hasAdminAccess()).willReturn(true);
-    given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class)))
-      .willReturn(Optional.of(vreAuthorization));
-
-    DataSetMetaData dataSetMetaData2 = mock(BasicDataSetMetaData.class);
-    given(dataSetMetaData2.getDataSetId()).willReturn("testdatasetid");
-    given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
-    given(dataSetMetaData2.isPublished()).willReturn(false);
-
-    Set<Permission> permissions = permissionFetcher.getPermissions(userWithId("testadminId"), dataSetMetaData2);
-
-    assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.ADMIN));
-  }
-
-  @Test
   public void getPermissionsReturnsPermissionsForUserWithWriteAccessInPrivateDataset() throws Exception {
     VreAuthorization vreAuthorization = mock(VreAuthorization.class);
-    given(vreAuthorization.isAllowedToWrite()).willReturn(true);
+    List<String> userRoles = Lists.newArrayList("USER");
+    given(vreAuthorization.getRoles()).willReturn(userRoles);
+    given(permissionConfig.getPermissionsForRoles(userRoles)).willReturn(Sets.newHashSet(
+      Permission.WRITE,
+      Permission.READ
+    ));
     given(vreAuthorizationCrud.getAuthorization(anyString(), any(User.class)))
       .willReturn(Optional.of(vreAuthorization));
 
@@ -185,9 +175,11 @@ public class BasicPermissionFetcherTest {
   @Test(expected = AuthorizationCreationException.class)
   public void initializeOwnerAuthorizationThrowsExceptionWhenVreAuthorizationCrudFails() throws Exception {
     User user = userWithId("testuserid");
-    doThrow(AuthorizationCreationException.class).when(vreAuthorizationCrud)
-                                                 .createAuthorization("testownerid__testdatasetid",
-                                                   user, "ADMIN");
+    doThrow(AuthorizationCreationException.class).when(vreAuthorizationCrud).createAuthorization(
+      "testownerid__testdatasetid",
+      user,
+      "ADMIN"
+    );
 
     permissionFetcher.initializeOwnerAuthorization(user,"testownerid", "testdatasetid");
   }

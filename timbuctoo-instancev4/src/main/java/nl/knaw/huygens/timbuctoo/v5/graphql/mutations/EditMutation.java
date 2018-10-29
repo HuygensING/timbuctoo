@@ -56,8 +56,8 @@ public class EditMutation implements DataFetcher {
     }
 
     DataSet dataSet = dataSetOpt.get();
-    if (!contextData.getUserPermissionCheck().getPermissions(dataSet.getMetadata()).contains(Permission.WRITE)) {
-      throw new RuntimeException("User should have data 'write' permissions on the data set.");
+    if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.WRITE)) {
+      throw new RuntimeException("User should have permissions to edit entities of the data set.");
     }
 
     try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(uri)) {

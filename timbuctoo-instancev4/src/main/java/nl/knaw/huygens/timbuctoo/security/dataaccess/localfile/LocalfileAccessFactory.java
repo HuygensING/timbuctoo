@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.security.JsonPermissionConfiguration;
+import nl.knaw.huygens.timbuctoo.security.PermissionConfiguration;
 import nl.knaw.huygens.timbuctoo.security.healthchecks.DirectoryHealthCheck;
 import nl.knaw.huygens.timbuctoo.security.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
@@ -11,6 +14,9 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.slf4j.Logger;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -24,33 +30,23 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class LocalfileAccessFactory implements AccessFactory {
   private static final Logger LOG = getLogger(LocalfileAccessFactory.class);
+  private final String authorizationsPath;
+  private final String loginsFilePath;
+  private final String usersFilePath;
+  private final String permissionConfig;
 
-  public LocalfileAccessFactory(
-    String authorizationsPath,
-    String oldAuthorizationsPath,
-    String loginsFilePath,
-    String usersFilePath
+
+  @JsonCreator
+  public LocalfileAccessFactory(@JsonProperty("authorizationsPath") String authorizationsPath,
+                                @JsonProperty("permissionConfig") String permissionConfig,
+                                @JsonProperty("loginsFilePath") String loginsFilePath,
+                                @JsonProperty("usersFilePath") String usersFilePath
   ) {
     this.authorizationsPath = authorizationsPath;
-    this.oldAuthorizationsPath = oldAuthorizationsPath;
+    this.permissionConfig = permissionConfig;
     this.loginsFilePath = loginsFilePath;
     this.usersFilePath = usersFilePath;
   }
-
-  public LocalfileAccessFactory() {
-  }
-
-  @JsonProperty
-  private String oldAuthorizationsPath;
-
-  @JsonProperty
-  private String authorizationsPath;
-
-  @JsonProperty
-  private String loginsFilePath;
-
-  @JsonProperty
-  private String usersFilePath;
 
   @Override
   public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
@@ -58,7 +54,22 @@ public class LocalfileAccessFactory implements AccessFactory {
     list.add(tuple("login file available", new FileHealthCheck(Paths.get(loginsFilePath))));
     list.add(tuple("authorizations directory available", new DirectoryHealthCheck(Paths.get(authorizationsPath))));
     list.add(tuple("users file available", new FileHealthCheck(Paths.get(usersFilePath))));
+    list.add(tuple("permission config available", new FileHealthCheck(Paths.get(permissionConfig))));
+
     return list.iterator();
+  }
+
+  @Override
+  public PermissionConfiguration getPermissionConfig() {
+    try {
+      Path permissionConfigPath = Paths.get(permissionConfig);
+      if (!Files.exists(permissionConfigPath)) {
+        new PermissionConfigMigrator(permissionConfigPath).execute();
+      }
+      return new JsonPermissionConfiguration(new FileInputStream(permissionConfig));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -93,7 +104,4 @@ public class LocalfileAccessFactory implements AccessFactory {
     return new LocalFileVreAuthorizationAccess(authorizationsFolder);
   }
 
-  public String getAuthorizationsPathForMigration() {
-    return oldAuthorizationsPath;
-  }
 }

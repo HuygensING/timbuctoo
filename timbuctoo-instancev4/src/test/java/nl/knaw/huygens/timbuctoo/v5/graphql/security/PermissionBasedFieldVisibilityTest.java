@@ -112,7 +112,9 @@ public class PermissionBasedFieldVisibilityTest {
 
   private DataSet createDataSetWithUserPermissions(String combinedId, Set<Permission> permissions) {
     DataSetMetaData dataSetMetaData = createDataSetMetadata(combinedId);
-    given(userPermissionCheck.getPermissions(dataSetMetaData)).willReturn(permissions);
+    for (Permission permission : permissions) {
+      given(userPermissionCheck.hasPermission(dataSetMetaData, permission)).willReturn(true);
+    }
     return createDataSet(dataSetMetaData);
   }
 

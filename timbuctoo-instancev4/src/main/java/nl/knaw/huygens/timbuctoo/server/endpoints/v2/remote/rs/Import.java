@@ -42,7 +42,7 @@ public class Import {
 
     final Either<Response, Response> responses = authCheck
       .getOrCreate(authorization, importData.userId, importData.dataSetId, forceCreation)
-      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
+      .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.getLeft(), userAndDs.getRight()))
       .map(userAndDs -> {
         final DataSet dataSet = userAndDs.getRight();
         try {

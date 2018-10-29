@@ -5,9 +5,12 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.MutationOperation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -30,7 +33,7 @@ public class DataSetMetadataMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkPermission(env, dataSet.getMetadata(),Permission.EDIT_DATASET_METADATA);
 
     try {
       Map md = env.getArgument("metadata");
@@ -69,7 +72,7 @@ public class DataSetMetadataMutation implements DataFetcher {
           )
       );
 
-      return new DataSetWithDatabase(dataSet);
+      return new DataSetWithDatabase(dataSet, env.<ContextData>getContext().getUserPermissionCheck());
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }

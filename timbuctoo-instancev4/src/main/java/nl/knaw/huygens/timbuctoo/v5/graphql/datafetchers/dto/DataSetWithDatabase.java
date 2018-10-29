@@ -4,15 +4,23 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DataSetWithDatabase extends LazyTypeSubjectReference implements DataSetMetaData {
   private final DataSetMetaData dataSetMetaData;
+  private final Set<String> userPermissions;
 
-  public DataSetWithDatabase(DataSet dataSet) {
+  public DataSetWithDatabase(DataSet dataSet, UserPermissionCheck userPermissionCheck) {
     super(dataSet.getMetadata().getBaseUri(), dataSet);
     this.dataSetMetaData = dataSet.getMetadata();
+    this.userPermissions = userPermissionCheck.getPermissions(dataSet.getMetadata()).stream()
+                                              .map(Enum::toString)
+                                              .collect(Collectors.toSet());
+    ;
   }
 
   @Override
@@ -64,6 +72,10 @@ public class DataSetWithDatabase extends LazyTypeSubjectReference implements Dat
   @Override
   public void publish() {
     dataSetMetaData.publish();
+  }
+
+  public Set<String> getUserPermissions() {
+    return userPermissions;
   }
 
 }

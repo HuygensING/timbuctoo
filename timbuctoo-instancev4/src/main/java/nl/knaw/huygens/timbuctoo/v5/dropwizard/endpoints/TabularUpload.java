@@ -70,7 +70,7 @@ public class TabularUpload {
     LogStorageFailedException {
 
     final Either<Response, Response> result = authCheck.getOrCreate(authHeader, ownerId, dataSetId, forceCreation)
-      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
+      .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.getLeft(), userAndDs.getRight()))
       .map(userAndDs -> {
         if (rdfInputStream == null || body == null || fileInfo == null) {
           return errorResponseHelper.error(

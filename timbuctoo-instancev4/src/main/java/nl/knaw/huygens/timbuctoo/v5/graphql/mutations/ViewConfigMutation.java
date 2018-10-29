@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.concurrent.ExecutionException;
 
@@ -29,7 +30,7 @@ public class ViewConfigMutation implements DataFetcher {
     Object viewConfig = env.getArgument("viewConfig");
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
 
-    MutationHelpers.checkAdminPermissions(env, dataSet.getMetadata());
+    MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.CONFIG_VIEW);
     try {
       MutationHelpers.addMutation(
         dataSet,

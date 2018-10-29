@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.LogEntryImportStatus;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MutationHelpers;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
 import java.util.List;
@@ -28,7 +30,11 @@ public class DataSetImportStatusFetcher implements DataFetcher<List<LogEntryImpo
   @Override
   public List<LogEntryImportStatus> get(DataFetchingEnvironment env) {
     User currentUser = env.<ContextData>getContext().getUser()
-                                             .orElseThrow(() -> new RuntimeException("You are not logged in"));
+                                                    .orElseThrow(() -> new RuntimeException("You are not logged in"));
+
+    DataSetMetaData dataSetMetaData = env.getSource();
+
+    MutationHelpers.checkPermission(env, dataSetMetaData, Permission.READ_IMPORT_STATUS);
 
     DataSetMetaData input = env.getSource();
     Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(

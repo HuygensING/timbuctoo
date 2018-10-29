@@ -22,13 +22,14 @@ public class MutationHelpers {
     return contextData.getUser().orElseThrow(() -> new RuntimeException("You are not logged in"));
   }
 
-  public static void checkAdminPermissions(DataFetchingEnvironment env, DataSetMetaData dataSetMetaData)
+  public static void checkPermission(DataFetchingEnvironment env, DataSetMetaData dataSetMetaData,
+                                     Permission permission)
     throws RuntimeException {
     ContextData contextData = env.getContext();
 
     UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
-    if (!userPermissionCheck.getPermissions(dataSetMetaData).contains(Permission.ADMIN)) {
-      throw new RuntimeException("You are not admin of this dataset");
+    if (!userPermissionCheck.hasPermission(dataSetMetaData, permission)) {
+      throw new RuntimeException("You do not have permission '" + permission + "' for this data set.");
     }
   }
 

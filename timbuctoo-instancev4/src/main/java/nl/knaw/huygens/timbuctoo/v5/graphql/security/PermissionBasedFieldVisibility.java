@@ -30,7 +30,7 @@ public class PermissionBasedFieldVisibility implements GraphqlFieldVisibility {
     Collection<DataSet> dataSets = dataSetRepository.getDataSets();
 
     Set<String> dataSetNamesWithOutReadPermission = dataSets.stream()
-      .filter(dataSet -> !userPermissionCheck.getPermissions(dataSet.getMetadata()).contains(Permission.READ))
+      .filter(dataSet -> !userPermissionCheck.hasPermission(dataSet.getMetadata(), Permission.READ))
       .map(dataSet -> dataSet.getMetadata().getCombinedId())
       .collect(Collectors.toSet());
 
@@ -50,7 +50,7 @@ public class PermissionBasedFieldVisibility implements GraphqlFieldVisibility {
     Collection<DataSet> dataSets = dataSetRepository.getDataSets();
 
     Set<String> dataSetNamesWithOutReadPermission = dataSets.stream()
-      .filter(dataSet -> !userPermissionCheck.getPermissions(dataSet.getMetadata()).contains(Permission.READ))
+      .filter(dataSet -> !userPermissionCheck.hasPermission(dataSet.getMetadata(), Permission.READ))
       .map(dataSet -> dataSet.getMetadata().getCombinedId())
       .collect(Collectors.toSet());
 

@@ -110,7 +110,7 @@ public class DataSetRepositoryTest {
     final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
     File dataSetPath = new File(new File(tempFile, dataSet.getMetadata().getOwnerId()), "dataset");
     assertThat(dataSetPath.exists(), is(true));
-    given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(Sets.newHashSet(Permission.ADMIN));
+    given(permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.REMOVE_DATASET)).willReturn(true);
 
     dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
 
@@ -121,7 +121,7 @@ public class DataSetRepositoryTest {
   public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
     User user = User.create(null, "user");
     final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
-    given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(Sets.newHashSet(Permission.ADMIN));
+    given(permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.REMOVE_DATASET)).willReturn(true);
 
     dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", user);
 
@@ -143,7 +143,7 @@ public class DataSetRepositoryTest {
     final DataSet dataSet = dataSetRepository.createDataSet(user, "dataset" );
     DataSetMetaData metadata = dataSet.getMetadata();
     String owner = metadata.getOwnerId();
-    given(permissionFetcher.getPermissions(user, metadata)).willReturn(Sets.newHashSet(Permission.ADMIN));
+    given(permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.REMOVE_DATASET)).willReturn(true);
 
     dataSetRepository.removeDataSet(owner, "dataset", user);
 
@@ -166,13 +166,12 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void publishDataSetWillReturnDataSetMetaDataWithPublishedFlagSet() throws Exception {
+  public void publishDataSetWillReturnDataSetMetaDataWithPublishedSetToTrue() throws Exception {
     User user = User.create(null, "user");
     DataSet dataSet = dataSetRepository.createDataSet(user, "dataset");
     DataSetMetaData metadata = dataSet.getMetadata();
-    given(permissionFetcher.getPermissions(user, dataSet.getMetadata())).willReturn(
-      Sets.newHashSet(Permission.ADMIN, Permission.READ)
-    );
+    given(permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.PUBLISH_DATASET)).willReturn(true);
+    given(permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.READ)).willReturn(true);
 
     assertThat(metadata.isPublished(), is(false));
 

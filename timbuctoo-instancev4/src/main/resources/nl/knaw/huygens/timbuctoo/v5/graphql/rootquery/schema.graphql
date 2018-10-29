@@ -94,6 +94,9 @@ type DataSetMetadata {
   #status of imports
   dataSetImportStatus: [ImportStatus!]!
   importStatus(id: String!): ImportStatus!
+  # the permissions of the current user
+  userPermissions: [String!]
+
 }
 
 type ResourceSyncReport {

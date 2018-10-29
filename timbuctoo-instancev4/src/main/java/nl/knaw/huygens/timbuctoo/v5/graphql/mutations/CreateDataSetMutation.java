@@ -5,6 +5,7 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
@@ -22,12 +23,15 @@ public class CreateDataSetMutation implements DataFetcher {
   }
 
   @Override
-  public Object get(DataFetchingEnvironment environment) {
-    User currentUser = getUser(environment);
+  public Object get(DataFetchingEnvironment env) {
+    User currentUser = getUser(env);
 
-    String dataSetName = environment.getArgument("dataSetName");
+    String dataSetName = env.getArgument("dataSetName");
     try {
-      return new DataSetWithDatabase(dataSetRepository.createDataSet(currentUser, dataSetName));
+      return new DataSetWithDatabase(
+        dataSetRepository.createDataSet(currentUser, dataSetName),
+        env.<ContextData>getContext().getUserPermissionCheck()
+      );
     } catch (DataStoreCreationException e) {
       LOG.error("Data set creation exception", e);
       throw new RuntimeException("Data set could not be created");
