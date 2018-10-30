@@ -42,8 +42,14 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private static final String PROV_AGENT_PRED = "http://www.w3.org/ns/prov#agent";
   private static final String PROV_HAD_PLAN = "http://www.w3.org/ns/prov#hadPlan";
   private static final String PROV_PLAN = "http://www.w3.org/ns/prov#Plan";
+
+  @JsonProperty
   private final String subjectUri;
+
+  @JsonProperty
   private final ChangeLog changeLog;
+
+  @JsonProperty
   private final String userUri;
 
   GraphQlToRdfPatch(String subjectUri, String userUri, Map entity)
