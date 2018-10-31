@@ -45,16 +45,10 @@ public class UserPermissionCheck {
   }
 
   public boolean hasPermission(DataSetMetaData dataSet, Permission permission) {
-    if (user.isPresent()) {
-      User userData = this.user.get();
-      try {
-        return permissionFetcher.hasPermission(userData, dataSet, permission);
-      } catch (PermissionFetchingException e) {
-        LOG.error("Could not check permissions for user '{}' on data set '{}'",
-          userData.getDisplayName(),
-          dataSet.getDataSetId()
-        );
-        LOG.error("Error thrown", e);
+    // do not use permissionFetcher.hasPermission,  getPermissions will cache the permissions of the users for the
+    // http request and therefore makes the loading of the schema a lot faster
+    return getPermissions(dataSet).contains(permission);
+  }
       }
     }
     return false;
