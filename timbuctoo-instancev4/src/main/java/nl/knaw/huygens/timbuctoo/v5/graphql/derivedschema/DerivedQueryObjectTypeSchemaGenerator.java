@@ -120,6 +120,8 @@ class DerivedQueryObjectTypeSchemaGenerator {
            .append("  title: Value @entityTitle\n")
            .append("  description: Value @entityDescription\n")
            .append("  image: Value @entityImage\n")
+           .append("  getAllOfPredicate(uri: String!, outgoing: Boolean!, cursor: ID, count: Int): EntityOrValueList " +
+             "@getAllOfPredicate\n")
            .append("  inOtherDataSets(dataSetIds: [String!]): [DataSetLink!]! @otherDataSets\n");
     builder.append(predicates);
     builder.append("}\n\n");
