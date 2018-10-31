@@ -14,6 +14,8 @@ public class PermissionConfigMigrator {
   }
 
   public void execute() throws IOException {
+    // Has a semantic connection with
+    // nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck.OldGraphQlPermission
     LoggerFactory.getLogger(PermissionConfigMigrator.class).info("Setting up a minimal permission configuration");
     String permissions =
       "[\n" +

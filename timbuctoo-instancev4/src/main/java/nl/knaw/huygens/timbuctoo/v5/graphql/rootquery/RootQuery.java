@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataMetaDataListFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataSetImportStatusFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DiscoverResourceSyncDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.ImportStatusFetcher;
@@ -253,20 +254,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return new DataSetWithDatabase(dataSet, userPermissionCheck);
         }).iterator()
       )
-      .dataFetcher("dataSetMetadataList", env -> (Iterable) () -> {
-        Stream<DataSetWithDatabase> dataSets = dataSetRepository.getDataSets()
-          .stream()
-          .map(dataSet -> new DataSetWithDatabase(dataSet, ((ContextData) env.getContext()).getUserPermissionCheck()));
-        if (env.getArgument("ownOnly")) {
-          String userId = ((ContextData) env.getContext()).getUser().map(u -> "u" + u.getPersistentId()).orElse(null);
-          dataSets = dataSets.filter(d -> d.getOwnerId().equals(userId));
-        }
-        Permission permission = Permission.valueOf(env.getArgument("permission"));
-        dataSets = dataSets.filter(d -> ((ContextData) env.getContext()).getUserPermissionCheck()
-                                                                        .hasPermission(d, permission));
-
-        return dataSets.iterator();
-      })
+      .dataFetcher("dataSetMetadataList", new DataMetaDataListFetcher(RootQuery.this.dataSetRepository))
       .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
       .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
       .dataFetcher("personalInfo", env -> "http://example.com")

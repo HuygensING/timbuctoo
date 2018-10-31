@@ -1,13 +1,16 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.security;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import org.apache.commons.compress.archivers.dump.DumpArchiveEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
@@ -49,8 +52,45 @@ public class UserPermissionCheck {
     // http request and therefore makes the loading of the schema a lot faster
     return getPermissions(dataSet).contains(permission);
   }
+
+  public boolean hasOldGraphQlPermission(DataSetMetaData dataSet, OldGraphQlPermission permission) {
+    return permission.translateToPermission().stream().allMatch(perm -> hasPermission(dataSet, perm));
+  }
+
+  // This mapping has a semantic connection with the
+  // nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.PermissionConfigMigrator
+  public enum OldGraphQlPermission {
+    ADMIN,
+    READ,
+    WRITE;
+
+    public Collection<Permission> translateToPermission() {
+      switch (this) {
+        case ADMIN:
+          return Lists.newArrayList(
+            Permission.IMPORT_DATA,
+            Permission.REMOVE_DATASET,
+            Permission.PUBLISH_DATASET,
+            Permission.EDIT_COLLECTION_METADATA,
+            Permission.EDIT_DATASET_METADATA,
+            Permission.EXTEND_SCHEMA,
+            Permission.CONFIG_INDEX,
+            Permission.CONFIG_VIEW,
+            Permission.CHANGE_SUMMARYPROPS,
+            Permission.READ,
+            Permission.WRITE,
+            Permission.UPDATE_RESOURCESYNC,
+            Permission.IMPORT_RESOURCESYNC,
+            Permission.READ_IMPORT_STATUS
+          );
+        case READ:
+          return Lists.newArrayList(Permission.READ);
+        case WRITE:
+          return Lists.newArrayList(Permission.READ, Permission.WRITE, Permission.READ_IMPORT_STATUS);
+        default:
+          throw new RuntimeException("This cannot happen.");
       }
     }
-    return false;
   }
 }
+
