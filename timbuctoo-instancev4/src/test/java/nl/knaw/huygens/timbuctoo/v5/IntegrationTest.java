@@ -30,7 +30,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -43,7 +42,6 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -64,9 +62,9 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -1731,6 +1729,86 @@ public class IntegrationTest {
     List<String> dataSetIds =
       StreamSupport.stream(datasets.spliterator(), false).map(dataSet -> dataSet.get("dataSetId").asText())
                    .collect(toList());
+    assertThat(dataSetIds, hasItem(dataSetId));
+  }
+
+  @Test
+  public void publishedDatasetsAreReadableForEveryone() {
+    // upload dataset
+    final String dataSetName = "unknown" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+
+    // create new data set, this will be private
+    call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation createDataSet {\n" +
+            "  createDataSet(dataSetName:\"" + dataSetName + "\") {\n" +
+            "    dataSetId\n" +
+            "  }\n" +
+            "}\n"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    // retrieve data sets as a user that is not logged in before publishing the data set
+    Response queryData = callWithoutAuthentication("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "dataSetMetadataList(promotedOnly:false publishedOnly:false) {\n" +
+            "    dataSetId\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    List<JsonNode> datasetsBeforePublish = Lists.newArrayList(queryData.readEntity(ObjectNode.class)
+                                                 .get("data")
+                                                 .get("dataSetMetadataList")
+                                                 .elements());
+    assertThat(datasetsBeforePublish, is(empty()));
+
+    // publish the data set
+    call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation publish {\n" +
+            "  publish(dataSetId: \"" + dataSetId + "\") {\n" +
+            "    uri\n" +
+            "  }\n" +
+            "}\n"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+
+    // retrieve data sets as a user that is not logged in after publishing
+    Response queryDataAfterPublish = callWithoutAuthentication("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "dataSetMetadataList(promotedOnly:false publishedOnly:false) {\n" +
+            "    dataSetId\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    Iterable<JsonNode> datasetsAfterPublish = () -> queryDataAfterPublish.readEntity(ObjectNode.class)
+                                                 .get("data")
+                                                 .get("dataSetMetadataList")
+                                                 .elements();
+    List<String> dataSetIds =
+      StreamSupport.stream(datasetsAfterPublish.spliterator(), false).map(dataSet -> dataSet.get("dataSetId").asText())
+                   .collect(toList());
+
     assertThat(dataSetIds, hasItem(dataSetId));
   }
 

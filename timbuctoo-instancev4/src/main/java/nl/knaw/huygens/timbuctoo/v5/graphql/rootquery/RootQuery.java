@@ -254,7 +254,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return new DataSetWithDatabase(dataSet, userPermissionCheck);
         }).iterator()
       )
-      .dataFetcher("dataSetMetadataList", new DataMetaDataListFetcher(RootQuery.this.dataSetRepository))
+      .dataFetcher("dataSetMetadataList", new DataMetaDataListFetcher(dataSetRepository))
       .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
       .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
       .dataFetcher("personalInfo", env -> "http://example.com")
