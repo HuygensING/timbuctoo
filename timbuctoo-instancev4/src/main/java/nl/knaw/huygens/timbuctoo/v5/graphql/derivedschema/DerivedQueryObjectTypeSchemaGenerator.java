@@ -131,13 +131,11 @@ class DerivedQueryObjectTypeSchemaGenerator {
   public void addQueryToSchema(StringBuilder schema) {
     String typename = graphQlNameGenerator.createObjectTypeName(rootType, typeUri );
     String name = typename.substring(rootType.length() + 1);
-    schema.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
-      "@fromCollection(uri: \"")
-         .append(derivedSchemaContainer.graphQlUri(typeUri)).append("\", listAll: false)\n");
+    schema.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" @lookupUri\n");
     schema.append("  ")
          .append(derivedSchemaContainer.collectionType(name, typename))
-         .append(" " + "@fromCollection(uri: \"")
+         .append(" @fromCollection(uri: \"")
          .append(derivedSchemaContainer.graphQlUri(typeUri))
-         .append("\", listAll: true)\n");
+         .append("\")\n");
   }
 }

@@ -103,6 +103,7 @@ public class RdfWiringFactory implements WiringFactory {
   @Override
   public boolean providesDataFetcher(FieldWiringEnvironment environment) {
     return environment.getFieldDefinition().getDirective("fromCollection") != null ||
+      environment.getFieldDefinition().getDirective("lookupUri") != null ||
       environment.getFieldDefinition().getDirective("rdf") != null ||
       environment.getFieldDefinition().getDirective("uri") != null ||
       environment.getFieldDefinition().getDirective("passThrough") != null ||
@@ -131,15 +132,12 @@ public class RdfWiringFactory implements WiringFactory {
         predicate,
         Direction.valueOf(direction)
       ));
+    } else if (environment.getFieldDefinition().getDirective("lookupUri") != null) {
+      return lookupFetcher;
     } else if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("fromCollection");
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
-      boolean listAll = ((BooleanValue) directive.getArgument("listAll").getValue()).isValue();
-      if (listAll) {
-        return new CollectionFetcherWrapper(argumentsHelper, new CollectionDataFetcher(uri));
-      } else {
-        return lookupFetcher;
-      }
+      return new CollectionFetcherWrapper(argumentsHelper, new CollectionDataFetcher(uri));
     } else if (environment.getFieldDefinition().getDirective("rdf") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("rdf");
       String uri = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
