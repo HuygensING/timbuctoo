@@ -14,6 +14,14 @@ interface Entity {
   description: Value
   image: Value
   inOtherDataSets(dataSetIds: [String!]): [DataSetLink!]!
+  getAllOfPredicate(uri: String!, outgoing: Boolean!, cursor: ID, count: Int): EntityOrValueList
+}
+
+type EntityOrValueList {
+  entities: [Entity!]!
+  values: [Value!]!
+  nextCursor: ID
+  prevCursor: ID
 }
 
 type DataSetLink {

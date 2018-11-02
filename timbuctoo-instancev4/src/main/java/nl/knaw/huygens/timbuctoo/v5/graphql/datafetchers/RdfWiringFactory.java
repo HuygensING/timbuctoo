@@ -24,6 +24,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.CollectionDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.DynamicRelationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationsOfSubjectDataFetcher;
@@ -59,6 +60,7 @@ public class RdfWiringFactory implements WiringFactory {
   private final OtherDataSetFetcher otherDataSetFetcher;
   private final QuadStoreLookUpSubjectByUriFetcher subjectFetcher;
   private final Map<String, EditMutation> editMutationMap = Maps.newHashMap();
+  private final DynamicRelationDataFetcher dynamicRelationDataFetcher;
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
                           DefaultSummaryProps defaultSummaryProps, UriHelper uriHelper,
@@ -75,6 +77,7 @@ public class RdfWiringFactory implements WiringFactory {
     entityDescriptionFetcher = new EntityDescriptionFetcher(defaultSummaryProps.getDefaultDescriptions());
     entityImageFetcher = new EntityImageFetcher(defaultSummaryProps.getDefaultImages());
     otherDataSetFetcher = new OtherDataSetFetcher(dataSetRepository);
+    dynamicRelationDataFetcher = new DynamicRelationDataFetcher(argumentsHelper);
   }
 
   @Override
@@ -100,6 +103,7 @@ public class RdfWiringFactory implements WiringFactory {
   @Override
   public boolean providesDataFetcher(FieldWiringEnvironment environment) {
     return environment.getFieldDefinition().getDirective("fromCollection") != null ||
+      environment.getFieldDefinition().getDirective("lookupUri") != null ||
       environment.getFieldDefinition().getDirective("rdf") != null ||
       environment.getFieldDefinition().getDirective("uri") != null ||
       environment.getFieldDefinition().getDirective("passThrough") != null ||
@@ -109,6 +113,7 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("entityDescription") != null ||
       environment.getFieldDefinition().getDirective("entityImage") != null ||
       environment.getFieldDefinition().getDirective("otherDataSets") != null ||
+      environment.getFieldDefinition().getDirective("getAllOfPredicate") != null ||
       environment.getFieldDefinition().getDirective("editMutation") != null ||
       environment.getFieldDefinition().getDirective("persistEntityMutation") != null;
   }
@@ -127,15 +132,12 @@ public class RdfWiringFactory implements WiringFactory {
         predicate,
         Direction.valueOf(direction)
       ));
+    } else if (environment.getFieldDefinition().getDirective("lookupUri") != null) {
+      return lookupFetcher;
     } else if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("fromCollection");
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
-      boolean listAll = ((BooleanValue) directive.getArgument("listAll").getValue()).isValue();
-      if (listAll) {
-        return new CollectionFetcherWrapper(argumentsHelper, new CollectionDataFetcher(uri));
-      } else {
-        return lookupFetcher;
-      }
+      return new CollectionFetcherWrapper(argumentsHelper, new CollectionDataFetcher(uri));
     } else if (environment.getFieldDefinition().getDirective("rdf") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("rdf");
       String uri = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
@@ -174,6 +176,8 @@ public class RdfWiringFactory implements WiringFactory {
       return entityImageFetcher;
     } else if (environment.getFieldDefinition().getDirective("otherDataSets") != null) {
       return otherDataSetFetcher;
+    } else if (environment.getFieldDefinition().getDirective("getAllOfPredicate") != null) {
+      return dynamicRelationDataFetcher;
     } else if (environment.getFieldDefinition().getDirective("editMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("editMutation");
       EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
