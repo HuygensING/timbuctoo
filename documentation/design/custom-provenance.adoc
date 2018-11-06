@@ -138,3 +138,17 @@ mutation SetCustomProvenance ($entity: CustomProvenanceInput!) {
 }
 ----
 
+== Approach
+. Add the setCustomProvenance
+.. Add DataFetcher
+.. Add the mutation to the schema
+. Add custom provenance to edit mutation
+.. Change the GraphQL schema
+.. Make `nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog` support provenance
+.. Store the custom provenance
+.. Validate de custom provenance, make sure the `CustomProvenanceValueFieldInput` has a `valueType` or `object`.
+This is because GraphQL does not allow union types as input.
+... Make sure these types are ignored when creating edit mutations
+. Add custom provenance to create and delete mutations
+.. Change the GraphQL schema
+... Change GraphQL input types so they contain the custom provenance.
