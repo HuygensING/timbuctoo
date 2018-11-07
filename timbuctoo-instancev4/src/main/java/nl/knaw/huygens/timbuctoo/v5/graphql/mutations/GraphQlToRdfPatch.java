@@ -226,7 +226,9 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
       // Process the user input
       removePrevious(saver, dataSet, predicate);
 
-      processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
+      if (value != null) {
+        processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
+      }
     }
   }
 
@@ -256,8 +258,10 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private void processValues(RdfPatchSerializer saver, JsonNode value, String predicate, boolean isAddition,
                              TypeNameStore typeNameStore)
     throws LogStorageFailedException {
+
     if (value.isArray()) {
       for (JsonNode propertyInput : value) {
+        validateValue(propertyInput);
         saver.addDelQuad(
           isAddition,
           subjectUri,
@@ -269,6 +273,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         );
       }
     } else {
+      validateValue(value);
       saver.addDelQuad(
         true,
         subjectUri,
@@ -278,6 +283,12 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         null,
         null
       );
+    }
+  }
+
+  private void validateValue(JsonNode value) {
+    if (!value.has("value") || !value.has("type")) {
+      throw new IllegalArgumentException(value + " is not valid");
     }
   }
 

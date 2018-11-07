@@ -27,11 +27,13 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_VOCAB;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timPredicate;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -126,6 +128,24 @@ public class GraphQlToRdfPatchTest {
   }
 
   @Test
+  public void replaceSingleValuedFieldsWithNullValueOnlyRemovesTheOldValue() throws Exception {
+    String newValue = null;
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, createPropertyInput(newValue));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+    String oldValue = "oldValue";
+    valuesInQuadStore(NAMES_PRED, oldValue);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue, STRING, null, null);
+    verify(serializer, never()).addDelQuad(true, SUBJECT, NAMES_PRED, newValue, STRING, null, null);
+  }
+
+  @Test
   public void replaceListRemovesAllTheValuesFromTheListAndAddsTheValuesOfTheList() throws Exception {
     String newValue1 = "newValue1";
     String newValue2 = "newValue2";
@@ -146,6 +166,25 @@ public class GraphQlToRdfPatchTest {
     inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue2, STRING, null, null);
     inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue1, STRING, null, null);
     inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue2, STRING, null, null);
+  }
+
+  @Test
+  public void replaceMultiValuedFieldsWithEmptyListValueOnlyRemovesTheOldValues() throws Exception {
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, Lists.newArrayList());
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+    String oldValue1 = "oldValue1";
+    String oldValue2 = "oldValue2";
+    valuesInQuadStore(NAMES_PRED, oldValue1, oldValue2);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue1, STRING, null, null);
+    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue2, STRING, null, null);
+    verify(serializer, never()).addDelQuad(eq(true), eq(SUBJECT), eq(NAMES_PRED), any(), eq(STRING), any(), any());
   }
 
   @Test
@@ -604,6 +643,20 @@ public class GraphQlToRdfPatchTest {
       isNull(),
       isNull()
     );
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void throwsAnExceptionWhenTheValueIsNotValue() throws Exception {
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, "invalidValue");
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+    String oldValue1 = "oldValue1";
+    valuesInQuadStore(NAMES_PRED, oldValue1);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
   }
 
   // Validation
