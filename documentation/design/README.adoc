@@ -15,3 +15,5 @@ This document describes the workflow of the Huygens team for adding new function
 * Write code on the same branch you created for the document.
 * Keep the branch up-to-date with master.
 . When the code is complete create a pull request for the changed code.
+
+For the creating schemas we use: http://asciiflow.com/
