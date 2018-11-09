@@ -292,7 +292,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     }
   }
 
-  private static class ChangeLog {
+  public static class ChangeLog {
     private LinkedHashMap<String, ArrayNode> additions;
     private LinkedHashMap<String, ArrayNode> deletions;
     private LinkedHashMap<String, JsonNode> replacements;
