@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import com.google.common.collect.Lists;
+import co.unruly.matchers.StreamMatchers;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.util.UserUriCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -10,10 +10,12 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.List;
 import java.util.Map;
@@ -21,11 +23,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ChangeMatcher.likeChange;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,14 +72,16 @@ public class EditMutationChangeLogTest {
   public void getAdditionsReturnsAllAdditions() throws Exception {
     String addedValue = "newValue";
     Map<Object, Object> additions = Maps.newHashMap();
-    additions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(addedValue)));
+    additions.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("additions", additions);
     EditMutationChangeLog instance = new EditMutationChangeLog(entity);
 
     Stream<Change> adds = instance.getAdditions(SUBJECT, dataSet);
 
-    assertThat(adds.findFirst().get(), is(new Change(SUBJECT, NAMES_PRED, addedValue, STRING, null, null)));
+    assertThat(adds.findFirst().get(), is(
+      new Change(SUBJECT, NAMES_PRED, newArrayList(new Value(addedValue, STRING)), null)
+    ));
   }
 
   @Test
@@ -88,7 +95,9 @@ public class EditMutationChangeLogTest {
 
     Stream<Change> adds = instance.getAdditions(SUBJECT, dataSet);
 
-    assertThat(adds.findFirst().get(), is(new Change(SUBJECT, NAMES_PRED, addedValue, STRING, null, null)));
+    assertThat(adds.findFirst().get(), is(
+      new Change(SUBJECT, NAMES_PRED, newArrayList(new Value(addedValue, STRING)), null)
+    ));
   }
 
   @Test
@@ -113,18 +122,19 @@ public class EditMutationChangeLogTest {
     String addedValue1 = "newValue1";
     String addedValue2 = "newValue2";
     Map<Object, Object> replacements = Maps.newHashMap();
-    replacements
-      .put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
+    replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
     EditMutationChangeLog instance = new EditMutationChangeLog(entity);
 
-    List<Change> adds = instance.getAdditions(SUBJECT, dataSet).collect(Collectors.toList());
+    List<Change> adds = instance.getAdditions(SUBJECT, dataSet).collect(toList());
 
-    assertThat(adds, containsInAnyOrder(
-      new Change(SUBJECT, NAMES_PRED, addedValue1, STRING, null, null),
-      new Change(SUBJECT, NAMES_PRED, addedValue2, STRING, null, null)
-    ));
+    assertThat(adds, contains(new Change(
+      SUBJECT,
+      NAMES_PRED,
+      newArrayList(new Value(addedValue1, STRING), new Value(addedValue2, STRING)),
+      null
+    )));
   }
 
   @Test
@@ -133,17 +143,83 @@ public class EditMutationChangeLogTest {
     String addedValue2 = "newValue2";
     String oldValue = "oldValue";
     Map<Object, Object> replacements = Maps.newHashMap();
-    replacements
-      .put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
+    replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
     EditMutationChangeLog instance = new EditMutationChangeLog(entity);
-
     valuesInQuadStore(NAMES_PRED, oldValue);
 
     Stream<Change> adds = instance.getAdditions(SUBJECT, dataSet);
 
     assertThat(adds.findFirst().isPresent(), is(false));
+  }
+
+  @Test
+  public void getReplacementsForListReturnsReplacementsWithOldValues() throws Exception {
+    String addedValue1 = "newValue1";
+    String addedValue2 = "newValue2";
+    String oldValue = "oldValue";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    valuesInQuadStore(NAMES_PRED, oldValue);
+
+    List<Change> reps = instance.getReplacements(SUBJECT, dataSet).collect(toList());
+
+    assertThat(reps, contains(likeChange()
+      .withValues(new Value(addedValue1, STRING), new Value(addedValue2, STRING))
+      .withOldValues(new Value(oldValue, STRING))
+    ));
+  }
+
+  @Test
+  public void getReplacementsForSingleValueReturnsReplacementsWithOldValues() throws Exception {
+    String addedValue1 = "newValue1";
+    String oldValue = "oldValue";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, createPropertyInput(addedValue1));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    valuesInQuadStore(NAMES_PRED, oldValue);
+
+    List<Change> reps = instance.getReplacements(SUBJECT, dataSet).collect(toList());
+
+    assertThat(reps, contains(likeChange()
+      .withValues(new Value(addedValue1, STRING))
+      .withOldValues(new Value(oldValue, STRING))
+    ));
+  }
+
+  @Test
+  public void getReplacementsIgnoresReplacementsWithoutValues() throws Exception {
+    String addedValue1 = "newValue1";
+    String addedValue2 = "newValue2";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+
+    Stream<Change> reps = instance.getReplacements(SUBJECT, dataSet);
+
+    assertThat(reps, StreamMatchers.empty());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void getReplacementsThrowsAnExceptionWhenTheReplacementHasAnUnsupportedValue() throws Exception {
+    String addedValue1 = "newValue1";
+    String oldValue = "oldValue";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, addedValue1);
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    valuesInQuadStore(NAMES_PRED, oldValue);
+
+    instance.getReplacements(SUBJECT, dataSet).collect(Collectors.toList()); // collect to trigger right exception
   }
 
   private Map<Object, Object> createPropertyInput(String value) {
@@ -154,10 +230,16 @@ public class EditMutationChangeLogTest {
   }
 
   private void valuesInQuadStore(String pred, String... oldValues) {
-    List<CursorQuad> quads = Lists.newArrayList();
-    for (String oldValue : oldValues) {
-      quads.add(CursorQuad.create(SUBJECT, pred, Direction.OUT, oldValue, STRING, null, ""));
-    }
-    when(quadStore.getQuads(SUBJECT, pred, Direction.OUT, "")).thenReturn(quads.stream());
+
+    when(quadStore.getQuads(SUBJECT, pred, Direction.OUT, "")).thenAnswer(new Answer<Stream<CursorQuad>>() {
+      @Override
+      public Stream<CursorQuad> answer(InvocationOnMock invocation) {
+        List<CursorQuad> quads = newArrayList();
+        for (String oldValue : oldValues) {
+          quads.add(CursorQuad.create(SUBJECT, pred, Direction.OUT, oldValue, STRING, null, ""));
+        }
+        return quads.stream();
+      }
+    });
   }
 }

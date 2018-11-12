@@ -3,24 +3,22 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 public class Change {
   private final String subject;
   private final String predicate;
+  private final List<Value> values;
+  private final Stream<Value> oldValues;
 
-  private final String value;
-  private final String valueType;
 
-  private final String oldValue;
-  private final String oldValueType;
-
-  public Change(String subject, String predicate, String value, String valueType, String oldValue,
-                String oldValueType) {
+  public Change(String subject, String predicate, List<Value> values, Stream<Value> oldValues) {
     this.subject = subject;
     this.predicate = predicate;
-    this.value = value;
-    this.valueType = valueType;
-    this.oldValue = oldValue;
-    this.oldValueType = oldValueType;
+
+    this.values = values;
+    this.oldValues = oldValues;
   }
 
   public String getSubject() {
@@ -31,41 +29,24 @@ public class Change {
     return predicate;
   }
 
-  public String getValue() {
-    return value;
-  }
-
-  public String getValueType() {
-    return valueType;
-  }
-
-  public String getOldValue() {
-    return oldValue;
-  }
-
-  public String getOldValueType() {
-    return oldValueType;
-  }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object other) {
+    if (this == other) {
       return true;
     }
 
-    if (o == null || getClass() != o.getClass()) {
+    if (other == null || getClass() != other.getClass()) {
       return false;
     }
 
-    Change change = (Change) o;
+    Change change = (Change) other;
 
     return new EqualsBuilder()
       .append(subject, change.subject)
       .append(predicate, change.predicate)
-      .append(value, change.value)
-      .append(valueType, change.valueType)
-      .append(oldValue, change.oldValue)
-      .append(oldValueType, change.oldValueType)
+      .append(values, change.values)
+      .append(oldValues, change.oldValues)
       .isEquals();
   }
 
@@ -74,10 +55,8 @@ public class Change {
     return new HashCodeBuilder(17, 37)
       .append(subject)
       .append(predicate)
-      .append(value)
-      .append(valueType)
-      .append(oldValue)
-      .append(oldValueType)
+      .append(values)
+      .append(oldValues)
       .toHashCode();
   }
 
@@ -86,10 +65,69 @@ public class Change {
     return "Change{" +
       "subject='" + subject + '\'' +
       ", predicate='" + predicate + '\'' +
-      ", value='" + value + '\'' +
-      ", valueType='" + valueType + '\'' +
-      ", oldValue='" + oldValue + '\'' +
-      ", oldValueType='" + oldValueType + '\'' +
+      ", values=" + values +
+      ", oldValues=" + oldValues +
       '}';
   }
+
+  public List<Value> getValues() {
+    return values;
+  }
+
+  public Stream<Value> getOldValues() {
+    return oldValues;
+  }
+
+  public static class Value {
+    private final String rawValue;
+    private final String type;
+
+    public Value(String rawValue, String type) {
+      this.rawValue = rawValue;
+      this.type = type;
+    }
+
+    public String getRawValue() {
+      return rawValue;
+    }
+
+    public String getType() {
+      return type;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (this == other) {
+        return true;
+      }
+
+      if (other == null || getClass() != other.getClass()) {
+        return false;
+      }
+
+      Value value = (Value) other;
+
+      return new EqualsBuilder()
+        .append(rawValue, value.rawValue)
+        .append(type, value.type)
+        .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+      return new HashCodeBuilder(17, 37)
+        .append(rawValue)
+        .append(type)
+        .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+      return "Value{" +
+        "rawValue='" + rawValue + '\'' +
+        ", type='" + type + '\'' +
+        '}';
+    }
+  }
+
 }

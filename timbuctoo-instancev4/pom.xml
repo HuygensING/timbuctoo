@@ -470,6 +470,13 @@
       <version>${hamcrest-library.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- Hamcrest matchers for streams, optionals, etc. -->
+    <dependency>
+      <groupId>co.unruly</groupId>
+      <artifactId>java-8-matchers</artifactId>
+      <version>1.5</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Concordion acceptance test framework -->
     <dependency>
