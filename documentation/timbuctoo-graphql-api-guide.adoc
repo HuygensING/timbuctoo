@@ -406,3 +406,45 @@ Replace the field with an empty array.
   }
 }
 ----
+
+=== Update collection title
+.Query
+----
+mutation SetCollectionMetadata($dataSetId:String! $collectionUri:String! $metadata:CollectionMetadataInput!) {
+  setCollectionMetadata(dataSetId:$dataSetId collectionUri: $collectionUri metadata: $metadata) {
+    uri
+    title {
+      value
+    }
+  }
+}
+----
+.Query variables
+----
+{
+  "dataSetId": "<dataSetId>",
+  "collectionUri": "<collectionUri>", #like http://schema.org/Place
+	"metadata": {
+    "title": "<title>"
+  }
+}
+----
+
+To retrieve the collection URI's the following query can be used.
+The collectionId is the GraphQl identifier.
+----
+query CollectionMetadata {
+  dataSets {
+    <dataSetId> { #Should be the same as the dataSetId used in the mutation.
+      metadata {
+        collectionList {
+          items {
+            collectionId
+            uri
+          }
+        }
+      }
+    }
+  }
+}
+----
