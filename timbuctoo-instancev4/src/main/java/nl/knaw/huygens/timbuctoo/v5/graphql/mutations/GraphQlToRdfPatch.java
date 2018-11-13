@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
@@ -47,7 +48,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private final String subjectUri;
 
   @JsonProperty
-  private final ChangeLog changeLog;
+  private final EditMutationChangeLog.RawEditChangeLog changeLog;
 
   @JsonProperty
   private final String userUri;
@@ -57,10 +58,10 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     this.subjectUri = subjectUri;
     this.userUri = userUri;
     TreeNode jsonNode = OBJECT_MAPPER.valueToTree(entity);
-    changeLog = OBJECT_MAPPER.treeToValue(jsonNode, ChangeLog.class);
+    changeLog = OBJECT_MAPPER.treeToValue(jsonNode, EditMutationChangeLog.RawEditChangeLog.class);
   }
 
-  GraphQlToRdfPatch(String subjectUri, String userUri, ChangeLog changeLog) {
+  GraphQlToRdfPatch(String subjectUri, String userUri, EditMutationChangeLog.RawEditChangeLog changeLog) {
     this.subjectUri = subjectUri;
     this.userUri = userUri;
     this.changeLog = changeLog;
@@ -70,7 +71,8 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   @JsonCreator
   public static GraphQlToRdfPatch fromJson(@JsonProperty("subjectUri") String subjectUri,
                                            @JsonProperty("userUri") String userUri,
-                                           @JsonProperty("changeLog") ChangeLog changeLog) {
+                                           @JsonProperty("changeLog")
+                                               EditMutationChangeLog.RawEditChangeLog changeLog) {
     return new GraphQlToRdfPatch(subjectUri, userUri, changeLog);
   }
 
@@ -289,35 +291,6 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private void validateValue(JsonNode value) {
     if (!value.has("value") || !value.has("type")) {
       throw new IllegalArgumentException(value + " is not valid");
-    }
-  }
-
-  public static class ChangeLog {
-    private LinkedHashMap<String, ArrayNode> additions;
-    private LinkedHashMap<String, ArrayNode> deletions;
-    private LinkedHashMap<String, JsonNode> replacements;
-
-    @JsonCreator
-    public ChangeLog(
-      @JsonProperty("additions") LinkedHashMap<String, ArrayNode> additions,
-      @JsonProperty("deletions") LinkedHashMap<String, ArrayNode> deletions,
-      @JsonProperty("replacements") LinkedHashMap<String, JsonNode> replacements) {
-      this.additions = additions == null ? Maps.newLinkedHashMap() : additions;
-      this.deletions = deletions == null ? Maps.newLinkedHashMap() : deletions;
-      this.replacements = replacements == null ? Maps.newLinkedHashMap() : replacements;
-    }
-
-
-    public LinkedHashMap<String, ArrayNode> getAdditions() {
-      return additions;
-    }
-
-    public LinkedHashMap<String, ArrayNode> getDeletions() {
-      return deletions;
-    }
-
-    public LinkedHashMap<String, JsonNode> getReplacements() {
-      return replacements;
     }
   }
 }

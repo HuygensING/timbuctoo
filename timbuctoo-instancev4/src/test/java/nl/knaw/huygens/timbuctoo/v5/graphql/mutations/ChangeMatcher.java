@@ -38,4 +38,24 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
     });
     return this;
   }
+
+  public ChangeMatcher valuesIsEmpty() {
+    this.addMatcher(new PropertyEqualityMatcher<Change, Integer>("values", 0) {
+      @Override
+      protected Integer getItemValue(Change item) {
+        return item.getValues().size();
+      }
+    });
+    return this;
+  }
+
+  public ChangeMatcher oldValuesIsEmpty() {
+    this.addMatcher(new PropertyEqualityMatcher<Change, Long>("oldValues", 0L) {
+      @Override
+      protected Long getItemValue(Change item) {
+        return item.getOldValues().count();
+      }
+    });
+    return this;
+  }
 }

@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,8 +29,8 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ChangeMatcher.likeChange;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -69,76 +70,101 @@ public class EditMutationChangeLogTest {
   }
 
   @Test
-  public void getAdditionsReturnsAllAdditions() throws Exception {
+  public void getAdditionsReturnsAdditions() throws Exception {
     String addedValue = "newValue";
     Map<Object, Object> additions = Maps.newHashMap();
     additions.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("additions", additions);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
 
-    Stream<Change> adds = instance.getAdditions(SUBJECT, dataSet);
+    List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds.findFirst().get(), is(
-      new Change(SUBJECT, NAMES_PRED, newArrayList(new Value(addedValue, STRING)), null)
+    assertThat(adds.size(), is(1));
+    assertThat(adds, contains(likeChange()
+      .withValues(new Value(addedValue, STRING))
+      .oldValuesIsEmpty()
+    ));
+  }
+
+  // The addition is captured, even though it already exists.
+  // But this 'addition' is filtered out when the data will be persisted
+  @Test
+  public void getAdditionsDoesNotIgnoreAdditionsForSameValue() throws Exception {
+    String existingValue = "value";
+    Map<Object, Object> additions = Maps.newHashMap();
+    additions.put(NAMES_FIELD, newArrayList(createPropertyInput(existingValue)));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("additions", additions);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+
+    valuesInQuadStore(NAMES_PRED, existingValue);
+
+    List<Change> adds = instance.getAdditions(dataSet).collect(toList());
+
+    assertThat(adds.size(), is(1));
+    assertThat(adds, contains(likeChange()
+      .withValues(new Value(existingValue, STRING))
+      .oldValuesIsEmpty()
     ));
   }
 
   @Test
-  public void getAdditionsReturnsAllReplacementsWithoutOldValue() throws Exception {
+  public void getAdditionsReturnsReplacements() throws Exception {
     String addedValue = "newValue";
     Map<Object, Object> replacements = Maps.newHashMap();
     replacements.put(NAMES_FIELD, createPropertyInput(addedValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
 
-    Stream<Change> adds = instance.getAdditions(SUBJECT, dataSet);
+    List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds.findFirst().get(), is(
-      new Change(SUBJECT, NAMES_PRED, newArrayList(new Value(addedValue, STRING)), null)
+    assertThat(adds.size(), is(1));
+    assertThat(adds, contains(likeChange()
+      .withValues(new Value(addedValue, STRING))
+      .oldValuesIsEmpty()
     ));
   }
 
   @Test
-  public void getAdditionsReturnsEmptyStreamForReplacementsWithOldValue() throws Exception {
-    String addedValue = "newValue";
-    String oldValue = "oldValue";
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, createPropertyInput(addedValue));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
-
-    valuesInQuadStore(NAMES_PRED, oldValue);
-
-    Stream<Change> adds = instance.getAdditions(SUBJECT, dataSet);
-
-    assertThat(adds.findFirst().isPresent(), is(false));
-  }
-
-  @Test
-  public void getAdditionsReturnsAllReplacementsListsWithoutOldValue() throws Exception {
+  public void getAdditionsForListReturnsReplacements() throws Exception {
     String addedValue1 = "newValue1";
     String addedValue2 = "newValue2";
     Map<Object, Object> replacements = Maps.newHashMap();
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
 
-    List<Change> adds = instance.getAdditions(SUBJECT, dataSet).collect(toList());
+    List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds, contains(new Change(
-      SUBJECT,
-      NAMES_PRED,
-      newArrayList(new Value(addedValue1, STRING), new Value(addedValue2, STRING)),
-      null
-    )));
+    assertThat(adds.size(), is(1));
+    assertThat(adds, contains(likeChange()
+      .withValues(new Value(addedValue1, STRING), new Value(addedValue2, STRING))
+      .oldValuesIsEmpty()
+    ));
   }
 
   @Test
-  public void getAdditionsReturnsEmptyStreamForReplacementsListsWithOldValue() throws Exception {
+  public void getAdditionsIgnoresReplacementsWithOldValue() throws Exception {
+    String addedValue = "newValue";
+    String oldValue = "oldValue";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, createPropertyInput(addedValue));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+
+    valuesInQuadStore(NAMES_PRED, oldValue);
+
+    Stream<Change> adds = instance.getAdditions(dataSet);
+
+    assertThat(adds, StreamMatchers.empty());
+  }
+
+  @Test
+  public void getAdditionsForListIgnoresReplacementsWithOldValue() throws Exception {
     String addedValue1 = "newValue1";
     String addedValue2 = "newValue2";
     String oldValue = "oldValue";
@@ -146,12 +172,159 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
-    Stream<Change> adds = instance.getAdditions(SUBJECT, dataSet);
+    Stream<Change> adds = instance.getAdditions(dataSet);
 
-    assertThat(adds.findFirst().isPresent(), is(false));
+    assertThat(adds, StreamMatchers.empty());
+  }
+
+  @Test
+  public void getAdditionsIgnoresReplacementsWithNoValue() throws Exception {
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, null);
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+
+    Stream<Change> adds = instance.getAdditions(dataSet);
+
+    assertThat(adds, StreamMatchers.empty());
+  }
+
+  @Test
+  public void getAdditionsForListIgnoresReplacementsWithNoValue() throws Exception {
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, newArrayList());
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+
+    Stream<Change> adds = instance.getAdditions(dataSet);
+
+    assertThat(adds, StreamMatchers.empty());
+  }
+
+  @Test
+  public void getDeletionsReturnsDeletions() throws Exception {
+    String deletedValue = "deletedValue";
+    Map<Object, Object> deletions = Maps.newHashMap();
+    deletions.put(NAMES_FIELD, newArrayList(createPropertyInput(deletedValue)));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("deletions", deletions);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    valuesInQuadStore(NAMES_PRED, deletedValue);
+
+    List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
+
+    assertThat(deletes.size(), is(1));
+    assertThat(deletes, contains(likeChange()
+      .valuesIsEmpty()
+      .withOldValues(new Value(deletedValue, STRING))
+    ));
+  }
+
+  @Test
+  public void getDeletionsForListReturnsDeletions() throws Exception {
+    String existingValue1 = "existingValue1";
+    String existingValue2 = "existingValue2";
+    Map<Object, Object> deletions = Maps.newHashMap();
+    deletions.put(NAMES_FIELD, newArrayList(createPropertyInput(existingValue2)));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("deletions", deletions);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    valuesInQuadStore(NAMES_PRED, existingValue1, existingValue2);
+
+    List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
+
+    assertThat(deletes.size(), is(1));
+    assertThat(deletes, contains(likeChange()
+      .valuesIsEmpty()
+      .withOldValues(new Value(existingValue2, STRING))
+    ));
+  }
+
+  @Test
+  public void getDeletionsReturnsReplacements() throws Exception {
+    String existingValue = "existingValue";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, null);
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    valuesInQuadStore(NAMES_PRED, existingValue);
+
+    List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
+
+    assertThat(deletes.size(), is(1));
+    assertThat(deletes, contains(likeChange()
+      .valuesIsEmpty()
+      .withOldValues(new Value(existingValue, STRING))
+    ));
+  }
+
+  @Test
+  public void getDeletionsForListReturnsReplacements() throws Exception {
+    String existingValue1 = "existingValue1";
+    String existingValue2 = "existingValue2";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, newArrayList());
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    valuesInQuadStore(NAMES_PRED, existingValue1, existingValue2);
+
+    List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
+
+    assertThat(deletes.size(), is(1));
+    assertThat(deletes, contains(likeChange()
+      .valuesIsEmpty()
+      .withOldValues(new Value(existingValue1, STRING), new Value(existingValue2, STRING))
+    ));
+  }
+
+  @Test
+  public void getDeletionsIgnoresReplacementsWithValue() throws Exception {
+    String addedValue = "newValue";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, createPropertyInput(addedValue));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    valuesInQuadStore(NAMES_PRED, addedValue);
+
+    Stream<Change> deletes = instance.getDeletions(dataSet);
+
+    assertThat(deletes, StreamMatchers.empty());
+  }
+
+  @Test
+  public void getDeletionsForListIgnoresReplacementsWithValue() throws Exception {
+    String addedValue = "newValue";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue)));
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    valuesInQuadStore(NAMES_PRED, addedValue);
+
+    Stream<Change> deletes = instance.getDeletions(dataSet);
+
+    assertThat(deletes, StreamMatchers.empty());
+  }
+
+  @Test
+  public void getDeletionsIgnoresReplacementsWithoutValue() throws Exception {
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, null);
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+
+    Stream<Change> deletes = instance.getDeletions(dataSet);
+
+    assertThat(deletes, StreamMatchers.empty());
   }
 
   @Test
@@ -163,11 +336,12 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
-    List<Change> reps = instance.getReplacements(SUBJECT, dataSet).collect(toList());
+    List<Change> reps = instance.getReplacements(dataSet).collect(toList());
 
+    assertThat(reps.size(), is(1));
     assertThat(reps, contains(likeChange()
       .withValues(new Value(addedValue1, STRING), new Value(addedValue2, STRING))
       .withOldValues(new Value(oldValue, STRING))
@@ -182,11 +356,12 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, createPropertyInput(addedValue1));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
-    List<Change> reps = instance.getReplacements(SUBJECT, dataSet).collect(toList());
+    List<Change> reps = instance.getReplacements(dataSet).collect(toList());
 
+    assertThat(reps.size(), is(1));
     assertThat(reps, contains(likeChange()
       .withValues(new Value(addedValue1, STRING))
       .withOldValues(new Value(oldValue, STRING))
@@ -201,9 +376,24 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
 
-    Stream<Change> reps = instance.getReplacements(SUBJECT, dataSet);
+    Stream<Change> reps = instance.getReplacements(dataSet);
+
+    assertThat(reps, StreamMatchers.empty());
+  }
+
+  @Test
+  public void getReplacementsIgnoresReplacementsWithEmptyValues() throws Exception {
+    String oldValue = "oldValue";
+    Map<Object, Object> replacements = Maps.newHashMap();
+    replacements.put(NAMES_FIELD, null);
+    Map<Object, Object> entity = Maps.newHashMap();
+    entity.put("replacements", replacements);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    valuesInQuadStore(NAMES_PRED, oldValue);
+
+    Stream<Change> reps = instance.getReplacements(dataSet);
 
     assertThat(reps, StreamMatchers.empty());
   }
@@ -216,10 +406,10 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, addedValue1);
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
-    instance.getReplacements(SUBJECT, dataSet).collect(Collectors.toList()); // collect to trigger right exception
+    instance.getReplacements(dataSet).collect(Collectors.toList()); // collect to trigger right exception
   }
 
   private Map<Object, Object> createPropertyInput(String value) {
@@ -230,7 +420,6 @@ public class EditMutationChangeLogTest {
   }
 
   private void valuesInQuadStore(String pred, String... oldValues) {
-
     when(quadStore.getQuads(SUBJECT, pred, Direction.OUT, "")).thenAnswer(new Answer<Stream<CursorQuad>>() {
       @Override
       public Stream<CursorQuad> answer(InvocationOnMock invocation) {
