@@ -7,8 +7,11 @@ import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import org.assertj.core.util.Lists;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static org.hamcrest.Matchers.empty;
 
 public class ChangeMatcher extends CompositeMatcher<Change> {
   private ChangeMatcher() {
@@ -40,20 +43,20 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
   }
 
   public ChangeMatcher valuesIsEmpty() {
-    this.addMatcher(new PropertyEqualityMatcher<Change, Integer>("values", 0) {
+    this.addMatcher(new PropertyMatcher<Change, Collection<? extends Value>>("values", empty()) {
       @Override
-      protected Integer getItemValue(Change item) {
-        return item.getValues().size();
+      protected Collection<Value> getItemValue(Change item) {
+        return item.getValues();
       }
     });
     return this;
   }
 
   public ChangeMatcher oldValuesIsEmpty() {
-    this.addMatcher(new PropertyEqualityMatcher<Change, Long>("oldValues", 0L) {
+    this.addMatcher(new PropertyEqualityMatcher<Change, Boolean>("oldValues", false) {
       @Override
-      protected Long getItemValue(Change item) {
-        return item.getOldValues().count();
+      protected Boolean getItemValue(Change item) {
+        return item.getOldValues().findAny().isPresent();
       }
     });
     return this;
