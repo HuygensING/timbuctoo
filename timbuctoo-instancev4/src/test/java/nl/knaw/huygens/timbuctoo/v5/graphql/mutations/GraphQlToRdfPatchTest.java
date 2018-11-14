@@ -1,227 +1,245 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
+
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.util.UserUriCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
+import static com.google.common.collect.Lists.newArrayList;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_LATEST_REVISION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_VOCAB;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timPredicate;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.startsWith;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 public class GraphQlToRdfPatchTest {
-
+  private static final String PRED2 = "http://example.org/pred2";
+  private static final String PRED1 = "http://example.org/pred1";
   private static final String SUBJECT = "http://example.org/subject";
-  private static final String NAMES_FIELD = "schema_name";
-  private static final String NAMES_PRED = "http://schema.org/name";
-  private static final User USER = mock(User.class);
-  private static final String USER_URI = "http://example.org/user";
   private static final String DATA_SET_URI = "http://example.org/dataset";
-  private static final String GRAPH_QL_STRING = "xsd_string";
-  private DataSet dataSet;
-  private QuadStore quadStore;
+  private static final String USER_URI = "http://example.org/user";
+
+
   private RdfPatchSerializer serializer;
-  private UserUriCreator userUriCreator;
+  private ChangeLog changeLog;
   private VersionStore versionStore;
-  private DataSetMetaData dataSetMetaData;
-  private TypeNameStore typeNameStore;
+  private DataSet dataSet;
 
   @Before
-  public void setUp() throws Exception {
-    dataSet = mock(DataSet.class);
-    quadStore = mock(QuadStore.class);
-    versionStore = mock(VersionStore.class);
-    userUriCreator = mock(UserUriCreator.class);
-    when(userUriCreator.create(USER)).thenReturn(USER_URI);
-    dataSetMetaData = mock(DataSetMetaData.class);
-    when(dataSetMetaData.getBaseUri()).thenReturn(DATA_SET_URI);
-    typeNameStore = mock(TypeNameStore.class);
-    when(typeNameStore.makeUriForPredicate(NAMES_FIELD)).thenReturn(Optional.of(tuple(NAMES_PRED, Direction.OUT)));
-    when(typeNameStore.makeUri(GRAPH_QL_STRING)).thenReturn(STRING);
-
-    when(dataSet.getQuadStore()).thenReturn(quadStore);
-    when(dataSet.getVersionStore()).thenReturn(versionStore);
-    when(dataSet.getMetadata()).thenReturn(dataSetMetaData);
-    when(dataSet.getTypeNameStore()).thenReturn(typeNameStore);
-
+  public void setUp() {
     serializer = mock(RdfPatchSerializer.class);
+    changeLog = mock(ChangeLog.class);
+    versionStore = mock(VersionStore.class);
+    dataSet = mock(DataSet.class);
+    when(dataSet.getVersionStore()).thenReturn(versionStore);
+
+    DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
+    when(dataSetMetaData.getBaseUri()).thenReturn(DATA_SET_URI);
+    when(dataSet.getMetadata()).thenReturn(dataSetMetaData);
   }
 
-  // Update Entity
   @Test
-  public void addsValuesForAdditionsToEntity() throws Exception {
+  public void addsQuadsForEachAdditionsToEntity() throws Exception {
     String addedValue = "newValue";
-    Map<Object, Object> additions = Maps.newHashMap();
-    additions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(addedValue)));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("additions", additions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+    String addedValue2 = "newValue2";
+    addAdditionsToChangeLog(
+      new Change(SUBJECT, PRED1, newArrayList(new Value(addedValue, STRING)), null),
+      new Change(SUBJECT, PRED2, newArrayList(new Value(addedValue2, STRING)), null));
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
 
-    verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, addedValue, STRING, null, null);
-  }
-
-
-  @Test
-  public void removesValuesForDeletions() throws Exception {
-    String deletedValue = "oldValue";
-    Map<Object, Object> deletions = Maps.newHashMap();
-    deletions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(deletedValue)));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("deletions", deletions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
-
-    instance.sendQuads(serializer, s -> {
-    }, dataSet);
-
-    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, deletedValue, STRING, null, null);
+    verify(serializer).addDelQuad(true, SUBJECT, PRED1, addedValue, STRING, null, null);
+    verify(serializer).addDelQuad(true, SUBJECT, PRED2, addedValue2, STRING, null, null);
   }
 
   @Test
-  public void replaceSingleValueRemovesTheOldValueAndAddsTheNewValue() throws Exception {
-    String newValue = "newValue";
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, createPropertyInput(newValue));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
-    String oldValue = "oldValue";
-    valuesInQuadStore(NAMES_PRED, oldValue);
-
-    instance.sendQuads(serializer, s -> {
-    }, dataSet);
-
-    InOrder inOrder = inOrder(serializer);
-    inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue, STRING, null, null);
-    inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue, STRING, null, null);
-  }
-
-  @Test
-  public void replaceSingleValuedFieldsWithNullValueOnlyRemovesTheOldValue() throws Exception {
-    String newValue = null;
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, createPropertyInput(newValue));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
-    String oldValue = "oldValue";
-    valuesInQuadStore(NAMES_PRED, oldValue);
-
-    instance.sendQuads(serializer, s -> {
-    }, dataSet);
-
-    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue, STRING, null, null);
-    verify(serializer, never()).addDelQuad(true, SUBJECT, NAMES_PRED, newValue, STRING, null, null);
-  }
-
-  @Test
-  public void replaceListRemovesAllTheValuesFromTheListAndAddsTheValuesOfTheList() throws Exception {
-    String newValue1 = "newValue1";
-    String newValue2 = "newValue2";
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(newValue1), createPropertyInput(newValue2)));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
-    String oldValue1 = "oldValue1";
-    String oldValue2 = "oldValue2";
-    valuesInQuadStore(NAMES_PRED, oldValue1, oldValue2);
-
-    instance.sendQuads(serializer, s -> {
-    }, dataSet);
-
-    InOrder inOrder = inOrder(serializer);
-    inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue1, STRING, null, null);
-    inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue2, STRING, null, null);
-    inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue1, STRING, null, null);
-    inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, newValue2, STRING, null, null);
-  }
-
-  @Test
-  public void replaceMultiValuedFieldsWithEmptyListValueOnlyRemovesTheOldValues() throws Exception {
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, Lists.newArrayList());
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
-    String oldValue1 = "oldValue1";
-    String oldValue2 = "oldValue2";
-    valuesInQuadStore(NAMES_PRED, oldValue1, oldValue2);
-
-    instance.sendQuads(serializer, s -> {
-    }, dataSet);
-
-    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue1, STRING, null, null);
-    verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, oldValue2, STRING, null, null);
-    verify(serializer, never()).addDelQuad(eq(true), eq(SUBJECT), eq(NAMES_PRED), any(), eq(STRING), any(), any());
-  }
-
-  @Test
-  public void deletionsAreExecutedBeforeAdditions() throws Exception {
+  public void addsQuadsForEachValueInAnAddition() throws Exception {
     String addedValue = "newValue";
-    String deletedValue = "oldValue";
-    Map<Object, Object> additions = Maps.newHashMap();
-    additions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(addedValue)));
-    Map<Object, Object> deletions = Maps.newHashMap();
-    deletions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(deletedValue)));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("deletions", deletions);
-    entity.put("additions", additions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+    String addedValue2 = "newValue2";
+    addAdditionsToChangeLog(
+      new Change(SUBJECT, PRED1, newArrayList(new Value(addedValue, STRING), new Value(addedValue2, STRING)), null)
+    );
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
 
-    InOrder inOrder = inOrder(serializer);
-    inOrder.verify(serializer).addDelQuad(false, SUBJECT, NAMES_PRED, deletedValue, STRING, null, null);
-    inOrder.verify(serializer).addDelQuad(true, SUBJECT, NAMES_PRED, addedValue, STRING, null, null);
+    verify(serializer).addDelQuad(true, SUBJECT, PRED1, addedValue, STRING, null, null);
+    verify(serializer).addDelQuad(true, SUBJECT, PRED1, addedValue2, STRING, null, null);
   }
 
   @Test
-  public void addsARevisionOfTheEntityToUpdate() throws Exception {
+  public void addsTheNewValuesForReplacement() throws Exception {
+    String addedValue = "newValue";
+    String addedValue2 = "newValue2";
+    String oldValue = "oldValue";
+    addReplacementsToChangeLog(new Replacement(
+      SUBJECT,
+      PRED1,
+      newArrayList(new Value(addedValue, STRING), new Value(addedValue2, STRING)),
+      newArrayList(new Value(oldValue, STRING))
+    ));
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(true, SUBJECT, PRED1, addedValue, STRING, null, null);
+    verify(serializer).addDelQuad(true, SUBJECT, PRED1, addedValue2, STRING, null, null);
+  }
+
+  @Test
+  public void addsTheNewValuesForAllReplacements() throws Exception {
+    String addedValue = "newValue";
+    String addedValue2 = "newValue2";
+    String oldValue = "oldValue";
+    String oldValue2 = "oldValue2";
+    addReplacementsToChangeLog(
+      new Replacement(
+        SUBJECT,
+        PRED1,
+        newArrayList(new Value(addedValue, STRING)),
+        newArrayList(new Value(oldValue, STRING))
+      ),
+      new Replacement(
+        SUBJECT,
+        PRED2,
+        newArrayList(new Value(addedValue2, STRING)),
+        newArrayList(new Value(oldValue2, STRING))
+      )
+    );
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(true, SUBJECT, PRED1, addedValue, STRING, null, null);
+    verify(serializer).addDelQuad(true, SUBJECT, PRED2, addedValue2, STRING, null, null);
+  }
+
+  @Test
+  public void removesOldValuesOfAllReplacements() throws Exception {
+    String addedValue = "newValue";
+    String addedValue2 = "newValue2";
+    String oldValue = "oldValue";
+    String oldValue2 = "oldValue2";
+    addReplacementsToChangeLog(
+      new Replacement(
+        SUBJECT,
+        PRED1,
+        newArrayList(new Value(addedValue, STRING)),
+        newArrayList(new Value(oldValue, STRING))
+      ),
+      new Replacement(
+        SUBJECT,
+        PRED2,
+        newArrayList(new Value(addedValue2, STRING)),
+        newArrayList(new Value(oldValue2, STRING))
+      )
+    );
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(false, SUBJECT, PRED1, oldValue, STRING, null, null);
+    verify(serializer).addDelQuad(false, SUBJECT, PRED2, oldValue2, STRING, null, null);
+  }
+
+  @Test
+  public void removesAllOldValuesOfReplacements() throws Exception {
+    String oldValue = "oldValue";
+    String oldValue2 = "oldValue2";
+    String addedValue = "newValue";
+    String addedValue2 = "newValue2";
+    addReplacementsToChangeLog(new Replacement(
+      SUBJECT,
+      PRED1,
+      newArrayList(new Value(addedValue, STRING), new Value(addedValue2, STRING)),
+      newArrayList(new Value(oldValue, STRING), new Value(oldValue2, STRING))
+    ));
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(false, SUBJECT, PRED1, oldValue, STRING, null, null);
+    verify(serializer).addDelQuad(false, SUBJECT, PRED1, oldValue2, STRING, null, null);
+  }
+
+  @Test
+  public void deletesAllValuesOfTheDeletions() throws Exception {
+    String oldValue = "oldValue";
+    String oldValue2 = "oldValue2";
+    addDeletionsToChangeLog(new Deletion(
+      SUBJECT,
+      PRED1,
+      newArrayList(new Value(oldValue, STRING), new Value(oldValue2, STRING))
+    ));
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(false, SUBJECT, PRED1, oldValue, STRING, null, null);
+    verify(serializer).addDelQuad(false, SUBJECT, PRED1, oldValue2, STRING, null, null);
+  }
+
+  @Test
+  public void removesOldValuesOfAllDeletions() throws Exception {
+    String oldValue = "oldValue";
+    String oldValue2 = "oldValue2";
+    addDeletionsToChangeLog(
+      new Deletion(
+        SUBJECT,
+        PRED1,
+        newArrayList(new Value(oldValue, STRING))
+      ),
+      new Deletion(
+        SUBJECT,
+        PRED2,
+        newArrayList(new Value(oldValue2, STRING))
+      )
+    );
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(false, SUBJECT, PRED1, oldValue, STRING, null, null);
+    verify(serializer).addDelQuad(false, SUBJECT, PRED2, oldValue2, STRING, null, null);
+  }
+
+  // add revision
+  @Test
+  public void addsRevisionOfTheUpdatedEntity() throws Exception {
     final String prevRevision = SUBJECT + "/1";
     final String newRevision = SUBJECT + "/2";
-    String newValue = "newValue";
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, createPropertyInput(newValue));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
-    String oldValue = "oldValue";
-    valuesInQuadStore(NAMES_PRED, oldValue);
-    valuesInQuadStore(timPredicate("latestRevision"), prevRevision);
     when(versionStore.getVersion()).thenReturn(1);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
@@ -233,17 +251,12 @@ public class GraphQlToRdfPatchTest {
     verify(serializer).addDelQuad(false, SUBJECT, timPredicate("latestRevision"), prevRevision, null, null, null);
   }
 
+  // add provenance
   @Test
   public void provenanceIsAddedToTheLatestRevision() throws Exception {
     final String newRevision = SUBJECT + "/2";
-    String newValue = "newValue";
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, createPropertyInput(newValue));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
-    String oldValue = "oldValue";
-    valuesInQuadStore(NAMES_PRED, oldValue);
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
     when(versionStore.getVersion()).thenReturn(1);
 
     instance.sendQuads(serializer, s -> {
@@ -322,19 +335,17 @@ public class GraphQlToRdfPatchTest {
       isNull(),
       isNull()
     );
-
-
   }
 
   @Test
   public void addsAdditionsToPlan() throws Exception {
-    String newValue = "newValue";
-    String newValue2 = "newValue2";
-    Map<Object, Object> additions = Maps.newHashMap();
-    additions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(newValue), createPropertyInput(newValue2)));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("additions", additions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+    String addedValue = "newValue";
+    String addedValue2 = "newValue2";
+    addAdditionsToChangeLog(
+      new Change(SUBJECT, PRED1, newArrayList(new Value(addedValue, STRING), new Value(addedValue2, STRING)), null)
+    );
+
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
@@ -379,7 +390,7 @@ public class GraphQlToRdfPatchTest {
       eq(true),
       startsWith(DATA_SET_URI + "/addition"),
       eq(timPredicate("hasKey")),
-      eq(NAMES_PRED),
+      eq(PRED1),
       isNull(),
       isNull(),
       isNull()
@@ -389,6 +400,15 @@ public class GraphQlToRdfPatchTest {
       startsWith(DATA_SET_URI + "/addition"),
       eq(timPredicate("hasValue")),
       startsWith(DATA_SET_URI + "/value"),
+      isNull(),
+      isNull(),
+      isNull()
+    );
+    verify(serializer, times(2)).addDelQuad( // one for each value
+      eq(true),
+      startsWith(DATA_SET_URI + "/value"),
+      eq(RDF_TYPE),
+      eq(timType("Value")),
       isNull(),
       isNull(),
       isNull()
@@ -406,7 +426,7 @@ public class GraphQlToRdfPatchTest {
       eq(true),
       startsWith(DATA_SET_URI + "/value"),
       eq(timPredicate("rawValue")),
-      eq(newValue),
+      eq(addedValue),
       eq(STRING),
       isNull(),
       isNull()
@@ -415,7 +435,7 @@ public class GraphQlToRdfPatchTest {
       eq(true),
       startsWith(DATA_SET_URI + "/value"),
       eq(timPredicate("rawValue")),
-      eq(newValue2),
+      eq(addedValue2),
       eq(STRING),
       isNull(),
       isNull()
@@ -432,16 +452,16 @@ public class GraphQlToRdfPatchTest {
     );
   }
 
-
   @Test
   public void addsDeletionsToPlan() throws Exception {
-    String delValue = "delValue";
-    String delValue2 = "delValue2";
-    Map<Object, Object> deletions = Maps.newHashMap();
-    deletions.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(delValue), createPropertyInput(delValue2)));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("deletions", deletions);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+    String oldValue = "oldValue";
+    String oldValue2 = "oldValue2";
+    addDeletionsToChangeLog(new Deletion(
+      SUBJECT,
+      PRED1,
+      newArrayList(new Value(oldValue, STRING), new Value(oldValue2, STRING))
+    ));
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
@@ -486,7 +506,7 @@ public class GraphQlToRdfPatchTest {
       eq(true),
       startsWith(DATA_SET_URI + "/deletion"),
       eq(timPredicate("hasKey")),
-      eq(NAMES_PRED),
+      eq(PRED1),
       isNull(),
       isNull(),
       isNull()
@@ -496,6 +516,15 @@ public class GraphQlToRdfPatchTest {
       startsWith(DATA_SET_URI + "/deletion"),
       eq(timPredicate("hasValue")),
       startsWith(DATA_SET_URI + "/value"),
+      isNull(),
+      isNull(),
+      isNull()
+    );
+    verify(serializer, times(2)).addDelQuad( // one for each value
+      eq(true),
+      startsWith(DATA_SET_URI + "/value"),
+      eq(RDF_TYPE),
+      eq(timType("Value")),
       isNull(),
       isNull(),
       isNull()
@@ -513,7 +542,7 @@ public class GraphQlToRdfPatchTest {
       eq(true),
       startsWith(DATA_SET_URI + "/value"),
       eq(timPredicate("rawValue")),
-      eq(delValue),
+      eq(oldValue),
       eq(STRING),
       isNull(),
       isNull()
@@ -522,7 +551,7 @@ public class GraphQlToRdfPatchTest {
       eq(true),
       startsWith(DATA_SET_URI + "/value"),
       eq(timPredicate("rawValue")),
-      eq(delValue2),
+      eq(oldValue2),
       eq(STRING),
       isNull(),
       isNull()
@@ -543,11 +572,18 @@ public class GraphQlToRdfPatchTest {
   public void addsReplacementsToPlan() throws Exception {
     String newValue = "newValue";
     String newValue2 = "newValue2";
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, Lists.newArrayList(createPropertyInput(newValue), createPropertyInput(newValue2)));
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
+    String oldValue = "oldValue1";
+    String oldValue2 = "oldValue2";
+
+    addReplacementsToChangeLog(
+      new Replacement(
+        SUBJECT,
+        PRED1,
+        newArrayList(new Value(newValue, STRING), new Value(newValue2, STRING)),
+        newArrayList(new Value(oldValue, STRING), new Value(oldValue2, STRING))
+      ));
+
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
@@ -592,11 +628,12 @@ public class GraphQlToRdfPatchTest {
       eq(true),
       startsWith(DATA_SET_URI + "/replacement"),
       eq(timPredicate("hasKey")),
-      eq(NAMES_PRED),
+      eq(PRED1),
       isNull(),
       isNull(),
       isNull()
     );
+    // new values
     verify(serializer, times(2)).addDelQuad( // one for each value
       eq(true),
       startsWith(DATA_SET_URI + "/replacement"),
@@ -612,6 +649,15 @@ public class GraphQlToRdfPatchTest {
       eq(timPredicate("type")),
       eq(STRING),
       eq(STRING),
+      isNull(),
+      isNull()
+    );
+    verify(serializer, times(2)).addDelQuad( // one for each value
+      eq(true),
+      startsWith(DATA_SET_URI + "/value"),
+      eq(RDF_TYPE),
+      eq(TIM_VOCAB + "Value"),
+      isNull(),
       isNull(),
       isNull()
     );
@@ -643,42 +689,127 @@ public class GraphQlToRdfPatchTest {
       isNull(),
       isNull()
     );
+    // old values
+    verify(serializer, times(2)).addDelQuad( // one for each value
+      eq(true),
+      startsWith(DATA_SET_URI + "/replacement"),
+      eq(timPredicate("hadValue")),
+      startsWith(DATA_SET_URI + "/oldValue"),
+      isNull(),
+      isNull(),
+      isNull()
+    );
+    verify(serializer, times(2)).addDelQuad( // one for each value
+      eq(true),
+      startsWith(DATA_SET_URI + "/oldValue"),
+      eq(timPredicate("type")),
+      eq(STRING),
+      eq(STRING),
+      isNull(),
+      isNull()
+    );
+    verify(serializer, times(2)).addDelQuad( // one for each value
+      eq(true),
+      startsWith(DATA_SET_URI + "/oldValue"),
+      eq(RDF_TYPE),
+      eq(TIM_VOCAB + "OldValue"),
+      isNull(),
+      isNull(),
+      isNull()
+    );
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(DATA_SET_URI + "/oldValue"),
+      eq(timPredicate("rawValue")),
+      eq(oldValue),
+      eq(STRING),
+      isNull(),
+      isNull()
+    );
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(DATA_SET_URI + "/oldValue"),
+      eq(timPredicate("rawValue")),
+      eq(oldValue2),
+      eq(STRING),
+      isNull(),
+      isNull()
+    );
+    // TODO find a better way to test
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(DATA_SET_URI + "/oldValue"),
+      eq(timPredicate("nextOldValue")),
+      startsWith(DATA_SET_URI + "/oldValue"),
+      isNull(),
+      isNull(),
+      isNull()
+    );
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void throwsAnExceptionWhenTheValueIsNotValue() throws Exception {
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, "invalidValue");
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, userUriCreator.create(USER), entity);
-    String oldValue1 = "oldValue1";
-    valuesInQuadStore(NAMES_PRED, oldValue1);
 
-    instance.sendQuads(serializer, s -> {
-    }, dataSet);
+  private void addAdditionsToChangeLog(Change... changes) {
+    when(changeLog.getAdditions(any(DataSet.class))).thenAnswer(new Answer<Stream<Change>>() {
+      @Override
+      public Stream<Change> answer(InvocationOnMock invocation) {
+        return newArrayList(changes).stream();
+      }
+    });
   }
 
-  // Validation
-  @Ignore
-  @Test
-  public void throwsAnExceptionForDeletionsTriplesThatDoNotExist() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  private void addDeletionsToChangeLog(Deletion... deletions) {
+    when(changeLog.getDeletions(any(DataSet.class))).thenAnswer(new Answer<Stream<Change>>() {
+      @Override
+      public Stream<Change> answer(InvocationOnMock invocation) {
+        return newArrayList(deletions).stream().map(deletion -> deletion.toChange());
+      }
+    });
   }
 
-  private Map<Object, Object> createPropertyInput(String value) {
-    Map<Object, Object> propertyInput = Maps.newHashMap();
-    propertyInput.put("type", GRAPH_QL_STRING);
-    propertyInput.put("value", value);
-    return propertyInput;
-  }
+  private static class Deletion {
+    private final String subject;
+    private final String predicate;
+    private final List<Value> valuesToDelete;
 
-  private void valuesInQuadStore(String pred, String... oldValues) {
-    List<CursorQuad> quads = Lists.newArrayList();
-    for (String oldValue : oldValues) {
-      quads.add(CursorQuad.create(SUBJECT, pred, Direction.OUT, oldValue, STRING, null, ""));
+    Deletion(String subject, String predicate, List<Value> valuesToDelete) {
+
+      this.subject = subject;
+      this.predicate = predicate;
+      this.valuesToDelete = valuesToDelete;
     }
-    when(quadStore.getQuads(SUBJECT, pred, Direction.OUT, "")).thenReturn(quads.stream());
+
+
+    private Change toChange() {
+      return new Change(subject, predicate, newArrayList(), valuesToDelete.stream());
+    }
+  }
+
+  private void addReplacementsToChangeLog(Replacement... replacements) {
+    when(changeLog.getReplacements(any(DataSet.class))).thenAnswer(new Answer<Stream<Change>>() {
+      @Override
+      public Stream<Change> answer(InvocationOnMock invocation) {
+        return newArrayList(replacements).stream().map(replacement -> replacement.toChange());
+      }
+    });
+  }
+
+  private static class Replacement {
+    private final String subject;
+    private final String predicate;
+    private final List<Value> newValues;
+    private final List<Value> oldValues;
+
+    Replacement(String subject, String predicate, List<Value> newValues, List<Value> oldValues) {
+
+      this.subject = subject;
+      this.predicate = predicate;
+      this.newValues = newValues;
+      this.oldValues = oldValues;
+    }
+
+    private Change toChange() {
+      return new Change(subject, predicate, newValues, oldValues.stream());
+    }
   }
 
 }

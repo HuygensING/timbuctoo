@@ -2,25 +2,15 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PatchRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -31,8 +21,6 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timPredicate;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timType;
 
 public class GraphQlToRdfPatch implements PatchRdfCreator {
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  private static final String TIM_LATEST_REVISION = RdfConstants.timPredicate("latestRevision");
   private static final String PROV_SPECIALIZATION_OF = "http://www.w3.org/ns/prov#specializationOf";
   private static final String PROV_GENERATED = "http://www.w3.org/ns/prov#generated";
   private static final String PROV_ACTIVITY = "http://www.w3.org/ns/prov#Activity";
@@ -45,49 +33,36 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private static final String PROV_PLAN = "http://www.w3.org/ns/prov#Plan";
 
   @JsonProperty
-  private final String subjectUri;
-
-  @JsonProperty
-  private final EditMutationChangeLog.RawEditChangeLog changeLog;
-
+  private final String subjectUri; // move subject uri to ChangeLog
   @JsonProperty
   private final String userUri;
+  @JsonProperty
+  private final ChangeLog changeLog;
 
-  GraphQlToRdfPatch(String subjectUri, String userUri, Map entity)
-    throws JsonProcessingException {
-    this.subjectUri = subjectUri;
-    this.userUri = userUri;
-    TreeNode jsonNode = OBJECT_MAPPER.valueToTree(entity);
-    changeLog = OBJECT_MAPPER.treeToValue(jsonNode, EditMutationChangeLog.RawEditChangeLog.class);
-  }
-
-  GraphQlToRdfPatch(String subjectUri, String userUri, EditMutationChangeLog.RawEditChangeLog changeLog) {
+  @JsonCreator
+  public GraphQlToRdfPatch(String subjectUri, String userUri, ChangeLog changeLog) {
     this.subjectUri = subjectUri;
     this.userUri = userUri;
     this.changeLog = changeLog;
   }
 
-
-  @JsonCreator
-  public static GraphQlToRdfPatch fromJson(@JsonProperty("subjectUri") String subjectUri,
-                                           @JsonProperty("userUri") String userUri,
-                                           @JsonProperty("changeLog")
-                                               EditMutationChangeLog.RawEditChangeLog changeLog) {
-    return new GraphQlToRdfPatch(subjectUri, userUri, changeLog);
-  }
-
   @Override
   public void sendQuads(RdfPatchSerializer saver, Consumer<String> importStatusConsumer, DataSet dataSet)
     throws LogStorageFailedException {
-    updateData(saver, dataSet);
-    addRevision(saver, dataSet);
-    addProvenance(saver, dataSet);
-  }
 
-  private void addProvenance(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
+    addData(saver, dataSet);
+
+    // add new revision
     int rev = dataSet.getVersionStore().getVersion();
-
     String newRevision = subjectUri + "/" + (rev + 1);
+    saver.addDelQuad(true, subjectUri, timPredicate("latestRevision"), newRevision, null, null, null);
+    saver.addDelQuad(true, newRevision, PROV_SPECIALIZATION_OF, subjectUri, null, null, null);
+    saver.addDelQuad(true, newRevision, timPredicate("version"), "2", RdfConstants.INTEGER, null, null);
+    // remove previous latest revision predicate
+    String prevRevision = subjectUri + "/" + rev;
+    saver.addDelQuad(false, subjectUri, timPredicate("latestRevision"), prevRevision, null, null, null);
+
+    // add provenance
     String activity = dataSetObjectUri(dataSet, "activity");
     saver.addDelQuad(true, activity, PROV_GENERATED, newRevision, null, null, null);
     saver.addDelQuad(true, activity, RDF_TYPE, PROV_ACTIVITY, null, null, null);
@@ -104,193 +79,164 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     saver.addDelQuad(true, association, PROV_HAD_PLAN, planUri, null, null, null);
     saver.addDelQuad(true, planUri, RDF_TYPE, PROV_PLAN, null, null, null);
 
-    addAction(saver, dataSet, planUri, changeLog.getAdditions(), new Action("addition"));
+    // fill plan
 
-    addAction(saver, dataSet, planUri, changeLog.getDeletions(), new Action("deletion"));
-
-    addAction(saver, dataSet, planUri, changeLog.getReplacements(), new Action("replacement"));
-  }
-
-  private void addAction(RdfPatchSerializer saver, DataSet dataSet, String planUri,
-                         Map<String, ? extends JsonNode> changes, Action action) throws LogStorageFailedException {
-    if (!changes.isEmpty()) {
-      String actionPluralUri = action.uniquePluralUri(dataSet);
-      saver.addDelQuad(true, planUri, action.predicateToActionCollection(), actionPluralUri, null, null, null);
-      saver.addDelQuad(true, actionPluralUri, RDF_TYPE, action.typePluralUri(), null, null, null);
-
-      for (Map.Entry<String, ? extends JsonNode> change : changes.entrySet()) {
-        String changeUri = action.uniqueSingularUri(dataSet);
-        saver.addDelQuad(true, actionPluralUri, action.predicateToSingleChange(), changeUri, null, null, null);
-        saver.addDelQuad(true, changeUri, RDF_TYPE, action.typeSingularUri(), null, null, null);
-        String predicate = getPredicate(dataSet, change);
-        saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
-        saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
-
-        processPlanValues(saver, dataSet, changeUri, change.getValue());
-
-      }
+    // add additions
+    boolean additionsPresent;
+    try (Stream<Change> additions = changeLog.getAdditions(dataSet)) {
+      additionsPresent = additions.findAny().isPresent();
     }
-  }
-
-  private static class Action {
-    private final String lowerCaseName;
-    private final String upperCaseName;
-
-    private Action(String name) {
-      this.lowerCaseName = name.substring(0, 1).toLowerCase() + name.substring(1);
-      this.upperCaseName = name.substring(0, 1).toUpperCase() + name.substring(1);
-    }
-
-    public String uniquePluralUri(DataSet dataSet) {
-      return dataSetObjectUri(dataSet, lowerCaseName + "s");
-    }
-
-    public String uniqueSingularUri(DataSet dataSet) {
-      return dataSetObjectUri(dataSet, lowerCaseName);
-    }
-
-    public String predicateToActionCollection() {
-      return timPredicate(lowerCaseName + "s");
-    }
-
-    public String predicateToSingleChange() {
-      return timPredicate("has" + upperCaseName);
-    }
-
-    public String typePluralUri() {
-      return timType(upperCaseName + "s");
-    }
-
-    public String typeSingularUri() {
-      return timType(upperCaseName);
-    }
-  }
-
-  private void processPlanValues(RdfPatchSerializer saver, DataSet dataSet,
-                                 String actionUri, JsonNode value) throws LogStorageFailedException {
-    String prefValueUri = null;
-    TypeNameStore typeNameStore = dataSet.getTypeNameStore();
-    if (value.isArray()) {
-      for (JsonNode propertyInput : value) {
-        String uri = dataSetObjectUri(dataSet, "value");
-        saver.addDelQuad(true, actionUri, timPredicate("hasValue"), uri, null, null, null);
-        saver.addDelQuad(true, uri, timPredicate("type"), getType(propertyInput, typeNameStore), STRING, null, null);
-        saver.addDelQuad(true, uri, timPredicate("rawValue"), propertyInput.get("value").asText(), STRING, null, null);
-        if (prefValueUri != null) {
-          saver.addDelQuad(true, prefValueUri, timPredicate("nextValue"), uri, null, null, null);
+    if (additionsPresent) {
+      try (Stream<Change> additions = changeLog.getAdditions(dataSet)) {
+        String actionPluralUri = dataSetObjectUri(dataSet, "additions");
+        saver.addDelQuad(true, planUri, timPredicate("additions"), actionPluralUri, null, null, null);
+        saver.addDelQuad(true, actionPluralUri, RDF_TYPE, timType("Additions"), null, null, null);
+        for (Iterator<Change> changes = additions.iterator(); changes.hasNext(); ) {
+          Change change = changes.next();
+          String changeUri = dataSetObjectUri(dataSet, "addition");
+          saver.addDelQuad(true, actionPluralUri, timPredicate("hasAddition"), changeUri, null, null, null);
+          saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Addition"), null, null, null);
+          String predicate = change.getPredicate();
+          saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
+          saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
+          String prefValueUri = null;
+          for (Value value : change.getValues()) {
+            String uri = dataSetObjectUri(dataSet, "value");
+            saver.addDelQuad(true, uri, RDF_TYPE, timType("Value"), null, null, null);
+            saver.addDelQuad(true, changeUri, timPredicate("hasValue"), uri, null, null, null);
+            saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+            saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, null);
+            if (prefValueUri != null) {
+              saver.addDelQuad(true, prefValueUri, timPredicate("nextValue"), uri, null, null, null);
+            }
+            prefValueUri = uri;
+          }
         }
-        prefValueUri = uri;
-      }
-    } else {
-      String valueUri = dataSetObjectUri(dataSet, "value");
-      saver.addDelQuad(true, actionUri, timPredicate("hasValue"), valueUri, null, null, null);
-      saver.addDelQuad(true, valueUri, timPredicate("type"), getType(value, typeNameStore), STRING, null, null);
-      saver.addDelQuad(true, valueUri, timPredicate("rawValue"), value.get("value").asText(), STRING, null, null);
-    }
-  }
-
-  private String getType(JsonNode propertyInput, TypeNameStore typeNameStore) {
-    return typeNameStore.makeUri(propertyInput.get("type").asText());
-  }
-
-  private void addRevision(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
-    removePrevious(saver, dataSet, TIM_LATEST_REVISION);
-    int rev = dataSet.getVersionStore().getVersion();
-
-    String newRevision = subjectUri + "/" + (rev + 1);
-    String prevRevision = subjectUri + "/" + rev;
-    saver.addDelQuad(true, subjectUri, TIM_LATEST_REVISION, newRevision, null, null, null);
-    saver.addDelQuad(true, newRevision, PROV_SPECIALIZATION_OF, subjectUri, null, null, null);
-    saver.addDelQuad(false, subjectUri, TIM_LATEST_REVISION, prevRevision, null, null, null);
-    saver.addDelQuad(true, newRevision, timPredicate("version"), "2", RdfConstants.INTEGER, null, null);
-  }
-
-  private void updateData(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
-    for (Map.Entry<String, ArrayNode> deletion : changeLog.getDeletions().entrySet()) {
-      JsonNode value = deletion.getValue();
-      String predicate = getPredicate(dataSet, deletion);
-      // Process the user input
-      processValues(saver, value, predicate, false, dataSet.getTypeNameStore());
-    }
-
-    for (Map.Entry<String, ArrayNode> addition : changeLog.getAdditions().entrySet()) {
-      JsonNode value = addition.getValue();
-      String predicate = getPredicate(dataSet, addition);
-
-      // Process the user input
-      processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
-    }
-
-    for (Map.Entry<String, JsonNode> replacement : changeLog.getReplacements().entrySet()) {
-      JsonNode value = replacement.getValue();
-      String predicate = getPredicate(dataSet, replacement);
-
-      // Process the user input
-      removePrevious(saver, dataSet, predicate);
-
-      if (value != null) {
-        processValues(saver, value, predicate, true, dataSet.getTypeNameStore());
       }
     }
-  }
-
-  private String getPredicate(DataSet dataSet, Map.Entry<String, ? extends JsonNode> addition) {
-    // the GraphQl API should protect us from unknown predicates.
-    return dataSet.getTypeNameStore().makeUriForPredicate(addition.getKey()).get().getLeft();
-  }
-
-  private void removePrevious(RdfPatchSerializer saver, DataSet dataSet, String predicate)
-    throws LogStorageFailedException {
-    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(subjectUri, predicate, Direction.OUT, "")) {
-      for (Iterator<CursorQuad> iterator = quads.iterator(); iterator.hasNext(); ) {
-        CursorQuad quad = iterator.next();
-        saver.addDelQuad(
-          false,
-          quad.getSubject(),
-          quad.getPredicate(),
-          quad.getObject(),
-          quad.getValuetype().orElse(null),
-          quad.getLanguage().orElse(null),
-          null
-        );
+    // add deletions
+    boolean deletionsPresent;
+    try (Stream<Change> deletions = changeLog.getDeletions(dataSet)) {
+      deletionsPresent = deletions.findAny().isPresent();
+    }
+    if (deletionsPresent) {
+      try (Stream<Change> deletions = changeLog.getDeletions(dataSet)) {
+        String actionPluralUri = dataSetObjectUri(dataSet, "deletions");
+        saver.addDelQuad(true, planUri, timPredicate("deletions"), actionPluralUri, null, null, null);
+        saver.addDelQuad(true, actionPluralUri, RDF_TYPE, timType("Deletions"), null, null, null);
+        for (Iterator<Change> changes = deletions.iterator(); changes.hasNext(); ) {
+          Change change = changes.next();
+          String changeUri = dataSetObjectUri(dataSet, "deletion");
+          saver.addDelQuad(true, actionPluralUri, timPredicate("hasDeletion"), changeUri, null, null, null);
+          saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Deletion"), null, null, null);
+          String predicate = change.getPredicate();
+          saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
+          saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
+          String prefValueUri = null;
+          try (Stream<Value> oldValues = change.getOldValues()) {
+            for (Iterator<Value> values = oldValues.iterator(); values.hasNext(); ) {
+              Value value = values.next();
+              String uri = dataSetObjectUri(dataSet, "value");
+              saver.addDelQuad(true, uri, RDF_TYPE, timType("Value"), null, null, null);
+              saver.addDelQuad(true, changeUri, timPredicate("hasValue"), uri, null, null, null);
+              saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+              saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, null);
+              if (prefValueUri != null) {
+                saver.addDelQuad(true, prefValueUri, timPredicate("nextValue"), uri, null, null, null);
+              }
+              prefValueUri = uri;
+            }
+          }
+        }
+      }
+    }
+    // add replacements
+    boolean replacementsPresent;
+    try (Stream<Change> replacements = changeLog.getReplacements(dataSet)) {
+      replacementsPresent = replacements.findAny().isPresent();
+    }
+    if (replacementsPresent) {
+      try (Stream<Change> replacements = changeLog.getReplacements(dataSet)) {
+        String actionPluralUri = dataSetObjectUri(dataSet, "replacements");
+        saver.addDelQuad(true, planUri, timPredicate("replacements"), actionPluralUri, null, null, null);
+        saver.addDelQuad(true, actionPluralUri, RDF_TYPE, timType("Replacements"), null, null, null);
+        for (Iterator<Change> changes = replacements.iterator(); changes.hasNext(); ) {
+          Change change = changes.next();
+          String changeUri = dataSetObjectUri(dataSet, "replacement");
+          saver.addDelQuad(true, actionPluralUri, timPredicate("hasReplacement"), changeUri, null, null, null);
+          saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Replacement"), null, null, null);
+          String predicate = change.getPredicate();
+          saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
+          saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
+          String prefValueUri = null;
+          for (Iterator<Value> values = change.getValues().iterator(); values.hasNext(); ) {
+            Value value = values.next();
+            String uri = dataSetObjectUri(dataSet, "value");
+            saver.addDelQuad(true, uri, RDF_TYPE, timType("Value"), null, null, null);
+            saver.addDelQuad(true, changeUri, timPredicate("hasValue"), uri, null, null, null);
+            saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+            saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, null);
+            if (prefValueUri != null) {
+              saver.addDelQuad(true, prefValueUri, timPredicate("nextValue"), uri, null, null, null);
+            }
+            prefValueUri = uri;
+          }
+          try (Stream<Value> oldValues = change.getOldValues()) {
+            for (Iterator<Value> values = oldValues.iterator(); values.hasNext(); ) {
+              Value value = values.next();
+              String uri = dataSetObjectUri(dataSet, "oldValue");
+              saver.addDelQuad(true, uri, RDF_TYPE, timType("OldValue"), null, null, null);
+              saver.addDelQuad(true, changeUri, timPredicate("hadValue"), uri, null, null, null);
+              saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+              saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, null);
+              if (prefValueUri != null) {
+                saver.addDelQuad(true, prefValueUri, timPredicate("nextOldValue"), uri, null, null, null);
+              }
+              prefValueUri = uri;
+            }
+          }
+        }
       }
     }
   }
 
-  private void processValues(RdfPatchSerializer saver, JsonNode value, String predicate, boolean isAddition,
-                             TypeNameStore typeNameStore)
-    throws LogStorageFailedException {
-
-    if (value.isArray()) {
-      for (JsonNode propertyInput : value) {
-        validateValue(propertyInput);
-        saver.addDelQuad(
-          isAddition,
-          subjectUri,
-          predicate,
-          propertyInput.get("value").asText(),
-          getType(propertyInput, typeNameStore),
-          null,
-          null
-        );
+  private void addData(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
+    try (Stream<Change> additions = changeLog.getAdditions(dataSet)) {
+      for (Iterator<Change> changes = additions.iterator(); changes.hasNext(); ) {
+        Change change = changes.next();
+        for (Value value : change.getValues()) {
+          saver.addDelQuad(true, subjectUri, change.getPredicate(), value.getRawValue(), value.getType(), null, null);
+        }
       }
-    } else {
-      validateValue(value);
-      saver.addDelQuad(
-        true,
-        subjectUri,
-        predicate,
-        value.get("value").asText(),
-        getType(value, typeNameStore),
-        null,
-        null
-      );
     }
-  }
 
-  private void validateValue(JsonNode value) {
-    if (!value.has("value") || !value.has("type")) {
-      throw new IllegalArgumentException(value + " is not valid");
+    try (Stream<Change> replacements = changeLog.getReplacements(dataSet)) {
+      for (Iterator<Change> changes = replacements.iterator(); changes.hasNext(); ) {
+        Change change = changes.next();
+        String predicate = change.getPredicate();
+        for (Value value : change.getValues()) {
+          saver.addDelQuad(true, subjectUri, predicate, value.getRawValue(), value.getType(), null, null);
+        }
+        try (Stream<Value> oldValues = change.getOldValues()) {
+          for (Iterator<Value> iterator = oldValues.iterator(); iterator.hasNext(); ) {
+            Value value = iterator.next();
+            saver.addDelQuad(false, subjectUri, predicate, value.getRawValue(), value.getType(), null, null);
+          }
+        }
+      }
+    }
+
+    try (Stream<Change> deletions = changeLog.getDeletions(dataSet)) {
+      for (Iterator<Change> changes = deletions.iterator(); changes.hasNext(); ) {
+        Change change = changes.next();
+        String predicate = change.getPredicate();
+        try (Stream<Value> oldValues = change.getOldValues()) {
+          for (Iterator<Value> iterator = oldValues.iterator(); iterator.hasNext(); ) {
+            Value value = iterator.next();
+            saver.addDelQuad(false, subjectUri, predicate, value.getRawValue(), value.getType(), null, null);
+          }
+        }
+      }
     }
   }
 }
