@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
@@ -61,14 +62,7 @@ public class EditMutationChangeLog implements ChangeLog {
 
     Stream<Change> replacementAdditions =
       changeLog.getReplacements().entrySet().stream()
-               .filter(entry -> {
-                 return !dataSet.getQuadStore().getQuads(
-                   subject,
-                   dataSet.getTypeNameStore().makeUriForPredicate(entry.getKey()).get().getLeft(),
-                   Direction.OUT,
-                   ""
-                 ).findAny().isPresent();
-               })
+               .filter(entry -> !hasOldValues(dataSet, entry))
                .filter(entry -> !entry.getValue().isNull() &&
                  !(entry.getValue().isArray() && entry.getValue().size() == 0))
                .map(entry -> createAdditionsChange(dataSet, entry.getKey(), entry.getValue()));
@@ -84,14 +78,7 @@ public class EditMutationChangeLog implements ChangeLog {
 
     Stream<Change> replacementDeletions =
       changeLog.getReplacements().entrySet().stream()
-               .filter(entry -> {
-                 return dataSet.getQuadStore().getQuads(
-                   subject,
-                   dataSet.getTypeNameStore().makeUriForPredicate(entry.getKey()).get().getLeft(),
-                   Direction.OUT,
-                   ""
-                 ).findAny().isPresent();
-               })
+               .filter(entry -> hasOldValues(dataSet, entry))
                .filter(entry -> entry.getValue().isNull() ||
                  (entry.getValue().isArray() && entry.getValue().size() == 0))
                .map(entry -> createDeletionsChange(dataSet, entry.getKey(), entry.getValue()));
@@ -102,17 +89,21 @@ public class EditMutationChangeLog implements ChangeLog {
   @Override
   public Stream<Change> getReplacements(DataSet dataSet) {
     return changeLog.getReplacements().entrySet().stream()
-                    .filter(entry -> {
-                      return dataSet.getQuadStore().getQuads(
-                        subject,
-                        dataSet.getTypeNameStore().makeUriForPredicate(entry.getKey()).get().getLeft(),
-                        Direction.OUT,
-                        ""
-                      ).findAny().isPresent();
-                    })
+                    .filter(entry -> hasOldValues(dataSet, entry))
                     .filter(entry -> !entry.getValue().isNull() &&
                       !(entry.getValue().isArray() && entry.getValue().size() == 0))
                     .map((entry) -> createReplacementsChange(dataSet, entry.getKey(), entry.getValue()));
+  }
+
+  private boolean hasOldValues(DataSet dataSet, Map.Entry<String, JsonNode> entry) {
+    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(
+      subject,
+      dataSet.getTypeNameStore().makeUriForPredicate(entry.getKey()).get().getLeft(),
+      Direction.OUT,
+      ""
+    )) {
+      return quads.findAny().isPresent();
+    }
   }
 
   private Change createAdditionsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
