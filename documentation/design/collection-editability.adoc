@@ -1,0 +1,32 @@
+= Collection editability
+
+== Problem
+When a data set administrator uploads a file all the collections are editable.
+Also features like edit mutation and custom provenance will add new collections to the schema.
+Because Timbuctoo will make these collections editable by default, all data will be editable.
+Some collections should not be editable.
+The current way of filtering the collections that are not editable are chosen by the developers.
+The editable collections should be chosen by the administrator of the data set.
+
+== Requirements
+. Some collections should never be editable.
+.. Like the default provenance of Timbuctoo.
+. For all other collections of a data set, the data set administrator should be able to make them editable.
+
+== Actions
+. A property `isEditable` should be added to the collection metadata.
+.. Java
+.. GraphQL schema
+. Collection should be made not editable by default
+
+== Design
+
+=== GraphQL
+
+----
+input CollectionMetadataInput {
+  ...
+  isEditable: Boolean
+  ...
+}
+----
