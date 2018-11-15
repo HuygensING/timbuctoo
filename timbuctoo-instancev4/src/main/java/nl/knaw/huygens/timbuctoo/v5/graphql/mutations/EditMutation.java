@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -70,7 +71,7 @@ public class EditMutation implements DataFetcher {
       dataSet.getImportManager().generateLog(
         dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
-        new GraphQlToRdfPatch(uri, userUriCreator.create(user), entity)
+        new GraphQlToRdfPatch(uri, userUriCreator.create(user), new EditMutationChangeLog(uri, entity))
       ).get(); // Wait until the data is processed
     } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
