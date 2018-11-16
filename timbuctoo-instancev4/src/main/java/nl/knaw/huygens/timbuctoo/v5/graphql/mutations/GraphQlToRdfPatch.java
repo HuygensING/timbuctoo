@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PatchRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog;
@@ -55,13 +57,36 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     addData(saver, dataSet);
 
     // add new revision
-    int rev = dataSet.getVersionStore().getVersion();
-    String newRevision = subjectUri + "/" + (rev + 1);
+    int lastVersion = -1;
+    try (Stream<CursorQuad> latestRevisionQuads = dataSet.getQuadStore().getQuads(
+      subjectUri,
+      timPredicate("latestRevision"),
+      Direction.OUT,
+      ""
+    )) {
+      CursorQuad latestRevision = latestRevisionQuads.findFirst().orElse(null);
+      if (latestRevision != null) {
+        try (Stream<CursorQuad> versionQuads = dataSet.getQuadStore().getQuads(
+          latestRevision.getObject(),
+          timPredicate("version"),
+          Direction.OUT,
+          ""
+        )) {
+          CursorQuad version = versionQuads.findFirst().orElse(null);
+          if (version != null) {
+            lastVersion = new Integer(version.getObject());
+          }
+        }
+      }
+    }
+
+    String newRevision = subjectUri + "/" + (lastVersion + 1);
     saver.addDelQuad(true, subjectUri, timPredicate("latestRevision"), newRevision, null, null, null);
     saver.addDelQuad(true, newRevision, PROV_SPECIALIZATION_OF, subjectUri, null, null, null);
-    saver.addDelQuad(true, newRevision, timPredicate("version"), "2", RdfConstants.INTEGER, null, null);
+    saver.addDelQuad(true, newRevision, timPredicate("version"), String.valueOf(lastVersion + 1), RdfConstants.INTEGER,
+      null, null);
     // remove previous latest revision predicate
-    String prevRevision = subjectUri + "/" + rev;
+    String prevRevision = subjectUri + "/" + lastVersion;
     saver.addDelQuad(false, subjectUri, timPredicate("latestRevision"), prevRevision, null, null, null);
 
     // add provenance
