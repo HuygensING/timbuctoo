@@ -254,7 +254,15 @@ public class GraphQlToRdfPatchTest {
     verify(serializer).addDelQuad(true, SUBJECT, timPredicate("latestRevision"), newRevision, null, null, null);
     verify(serializer)
       .addDelQuad(true, newRevision, "http://www.w3.org/ns/prov#specializationOf", SUBJECT, null, null, null);
-    verify(serializer).addDelQuad(true, newRevision, timPredicate("version"), String.valueOf(newVersion), RdfConstants.INTEGER, null, null);
+    verify(serializer).addDelQuad(
+      true,
+      newRevision,
+      timPredicate("version"),
+      String.valueOf(newVersion),
+      RdfConstants.INTEGER,
+      null,
+      null
+    );
     verify(serializer).addDelQuad(false, SUBJECT, timPredicate("latestRevision"), prevRevision, null, null, null);
   }
 
