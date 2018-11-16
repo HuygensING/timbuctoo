@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,6 +28,7 @@ import java.util.stream.StreamSupport;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 
+@JsonTypeName("EditMutationChangeLog")
 public class EditMutationChangeLog implements ChangeLog {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
