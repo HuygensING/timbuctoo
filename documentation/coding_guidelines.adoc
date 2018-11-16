@@ -4,11 +4,11 @@
 
 === Using Streams
 Always use `try-with-resources` when using `Streams`, because the `Streams` can contain an open database connection.
-
-```
+[source, java]
+----
 try (Stream<String> data = database.getData()) {
 ...
 }
-```
+----
 
 == Timbuctoo specific
