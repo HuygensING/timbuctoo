@@ -4,7 +4,9 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_LATEST_REVISION;
@@ -43,20 +46,22 @@ public class GraphQlToRdfPatchTest {
 
   private RdfPatchSerializer serializer;
   private ChangeLog changeLog;
-  private VersionStore versionStore;
   private DataSet dataSet;
+  private QuadStore quadStore;
 
   @Before
   public void setUp() {
     serializer = mock(RdfPatchSerializer.class);
     changeLog = mock(ChangeLog.class);
-    versionStore = mock(VersionStore.class);
     dataSet = mock(DataSet.class);
-    when(dataSet.getVersionStore()).thenReturn(versionStore);
+    quadStore = mock(QuadStore.class);
 
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     when(dataSetMetaData.getBaseUri()).thenReturn(DATA_SET_URI);
     when(dataSet.getMetadata()).thenReturn(dataSetMetaData);
+    when(dataSet.getQuadStore()).thenReturn(quadStore);
+    when(quadStore.getQuads(SUBJECT, timPredicate("latestRevision"), Direction.OUT, ""))
+      .thenReturn(Stream.empty());
   }
 
   @Test
@@ -236,9 +241,11 @@ public class GraphQlToRdfPatchTest {
   // add revision
   @Test
   public void addsRevisionOfTheUpdatedEntity() throws Exception {
-    final String prevRevision = SUBJECT + "/1";
-    final String newRevision = SUBJECT + "/2";
-    when(versionStore.getVersion()).thenReturn(1);
+    final int prevVersion = -1;
+    final int newVersion = 0;
+
+    final String prevRevision = SUBJECT + "/" + prevVersion;
+    final String newRevision = SUBJECT + "/" + newVersion;
     GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
 
     instance.sendQuads(serializer, s -> {
@@ -247,17 +254,57 @@ public class GraphQlToRdfPatchTest {
     verify(serializer).addDelQuad(true, SUBJECT, timPredicate("latestRevision"), newRevision, null, null, null);
     verify(serializer)
       .addDelQuad(true, newRevision, "http://www.w3.org/ns/prov#specializationOf", SUBJECT, null, null, null);
-    verify(serializer).addDelQuad(true, newRevision, timPredicate("version"), "2", RdfConstants.INTEGER, null, null);
+    verify(serializer).addDelQuad(true, newRevision, timPredicate("version"), String.valueOf(newVersion), RdfConstants.INTEGER, null, null);
     verify(serializer).addDelQuad(false, SUBJECT, timPredicate("latestRevision"), prevRevision, null, null, null);
+  }
+
+  @Test
+  public void updatesVersionBasedOnPreviousVersion() throws Exception {
+    final int prevVersion = 4;
+    final int newVersion = 5;
+
+    final String prevRevision = SUBJECT + "/" + prevVersion;
+    final String newRevision = SUBJECT + "/" + newVersion;
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
+    when(quadStore.getQuads(SUBJECT, timPredicate("latestRevision"), Direction.OUT, ""))
+      .thenAnswer(new Answer<Stream<CursorQuad>>() {
+        @Override
+        public Stream<CursorQuad> answer(InvocationOnMock invocation) {
+          List<CursorQuad> quads = newArrayList();
+          quads.add(
+            CursorQuad.create(SUBJECT, timPredicate("latestRevision"), Direction.OUT, prevRevision, STRING, null, ""));
+          return quads.stream();
+        }
+      });
+
+    when(quadStore.getQuads(prevRevision, timPredicate("version"), Direction.OUT, ""))
+      .thenAnswer(new Answer<Stream<CursorQuad>>() {
+        @Override
+        public Stream<CursorQuad> answer(InvocationOnMock invocation) {
+          List<CursorQuad> quads = newArrayList();
+          quads.add(CursorQuad
+            .create(prevRevision, timPredicate("version"), Direction.OUT, String.valueOf(prevVersion), INTEGER, null,
+              ""));
+          return quads.stream();
+        }
+      });
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer)
+      .addDelQuad(true, newRevision, timPredicate("version"), String.valueOf(newVersion), RdfConstants.INTEGER, null,
+        null);
   }
 
   // add provenance
   @Test
   public void provenanceIsAddedToTheLatestRevision() throws Exception {
-    final String newRevision = SUBJECT + "/2";
-    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+    final int newVersion = 0;
 
-    when(versionStore.getVersion()).thenReturn(1);
+    final String newRevision = SUBJECT + "/" + newVersion;
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
 
     instance.sendQuads(serializer, s -> {
     }, dataSet);
