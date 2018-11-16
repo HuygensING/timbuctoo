@@ -40,7 +40,11 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   private final ChangeLog changeLog;
 
   @JsonCreator
-  public GraphQlToRdfPatch(String subjectUri, String userUri, ChangeLog changeLog) {
+  public GraphQlToRdfPatch(
+    @JsonProperty("subjectUri") String subjectUri,
+    @JsonProperty("userUri") String userUri,
+    @JsonProperty("changeLog") ChangeLog changeLog
+  ) {
     this.subjectUri = subjectUri;
     this.userUri = userUri;
     this.changeLog = changeLog;
