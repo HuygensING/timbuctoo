@@ -234,31 +234,6 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
   }
 
   private void addData(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
-    try (Stream<Change> additions = changeLog.getAdditions(dataSet)) {
-      for (Iterator<Change> changes = additions.iterator(); changes.hasNext(); ) {
-        Change change = changes.next();
-        for (Value value : change.getValues()) {
-          saver.addDelQuad(true, subjectUri, change.getPredicate(), value.getRawValue(), value.getType(), null, null);
-        }
-      }
-    }
-
-    try (Stream<Change> replacements = changeLog.getReplacements(dataSet)) {
-      for (Iterator<Change> changes = replacements.iterator(); changes.hasNext(); ) {
-        Change change = changes.next();
-        String predicate = change.getPredicate();
-        for (Value value : change.getValues()) {
-          saver.addDelQuad(true, subjectUri, predicate, value.getRawValue(), value.getType(), null, null);
-        }
-        try (Stream<Value> oldValues = change.getOldValues()) {
-          for (Iterator<Value> iterator = oldValues.iterator(); iterator.hasNext(); ) {
-            Value value = iterator.next();
-            saver.addDelQuad(false, subjectUri, predicate, value.getRawValue(), value.getType(), null, null);
-          }
-        }
-      }
-    }
-
     try (Stream<Change> deletions = changeLog.getDeletions(dataSet)) {
       for (Iterator<Change> changes = deletions.iterator(); changes.hasNext(); ) {
         Change change = changes.next();
@@ -268,6 +243,31 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
             Value value = iterator.next();
             saver.addDelQuad(false, subjectUri, predicate, value.getRawValue(), value.getType(), null, null);
           }
+        }
+      }
+    }
+
+    try (Stream<Change> replacements = changeLog.getReplacements(dataSet)) {
+      for (Iterator<Change> changes = replacements.iterator(); changes.hasNext(); ) {
+        Change change = changes.next();
+        String predicate = change.getPredicate();
+        try (Stream<Value> oldValues = change.getOldValues()) {
+          for (Iterator<Value> iterator = oldValues.iterator(); iterator.hasNext(); ) {
+            Value value = iterator.next();
+            saver.addDelQuad(false, subjectUri, predicate, value.getRawValue(), value.getType(), null, null);
+          }
+        }
+        for (Value value : change.getValues()) {
+          saver.addDelQuad(true, subjectUri, predicate, value.getRawValue(), value.getType(), null, null);
+        }
+      }
+    }
+
+    try (Stream<Change> additions = changeLog.getAdditions(dataSet)) {
+      for (Iterator<Change> changes = additions.iterator(); changes.hasNext(); ) {
+        Change change = changes.next();
+        for (Value value : change.getValues()) {
+          saver.addDelQuad(true, subjectUri, change.getPredicate(), value.getRawValue(), value.getType(), null, null);
         }
       }
     }
