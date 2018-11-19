@@ -34,6 +34,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DefaultSummaryProps;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
@@ -59,7 +61,9 @@ public class RdfWiringFactory implements WiringFactory {
   private final EntityImageFetcher entityImageFetcher;
   private final OtherDataSetFetcher otherDataSetFetcher;
   private final QuadStoreLookUpSubjectByUriFetcher subjectFetcher;
+  private final Map<String, CreateMutation> createMutationMap = Maps.newHashMap();
   private final Map<String, EditMutation> editMutationMap = Maps.newHashMap();
+  private final Map<String, DeleteMutation> deleteMutationMap = Maps.newHashMap();
   private final DynamicRelationDataFetcher dynamicRelationDataFetcher;
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
@@ -114,7 +118,9 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("entityImage") != null ||
       environment.getFieldDefinition().getDirective("otherDataSets") != null ||
       environment.getFieldDefinition().getDirective("getAllOfPredicate") != null ||
+      environment.getFieldDefinition().getDirective("createMutation") != null ||
       environment.getFieldDefinition().getDirective("editMutation") != null ||
+      environment.getFieldDefinition().getDirective("deleteMutation") != null ||
       environment.getFieldDefinition().getDirective("persistEntityMutation") != null;
   }
 
@@ -178,6 +184,15 @@ public class RdfWiringFactory implements WiringFactory {
       return otherDataSetFetcher;
     } else if (environment.getFieldDefinition().getDirective("getAllOfPredicate") != null) {
       return dynamicRelationDataFetcher;
+    } else if (environment.getFieldDefinition().getDirective("createMutation") != null) {
+      Directive directive = environment.getFieldDefinition().getDirective("createMutation");
+      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
+
+      String dataSetName = dataSet.getName();
+
+      return createMutationMap.computeIfAbsent(dataSetName, s -> {
+        return new CreateMutation(dataSetRepository, uriHelper, subjectFetcher, dataSetName);
+      });
     } else if (environment.getFieldDefinition().getDirective("editMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("editMutation");
       EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
@@ -186,6 +201,15 @@ public class RdfWiringFactory implements WiringFactory {
 
       return editMutationMap.computeIfAbsent(dataSetName, s -> {
         return new EditMutation(dataSetRepository, uriHelper, subjectFetcher, dataSetName);
+      });
+    } else if (environment.getFieldDefinition().getDirective("deleteMutation") != null) {
+      Directive directive = environment.getFieldDefinition().getDirective("deleteMutation");
+      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
+
+      String dataSetName = dataSet.getName();
+
+      return deleteMutationMap.computeIfAbsent(dataSetName, s -> {
+        return new DeleteMutation(dataSetRepository, uriHelper, dataSetName);
       });
     } else if (environment.getFieldDefinition().getDirective("persistEntityMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("persistEntityMutation");

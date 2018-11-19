@@ -15,6 +15,7 @@ class DerivedInputTypeSchemaGenerator {
   private final GraphQlNameGenerator graphQlNameGenerator;
   private final DerivedSchemaContainer derivedSchemaContainer;
   private final ReadOnlyChecker readOnlyChecker;
+  private final List<GraphQlPredicate> creations;
   private final List<GraphQlPredicate> replacements;
   private final boolean isReadOnly;
   private List<GraphQlPredicate> additions;
@@ -28,6 +29,7 @@ class DerivedInputTypeSchemaGenerator {
     this.graphQlNameGenerator = graphQlNameGenerator;
     this.derivedSchemaContainer = derivedSchemaContainer;
     this.readOnlyChecker = readOnlyChecker;
+    creations = Lists.newArrayList();
     replacements = Lists.newArrayList();
     additions = Lists.newArrayList();
     deletions = Lists.newArrayList();
@@ -48,6 +50,7 @@ class DerivedInputTypeSchemaGenerator {
 
   private void addPredicate(Predicate predicate) {
     if (!isReadOnly && !readOnlyChecker.isReadonlyPredicate(predicate.getName())) {
+      creations.add(new GraphQlPredicate(predicate));
       replacements.add(new GraphQlPredicate(predicate));
       if (predicate.isList()) {
         additions.add(new GraphQlPredicate(predicate));
@@ -58,22 +61,37 @@ class DerivedInputTypeSchemaGenerator {
 
   public StringBuilder getSchema() {
     StringBuilder schema = new StringBuilder();
-    if (additions.isEmpty() && deletions.isEmpty() && replacements.isEmpty()) {
+    if (creations.isEmpty() && additions.isEmpty() && deletions.isEmpty() && replacements.isEmpty()) {
       return schema;
     }
     String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
-    schema.append("input ").append(name).append("Input").append(" {\n");
-    if (!additions.isEmpty()) {
-      schema.append("  additions: ").append(name).append("AdditionsInput\n");
+
+    if (!creations.isEmpty()) {
+      schema.append("input ").append(name).append("CreateInput").append(" {\n");
+      schema.append("  creations: ").append(name).append("CreationsInput\n")
+            .append("}\n\n");
     }
-    if (!deletions.isEmpty()) {
-      schema.append("  deletions: ").append(name).append("DeletionsInput\n");
+
+    if (!additions.isEmpty() || !deletions.isEmpty() || !replacements.isEmpty()) {
+      schema.append("input ").append(name).append("EditInput").append(" {\n");
+      if (!additions.isEmpty()) {
+        schema.append("  additions: ").append(name).append("AdditionsInput\n");
+      }
+      if (!deletions.isEmpty()) {
+        schema.append("  deletions: ").append(name).append("DeletionsInput\n");
+      }
+      schema.append("  replacements: ").append(name).append("ReplacementsInput\n")
+            .append("}\n\n");
     }
-    schema.append("  replacements: ").append(name).append("ReplacementsInput\n")
-          .append("}\n\n");
 
     // Add the inputs
-    inputFields(schema, name, "ReplacementsInput", replacements);
+    if (!creations.isEmpty()) {
+      inputFields(schema, name, "CreationsInput", creations);
+    }
+
+    if (!replacements.isEmpty()) {
+      inputFields(schema, name, "ReplacementsInput", replacements);
+    }
 
     if (!additions.isEmpty()) {
       inputFields(schema, name, "AdditionsInput", additions);
@@ -84,8 +102,12 @@ class DerivedInputTypeSchemaGenerator {
     }
 
     schema.append("type ").append(name).append("Mutations").append(" {\n")
-          .append("  edit(").append("uri: String! ").append("entity: ").append(name).append("Input!): ")
+          .append("  create(").append("uri: String! ").append("entity: ").append(name).append("CreateInput!): ")
+          .append(name).append(" @createMutation(dataSet: ").append(rootType).append(")").append("\n")
+          .append("  edit(").append("uri: String! ").append("entity: ").append(name).append("EditInput!): ")
           .append(name).append(" @editMutation(dataSet: ").append(rootType).append(")").append("\n")
+          .append("  delete(").append("uri: String!): RemovedEntity! @deleteMutation(dataSet: ")
+          .append(rootType).append(")").append("\n")
           .append("  persistEntity(").append("entityUri: String!): ").append("Message")
           .append(" @persistEntityMutation(dataSet: ").append(rootType)
           .append(")")
@@ -95,10 +117,10 @@ class DerivedInputTypeSchemaGenerator {
   }
 
   public void addMutationToSchema(StringBuilder schema) {
-    if (!replacements.isEmpty()) {
+    if (!creations.isEmpty() || !replacements.isEmpty()) {
       String typename = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);
       String name = typename.substring(rootType.length() + 1);
-      schema.append("  ").append(name).append(": ").append(typename).append("Mutations").append( " @passThrough\n");
+      schema.append("  ").append(name).append(": ").append(typename).append("Mutations").append(" @passThrough\n");
     }
   }
 

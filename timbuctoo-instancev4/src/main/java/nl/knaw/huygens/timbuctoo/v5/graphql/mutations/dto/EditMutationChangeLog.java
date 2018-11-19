@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
@@ -20,13 +19,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 
 @JsonTypeName("EditMutationChangeLog")
 public class EditMutationChangeLog implements ChangeLog {
@@ -109,64 +102,31 @@ public class EditMutationChangeLog implements ChangeLog {
   }
 
   private Change createAdditionsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
-    String pred = getPredicate(dataSet, graphQlpred);
+    String pred = ChangeLog.getPredicate(dataSet, graphQlpred);
     // FIXME make it work with reference types
-    List<Value> values = getValues(dataSet, val);
+    List<Value> values = ChangeLog.getValues(dataSet, val);
 
     return new Change(subject, pred, values, Stream.empty());
   }
 
   private Change createDeletionsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
-    List<Value> values = getValues(dataSet, val);
+    List<Value> values = ChangeLog.getValues(dataSet, val);
 
-    String pred = getPredicate(dataSet, graphQlpred);
+    String pred = ChangeLog.getPredicate(dataSet, graphQlpred);
     // FIXME make it work with reference types
-    Stream<Value> oldValues = getOldValues(dataSet, pred)
-      .filter(value -> values.isEmpty() || values.contains(value));
+    Stream<Value> oldValues = ChangeLog.getOldValues(dataSet, subject, pred)
+                                       .filter(value -> values.isEmpty() || values.contains(value));
 
     return new Change(subject, pred, Lists.newArrayList(), oldValues);
   }
 
   private Change createReplacementsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
-    String pred = getPredicate(dataSet, graphQlpred);
+    String pred = ChangeLog.getPredicate(dataSet, graphQlpred);
     // FIXME make it work with reference types
-    Stream<Value> oldValues = getOldValues(dataSet, pred);
-    List<Value> values = getValues(dataSet, val);
+    Stream<Value> oldValues = ChangeLog.getOldValues(dataSet, subject, pred);
+    List<Value> values = ChangeLog.getValues(dataSet, val);
 
     return new Change(subject, pred, values, oldValues);
-  }
-
-  private Stream<Value> getOldValues(DataSet dataSet, String pred) {
-    return dataSet.getQuadStore().getQuads(subject, pred, Direction.OUT, "")
-                  .map(quad -> new Value(quad.getObject(), quad.getValuetype().orElse(STRING)));
-  }
-
-  private static List<Value> getValues(DataSet dataSet, JsonNode val) {
-    List<Value> values;
-    if (val.isNull()) {
-      values = Lists.newArrayList();
-    } else if (val.isArray()) {
-      values =
-        StreamSupport.stream(Spliterators.spliteratorUnknownSize(val.iterator(), Spliterator.ORDERED), false)
-                     .map(value -> {
-                       String rawValue = value.get("value").asText();
-                       String valueType = dataSet.getTypeNameStore().makeUri(value.get("type").asText());
-                       return new Value(rawValue, valueType);
-                     }).collect(Collectors.toList());
-    } else if (val.has("value") && val.has("type")) {
-      String value = val.get("value").asText();
-      String valueType = dataSet.getTypeNameStore().makeUri(val.get("type").asText());
-      values = Lists.newArrayList(new Value(value, valueType));
-    } else {
-      throw new IllegalArgumentException("'" + val + "' is not a valid value");
-    }
-
-    return values;
-  }
-
-  private static String getPredicate(DataSet dataSet, String graphQlpred) {
-    TypeNameStore typeNameStore = dataSet.getTypeNameStore();
-    return typeNameStore.makeUriForPredicate(graphQlpred).get().getLeft();
   }
 
   public static class RawEditChangeLog {
