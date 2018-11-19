@@ -406,6 +406,22 @@ input PropertyInput {
   value: String!
 }
 
+input CustomProvenanceInput {
+  fields: [CustomProvenanceFieldInput!]!
+}
+
+input CustomProvenanceFieldInput {
+  uri: String!
+  isList: Boolean!
+  valueType: String
+  object: CustomProvenanceObjectFieldInput
+}
+
+input CustomProvenanceObjectFieldInput {
+  type: String!
+  fields: [CustomProvenanceFieldInput!]!
+}
+
 type Mutation {
   # dataSets: DataSetMutations is added in RootQuery
   setViewConfig(dataSetId: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]

@@ -38,6 +38,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SetCustomProvenanceMutation;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +122,8 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("createMutation") != null ||
       environment.getFieldDefinition().getDirective("editMutation") != null ||
       environment.getFieldDefinition().getDirective("deleteMutation") != null ||
-      environment.getFieldDefinition().getDirective("persistEntityMutation") != null;
+      environment.getFieldDefinition().getDirective("persistEntityMutation") != null ||
+      environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null;
   }
 
   @Override
@@ -167,7 +169,7 @@ public class RdfWiringFactory implements WiringFactory {
       String userId = ((StringValue) directive.getArgument("userId").getValue()).getValue();
       String dataSetId = ((StringValue) directive.getArgument("dataSetId").getValue()).getValue();
       final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(userId, dataSetId)
-        .orElse(null);
+                                               .orElse(null);
       return dataFetchingEnvironment -> new DatabaseResult() {
         @Override
         public DataSet getDataSet() {
@@ -218,6 +220,11 @@ public class RdfWiringFactory implements WiringFactory {
       EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
       String dataSetName = dataSet.getName();
       return new PersistEntityMutation(redirectionService, dataSetName, uriHelper);
+    } else if (environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null) {
+      Directive directive = environment.getFieldDefinition().getDirective("setCustomProvenanceMutation");
+      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
+      String dataSetId = dataSet.getName();
+      return new SetCustomProvenanceMutation(dataSetRepository, dataSetId);
     }
     return null;
   }
@@ -242,9 +249,9 @@ public class RdfWiringFactory implements WiringFactory {
         final String prefix = typedValue.getDataSet().getMetadata().getCombinedId();
         typeName =
           prefix +
-          "_" +
-          typedValue.getDataSet().getTypeNameStore().makeGraphQlValuename(typeUri);
-      } else if (object instanceof  SubjectReference) {
+            "_" +
+            typedValue.getDataSet().getTypeNameStore().makeGraphQlValuename(typeUri);
+      } else if (object instanceof SubjectReference) {
         //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
         //In rdf things can have more then one type though (types are like java interfaces)
         //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types

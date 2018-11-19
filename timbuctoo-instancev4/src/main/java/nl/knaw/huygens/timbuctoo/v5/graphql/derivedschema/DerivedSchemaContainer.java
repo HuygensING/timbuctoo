@@ -156,6 +156,8 @@ public class DerivedSchemaContainer {
     }
 
     total.append("type ").append(rootType).append("Mutations").append("{\n");
+    total.append("  setCustomProvenance(customProvenance: CustomProvenanceInput!): Message!")
+         .append(" @setCustomProvenanceMutation(dataSet: ").append(rootType).append(")\n");
     total.append(mutationsSchema);
     total.append("}\n\n");
   }
