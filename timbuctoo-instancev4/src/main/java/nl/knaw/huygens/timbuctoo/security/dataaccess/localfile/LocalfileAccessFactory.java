@@ -63,9 +63,11 @@ public class LocalfileAccessFactory implements AccessFactory {
   public PermissionConfiguration getPermissionConfig() {
     try {
       Path permissionConfigPath = Paths.get(permissionConfig);
+      PermissionConfigMigrator permissionConfigMigrator = new PermissionConfigMigrator(permissionConfigPath);
       if (!Files.exists(permissionConfigPath)) {
-        new PermissionConfigMigrator(permissionConfigPath).execute();
+        permissionConfigMigrator.execute();
       }
+      permissionConfigMigrator.update();
       return new JsonPermissionConfiguration(new FileInputStream(permissionConfig));
     } catch (IOException e) {
       throw new RuntimeException(e);

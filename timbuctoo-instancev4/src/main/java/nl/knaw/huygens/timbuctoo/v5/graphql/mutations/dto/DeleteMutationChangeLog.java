@@ -16,7 +16,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 
 @JsonTypeName("DeleteMutationChangeLog")
-public class DeleteMutationChangeLog implements ChangeLog {
+public class DeleteMutationChangeLog extends ChangeLog {
   @JsonProperty
   private final String subject;
 

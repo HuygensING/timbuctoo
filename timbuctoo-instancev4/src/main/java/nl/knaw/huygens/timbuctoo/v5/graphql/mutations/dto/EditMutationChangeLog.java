@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @JsonTypeName("EditMutationChangeLog")
-public class EditMutationChangeLog implements ChangeLog {
+public class EditMutationChangeLog extends ChangeLog {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @JsonProperty
@@ -102,29 +102,29 @@ public class EditMutationChangeLog implements ChangeLog {
   }
 
   private Change createAdditionsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
-    String pred = ChangeLog.getPredicate(dataSet, graphQlpred);
+    String pred = getPredicate(dataSet, graphQlpred);
     // FIXME make it work with reference types
-    List<Value> values = ChangeLog.getValues(dataSet, val);
+    List<Value> values = getValues(dataSet, val);
 
     return new Change(subject, pred, values, Stream.empty());
   }
 
   private Change createDeletionsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
-    List<Value> values = ChangeLog.getValues(dataSet, val);
+    List<Value> values = getValues(dataSet, val);
 
-    String pred = ChangeLog.getPredicate(dataSet, graphQlpred);
+    String pred = getPredicate(dataSet, graphQlpred);
     // FIXME make it work with reference types
-    Stream<Value> oldValues = ChangeLog.getOldValues(dataSet, subject, pred)
+    Stream<Value> oldValues = getOldValues(dataSet, subject, pred)
                                        .filter(value -> values.isEmpty() || values.contains(value));
 
     return new Change(subject, pred, Lists.newArrayList(), oldValues);
   }
 
   private Change createReplacementsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
-    String pred = ChangeLog.getPredicate(dataSet, graphQlpred);
+    String pred = getPredicate(dataSet, graphQlpred);
     // FIXME make it work with reference types
-    Stream<Value> oldValues = ChangeLog.getOldValues(dataSet, subject, pred);
-    List<Value> values = ChangeLog.getValues(dataSet, val);
+    Stream<Value> oldValues = getOldValues(dataSet, subject, pred);
+    List<Value> values = getValues(dataSet, val);
 
     return new Change(subject, pred, values, oldValues);
   }

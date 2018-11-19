@@ -57,7 +57,7 @@ public class CreateMutation implements DataFetcher {
     }
 
     DataSet dataSet = dataSetOpt.get();
-    if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.WRITE)) {
+    if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.CREATE)) {
       throw new RuntimeException("User should have permissions to create entities of the data set.");
     }
 

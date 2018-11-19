@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @JsonTypeName("CreateMutationChangeLog")
-public class CreateMutationChangeLog implements ChangeLog {
+public class CreateMutationChangeLog extends ChangeLog {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @JsonProperty
@@ -64,9 +64,9 @@ public class CreateMutationChangeLog implements ChangeLog {
   }
 
   private Change createChange(DataSet dataSet, String graphQlpred, JsonNode val) {
-    String pred = ChangeLog.getPredicate(dataSet, graphQlpred);
+    String pred = getPredicate(dataSet, graphQlpred);
     // FIXME make it work with reference types
-    List<Value> values = ChangeLog.getValues(dataSet, val);
+    List<Value> values = getValues(dataSet, val);
 
     return new Change(subject, pred, values, Stream.empty());
   }

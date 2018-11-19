@@ -24,12 +24,12 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
     @JsonSubTypes.Type(name = "EditMutationChangeLog", value = EditMutationChangeLog.class),
     @JsonSubTypes.Type(name = "DeleteMutationChangeLog", value = DeleteMutationChangeLog.class)
   })
-public interface ChangeLog {
-  Stream<Change> getAdditions(DataSet dataSet);
+public abstract class ChangeLog {
+  public abstract Stream<Change> getAdditions(DataSet dataSet);
 
-  Stream<Change> getDeletions(DataSet dataSet);
+  public abstract Stream<Change> getDeletions(DataSet dataSet);
 
-  Stream<Change> getReplacements(DataSet dataSet);
+  public abstract Stream<Change> getReplacements(DataSet dataSet);
 
   static String getPredicate(DataSet dataSet, String graphQlpred) {
     TypeNameStore typeNameStore = dataSet.getTypeNameStore();
