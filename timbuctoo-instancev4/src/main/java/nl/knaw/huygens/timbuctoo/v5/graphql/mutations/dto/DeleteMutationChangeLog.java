@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
 
 import java.util.stream.Stream;
@@ -36,16 +37,17 @@ public class DeleteMutationChangeLog extends ChangeLog {
 
   @Override
   public Stream<Change> getDeletions(DataSet dataSet) {
-    return dataSet.getQuadStore()
-                  .getQuads(subject)
-                  .map(quad -> new Tuple<>(
-                    quad.getPredicate(),
-                    new Change.Value(quad.getObject(), quad.getValuetype().orElse(STRING))
-                  ))
-                  .collect(groupingBy(Tuple::getLeft, mapping(Tuple::getRight, toList())))
-                  .entrySet().stream()
-                  .map(predValues ->
-                    new Change(subject, predValues.getKey(), Lists.newArrayList(), predValues.getValue().stream()));
+    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(subject)) {
+      return quads
+        .map(quad -> new Tuple<>(
+          quad.getPredicate(),
+          new Change.Value(quad.getObject(), quad.getValuetype().orElse(STRING))
+        ))
+        .collect(groupingBy(Tuple::getLeft, mapping(Tuple::getRight, toList())))
+        .entrySet().stream()
+        .map(predValues ->
+          new Change(subject, predValues.getKey(), Lists.newArrayList(), predValues.getValue().stream()));
+    }
   }
 
   @Override
