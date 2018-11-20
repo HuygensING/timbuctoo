@@ -31,18 +31,18 @@ public abstract class ChangeLog {
 
   public abstract Stream<Change> getReplacements(DataSet dataSet);
 
-  static String getPredicate(DataSet dataSet, String graphQlpred) {
+  protected String getPredicate(DataSet dataSet, String graphQlpred) {
     TypeNameStore typeNameStore = dataSet.getTypeNameStore();
     return typeNameStore.makeUriForPredicate(graphQlpred).get().getLeft();
   }
 
-  static Stream<Change.Value> getOldValues(DataSet dataSet, String subject, String pred) {
+  protected Stream<Change.Value> getOldValues(DataSet dataSet, String subject, String pred) {
     return dataSet.getQuadStore()
                   .getQuads(subject, pred, Direction.OUT, "")
                   .map(quad -> new Change.Value(quad.getObject(), quad.getValuetype().orElse(STRING)));
   }
 
-  static List<Change.Value> getValues(DataSet dataSet, JsonNode val) {
+  protected List<Change.Value> getValues(DataSet dataSet, JsonNode val) {
     List<Change.Value> values;
     if (val.isNull()) {
       values = Lists.newArrayList();
