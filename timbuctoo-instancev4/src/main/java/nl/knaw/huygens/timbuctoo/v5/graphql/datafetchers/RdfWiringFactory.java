@@ -187,11 +187,13 @@ public class RdfWiringFactory implements WiringFactory {
     } else if (environment.getFieldDefinition().getDirective("createMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("createMutation");
       EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
+      StringValue typeUri = (StringValue) directive.getArgument("typeUri").getValue();
 
       String dataSetName = dataSet.getName();
+      String typeUriName = typeUri.getValue();
 
       return createMutationMap.computeIfAbsent(dataSetName, s -> {
-        return new CreateMutation(dataSetRepository, uriHelper, subjectFetcher, dataSetName);
+        return new CreateMutation(dataSetRepository, uriHelper, subjectFetcher, dataSetName, typeUriName);
       });
     } else if (environment.getFieldDefinition().getDirective("editMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("editMutation");

@@ -103,7 +103,8 @@ class DerivedInputTypeSchemaGenerator {
 
     schema.append("type ").append(name).append("Mutations").append(" {\n")
           .append("  create(").append("uri: String! ").append("entity: ").append(name).append("CreateInput!): ")
-          .append(name).append(" @createMutation(dataSet: ").append(rootType).append(")").append("\n")
+          .append(name).append(" @createMutation(dataSet: ").append(rootType)
+          .append(" typeUri: \"").append(typeUri).append("\")").append("\n")
           .append("  edit(").append("uri: String! ").append("entity: ").append(name).append("EditInput!): ")
           .append(name).append(" @editMutation(dataSet: ").append(rootType).append(")").append("\n")
           .append("  delete(").append("uri: String!): RemovedEntity! @deleteMutation(dataSet: ")

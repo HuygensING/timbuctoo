@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CreateMutationChangeLogTest {
+  private static final String TYPE_URI = "http://schema.org/Person";
   private static final String SUBJECT = "http://example.org/subject";
   private static final String NAMES_FIELD = "schema_name";
   private static final String NAMES_PRED = "http://schema.org/name";
@@ -50,12 +51,16 @@ public class CreateMutationChangeLogTest {
     creations.put(NAMES_FIELD, createPropertyInput(addedValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("creations", creations);
-    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, entity);
+    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, TYPE_URI, entity);
 
     List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds.size(), is(1));
-    assertThat(adds, contains(likeChange()
+    assertThat(adds.size(), is(2));
+    assertThat(adds.get(0), is(likeChange()
+      .withValues(new Value(TYPE_URI, STRING))
+      .oldValuesIsEmpty()
+    ));
+    assertThat(adds.get(1), is(likeChange()
       .withValues(new Value(addedValue, STRING))
       .oldValuesIsEmpty()
     ));
@@ -69,12 +74,16 @@ public class CreateMutationChangeLogTest {
     creations.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("creations", creations);
-    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, entity);
+    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, TYPE_URI, entity);
 
     List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds.size(), is(1));
-    assertThat(adds, contains(likeChange()
+    assertThat(adds.size(), is(2));
+    assertThat(adds.get(0), is(likeChange()
+      .withValues(new Value(TYPE_URI, STRING))
+      .oldValuesIsEmpty()
+    ));
+    assertThat(adds.get(1), is(likeChange()
       .withValues(new Value(addedValue1, STRING), new Value(addedValue2, STRING))
       .oldValuesIsEmpty()
     ));
@@ -88,7 +97,7 @@ public class CreateMutationChangeLogTest {
     creations.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("creations", creations);
-    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, entity);
+    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, TYPE_URI, entity);
 
     Stream<Change> deletes = instance.getDeletions(dataSet);
 
@@ -103,7 +112,7 @@ public class CreateMutationChangeLogTest {
     creations.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("creations", creations);
-    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, entity);
+    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, TYPE_URI, entity);
 
     Stream<Change> replacements = instance.getReplacements(dataSet);
 

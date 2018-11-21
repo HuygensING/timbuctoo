@@ -27,16 +27,18 @@ public class CreateMutation implements DataFetcher {
   private final QuadStoreLookUpSubjectByUriFetcher subjectFetcher;
   private final String dataSetName;
   private final String ownerId;
+  private final String typeUri;
   private final UserUriCreator userUriCreator;
 
   public CreateMutation(DataSetRepository dataSetRepository, UriHelper uriHelper,
                         QuadStoreLookUpSubjectByUriFetcher subjectFetcher,
-                        String dataSetId) {
+                        String dataSetId, String typeUri) {
     this.dataSetRepository = dataSetRepository;
     this.subjectFetcher = subjectFetcher;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
     dataSetName = dataSetIdSplit.getRight();
     ownerId = dataSetIdSplit.getLeft();
+    this.typeUri = typeUri;
     userUriCreator = new UserUriCreator(uriHelper);
   }
 
@@ -71,7 +73,7 @@ public class CreateMutation implements DataFetcher {
       dataSet.getImportManager().generateLog(
         dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
-        new GraphQlToRdfPatch(uri, userUriCreator.create(user), new CreateMutationChangeLog(uri, entity))
+        new GraphQlToRdfPatch(uri, userUriCreator.create(user), new CreateMutationChangeLog(uri, typeUri, entity))
       ).get(); // Wait until the data is processed
     } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);

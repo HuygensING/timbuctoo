@@ -12,10 +12,14 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 @JsonTypeName("CreateMutationChangeLog")
 public class CreateMutationChangeLog extends ChangeLog {
@@ -25,32 +29,43 @@ public class CreateMutationChangeLog extends ChangeLog {
   private final String subject;
 
   @JsonProperty
+  private final String typeUri;
+
+  @JsonProperty
   private final RawCreateChangeLog changeLog;
 
-  public CreateMutationChangeLog(String subject, Map entity) throws JsonProcessingException {
+  public CreateMutationChangeLog(String subject, String typeUri, Map entity) throws JsonProcessingException {
     this.subject = subject;
+    this.typeUri = typeUri;
 
     TreeNode jsonNode = OBJECT_MAPPER.valueToTree(entity);
     this.changeLog = OBJECT_MAPPER.treeToValue(jsonNode, RawCreateChangeLog.class);
   }
 
-  private CreateMutationChangeLog(String subject, RawCreateChangeLog changeLog) {
+  private CreateMutationChangeLog(String subject, String typeUri, RawCreateChangeLog changeLog) {
     this.subject = subject;
+    this.typeUri = typeUri;
     this.changeLog = changeLog;
   }
 
   @JsonCreator
   public static CreateMutationChangeLog fromJson(@JsonProperty("subject") String subject,
+                                                 @JsonProperty("typeUri") String typeUri,
                                                  @JsonProperty("changeLog") RawCreateChangeLog changeLog) {
-    return new CreateMutationChangeLog(subject, changeLog);
+    return new CreateMutationChangeLog(subject, typeUri, changeLog);
   }
 
   @Override
   public Stream<Change> getAdditions(DataSet dataSet) {
-    return changeLog.getCreations().entrySet().stream()
-                    .filter(entry -> !entry.getValue().isNull() &&
-                      !(entry.getValue().isArray() && entry.getValue().size() == 0))
-                    .map(entry -> createChange(dataSet, entry.getKey(), entry.getValue()));
+    Change typeAddition =
+      new Change(subject, RDF_TYPE, Collections.singletonList(new Value(typeUri, STRING)), Stream.empty());
+
+    Stream<Change> additions = changeLog.getCreations().entrySet().stream()
+                                        .filter(entry -> !entry.getValue().isNull() &&
+                                          !(entry.getValue().isArray() && entry.getValue().size() == 0))
+                                        .map(entry -> createChange(dataSet, entry.getKey(), entry.getValue()));
+
+    return Stream.concat(Stream.of(typeAddition), additions);
   }
 
   @Override
