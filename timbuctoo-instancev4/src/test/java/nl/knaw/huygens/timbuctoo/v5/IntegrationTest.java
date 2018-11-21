@@ -1389,13 +1389,293 @@ public class IntegrationTest {
   }
 
   @Test
+  public void createDataWithGraphQl() throws Exception {
+    // upload dataset
+    final String dataSetName = "create" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "mutatedataset.nt").toURI()),
+      "application/n-triples",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    // query person does not exist yet
+    Response queryData = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person(uri: \"http://example.org/person_new\") {\n" +
+            "        schema_familyName {\n" +
+            "          value\n" +
+            "        }\n" +
+            "        schema_givenNameList {\n" +
+            "          items {\n" +
+            "            value\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryData.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "schema_familyName", jsn(null),
+              "schema_givenNameList", jsnO(
+                "items", jsnA()
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // create
+    Response edit = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Create($uri:String! $entity:" + dataSetId + "_schema_PersonCreateInput! ) {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person {\n" +
+            "        create(uri: $uri entity: $entity) {\n" +
+            "          schema_familyName {\n" +
+            "            value\n" +
+            "          }\n" +
+            "          schema_givenNameList {\n" +
+            "            items {\n" +
+            "              value\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        ),
+        "variables", jsnO(
+          "uri", jsn("http://example.org/person_new"),
+          "entity", jsnO(
+            "creations", jsnO(
+              "schema_familyName", jsnO(
+                "type", jsn("xsd_string"),
+                "value", jsn("Test2")
+              ),
+              "schema_givenNameList", jsnA(jsnO(
+                "type", jsn("xsd_string"),
+                "value", jsn("Janus")
+              ), jsnO(
+                "type", jsn("xsd_string"),
+                "value", jsn("Jan")
+              ))
+            )
+          )
+        ),
+        "operationName", jsn("Create")
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(edit.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "create", jsnO(
+                "schema_familyName", jsnO(
+                  "value", jsn("Test2")
+                ),
+                "schema_givenNameList", jsnO(
+                  "items", jsnA(
+                    jsnO(
+                      "value", jsn("Jan")
+                    ),
+                    jsnO(
+                      "value", jsn("Janus")
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // query person after create
+    Response queryAfterCreate = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + " {\n" +
+            "      schema_Person(uri: \"http://example.org/person_new\") {\n" +
+            "        schema_familyName {\n" +
+            "          value\n" +
+            "        }\n" +
+            "        schema_givenNameList {\n" +
+            "          items {\n" +
+            "            value\n" +
+            "          }\n" +
+            "        }\n" +
+            "        tim_pred_latestRevision {\n" +
+            "          _inverse_prov_generated {\n" +
+            "            prov_associatedWith {\n" +
+            "              uri\n" +
+            "            }\n" +
+            "            prov_qualifiedAssociation {\n" +
+            "              prov_hadPlan {\n" +
+            "                tim_pred_additions {\n" +
+            "                  tim_pred_hasAdditionList {\n" +
+            "                    items {\n" +
+            "                      tim_pred_hasKey {\n" +
+            "                        uri\n" +
+            "                      }\n" +
+            "                      tim_pred_hasValue {\n" +
+            "                        tim_pred_rawValue {\n" +
+            "                          value\n" +
+            "                        }\n" +
+            "                        tim_pred_type {\n" +
+            "                          value\n" +
+            "                        }\n" +
+            "                      }\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "              }\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryAfterCreate.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "schema_familyName", jsnO(
+                "value", jsn("Test2")
+              ),
+              "schema_givenNameList", jsnO(
+                "items", jsnA(
+                  jsnO(
+                    "value", jsn("Jan")
+                  ),
+                  jsnO(
+                    "value", jsn("Janus")
+                  )
+                )
+              ),
+              "tim_pred_latestRevision", jsnO(
+                "_inverse_prov_generated", jsnO(
+                  "prov_associatedWith", jsnO(
+                    "uri", jsn(format("http://127.0.0.1:%d/users/" + USER_ID, APP.getLocalPort()))
+                  ),
+                  "prov_qualifiedAssociation", jsnO(
+                    "prov_hadPlan", jsnO("tim_pred_additions", jsnO(
+                      "tim_pred_hasAdditionList", jsnO("items", jsnA(
+                        jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("http://schema.org/Person")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        ),
+                        jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/familyName")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Test2")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        ),
+                        jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/givenName")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Janus")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        ),
+                        jsnO(
+                          "tim_pred_hasKey", jsnO(
+                            "uri", jsn("http://schema.org/givenName")
+                          ),
+                          "tim_pred_hasValue", jsnO(
+                            "tim_pred_rawValue", jsnO(
+                              "value", jsn("Jan")
+                            ),
+                            "tim_pred_type", jsnO(
+                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        ))
+                      ))
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+  }
+
+  @Test
   public void editDataWithGraphQl() throws Exception {
     // upload dataset
     final String dataSetName = "edit" + UUID.randomUUID().toString().replace("-", "_");
     final String dataSetId = createDataSetId(dataSetName);
     Response uploadResponse = multipartPost(
       "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
-      new File(getResource(IntegrationTest.class, "editdataset.nt").toURI()),
+      new File(getResource(IntegrationTest.class, "mutatedataset.nt").toURI()),
       "application/n-triples",
       ImmutableMap.of(
         "encoding", "UTF-8"
@@ -1460,7 +1740,7 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation Edit($uri:String! $entity:" + dataSetId + "_schema_PersonInput! ) {\n" +
+          "mutation Edit($uri:String! $entity:" + dataSetId + "_schema_PersonEditInput! ) {\n" +
             "  dataSets {\n" +
             "    " + dataSetId + "{\n" +
             "      schema_Person {\n" +
@@ -1678,6 +1958,239 @@ public class IntegrationTest {
                             ),
                             "tim_pred_type", jsnO(
                               "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+  }
+
+  @Test
+  public void deleteDataWithGraphQl() throws Exception {
+    // upload dataset
+    final String dataSetName = "delete" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "mutatedataset.nt").toURI()),
+      "application/n-triples",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    // query person before delete
+    Response queryData = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+            "        schema_familyName {\n" +
+            "          value\n" +
+            "        }\n" +
+            "        schema_givenNameList {\n" +
+            "          items {\n" +
+            "            value\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryData.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "schema_familyName",
+              jsnO(
+                "value", jsn("Jansen")
+              ),
+              "schema_givenNameList", jsnO(
+                "items", jsnA(
+                  jsnO(
+                    "value", jsn("Jan")
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // delete
+    Response edit = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Delete($uri:String!) {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person {\n" +
+            "        delete(uri: $uri) {\n" +
+            "          uri \n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        ),
+        "variables", jsnO(
+          "uri", jsn("http://example.org/person1")
+        ),
+        "operationName", jsn("Delete")
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(edit.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "delete", jsnO(
+                "uri", jsn("http://example.org/person1")
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // query person after delete
+    Response queryAfterDelete = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+            "        schema_familyName {\n" +
+            "          value\n" +
+            "        }\n" +
+            "        schema_givenNameList {\n" +
+            "          items {\n" +
+            "            value\n" +
+            "          }\n" +
+            "        }\n" +
+            "        tim_pred_latestRevision {\n" +
+            "          _inverse_prov_generated {\n" +
+            "            prov_associatedWith {\n" +
+            "              uri\n" +
+            "            }\n" +
+            "            prov_qualifiedAssociation {\n" +
+            "              prov_hadPlan {\n" +
+            "                tim_pred_deletions {\n" +
+            "                  tim_pred_hasDeletionList {\n" +
+            "                    items {\n" +
+            "                      tim_pred_hasKey {\n" +
+            "                        uri\n" +
+            "                      }\n" +
+            "                      tim_pred_hasValue {\n" +
+            "                        tim_pred_rawValue {\n" +
+            "                          value\n" +
+            "                        }\n" +
+            "                        tim_pred_type {\n" +
+            "                          value\n" +
+            "                        }\n" +
+            "                      }\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "              }\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryAfterDelete.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "schema_familyName", jsn(null),
+              "schema_givenNameList", jsnO(
+                "items", jsnA()
+              ),
+              "tim_pred_latestRevision", jsnO(
+                "_inverse_prov_generated", jsnO(
+                  "prov_associatedWith", jsnO(
+                    "uri", jsn(format("http://127.0.0.1:%d/users/" + USER_ID, APP.getLocalPort()))
+                  ),
+                  "prov_qualifiedAssociation", jsnO(
+                    "prov_hadPlan", jsnO(
+                      "tim_pred_deletions", jsnO(
+                        "tim_pred_hasDeletionList", jsnO(
+                          "items", jsnA(
+                            jsnO(
+                              "tim_pred_hasKey", jsnO(
+                                "uri", jsn("http://schema.org/familyName")
+                              ),
+                              "tim_pred_hasValue", jsnO(
+                                "tim_pred_rawValue", jsnO(
+                                  "value", jsn("Jansen")
+                                ),
+                                "tim_pred_type", jsnO(
+                                  "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                                )
+                              )
+                            ),
+                            jsnO("tim_pred_hasKey", jsnO(
+                              "uri", jsn("http://schema.org/givenName")
+                              ),
+                              "tim_pred_hasValue", jsnO(
+                                "tim_pred_rawValue", jsnO(
+                                  "value", jsn("Jan")
+                                ),
+                                "tim_pred_type", jsnO(
+                                  "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                                ))
+                            ),
+                            jsnO(
+                              "tim_pred_hasKey", jsnO(
+                                "uri", jsn("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                              ),
+                              "tim_pred_hasValue", jsnO(
+                                "tim_pred_rawValue", jsnO(
+                                  "value", jsn("http://schema.org/Person")
+                                ),
+                                "tim_pred_type", jsnO(
+                                  "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+                                )
+                              )
                             )
                           )
                         )
