@@ -57,7 +57,7 @@ public class CreateMutationChangeLogTest {
 
     assertThat(adds.size(), is(2));
     assertThat(adds.get(0), is(likeChange()
-      .withValues(new Value(TYPE_URI, STRING))
+      .withValues(new Value(TYPE_URI, null))
       .oldValuesIsEmpty()
     ));
     assertThat(adds.get(1), is(likeChange()
@@ -80,7 +80,7 @@ public class CreateMutationChangeLogTest {
 
     assertThat(adds.size(), is(2));
     assertThat(adds.get(0), is(likeChange()
-      .withValues(new Value(TYPE_URI, STRING))
+      .withValues(new Value(TYPE_URI, null))
       .oldValuesIsEmpty()
     ));
     assertThat(adds.get(1), is(likeChange()

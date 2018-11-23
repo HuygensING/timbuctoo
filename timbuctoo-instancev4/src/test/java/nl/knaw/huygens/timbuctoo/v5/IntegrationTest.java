@@ -1553,12 +1553,14 @@ public class IntegrationTest {
             "                      tim_pred_hasKey {\n" +
             "                        uri\n" +
             "                      }\n" +
-            "                      tim_pred_hasValue {\n" +
-            "                        tim_pred_rawValue {\n" +
-            "                          value\n" +
-            "                        }\n" +
-            "                        tim_pred_type {\n" +
-            "                          value\n" +
+            "                      tim_pred_hasValueList {\n" +
+            "                        items {\n" +
+            "                          tim_pred_rawValue {\n" +
+            "                            value\n" +
+            "                          }\n" +
+            "                          tim_pred_type {\n" +
+            "                            value\n" +
+            "                          }\n" +
             "                        }\n" +
             "                      }\n" +
             "                    }\n" +
@@ -1575,7 +1577,63 @@ public class IntegrationTest {
         )
       ).toString(), MediaType.APPLICATION_JSON));
 
-    assertThat(queryAfterCreate.readEntity(ObjectNode.class), is(jsnO(
+    ObjectNode queryAfterCreateNode = queryAfterCreate.readEntity(ObjectNode.class);
+    JsonNode hasAdditionListNode = queryAfterCreateNode
+      .get("data")
+      .get("dataSets")
+      .get(dataSetId)
+      .get("schema_Person")
+      .get("tim_pred_latestRevision")
+      .get("_inverse_prov_generated")
+      .get("prov_qualifiedAssociation")
+      .get("prov_hadPlan")
+      .get("tim_pred_additions")
+      .get("tim_pred_hasAdditionList");
+
+    assertThat(hasAdditionListNode.get("items"), containsInAnyOrder(
+      jsnO(
+        "tim_pred_hasKey", jsnO(
+          "uri", jsn("http://schema.org/familyName")
+        ),
+        "tim_pred_hasValueList", jsnO("items", jsnA(
+          jsnO(
+            "tim_pred_rawValue", jsnO(
+              "value", jsn("Test2")
+            ),
+            "tim_pred_type", jsnO(
+              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+            )
+          ))
+        )
+      ),
+      jsnO(
+        "tim_pred_hasKey", jsnO(
+          "uri", jsn("http://schema.org/givenName")
+        ),
+        "tim_pred_hasValueList", jsnO("items", jsnA(
+          jsnO(
+            "tim_pred_rawValue", jsnO(
+              "value", jsn("Janus")
+            ),
+            "tim_pred_type", jsnO(
+              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+            )
+          ),
+          jsnO(
+            "tim_pred_rawValue", jsnO(
+              "value", jsn("Jan")
+            ),
+            "tim_pred_type", jsnO(
+              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+            )
+          ))
+        )
+      )
+    ));
+
+    ((ObjectNode) hasAdditionListNode).set("items", jsnA());
+
+    assertThat(queryAfterCreateNode, is(jsnO(
       "data",
       jsnO(
         "dataSets",
@@ -1602,61 +1660,12 @@ public class IntegrationTest {
                     "uri", jsn(format("http://127.0.0.1:%d/users/" + USER_ID, APP.getLocalPort()))
                   ),
                   "prov_qualifiedAssociation", jsnO(
-                    "prov_hadPlan", jsnO("tim_pred_additions", jsnO(
-                      "tim_pred_hasAdditionList", jsnO("items", jsnA(
-                        jsnO(
-                          "tim_pred_hasKey", jsnO(
-                            "uri", jsn("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
-                          ),
-                          "tim_pred_hasValue", jsnO(
-                            "tim_pred_rawValue", jsnO(
-                              "value", jsn("http://schema.org/Person")
-                            ),
-                            "tim_pred_type", jsnO(
-                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-                            )
-                          )
-                        ),
-                        jsnO(
-                          "tim_pred_hasKey", jsnO(
-                            "uri", jsn("http://schema.org/familyName")
-                          ),
-                          "tim_pred_hasValue", jsnO(
-                            "tim_pred_rawValue", jsnO(
-                              "value", jsn("Test2")
-                            ),
-                            "tim_pred_type", jsnO(
-                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-                            )
-                          )
-                        ),
-                        jsnO(
-                          "tim_pred_hasKey", jsnO(
-                            "uri", jsn("http://schema.org/givenName")
-                          ),
-                          "tim_pred_hasValue", jsnO(
-                            "tim_pred_rawValue", jsnO(
-                              "value", jsn("Janus")
-                            ),
-                            "tim_pred_type", jsnO(
-                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-                            )
-                          )
-                        ),
-                        jsnO(
-                          "tim_pred_hasKey", jsnO(
-                            "uri", jsn("http://schema.org/givenName")
-                          ),
-                          "tim_pred_hasValue", jsnO(
-                            "tim_pred_rawValue", jsnO(
-                              "value", jsn("Jan")
-                            ),
-                            "tim_pred_type", jsnO(
-                              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-                            )
-                          )
-                        ))
-                      ))
+                    "prov_hadPlan", jsnO(
+                      "tim_pred_additions", jsnO(
+                        "tim_pred_hasAdditionList", jsnO(
+                          "items", jsnA()
+                        )
+                      )
                     )
                   )
                 )
@@ -2133,7 +2142,49 @@ public class IntegrationTest {
         )
       ).toString(), MediaType.APPLICATION_JSON));
 
-    assertThat(queryAfterDelete.readEntity(ObjectNode.class), is(jsnO(
+    ObjectNode queryAfterDeleteNode = queryAfterDelete.readEntity(ObjectNode.class);
+    JsonNode hasDeletionList = queryAfterDeleteNode
+      .get("data")
+      .get("dataSets")
+      .get(dataSetId)
+      .get("schema_Person")
+      .get("tim_pred_latestRevision")
+      .get("_inverse_prov_generated")
+      .get("prov_qualifiedAssociation")
+      .get("prov_hadPlan")
+      .get("tim_pred_deletions")
+      .get("tim_pred_hasDeletionList");
+
+    assertThat(hasDeletionList.get("items"), containsInAnyOrder(
+      jsnO(
+        "tim_pred_hasKey", jsnO(
+          "uri", jsn("http://schema.org/familyName")
+        ),
+        "tim_pred_hasValue", jsnO(
+          "tim_pred_rawValue", jsnO(
+            "value", jsn("Jansen")
+          ),
+          "tim_pred_type", jsnO(
+            "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+          )
+        )
+      ),
+      jsnO("tim_pred_hasKey", jsnO(
+        "uri", jsn("http://schema.org/givenName")
+        ),
+        "tim_pred_hasValue", jsnO(
+          "tim_pred_rawValue", jsnO(
+            "value", jsn("Jan")
+          ),
+          "tim_pred_type", jsnO(
+            "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+          ))
+      )
+    ));
+
+    ((ObjectNode) hasDeletionList).set("items", jsnA());
+
+    assertThat(queryAfterDeleteNode, is(jsnO(
       "data",
       jsnO(
         "dataSets",
@@ -2154,45 +2205,7 @@ public class IntegrationTest {
                     "prov_hadPlan", jsnO(
                       "tim_pred_deletions", jsnO(
                         "tim_pred_hasDeletionList", jsnO(
-                          "items", jsnA(
-                            jsnO(
-                              "tim_pred_hasKey", jsnO(
-                                "uri", jsn("http://schema.org/familyName")
-                              ),
-                              "tim_pred_hasValue", jsnO(
-                                "tim_pred_rawValue", jsnO(
-                                  "value", jsn("Jansen")
-                                ),
-                                "tim_pred_type", jsnO(
-                                  "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-                                )
-                              )
-                            ),
-                            jsnO("tim_pred_hasKey", jsnO(
-                              "uri", jsn("http://schema.org/givenName")
-                              ),
-                              "tim_pred_hasValue", jsnO(
-                                "tim_pred_rawValue", jsnO(
-                                  "value", jsn("Jan")
-                                ),
-                                "tim_pred_type", jsnO(
-                                  "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-                                ))
-                            ),
-                            jsnO(
-                              "tim_pred_hasKey", jsnO(
-                                "uri", jsn("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
-                              ),
-                              "tim_pred_hasValue", jsnO(
-                                "tim_pred_rawValue", jsnO(
-                                  "value", jsn("http://schema.org/Person")
-                                ),
-                                "tim_pred_type", jsnO(
-                                  "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-                                )
-                              )
-                            )
-                          )
+                          "items", jsnA()
                         )
                       )
                     )
