@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 @JsonTypeName("CreateMutationChangeLog")
@@ -58,7 +57,7 @@ public class CreateMutationChangeLog extends ChangeLog {
   @Override
   public Stream<Change> getAdditions(DataSet dataSet) {
     Change typeAddition =
-      new Change(subject, RDF_TYPE, Collections.singletonList(new Value(typeUri, STRING)), Stream.empty());
+      new Change(subject, RDF_TYPE, Collections.singletonList(new Value(typeUri, null)), Stream.empty());
 
     Stream<Change> additions = changeLog.getCreations().entrySet().stream()
                                         .filter(entry -> !entry.getValue().isNull() &&
@@ -80,7 +79,6 @@ public class CreateMutationChangeLog extends ChangeLog {
 
   private Change createChange(DataSet dataSet, String graphQlpred, JsonNode val) {
     String pred = getPredicate(dataSet, graphQlpred);
-    // FIXME make it work with reference types
     List<Value> values = getValues(dataSet, val);
 
     return new Change(subject, pred, values, Stream.empty());

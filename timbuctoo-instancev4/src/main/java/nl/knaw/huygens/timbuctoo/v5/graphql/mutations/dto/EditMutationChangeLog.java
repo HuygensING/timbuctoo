@@ -103,7 +103,6 @@ public class EditMutationChangeLog extends ChangeLog {
 
   private Change createAdditionsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
     String pred = getPredicate(dataSet, graphQlpred);
-    // FIXME make it work with reference types
     List<Value> values = getValues(dataSet, val);
 
     return new Change(subject, pred, values, Stream.empty());
@@ -113,7 +112,6 @@ public class EditMutationChangeLog extends ChangeLog {
     List<Value> values = getValues(dataSet, val);
 
     String pred = getPredicate(dataSet, graphQlpred);
-    // FIXME make it work with reference types
     Stream<Value> oldValues = getOldValues(dataSet, subject, pred)
                                        .filter(value -> values.isEmpty() || values.contains(value));
 
@@ -122,7 +120,6 @@ public class EditMutationChangeLog extends ChangeLog {
 
   private Change createReplacementsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
     String pred = getPredicate(dataSet, graphQlpred);
-    // FIXME make it work with reference types
     Stream<Value> oldValues = getOldValues(dataSet, subject, pred);
     List<Value> values = getValues(dataSet, val);
 

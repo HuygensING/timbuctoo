@@ -39,9 +39,10 @@ public class DeleteMutationChangeLog extends ChangeLog {
   public Stream<Change> getDeletions(DataSet dataSet) {
     try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(subject)) {
       return quads
+        .filter(quad -> quad.getValuetype().isPresent())
         .map(quad -> new Tuple<>(
           quad.getPredicate(),
-          new Change.Value(quad.getObject(), quad.getValuetype().orElse(STRING))
+          new Change.Value(quad.getObject(), quad.getValuetype().orElse(null))
         ))
         .collect(groupingBy(Tuple::getLeft, mapping(Tuple::getRight, toList())))
         .entrySet().stream()

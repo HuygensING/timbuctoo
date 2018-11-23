@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
-
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@type")
 @JsonSubTypes({
     @JsonSubTypes.Type(name = "CreateMutationChangeLog", value = CreateMutationChangeLog.class),
@@ -39,7 +37,7 @@ public abstract class ChangeLog {
   protected Stream<Change.Value> getOldValues(DataSet dataSet, String subject, String pred) {
     return dataSet.getQuadStore()
                   .getQuads(subject, pred, Direction.OUT, "")
-                  .map(quad -> new Change.Value(quad.getObject(), quad.getValuetype().orElse(STRING)));
+                  .map(quad -> new Change.Value(quad.getObject(), quad.getValuetype().orElse(null)));
   }
 
   protected List<Change.Value> getValues(DataSet dataSet, JsonNode val) {
