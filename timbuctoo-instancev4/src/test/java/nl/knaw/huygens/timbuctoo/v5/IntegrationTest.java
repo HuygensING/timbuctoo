@@ -1593,6 +1593,19 @@ public class IntegrationTest {
     assertThat(hasAdditionListNode.get("items"), containsInAnyOrder(
       jsnO(
         "tim_pred_hasKey", jsnO(
+          "uri", jsn("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+        ),
+        "tim_pred_hasValueList", jsnO("items", jsnA(
+          jsnO(
+            "tim_pred_rawValue", jsnO(
+              "value", jsn("http://schema.org/Person")
+            ),
+            "tim_pred_type", null
+          ))
+        )
+      ),
+      jsnO(
+        "tim_pred_hasKey", jsnO(
           "uri", jsn("http://schema.org/familyName")
         ),
         "tim_pred_hasValueList", jsnO("items", jsnA(
@@ -2090,7 +2103,7 @@ public class IntegrationTest {
     )));
 
     // query person after delete
-    Response queryAfterDelete = call("/v5/graphql")
+    Response queryOnEntityAfterDelete = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(jsnO(
         "query",
@@ -2107,6 +2120,41 @@ public class IntegrationTest {
             "            value\n" +
             "          }\n" +
             "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryOnEntityAfterDelete.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "schema_familyName", jsn(null),
+              "schema_givenNameList", jsnO(
+                "items", jsnA()
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // query person provenance after delete
+    Response queryProvAfterDelete = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      tim_unknown(uri: \"http://example.org/person1\") {\n" +
             "        tim_pred_latestRevision {\n" +
             "          _inverse_prov_generated {\n" +
             "            prov_associatedWith {\n" +
@@ -2142,12 +2190,12 @@ public class IntegrationTest {
         )
       ).toString(), MediaType.APPLICATION_JSON));
 
-    ObjectNode queryAfterDeleteNode = queryAfterDelete.readEntity(ObjectNode.class);
+    ObjectNode queryAfterDeleteNode = queryProvAfterDelete.readEntity(ObjectNode.class);
     JsonNode hasDeletionList = queryAfterDeleteNode
       .get("data")
       .get("dataSets")
       .get(dataSetId)
-      .get("schema_Person")
+      .get("tim_unknown")
       .get("tim_pred_latestRevision")
       .get("_inverse_prov_generated")
       .get("prov_qualifiedAssociation")
@@ -2156,6 +2204,17 @@ public class IntegrationTest {
       .get("tim_pred_hasDeletionList");
 
     assertThat(hasDeletionList.get("items"), containsInAnyOrder(
+      jsnO(
+        "tim_pred_hasKey", jsnO(
+          "uri", jsn("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+        ),
+        "tim_pred_hasValue", jsnO(
+          "tim_pred_rawValue", jsnO(
+            "value", jsn("http://schema.org/Person")
+          ),
+          "tim_pred_type", null
+        )
+      ),
       jsnO(
         "tim_pred_hasKey", jsnO(
           "uri", jsn("http://schema.org/familyName")
@@ -2181,42 +2240,6 @@ public class IntegrationTest {
           ))
       )
     ));
-
-    ((ObjectNode) hasDeletionList).set("items", jsnA());
-
-    assertThat(queryAfterDeleteNode, is(jsnO(
-      "data",
-      jsnO(
-        "dataSets",
-        jsnO(
-          dataSetId,
-          jsnO(
-            "schema_Person", jsnO(
-              "schema_familyName", jsn(null),
-              "schema_givenNameList", jsnO(
-                "items", jsnA()
-              ),
-              "tim_pred_latestRevision", jsnO(
-                "_inverse_prov_generated", jsnO(
-                  "prov_associatedWith", jsnO(
-                    "uri", jsn(format("http://127.0.0.1:%d/users/" + USER_ID, APP.getLocalPort()))
-                  ),
-                  "prov_qualifiedAssociation", jsnO(
-                    "prov_hadPlan", jsnO(
-                      "tim_pred_deletions", jsnO(
-                        "tim_pred_hasDeletionList", jsnO(
-                          "items", jsnA()
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )));
   }
 
   @Test

@@ -128,19 +128,17 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         saver.addDelQuad(true, actionPluralUri, RDF_TYPE, timType("Additions"), null, null, null);
         for (Iterator<Change> changes = additions.iterator(); changes.hasNext(); ) {
           Change change = changes.next();
-          if (!change.getPredicate().equals(RDF_TYPE)) {
-            String changeUri = dataSetObjectUri(dataSet, "addition");
-            saver.addDelQuad(true, actionPluralUri, timPredicate("hasAddition"), changeUri, null, null, null);
-            saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Addition"), null, null, null);
-            String predicate = change.getPredicate();
-            saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
-            saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
-            String prefValueUri = null;
-            for (Value value : change.getValues()) {
-              String uri = dataSetObjectUri(dataSet, "value");
-              createValue(saver, changeUri, prefValueUri, value, uri);
-              prefValueUri = uri;
-            }
+          String changeUri = dataSetObjectUri(dataSet, "addition");
+          saver.addDelQuad(true, actionPluralUri, timPredicate("hasAddition"), changeUri, null, null, null);
+          saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Addition"), null, null, null);
+          String predicate = change.getPredicate();
+          saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
+          saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
+          String prefValueUri = null;
+          for (Value value : change.getValues()) {
+            String uri = dataSetObjectUri(dataSet, "value");
+            createValue(saver, changeUri, prefValueUri, value, uri);
+            prefValueUri = uri;
           }
         }
       }
@@ -157,21 +155,19 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         saver.addDelQuad(true, actionPluralUri, RDF_TYPE, timType("Deletions"), null, null, null);
         for (Iterator<Change> changes = deletions.iterator(); changes.hasNext(); ) {
           Change change = changes.next();
-          if (!change.getPredicate().equals(RDF_TYPE)) {
-            String changeUri = dataSetObjectUri(dataSet, "deletion");
-            saver.addDelQuad(true, actionPluralUri, timPredicate("hasDeletion"), changeUri, null, null, null);
-            saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Deletion"), null, null, null);
-            String predicate = change.getPredicate();
-            saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
-            saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
-            String prefValueUri = null;
-            try (Stream<Value> oldValues = change.getOldValues()) {
-              for (Iterator<Value> values = oldValues.iterator(); values.hasNext(); ) {
-                Value value = values.next();
-                String uri = dataSetObjectUri(dataSet, "value");
-                createValue(saver, changeUri, prefValueUri, value, uri);
-                prefValueUri = uri;
-              }
+          String changeUri = dataSetObjectUri(dataSet, "deletion");
+          saver.addDelQuad(true, actionPluralUri, timPredicate("hasDeletion"), changeUri, null, null, null);
+          saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Deletion"), null, null, null);
+          String predicate = change.getPredicate();
+          saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
+          saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
+          String prefValueUri = null;
+          try (Stream<Value> oldValues = change.getOldValues()) {
+            for (Iterator<Value> values = oldValues.iterator(); values.hasNext(); ) {
+              Value value = values.next();
+              String uri = dataSetObjectUri(dataSet, "value");
+              createValue(saver, changeUri, prefValueUri, value, uri);
+              prefValueUri = uri;
             }
           }
         }
@@ -189,27 +185,25 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         saver.addDelQuad(true, actionPluralUri, RDF_TYPE, timType("Replacements"), null, null, null);
         for (Iterator<Change> changes = replacements.iterator(); changes.hasNext(); ) {
           Change change = changes.next();
-          if (!change.getPredicate().equals(RDF_TYPE)) {
-            String changeUri = dataSetObjectUri(dataSet, "replacement");
-            saver.addDelQuad(true, actionPluralUri, timPredicate("hasReplacement"), changeUri, null, null, null);
-            saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Replacement"), null, null, null);
-            String predicate = change.getPredicate();
-            saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
-            saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
-            String prefValueUri = null;
-            for (Iterator<Value> values = change.getValues().iterator(); values.hasNext(); ) {
+          String changeUri = dataSetObjectUri(dataSet, "replacement");
+          saver.addDelQuad(true, actionPluralUri, timPredicate("hasReplacement"), changeUri, null, null, null);
+          saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Replacement"), null, null, null);
+          String predicate = change.getPredicate();
+          saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, null);
+          saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, null);
+          String prefValueUri = null;
+          for (Iterator<Value> values = change.getValues().iterator(); values.hasNext(); ) {
+            Value value = values.next();
+            String uri = dataSetObjectUri(dataSet, "value");
+            createValue(saver, changeUri, prefValueUri, value, uri);
+            prefValueUri = uri;
+          }
+          try (Stream<Value> oldValues = change.getOldValues()) {
+            for (Iterator<Value> values = oldValues.iterator(); values.hasNext(); ) {
               Value value = values.next();
-              String uri = dataSetObjectUri(dataSet, "value");
-              createValue(saver, changeUri, prefValueUri, value, uri);
+              String uri = dataSetObjectUri(dataSet, "oldValue");
+              createOldValue(saver, changeUri, prefValueUri, value, uri);
               prefValueUri = uri;
-            }
-            try (Stream<Value> oldValues = change.getOldValues()) {
-              for (Iterator<Value> values = oldValues.iterator(); values.hasNext(); ) {
-                Value value = values.next();
-                String uri = dataSetObjectUri(dataSet, "oldValue");
-                createOldValue(saver, changeUri, prefValueUri, value, uri);
-                prefValueUri = uri;
-              }
             }
           }
         }
@@ -221,7 +215,9 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
                               String uri) throws LogStorageFailedException {
     saver.addDelQuad(true, uri, RDF_TYPE, timType("OldValue"), null, null, null);
     saver.addDelQuad(true, changeUri, timPredicate("hadValue"), uri, null, null, null);
-    saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+    if (value.getType() != null) {
+      saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+    }
     saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, null);
     if (prefValueUri != null) {
       saver.addDelQuad(true, prefValueUri, timPredicate("nextOldValue"), uri, null, null, null);
@@ -232,7 +228,9 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
                            String uri) throws LogStorageFailedException {
     saver.addDelQuad(true, uri, RDF_TYPE, timType("Value"), null, null, null);
     saver.addDelQuad(true, changeUri, timPredicate("hasValue"), uri, null, null, null);
-    saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+    if (value.getType() != null) {
+      saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+    }
     saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, null);
     if (prefValueUri != null) {
       saver.addDelQuad(true, prefValueUri, timPredicate("nextValue"), uri, null, null, null);

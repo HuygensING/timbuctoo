@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.groupingBy;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 
 @JsonTypeName("DeleteMutationChangeLog")
 public class DeleteMutationChangeLog extends ChangeLog {
@@ -39,7 +38,6 @@ public class DeleteMutationChangeLog extends ChangeLog {
   public Stream<Change> getDeletions(DataSet dataSet) {
     try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(subject)) {
       return quads
-        .filter(quad -> quad.getValuetype().isPresent())
         .map(quad -> new Tuple<>(
           quad.getPredicate(),
           new Change.Value(quad.getObject(), quad.getValuetype().orElse(null))
