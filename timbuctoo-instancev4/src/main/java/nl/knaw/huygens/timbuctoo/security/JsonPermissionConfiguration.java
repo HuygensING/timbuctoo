@@ -36,11 +36,11 @@ public class JsonPermissionConfiguration implements PermissionConfiguration {
                           .collect(Collectors.toSet());
   }
 
-  static class RolePermissions {
+  public static class RolePermissions {
     @JsonProperty
-    private String roleName;
+    public String roleName;
     @JsonProperty
-    private Set<Permission> permissions;
+    public Set<Permission> permissions;
 
     @JsonCreator
     public RolePermissions(

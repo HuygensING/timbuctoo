@@ -58,7 +58,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
   }
 
   @Test
-  public void createsAnInputType() {
+  public void createsAnEditInputType() {
     Predicate valueNonList = predicate().withName("http://example.com/valueNonList")
                                         .hasDirection(Direction.OUT)
                                         .build();
@@ -74,10 +74,31 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
     String schema = instance.getSchema().toString();
 
-    assertThat(schema, containsString("input TypeInput {\n" +
+    assertThat(schema, containsString("input TypeEditInput {\n" +
       "  additions: TypeAdditionsInput\n" +
       "  deletions: TypeDeletionsInput\n" +
       "  replacements: TypeReplacementsInput\n" +
+      "}\n\n"));
+  }
+
+  @Test
+  public void createsAnCreateInputType() {
+    Predicate valueNonList = predicate().withName("http://example.com/valueNonList")
+                                        .hasDirection(Direction.OUT)
+                                        .build();
+    graphQlNameForPredicate("http://example.com/valueNonList", false, "short_singleValue");
+    Predicate valueList = predicate().withName("http://example.com/valueList")
+                                     .isList()
+                                     .hasDirection(Direction.OUT)
+                                     .build();
+    graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
+    instance.valueField(null, valueNonList, RdfConstants.STRING);
+    instance.valueField(null, valueList, RdfConstants.STRING);
+
+    String schema = instance.getSchema().toString();
+
+    assertThat(schema, containsString("input TypeCreateInput {\n" +
+      "  creations: TypeCreationsInput\n" +
       "}\n\n"));
   }
 
@@ -118,6 +139,32 @@ public class DerivedInputTypeSchemaGeneratorTest {
   }
 
   @Test
+  public void addsCreationsInput() {
+    Predicate valueNonList = predicate().withName("http://example.com/valueNonList")
+                                        .hasDirection(Direction.OUT)
+                                        .withValueType(RdfConstants.STRING)
+                                        .build();
+    graphQlNameForPredicate("http://example.com/valueNonList", false, "short_singleValue");
+    Predicate valueList = predicate().withName("http://example.com/valueList")
+                                     .isList()
+                                     .hasDirection(Direction.OUT)
+                                     .withValueType(RdfConstants.STRING)
+                                     .build();
+    graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
+    instance.valueField(null, valueNonList, RdfConstants.STRING);
+    instance.valueField(null, valueList, RdfConstants.STRING);
+
+    String schema = instance.getSchema().toString();
+
+    assertThat(schema, allOf(
+      containsString("input TypeCreationsInput {\n" +
+        "  short_singleValue: PropertyInput\n" +
+        "  short_multiValueList: [PropertyInput!]\n" +
+        "}\n\n")
+    ));
+  }
+
+  @Test
   public void createAnEmptySchemaWhenNoPropertiesAreAdded() {
     String schema = instance.getSchema().toString();
 
@@ -142,7 +189,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
       containsString("input TypeReplacementsInput {\n" +
         "  short_singleValue: PropertyInput\n" +
         "}\n\n"),
-      containsString("input TypeInput {\n" +
+      containsString("input TypeEditInput {\n" +
         "  replacements: TypeReplacementsInput\n" +
         "}\n\n")
     ));
@@ -240,6 +287,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instance.getSchema().toString();
 
     assertThat(schema, allOf(
+      containsString("input TypeCreationsInput {\n" +
+        "  short_multiValueList: [PropertyInput!]\n" +
+        "}\n\n"),
       containsString("input TypeAdditionsInput {\n" +
         "  short_multiValueList: [PropertyInput!]\n" +
         "}\n\n"),
@@ -268,6 +318,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instance.getSchema().toString();
 
     assertThat(schema, allOf(
+      containsString("input TypeCreationsInput {\n" +
+        "  short_multiValueList: [PropertyInput!]\n" +
+        "}\n\n"),
       containsString("input TypeAdditionsInput {\n" +
         "  short_multiValueList: [PropertyInput!]\n" +
         "}\n\n"),
@@ -312,7 +365,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
   }
 
   @Test
-  public void addsEditMethodToType() {
+  public void addsCreateAndEditAndDeleteMethodsToType() {
     Predicate valueList = predicate().withName("http://example.com/valueList")
                                      .isList()
                                      .hasDirection(Direction.OUT)
@@ -323,7 +376,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instance.getSchema().toString();
 
     assertThat(schema, containsString("}\n\ntype TypeMutations {\n" +
-      "  edit(uri: String! entity: TypeInput!): Type @editMutation(dataSet: rootType)\n"));
+      "  create(uri: String! entity: TypeCreateInput!): Type @createMutation(dataSet: rootType typeUri: \"" +
+      TYPE_URI + "\")\n" +
+      "  edit(uri: String! entity: TypeEditInput!): Type @editMutation(dataSet: rootType)\n"));
   }
 
 }

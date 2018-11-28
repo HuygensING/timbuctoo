@@ -215,7 +215,9 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
                               String uri) throws LogStorageFailedException {
     saver.addDelQuad(true, uri, RDF_TYPE, timType("OldValue"), null, null, null);
     saver.addDelQuad(true, changeUri, timPredicate("hadValue"), uri, null, null, null);
-    saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+    if (value.getType() != null) {
+      saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+    }
     saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, null);
     if (prefValueUri != null) {
       saver.addDelQuad(true, prefValueUri, timPredicate("nextOldValue"), uri, null, null, null);
@@ -226,7 +228,9 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
                            String uri) throws LogStorageFailedException {
     saver.addDelQuad(true, uri, RDF_TYPE, timType("Value"), null, null, null);
     saver.addDelQuad(true, changeUri, timPredicate("hasValue"), uri, null, null, null);
-    saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+    if (value.getType() != null) {
+      saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, null);
+    }
     saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, null);
     if (prefValueUri != null) {
       saver.addDelQuad(true, prefValueUri, timPredicate("nextValue"), uri, null, null, null);

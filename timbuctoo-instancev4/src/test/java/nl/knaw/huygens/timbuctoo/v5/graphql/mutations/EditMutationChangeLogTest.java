@@ -2,17 +2,13 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import co.unruly.matchers.StreamMatchers;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.util.UserUriCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -39,33 +35,19 @@ public class EditMutationChangeLogTest {
   private static final String SUBJECT = "http://example.org/subject";
   private static final String NAMES_FIELD = "schema_name";
   private static final String NAMES_PRED = "http://schema.org/name";
-  private static final User USER = mock(User.class);
-  private static final String USER_URI = "http://example.org/user";
-  private static final String DATA_SET_URI = "http://example.org/dataset";
   private static final String GRAPH_QL_STRING = "xsd_string";
   private DataSet dataSet;
   private QuadStore quadStore;
-  private UserUriCreator userUriCreator;
-  private VersionStore versionStore;
-  private DataSetMetaData dataSetMetaData;
   private TypeNameStore typeNameStore;
 
   @Before
   public void setUp() throws Exception {
     dataSet = mock(DataSet.class);
     quadStore = mock(QuadStore.class);
-    versionStore = mock(VersionStore.class);
-    userUriCreator = mock(UserUriCreator.class);
-    when(userUriCreator.create(USER)).thenReturn(USER_URI);
-    dataSetMetaData = mock(DataSetMetaData.class);
-    when(dataSetMetaData.getBaseUri()).thenReturn(DATA_SET_URI);
     typeNameStore = mock(TypeNameStore.class);
     when(typeNameStore.makeUriForPredicate(NAMES_FIELD)).thenReturn(Optional.of(tuple(NAMES_PRED, Direction.OUT)));
     when(typeNameStore.makeUri(GRAPH_QL_STRING)).thenReturn(STRING);
-
     when(dataSet.getQuadStore()).thenReturn(quadStore);
-    when(dataSet.getVersionStore()).thenReturn(versionStore);
-    when(dataSet.getMetadata()).thenReturn(dataSetMetaData);
     when(dataSet.getTypeNameStore()).thenReturn(typeNameStore);
   }
 

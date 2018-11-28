@@ -431,4 +431,7 @@ type Mutation {
   resourceSyncUpdate(dataSetId: String!, authorization: String): ResourceSyncReport!
 }
 
+type RemovedEntity {
+  uri: String!
+}
 
