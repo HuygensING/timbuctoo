@@ -1448,7 +1448,7 @@ public class IntegrationTest {
     )));
 
     // create
-    Response edit = call("/v5/graphql")
+    Response create = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity(jsnO(
         "query",
@@ -1482,9 +1482,6 @@ public class IntegrationTest {
               ),
               "schema_givenNameList", jsnA(jsnO(
                 "type", jsn("xsd_string"),
-                "value", jsn("Janus")
-              ), jsnO(
-                "type", jsn("xsd_string"),
                 "value", jsn("Jan")
               ))
             )
@@ -1493,7 +1490,7 @@ public class IntegrationTest {
         "operationName", jsn("Create")
       ).toString(), MediaType.APPLICATION_JSON));
 
-    assertThat(edit.readEntity(ObjectNode.class), is(jsnO(
+    assertThat(create.readEntity(ObjectNode.class), is(jsnO(
       "data",
       jsnO(
         "dataSets",
@@ -1509,9 +1506,6 @@ public class IntegrationTest {
                   "items", jsnA(
                     jsnO(
                       "value", jsn("Jan")
-                    ),
-                    jsnO(
-                      "value", jsn("Janus")
                     )
                   )
                 )
@@ -1553,14 +1547,12 @@ public class IntegrationTest {
             "                      tim_pred_hasKey {\n" +
             "                        uri\n" +
             "                      }\n" +
-            "                      tim_pred_hasValueList {\n" +
-            "                        items {\n" +
-            "                          tim_pred_rawValue {\n" +
-            "                            value\n" +
-            "                          }\n" +
-            "                          tim_pred_type {\n" +
-            "                            value\n" +
-            "                          }\n" +
+            "                      tim_pred_hasValue {\n" +
+            "                        tim_pred_rawValue {\n" +
+            "                          value\n" +
+            "                        }\n" +
+            "                        tim_pred_type {\n" +
+            "                          value\n" +
             "                        }\n" +
             "                      }\n" +
             "                    }\n" +
@@ -1595,51 +1587,37 @@ public class IntegrationTest {
         "tim_pred_hasKey", jsnO(
           "uri", jsn("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
         ),
-        "tim_pred_hasValueList", jsnO("items", jsnA(
-          jsnO(
-            "tim_pred_rawValue", jsnO(
-              "value", jsn("http://schema.org/Person")
-            ),
-            "tim_pred_type", null
-          ))
+        "tim_pred_hasValue", jsnO(
+          "tim_pred_rawValue", jsnO(
+            "value", jsn("http://schema.org/Person")
+          ),
+          "tim_pred_type", null
         )
       ),
       jsnO(
         "tim_pred_hasKey", jsnO(
           "uri", jsn("http://schema.org/familyName")
         ),
-        "tim_pred_hasValueList", jsnO("items", jsnA(
-          jsnO(
-            "tim_pred_rawValue", jsnO(
-              "value", jsn("Test2")
-            ),
-            "tim_pred_type", jsnO(
-              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-            )
-          ))
+        "tim_pred_hasValue", jsnO(
+          "tim_pred_rawValue", jsnO(
+            "value", jsn("Test2")
+          ),
+          "tim_pred_type", jsnO(
+            "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+          )
         )
       ),
       jsnO(
         "tim_pred_hasKey", jsnO(
           "uri", jsn("http://schema.org/givenName")
         ),
-        "tim_pred_hasValueList", jsnO("items", jsnA(
-          jsnO(
-            "tim_pred_rawValue", jsnO(
-              "value", jsn("Janus")
-            ),
-            "tim_pred_type", jsnO(
-              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-            )
+        "tim_pred_hasValue", jsnO(
+          "tim_pred_rawValue", jsnO(
+            "value", jsn("Jan")
           ),
-          jsnO(
-            "tim_pred_rawValue", jsnO(
-              "value", jsn("Jan")
-            ),
-            "tim_pred_type", jsnO(
-              "value", jsn("http://www.w3.org/2001/XMLSchema#string")
-            )
-          ))
+          "tim_pred_type", jsnO(
+            "value", jsn("http://www.w3.org/2001/XMLSchema#string")
+          )
         )
       )
     ));
@@ -1661,9 +1639,6 @@ public class IntegrationTest {
                 "items", jsnA(
                   jsnO(
                     "value", jsn("Jan")
-                  ),
-                  jsnO(
-                    "value", jsn("Janus")
                   )
                 )
               ),
