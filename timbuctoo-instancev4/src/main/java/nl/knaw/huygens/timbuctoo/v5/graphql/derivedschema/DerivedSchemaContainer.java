@@ -1,8 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +19,11 @@ public class DerivedSchemaContainer {
   private final GraphQlNameGenerator nameGenerator;
   private final PaginationArgumentsHelper argumentsHelper;
   private final ReadOnlyChecker readOnlyChecker;
+  private final CustomProvenance customProvenance;
 
   DerivedSchemaContainer(String rootType, GraphQlNameGenerator graphQlNameGenerator,
                          PaginationArgumentsHelper argumentsHelper,
-                         ReadOnlyChecker readOnlyChecker) {
+                         ReadOnlyChecker readOnlyChecker, CustomProvenance customProvenance) {
     this.rootType = rootType;
     this.nameGenerator = graphQlNameGenerator;
     this.argumentsHelper = argumentsHelper;
@@ -27,6 +31,7 @@ public class DerivedSchemaContainer {
     types = new HashMap<>();
     topLevelTypes = new HashMap<>();
     this.readOnlyChecker = readOnlyChecker;
+    this.customProvenance = customProvenance;
   }
 
   String propertyInputType(List<String> refs) {
@@ -52,9 +57,6 @@ public class DerivedSchemaContainer {
         }
       });
     }
-
-
-
 
     return inputTypeName;
   }
@@ -112,7 +114,8 @@ public class DerivedSchemaContainer {
   DerivedObjectTypeSchemaGenerator addObjectType(String typeUri) {
     if (!topLevelTypes.containsKey(typeUri)) {
       DerivedObjectTypeSchemaGenerator value =
-        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, rootType, nameGenerator, this, readOnlyChecker);
+        new DerivedCompositeObjectTypeSchemaGenerator(typeUri, rootType, nameGenerator, this, readOnlyChecker,
+          customProvenance);
       topLevelTypes.put(typeUri, value);
       return value;
     }
@@ -160,6 +163,10 @@ public class DerivedSchemaContainer {
          .append(" @setCustomProvenanceMutation(dataSet: ").append(rootType).append(")\n");
     total.append(mutationsSchema);
     total.append("}\n\n");
+
+    if (!customProvenance.getFields().isEmpty()) {
+      addProvenanceInputType(total, customProvenance);
+    }
   }
 
   private void addRootType(StringBuilder total) {
@@ -173,12 +180,52 @@ public class DerivedSchemaContainer {
     total.append("}\n\n");
   }
 
+  private void addProvenanceInputType(StringBuilder schema, CustomProvenance customProvenance) {
+    boolean isCustomProvObjectFieldInput =
+      (customProvenance instanceof CustomProvenance.CustomProvenanceObjectFieldInput);
+
+    if (isCustomProvObjectFieldInput) {
+      CustomProvenance.CustomProvenanceObjectFieldInput objectFieldInput =
+        (CustomProvenance.CustomProvenanceObjectFieldInput) customProvenance;
+      String objectTypeName = nameGenerator.createValueTypeName(rootType, objectFieldInput.getType());
+      schema.append("input ").append(objectTypeName).append("{\n");
+    } else {
+      schema.append("input ").append(rootType).append("ProvenanceInput").append("{\n");
+    }
+
+    if (isCustomProvObjectFieldInput) {
+      schema.append("  uri: String\n");
+    }
+
+    for (CustomProvenance.CustomProvenanceValueFieldInput field : customProvenance.getFields()) {
+      addProvenanceField(schema, field);
+    }
+
+    schema.append("}\n\n");
+
+    for (CustomProvenance.CustomProvenanceValueFieldInput field : customProvenance.getFields()) {
+      if (field.getObject() != null) {
+        addProvenanceInputType(schema, field.getObject());
+      }
+    }
+  }
+
+  private void addProvenanceField(StringBuilder schema, CustomProvenance.CustomProvenanceValueFieldInput field) {
+    String type;
+    if (field.getValueType() != null) {
+      type = propertyInputType(Collections.singletonList(field.getValueType()));
+    } else {
+      type = nameGenerator.createValueTypeName(rootType, field.getObject().getType());
+    }
+    type = field.isList() ? "[" + type + "!]!" : type + "!";
+
+    String fieldName = nameGenerator.createFieldName(field.getUri(), Direction.OUT, field.isList());
+    schema.append("  ").append(fieldName).append(": ").append(type).append("\n");
+  }
+
   String graphQlUri(String uri) {
     // quotes and backslashes are not allowed in uri's anyway so this shouldn't happen
     // http://facebook.github.io/graphql/October2016/#sec-String-Value
     return uri.replace("\\", "\\\\").replace("\"", "\\\"");
   }
-
-
-
 }

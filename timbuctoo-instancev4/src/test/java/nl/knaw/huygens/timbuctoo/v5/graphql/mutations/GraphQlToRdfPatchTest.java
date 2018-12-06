@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
@@ -17,6 +15,7 @@ import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -24,7 +23,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_LATEST_REVISION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_VOCAB;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timPredicate;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.timType;
@@ -810,6 +808,74 @@ public class GraphQlToRdfPatchTest {
     );
   }
 
+  @Test
+  public void addsCustomProvenanceToPlan() throws Exception {
+    String value1 = "value1";
+    String value2 = "value2";
+    addProvenanceToChangeLog(
+      new Provenance(PRED1, newArrayList(new Value(value1, STRING))),
+      new Provenance(PRED2, newArrayList(new Value(value2, STRING)))
+    );
+    GraphQlToRdfPatch instance = new GraphQlToRdfPatch(SUBJECT, USER_URI, changeLog);
+
+    instance.sendQuads(serializer, s -> {
+    }, dataSet);
+
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(DATA_SET_URI + "/plan"),
+      eq(timPredicate("hasCustomProv")),
+      startsWith(DATA_SET_URI + "/customProv"),
+      isNull(),
+      isNull(),
+      isNull()
+    );
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(DATA_SET_URI + "/customProv"),
+      eq(RDF_TYPE),
+      eq(timType("CustomProv")),
+      isNull(),
+      isNull(),
+      isNull()
+    );
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(SUBJECT),
+      eq(PRED1),
+      eq(value1),
+      eq(STRING),
+      isNull(),
+      isNull()
+    );
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(SUBJECT),
+      eq(PRED2),
+      eq(value2),
+      eq(STRING),
+      isNull(),
+      isNull()
+    );
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(DATA_SET_URI + "/customProv"),
+      eq(PRED1),
+      eq(value1),
+      eq(STRING),
+      isNull(),
+      isNull()
+    );
+    verify(serializer).addDelQuad(
+      eq(true),
+      startsWith(DATA_SET_URI + "/customProv"),
+      eq(PRED2),
+      eq(value2),
+      eq(STRING),
+      isNull(),
+      isNull()
+    );
+  }
 
   private void addAdditionsToChangeLog(Change... changes) {
     when(changeLog.getAdditions(any(DataSet.class))).thenAnswer(new Answer<Stream<Change>>() {
@@ -875,4 +941,24 @@ public class GraphQlToRdfPatchTest {
     }
   }
 
+  private void addProvenanceToChangeLog(Provenance... provenances) {
+    when(changeLog.getProvenance(any(DataSet.class), any(String.class))).thenAnswer(
+      (Answer<Stream<Change>>) invocation -> newArrayList(provenances).stream().flatMap(
+        provenance -> Arrays.stream(invocation.getArguments()).skip(1)
+                            .map(arg -> provenance.toChange(arg.toString()))));
+  }
+
+  private static class Provenance {
+    private final String predicate;
+    private final List<Value> values;
+
+    Provenance(String predicate, List<Value> values) {
+      this.predicate = predicate;
+      this.values = values;
+    }
+
+    private Change toChange(String subject) {
+      return new Change(subject, predicate, values, Stream.empty());
+    }
+  }
 }

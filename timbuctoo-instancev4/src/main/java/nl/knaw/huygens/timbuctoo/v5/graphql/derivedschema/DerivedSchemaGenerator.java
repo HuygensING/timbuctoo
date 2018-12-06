@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +25,11 @@ public class DerivedSchemaGenerator {
   }
 
   public DerivedSchemaContainer makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore,
-                                                 ReadOnlyChecker readOnlyChecker) {
+                                                 ReadOnlyChecker readOnlyChecker, CustomProvenance customProvenance) {
     GraphQlNameGenerator nameGenerator = new GraphQlNameGenerator(nameStore);
 
     DerivedSchemaContainer typesContainer = new DerivedSchemaContainer(rootType, nameGenerator, this.argumentsHelper,
-      readOnlyChecker);
+      readOnlyChecker, customProvenance);
 
     // FIXME find a better way to register standard types to the schema of a data set
     typesContainer.valueType(RdfConstants.MARKDOWN);

@@ -55,6 +55,11 @@ public class CreateMutationChangeLog extends ChangeLog {
   }
 
   @Override
+  public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
+    return getProvenanceChanges(dataSet, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+  }
+
+  @Override
   public Stream<Change> getAdditions(DataSet dataSet) {
     Change typeAddition =
       new Change(subject, RDF_TYPE, Collections.singletonList(new Value(typeUri, null)), Stream.empty());
@@ -86,14 +91,21 @@ public class CreateMutationChangeLog extends ChangeLog {
 
   public static class RawCreateChangeLog {
     private LinkedHashMap<String, JsonNode> creations;
+    private LinkedHashMap<String, JsonNode> provenance;
 
     @JsonCreator
-    public RawCreateChangeLog(@JsonProperty("creations") LinkedHashMap<String, JsonNode> creations) {
+    public RawCreateChangeLog(@JsonProperty("creations") LinkedHashMap<String, JsonNode> creations,
+                              @JsonProperty("provenance") LinkedHashMap<String, JsonNode> provenance) {
       this.creations = creations == null ? Maps.newLinkedHashMap() : creations;
+      this.provenance = provenance == null ? Maps.newLinkedHashMap() : provenance;
     }
 
     public LinkedHashMap<String, JsonNode> getCreations() {
       return creations;
+    }
+
+    public LinkedHashMap<String, JsonNode> getProvenance() {
+      return provenance;
     }
   }
 }

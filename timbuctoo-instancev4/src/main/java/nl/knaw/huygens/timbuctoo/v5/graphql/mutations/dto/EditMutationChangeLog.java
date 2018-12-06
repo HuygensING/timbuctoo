@@ -50,6 +50,11 @@ public class EditMutationChangeLog extends ChangeLog {
   }
 
   @Override
+  public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
+    return getProvenanceChanges(dataSet, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+  }
+
+  @Override
   public Stream<Change> getAdditions(DataSet dataSet) {
     Stream<Change> additions =
       changeLog.getAdditions().entrySet().stream()
@@ -130,15 +135,18 @@ public class EditMutationChangeLog extends ChangeLog {
     private LinkedHashMap<String, ArrayNode> additions;
     private LinkedHashMap<String, ArrayNode> deletions;
     private LinkedHashMap<String, JsonNode> replacements;
+    private LinkedHashMap<String, JsonNode> provenance;
 
     @JsonCreator
     public RawEditChangeLog(
       @JsonProperty("additions") LinkedHashMap<String, ArrayNode> additions,
       @JsonProperty("deletions") LinkedHashMap<String, ArrayNode> deletions,
-      @JsonProperty("replacements") LinkedHashMap<String, JsonNode> replacements) {
+      @JsonProperty("replacements") LinkedHashMap<String, JsonNode> replacements,
+      @JsonProperty("provenance") LinkedHashMap<String, JsonNode> provenance) {
       this.additions = additions == null ? Maps.newLinkedHashMap() : additions;
       this.deletions = deletions == null ? Maps.newLinkedHashMap() : deletions;
       this.replacements = replacements == null ? Maps.newLinkedHashMap() : replacements;
+      this.provenance = provenance == null ? Maps.newLinkedHashMap() : provenance;
     }
 
 
@@ -152,6 +160,10 @@ public class EditMutationChangeLog extends ChangeLog {
 
     public LinkedHashMap<String, JsonNode> getReplacements() {
       return replacements;
+    }
+
+    public LinkedHashMap<String, JsonNode> getProvenance() {
+      return provenance;
     }
   }
 }

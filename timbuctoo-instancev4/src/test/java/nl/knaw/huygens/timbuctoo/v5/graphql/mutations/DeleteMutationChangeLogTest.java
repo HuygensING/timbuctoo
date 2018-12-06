@@ -49,8 +49,8 @@ public class DeleteMutationChangeLogTest {
   }
 
   @Test
-  public void getAdditionsReturnsNothing() {
-    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT);
+  public void getAdditionsReturnsNothing() throws Exception {
+    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT, null);
 
     Stream<Change> additions = instance.getAdditions(dataSet);
 
@@ -58,10 +58,10 @@ public class DeleteMutationChangeLogTest {
   }
 
   @Test
-  public void getDeletionsReturnsDeletions() {
+  public void getDeletionsReturnsDeletions() throws Exception {
     String existingValue1 = "existingValue1";
     String existingValue2 = "existingValue2";
-    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT);
+    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT, null);
     valuesInQuadStore(NAMES_PRED, existingValue1, existingValue2);
 
     List<Change> deletions = instance.getDeletions(dataSet).collect(toList());
@@ -74,8 +74,8 @@ public class DeleteMutationChangeLogTest {
   }
 
   @Test
-  public void getReplacementsReturnsNothing() {
-    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT);
+  public void getReplacementsReturnsNothing() throws Exception {
+    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT, null);
 
     Stream<Change> replacements = instance.getReplacements(dataSet);
 

@@ -67,6 +67,7 @@ public class PermissionConfigMigrator {
     );
 
     addCreateDeletePermissions(rolePermissions);
+    addCustomProvenancePermission(rolePermissions);
 
     OBJECT_MAPPER.writeValue(permissionConfig.toFile(), rolePermissions);
   }
@@ -76,6 +77,14 @@ public class PermissionConfigMigrator {
       if (rolePermission.roleName.equals("USER") || rolePermission.roleName.equals("ADMIN")) {
         rolePermission.permissions.add(Permission.CREATE);
         rolePermission.permissions.add(Permission.DELETE);
+      }
+    });
+  }
+
+  private void addCustomProvenancePermission(Set<RolePermissions> rolePermissions) {
+    rolePermissions.forEach(rolePermission -> {
+      if (rolePermission.roleName.equals("USER") || rolePermission.roleName.equals("ADMIN")) {
+        rolePermission.permissions.add(Permission.SET_CUSTOM_PROV);
       }
     });
   }

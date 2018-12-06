@@ -872,6 +872,192 @@ public class IntegrationTest {
 
   }
 
+  @Test
+  public void provenanceSchemaCanBeCustomizedWithGraphQl() throws Exception {
+    final String dataSetName = "prov" + UUID.randomUUID().toString().replace("-", "_");
+    final String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+      new File(getResource(IntegrationTest.class, "mutatedataset.nt").toURI()),
+      "application/n-triples",
+      ImmutableMap.of(
+        "encoding", "UTF-8"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    ObjectNode provenanceSchema = jsnO(
+      "fields", jsnA(
+        jsnO(
+          "uri", jsn("http://example.org/foundIn"),
+          "isList", jsn(false),
+          "object", jsnO(
+            "type", jsn("http://example.org/Book"),
+            "fields", jsnA(
+              jsnO(
+                "uri", jsn("http://example.org/remarks"),
+                "isList", jsn(false),
+                "valueType", jsn("http://www.w3.org/2001/XMLSchema#string")
+              )
+            )
+          )
+        )
+      ));
+
+    Response graphQlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation setCustomProvenance($entity: CustomProvenanceInput!) { " +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      setCustomProvenance(customProvenance: $entity){\n" +
+            "        message\n" +
+            "      }" +
+            "    }" +
+            "  }" +
+            "}"),
+        "variables",
+        jsnO("entity", provenanceSchema)
+      ).toString(), MediaType.valueOf("application/json")));
+
+    assertThat(graphQlCall.getStatus(), is(200));
+
+    ObjectNode returnedData = graphQlCall.readEntity(ObjectNode.class);
+
+    assertThat(
+      returnedData.get("data").get("dataSets").get(dataSetId).get("setCustomProvenance").get("message").toString(),
+      is("\"Custom provenance is set.\""));
+
+    // Add provenance
+    Response mutation = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation Provenance($uri:String! $entity:" + dataSetId + "_schema_PersonEditInput! ) {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person {\n" +
+            "        edit(uri: $uri entity: $entity) {\n" +
+            "          schema_familyName {\n" +
+            "            value\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        ),
+        "variables", jsnO(
+          "uri", jsn("http://example.org/person1"),
+          "entity", jsnO(
+            "provenance", jsnO(
+              "http___example_org_foundIn", jsnO(
+                "http___example_org_remarks", jsnO(
+                  "type", jsn("xsd_string"),
+                  "value", jsn("My remarks")
+                )
+              )
+            )
+          )
+        ),
+        "operationName", jsn("Provenance")
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(mutation.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "edit", jsnO(
+                "schema_familyName", jsnO(
+                  "value", jsn("Jansen")
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+
+    // query person after mutation
+    Response queryAfterMutation = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "query {\n" +
+            "  dataSets {\n" +
+            "    " + dataSetId + "{\n" +
+            "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+            "        tim_pred_latestRevision {\n" +
+            "          http___example_org_foundIn {\n" +
+            "            http___example_org_remarks {\n" +
+            "              value\n" +
+            "            }\n" +
+            "          }\n" +
+            "          _inverse_prov_generated {\n" +
+            "            prov_qualifiedAssociation {\n" +
+            "              prov_hadPlan  {\n" +
+            "                tim_pred_hasCustomProv {\n" +
+            "                  http___example_org_foundIn {\n" +
+            "                    http___example_org_remarks {\n" +
+            "                      value\n" +
+            "                    }\n" +
+            "                  }\n" +
+            "                }\n" +
+            "              }\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        )
+      ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryAfterMutation.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO(
+        "dataSets",
+        jsnO(
+          dataSetId,
+          jsnO(
+            "schema_Person", jsnO(
+              "tim_pred_latestRevision", jsnO(
+                "http___example_org_foundIn", jsnO(
+                  "http___example_org_remarks", jsnO(
+                    "value", jsn("My remarks")
+                  )
+                ),
+                "_inverse_prov_generated", jsnO(
+                  "prov_qualifiedAssociation", jsnO(
+                    "prov_hadPlan", jsnO(
+                      "tim_pred_hasCustomProv", jsnO(
+                        "http___example_org_foundIn", jsnO(
+                          "http___example_org_remarks", jsnO(
+                            "value", jsn("My remarks")
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )));
+  }
+
   private String createDataSetId(String dataSetName) {
     return PREFIX + "__" + dataSetName;
   }
@@ -2291,9 +2477,9 @@ public class IntegrationTest {
       ).toString(), MediaType.APPLICATION_JSON));
 
     List<JsonNode> datasetsBeforePublish = Lists.newArrayList(queryData.readEntity(ObjectNode.class)
-                                                 .get("data")
-                                                 .get("dataSetMetadataList")
-                                                 .elements());
+                                                                       .get("data")
+                                                                       .get("dataSetMetadataList")
+                                                                       .elements());
     assertThat(datasetsBeforePublish, is(empty()));
 
     // publish the data set
@@ -2326,9 +2512,9 @@ public class IntegrationTest {
       ).toString(), MediaType.APPLICATION_JSON));
 
     Iterable<JsonNode> datasetsAfterPublish = () -> queryDataAfterPublish.readEntity(ObjectNode.class)
-                                                 .get("data")
-                                                 .get("dataSetMetadataList")
-                                                 .elements();
+                                                                         .get("data")
+                                                                         .get("dataSetMetadataList")
+                                                                         .elements();
     List<String> dataSetIds =
       StreamSupport.stream(datasetsAfterPublish.spliterator(), false).map(dataSet -> dataSet.get("dataSetId").asText())
                    .collect(toList());

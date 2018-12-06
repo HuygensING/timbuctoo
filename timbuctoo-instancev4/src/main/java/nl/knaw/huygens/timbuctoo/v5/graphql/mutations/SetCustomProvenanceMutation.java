@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -13,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -52,7 +50,8 @@ public class SetCustomProvenanceMutation implements DataFetcher {
 
     TreeNode customProvenanceNode = OBJECT_MAPPER.valueToTree(environment.getArgument("customProvenance"));
     try {
-      CustomProvenance customProvenance =  OBJECT_MAPPER.treeToValue(customProvenanceNode, CustomProvenance.class);
+      CustomProvenance customProvenance = OBJECT_MAPPER.treeToValue(customProvenanceNode, CustomProvenance.class);
+      validateCustomProvenance(customProvenance);
       dataSet.setCustomProvenance(customProvenance);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -61,57 +60,16 @@ public class SetCustomProvenanceMutation implements DataFetcher {
     return ImmutableMap.of("message", "Custom provenance is set.");
   }
 
-  public static class CustomProvenance {
-    @JsonProperty("fields")
-    private CustomProvenanceValueFieldInput fields;
+  private void validateCustomProvenance(CustomProvenance customProvenance) {
+    for (CustomProvenance.CustomProvenanceValueFieldInput field : customProvenance.getFields()) {
+      if (((field.getValueType() == null) && (field.getObject() == null)) ||
+        ((field.getValueType() != null) && (field.getObject() != null))) {
+        throw new RuntimeException("Specify either a value type or an object.");
+      }
 
-    @JsonCreator
-    public CustomProvenance(@JsonProperty("fields") CustomProvenanceValueFieldInput fields) {
-      this.fields = fields;
-    }
-
-    private CustomProvenanceValueFieldInput getFields() {
-      return fields;
-    }
-  }
-
-  private static class CustomProvenanceValueFieldInput {
-    @JsonProperty
-    private String uri;
-    @JsonProperty
-    private boolean isList;
-    @JsonProperty
-    private String valueType;
-    @JsonProperty
-    private CustomProvenance object;
-
-    private CustomProvenanceValueFieldInput(
-      @JsonProperty("uri") String uri,
-      @JsonProperty("isList") boolean isList,
-      @JsonProperty ("valueType") String valueType,
-      @JsonProperty("object") CustomProvenance object) {
-      this.uri = uri;
-      this.isList = isList;
-      this.valueType = valueType;
-      this.object = object;
-    }
-
-    public String getUri() {
-      return uri;
-    }
-
-    public boolean isList() {
-      return isList;
-    }
-
-    public String getValueType() {
-      return valueType;
-    }
-
-
-    public CustomProvenance getObject() {
-      return object;
+      if (field.getObject() != null) {
+        validateCustomProvenance(field.getObject());
+      }
     }
   }
-
 }

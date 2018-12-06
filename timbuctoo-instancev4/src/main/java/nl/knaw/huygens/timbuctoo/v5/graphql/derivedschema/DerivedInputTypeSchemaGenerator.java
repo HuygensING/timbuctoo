@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 
 import java.util.List;
 import java.util.Set;
@@ -18,12 +19,13 @@ class DerivedInputTypeSchemaGenerator {
   private final List<GraphQlPredicate> creations;
   private final List<GraphQlPredicate> replacements;
   private final boolean isReadOnly;
+  private final boolean hasCustomProvenance;
   private List<GraphQlPredicate> additions;
   private List<GraphQlPredicate> deletions;
 
   public DerivedInputTypeSchemaGenerator(String typeUri, String rootType, GraphQlNameGenerator graphQlNameGenerator,
                                          DerivedSchemaContainer derivedSchemaContainer,
-                                         ReadOnlyChecker readOnlyChecker) {
+                                         ReadOnlyChecker readOnlyChecker, CustomProvenance customProvenance) {
     this.typeUri = typeUri;
     this.rootType = rootType;
     this.graphQlNameGenerator = graphQlNameGenerator;
@@ -34,6 +36,7 @@ class DerivedInputTypeSchemaGenerator {
     additions = Lists.newArrayList();
     deletions = Lists.newArrayList();
     isReadOnly = readOnlyChecker.isReadonlyType(typeUri);
+    hasCustomProvenance = !customProvenance.getFields().isEmpty();
   }
 
   public void objectField(String description, Predicate predicate, String typeUri) {
@@ -68,8 +71,11 @@ class DerivedInputTypeSchemaGenerator {
 
     if (!creations.isEmpty()) {
       schema.append("input ").append(name).append("CreateInput").append(" {\n");
-      schema.append("  creations: ").append(name).append("CreationsInput\n")
-            .append("}\n\n");
+      schema.append("  creations: ").append(name).append("CreationsInput\n");
+      if (hasCustomProvenance) {
+        schema.append("  provenance: ").append(rootType).append("ProvenanceInput\n");
+      }
+      schema.append("}\n\n");
     }
 
     if (!additions.isEmpty() || !deletions.isEmpty() || !replacements.isEmpty()) {
@@ -80,8 +86,17 @@ class DerivedInputTypeSchemaGenerator {
       if (!deletions.isEmpty()) {
         schema.append("  deletions: ").append(name).append("DeletionsInput\n");
       }
-      schema.append("  replacements: ").append(name).append("ReplacementsInput\n")
-            .append("}\n\n");
+      schema.append("  replacements: ").append(name).append("ReplacementsInput\n");
+      if (hasCustomProvenance) {
+        schema.append("  provenance: ").append(rootType).append("ProvenanceInput\n");
+      }
+      schema.append("}\n\n");
+    }
+
+    if (!deletions.isEmpty() && hasCustomProvenance) {
+      schema.append("input ").append(name).append("DeleteInput").append(" {\n");
+      schema.append("  provenance: ").append(rootType).append("ProvenanceInput\n");
+      schema.append("}\n\n");
     }
 
     // Add the inputs
@@ -101,18 +116,31 @@ class DerivedInputTypeSchemaGenerator {
       inputFields(schema, name, "DeletionsInput", deletions);
     }
 
-    schema.append("type ").append(name).append("Mutations").append(" {\n")
-          .append("  create(").append("uri: String! ").append("entity: ").append(name).append("CreateInput!): ")
-          .append(name).append(" @createMutation(dataSet: ").append(rootType)
-          .append(" typeUri: \"").append(typeUri).append("\")").append("\n")
-          .append("  edit(").append("uri: String! ").append("entity: ").append(name).append("EditInput!): ")
-          .append(name).append(" @editMutation(dataSet: ").append(rootType).append(")").append("\n")
-          .append("  delete(").append("uri: String!): RemovedEntity! @deleteMutation(dataSet: ")
-          .append(rootType).append(")").append("\n")
-          .append("  persistEntity(").append("entityUri: String!): ").append("Message")
+    schema.append("type ").append(name).append("Mutations").append(" {\n");
+
+    if (!creations.isEmpty()) {
+      schema.append("  create(").append("uri: String! ").append("entity: ").append(name).append("CreateInput!): ")
+            .append(name).append(" @createMutation(dataSet: ").append(rootType)
+            .append(" typeUri: \"").append(typeUri).append("\")").append("\n");
+    }
+
+    if (!additions.isEmpty() || !deletions.isEmpty() || !replacements.isEmpty()) {
+      schema.append("  edit(").append("uri: String! ").append("entity: ").append(name).append("EditInput!): ")
+            .append(name).append(" @editMutation(dataSet: ").append(rootType).append(")").append("\n");
+    }
+
+    if (!deletions.isEmpty() && !hasCustomProvenance) {
+      schema.append("  delete(").append("uri: String!): RemovedEntity! @deleteMutation(dataSet: ")
+            .append(rootType).append(")").append("\n");
+    } else if (!deletions.isEmpty()) {
+      schema.append("  delete(").append("uri: String! ").append("entity: ").append(name).append("DeleteInput): ")
+            .append("RemovedEntity! @deleteMutation(dataSet: ")
+            .append(rootType).append(")").append("\n");
+    }
+
+    schema.append("  persistEntity(").append("entityUri: String!): ").append("Message")
           .append(" @persistEntityMutation(dataSet: ").append(rootType)
-          .append(")")
-          .append("}\n");
+          .append(")").append("}\n");
 
     return schema;
   }
@@ -132,7 +160,6 @@ class DerivedInputTypeSchemaGenerator {
     }
     schema.append("}\n\n");
   }
-
 
   private class GraphQlPredicate {
     private final Predicate predicate;

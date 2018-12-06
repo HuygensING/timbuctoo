@@ -29,20 +29,17 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SetCustomProvenanceMutation.CustomProvenance;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
-import org.apache.activemq.util.ByteArrayInputStream;
-import org.apache.commons.io.IOUtils;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import javax.ws.rs.core.MediaType;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -266,6 +263,18 @@ public abstract class DataSet {
 
   public void saveCustomSchema(Map<String, List<ExplicitField>> schema) throws IOException {
     SchemaHelper.saveSchema(schema, getCustomSchemaFile());
+  }
+
+  public CustomProvenance getCustomProvenance() {
+    File customProvenanceFile = getDataSetStorage().getCustomProvenanceFile();
+    if (customProvenanceFile.exists()) {
+      try {
+        return new ObjectMapper().readValue(customProvenanceFile, CustomProvenance.class);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return new CustomProvenance(Collections.emptyList());
   }
 
   public void setCustomProvenance(CustomProvenance customProvenance) throws IOException {
