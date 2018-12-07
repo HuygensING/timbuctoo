@@ -80,6 +80,17 @@ query retrieveData($dataSet:ID!){
 }
 ----
 
+For example get the user id and name run the next query:
+
+----
+query aboutMe {
+  aboutMe {
+    id
+    name
+  }
+}
+----
+
 == Mutations
 === Publish a DataSet
 
