@@ -89,9 +89,13 @@ First make sure to create the right mapping file the language is http://rml.io/[
   ]
 }
 ----
-`http://timbuctoo.com/mappings/bia/plaatsnamen/Places` is the name of the type.
-`http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/bia/rawData/f70500b8-d1aa-41d3-850e-c5024f592857-file/collections/1` is the name of the raw collection currently in Timbuctoo.
+
+* `http://timbuctoo.com/mappings/bia/plaatsnamen/Places` is the name of the type.
+* `http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/bia/rawData/f70500b8-d1aa-41d3-850e-c5024f592857-file/collections/1` is the name of the raw collection currently in Timbuctoo.
 The number the at the end of the URI is the tab number of the excel sheet. 1 means the fist sheet.
+* `rr:template` in `rr:subjectMap` defines what the URI of the entity will be. This uri can be linked to from other types in this mapping.
+* `rr:predicate` in  `rr:predicateObjectMap` defines the rdf predicate will be used for column.
+* `rr:column` uses the header (first line of the tabular file) of the column
 
 You van use the following GraphQL query to retrieve it:
 
