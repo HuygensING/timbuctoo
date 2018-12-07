@@ -66,14 +66,15 @@ The following prerequisites need to be installed on the machine before running t
     * https://www.docker.com/[Docker]
     * http://xmlsoft.org/downloads.html[libxml2-utils]
 
-=== Installation
+=== Start Timbuctoo without Docker
+==== Installation
 After the above requirements are fulfilled you can follow the following instructions to install Timbuctoo:
 
     * Clone the https://github.com/HuygensING/timbuctoo.git[Timbuctoo Github repository] into a local directory using the command:
 
     git clone https://github.com/HuygensING/timbuctoo.git
  
-=== Starting Timbuctoo
+==== Starting Timbuctoo
     - On the Timbuctoo root directory run the Maven build command:
 
       mvn clean package
@@ -81,6 +82,11 @@ After the above requirements are fulfilled you can follow the following instruct
     - On the "/devtools/debugrun" directory within your Timbuctoo repository, run:
 
         ./timbuctoo_only.sh
+
+=== Start Timbuctoo with Docker
+----
+$ (sudo) docker run huygensing/timbuctoo
+----
 
 === Uploading data
     - You can run a curl command of the following format to upload data into Timbuctoo:
