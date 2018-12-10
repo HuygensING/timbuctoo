@@ -83,6 +83,20 @@ First make sure to create the right mapping file the language is http://rml.io/[
               "@id": "rr:Literal"
             }
           }
+        },
+        {
+          "rr:predicate": {
+            "@id": "http://schema.org/birthPlace"
+          },
+          "rr:objectMap": {
+            "rr:parentTriplesMap": {
+               "@id":"http://timbuctoo.com/mappings/bia/plaatsnamen/Places"
+             },
+             "rr:joinCondition": {
+                "rr:child": "birth_place_persistent_id",
+                "rr:parent": "persistent_id"
+              }
+          }
         }
       ]
     }
@@ -96,6 +110,9 @@ The number the at the end of the URI is the tab number of the excel sheet. 1 mea
 * `rr:template` in `rr:subjectMap` defines what the URI of the entity will be. This uri can be linked to from other types in this mapping.
 * `rr:predicate` in  `rr:predicateObjectMap` defines the rdf predicate will be used for column.
 * `rr:column` uses the header (first line of the tabular file) of the column
+* `rr:joinCondition` makes it possible to link between to resources
+** `rr:child` is the column that links to another resource (in SQL the foreign key field)
+** `rr:parent` is the id field in the resource that is linked (in SQL the primary key field)
 
 You van use the following GraphQL query to retrieve it:
 
