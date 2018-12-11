@@ -37,4 +37,3 @@ services:
     ports:
       - 8080:80
       - 8081:81
-      - ${DEBUG_PORT:-5005}:5005
