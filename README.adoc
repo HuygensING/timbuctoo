@@ -84,9 +84,16 @@ After the above requirements are fulfilled you can follow the following instruct
         ./timbuctoo_only.sh
 
 === Start Timbuctoo with Docker
+To start Timbuctoo only:
 ----
-$ (sudo) docker run huygensing/timbuctoo
+$ (sudo) docker run -p8080:80 huygensing/timbuctoo
 ----
+
+To start Timbuctoo with Timbuctoo GUI:
+----
+$ (sudo) docker-compose up
+----
+
 
 === Uploading data
     - You can run a curl command of the following format to upload data into Timbuctoo:
