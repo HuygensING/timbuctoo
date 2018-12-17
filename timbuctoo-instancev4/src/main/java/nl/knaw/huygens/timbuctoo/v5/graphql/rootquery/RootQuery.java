@@ -334,7 +334,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           name,
           types,
           dataSet.getTypeNameStore(),
-          dataSet.getReadOnlyChecker()
+          dataSet.getReadOnlyChecker(),
+          dataSet.getCustomProvenance()
         );
 
         if (schema.hasMutationTypes()) {

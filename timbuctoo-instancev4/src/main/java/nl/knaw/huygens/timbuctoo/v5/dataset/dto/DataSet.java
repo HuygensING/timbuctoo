@@ -1,12 +1,16 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
+import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
@@ -21,13 +25,11 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPat
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
-import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -260,6 +263,22 @@ public abstract class DataSet {
 
   public void saveCustomSchema(Map<String, List<ExplicitField>> schema) throws IOException {
     SchemaHelper.saveSchema(schema, getCustomSchemaFile());
+  }
+
+  public CustomProvenance getCustomProvenance() {
+    File customProvenanceFile = getDataSetStorage().getCustomProvenanceFile();
+    if (customProvenanceFile.exists()) {
+      try {
+        return new ObjectMapper().readValue(customProvenanceFile, CustomProvenance.class);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return new CustomProvenance(Collections.emptyList());
+  }
+
+  public void setCustomProvenance(CustomProvenance customProvenance) throws IOException {
+    new ObjectMapper().writeValue(getDataSetStorage().getCustomProvenanceFile(), customProvenance);
   }
 
   protected abstract String getOwnerId();

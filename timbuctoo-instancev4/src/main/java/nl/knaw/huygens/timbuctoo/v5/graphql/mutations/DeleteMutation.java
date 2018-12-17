@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -15,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.DeleteMutationChangeLo
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -37,6 +39,7 @@ public class DeleteMutation implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment environment) {
     final String uri = environment.getArgument("uri");
+    final Map entity = environment.getArgument("entity");
     ImmutableContextData contextData = environment.getContext();
     Optional<User> userOpt = contextData.getUser();
     if (!userOpt.isPresent()) {
@@ -64,9 +67,9 @@ public class DeleteMutation implements DataFetcher {
       dataSet.getImportManager().generateLog(
         dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
-        new GraphQlToRdfPatch(uri, userUriCreator.create(user), new DeleteMutationChangeLog(uri))
+        new GraphQlToRdfPatch(uri, userUriCreator.create(user), new DeleteMutationChangeLog(uri, entity))
       ).get(); // Wait until the data is processed
-    } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
+    } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }
 

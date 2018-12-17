@@ -1,10 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 
-import java.util.ArrayList;
 import java.util.Set;
 
 public class DerivedCompositeObjectTypeSchemaGenerator implements DerivedObjectTypeSchemaGenerator {
@@ -15,11 +14,12 @@ public class DerivedCompositeObjectTypeSchemaGenerator implements DerivedObjectT
   public DerivedCompositeObjectTypeSchemaGenerator(String typeUri, String rootType,
                                                    GraphQlNameGenerator nameStore,
                                                    DerivedSchemaContainer derivedSchemaContainer,
-                                                   ReadOnlyChecker readOnlyChecker) {
+                                                   ReadOnlyChecker readOnlyChecker, CustomProvenance customProvenance) {
     querySchemaGenerator =
       new DerivedQueryObjectTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer);
     mutationSchemaGenerator =
-      new DerivedInputTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer, readOnlyChecker);
+      new DerivedInputTypeSchemaGenerator(typeUri, rootType, nameStore, derivedSchemaContainer, readOnlyChecker,
+        customProvenance);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -12,6 +13,13 @@ public class Change {
   private final List<Value> values;
   private final Stream<Value> oldValues;
 
+  public Change(String subject, String predicate, Value value) {
+    this.subject = subject;
+    this.predicate = predicate;
+
+    this.values = Lists.newArrayList(value);
+    this.oldValues = Stream.empty();
+  }
 
   public Change(String subject, String predicate, List<Value> values, Stream<Value> oldValues) {
     this.subject = subject;
@@ -129,5 +137,4 @@ public class Change {
         '}';
     }
   }
-
 }

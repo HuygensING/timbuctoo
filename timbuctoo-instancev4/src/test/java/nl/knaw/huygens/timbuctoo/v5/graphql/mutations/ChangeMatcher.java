@@ -22,6 +22,26 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
     return new ChangeMatcher();
   }
 
+  public ChangeMatcher withSubject(String subject) {
+    this.addMatcher(new PropertyEqualityMatcher<Change, String>("subject", subject) {
+      @Override
+      protected String getItemValue(Change item) {
+        return item.getSubject();
+      }
+    });
+    return this;
+  }
+
+  public ChangeMatcher withPredicate(String predicate) {
+    this.addMatcher(new PropertyEqualityMatcher<Change, String>("predicate", predicate) {
+      @Override
+      protected String getItemValue(Change item) {
+        return item.getPredicate();
+      }
+    });
+    return this;
+  }
+
   public ChangeMatcher withValues(Value... values) {
     this.addMatcher(new PropertyEqualityMatcher<Change, List<Value>>("values", Lists.newArrayList(values)) {
       @Override

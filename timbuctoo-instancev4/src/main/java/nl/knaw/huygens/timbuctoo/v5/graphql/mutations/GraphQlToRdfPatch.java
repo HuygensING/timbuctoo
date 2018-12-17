@@ -60,7 +60,13 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
 
     addData(saver, dataSet);
 
-    // add new revision
+    String newRevision = addNewRevision(saver, dataSet);
+    String association = addProvenance(saver, dataSet, newRevision);
+
+    addPlan(saver, dataSet, newRevision, association);
+  }
+
+  private String addNewRevision(RdfPatchSerializer saver, DataSet dataSet) throws LogStorageFailedException {
     int lastVersion = -1;
     try (Stream<CursorQuad> latestRevisionQuads = dataSet.getQuadStore().getQuads(
       subjectUri,
@@ -93,7 +99,11 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     String prevRevision = subjectUri + "/" + lastVersion;
     saver.addDelQuad(false, subjectUri, timPredicate("latestRevision"), prevRevision, null, null, null);
 
-    // add provenance
+    return newRevision;
+  }
+
+  private String addProvenance(RdfPatchSerializer saver, DataSet dataSet, String newRevision)
+    throws LogStorageFailedException {
     String activity = dataSetObjectUri(dataSet, "activity");
     saver.addDelQuad(true, activity, PROV_GENERATED, newRevision, null, null, null);
     saver.addDelQuad(true, activity, RDF_TYPE, PROV_ACTIVITY, null, null, null);
@@ -106,10 +116,11 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     saver.addDelQuad(true, association, RDF_TYPE, PROV_ASSOCIATION, null, null, null);
     saver.addDelQuad(true, association, PROV_AGENT_PRED, userUri, null, null, null);
 
-    addPlan(saver, dataSet, association);
+    return association;
   }
 
-  private void addPlan(RdfPatchSerializer saver, DataSet dataSet, String association) throws LogStorageFailedException {
+  private void addPlan(RdfPatchSerializer saver, DataSet dataSet, String newRevision, String association)
+    throws LogStorageFailedException {
     String planUri = dataSetObjectUri(dataSet, "plan");
     saver.addDelQuad(true, association, PROV_HAD_PLAN, planUri, null, null, null);
     saver.addDelQuad(true, planUri, RDF_TYPE, PROV_PLAN, null, null, null);
@@ -206,6 +217,21 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
               prefValueUri = uri;
             }
           }
+        }
+      }
+    }
+    // add custom provenance
+    if (changeLog.getProvenance(dataSet, subjectUri).findAny().isPresent()) {
+      String customProvUri = dataSetObjectUri(dataSet, "customProv");
+      saver.addDelQuad(true, planUri, timPredicate("hasCustomProv"), customProvUri, null, null, null);
+      saver.addDelQuad(true, customProvUri, RDF_TYPE, timType("CustomProv"), null, null, null);
+
+      Stream<Change> customProvChanges = changeLog.getProvenance(dataSet, newRevision, customProvUri);
+      for (Iterator<Change> changes = customProvChanges.iterator(); changes.hasNext(); ) {
+        Change change = changes.next();
+        for (Value value : change.getValues()) {
+          saver.addDelQuad(true, change.getSubject(), change.getPredicate(), value.getRawValue(), value.getType(), null,
+            null);
         }
       }
     }

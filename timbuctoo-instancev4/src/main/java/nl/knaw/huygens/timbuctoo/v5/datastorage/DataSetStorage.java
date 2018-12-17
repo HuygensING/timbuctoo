@@ -27,4 +27,6 @@ public interface DataSetStorage {
   JsonDataStore<LogList> getLogList() throws IOException;
 
   void clear() throws IOException;
+
+  File getCustomProvenanceFile();
 }

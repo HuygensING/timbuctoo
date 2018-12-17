@@ -1,18 +1,23 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.PredicateBuilder.predicate;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -26,7 +31,8 @@ public class DerivedInputTypeSchemaGeneratorTest {
   private static final String ROOT_TYPE = "rootType";
   private static final String READ_ONLY_PRED = "http://example.org/readOnly";
   private static final String READ_ONLY_TYPE = "http://example.org/readOnlyType";
-  private DerivedInputTypeSchemaGenerator instance;
+  private DerivedInputTypeSchemaGenerator instanceNoProv;
+  private DerivedInputTypeSchemaGenerator instanceProv;
   private GraphQlNameGenerator graphQlNameGenerator;
   private ReadOnlyChecker readOnlyChecker;
   private DerivedSchemaContainer derivedSchemaContainer;
@@ -48,12 +54,29 @@ public class DerivedInputTypeSchemaGeneratorTest {
         return READ_ONLY_TYPE.equals(typeUri);
       }
     };
-    instance = new DerivedInputTypeSchemaGenerator(
+    instanceNoProv = new DerivedInputTypeSchemaGenerator(
       TYPE_URI,
       ROOT_TYPE,
       graphQlNameGenerator,
       derivedSchemaContainer,
-      readOnlyChecker
+      readOnlyChecker,
+      new CustomProvenance(Collections.emptyList())
+    );
+    instanceProv = new DerivedInputTypeSchemaGenerator(
+      TYPE_URI,
+      ROOT_TYPE,
+      graphQlNameGenerator,
+      derivedSchemaContainer,
+      readOnlyChecker,
+      CustomProvenance.getCustomProvenance(
+        ImmutableMap.of("fields", Lists.newArrayList(
+          ImmutableMap.of(
+            "uri", "http://example.org/name",
+            "isList", false,
+            "valueType", STRING
+          )
+        ))
+      )
     );
   }
 
@@ -68,16 +91,41 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .hasDirection(Direction.OUT)
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
-    instance.valueField(null, valueNonList, RdfConstants.STRING);
-    instance.valueField(null, valueList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueNonList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueList, RdfConstants.STRING);
 
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, containsString("input TypeEditInput {\n" +
       "  additions: TypeAdditionsInput\n" +
       "  deletions: TypeDeletionsInput\n" +
       "  replacements: TypeReplacementsInput\n" +
+      "}\n\n"));
+  }
+
+  @Test
+  public void createsAnEditInputTypeWithProvenance() {
+    Predicate valueNonList = predicate().withName("http://example.com/valueNonList")
+                                        .hasDirection(Direction.OUT)
+                                        .build();
+    graphQlNameForPredicate("http://example.com/valueNonList", false, "short_singleValue");
+    Predicate valueList = predicate().withName("http://example.com/valueList")
+                                     .isList()
+                                     .hasDirection(Direction.OUT)
+                                     .build();
+    graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
+    instanceProv.valueField(null, valueNonList, RdfConstants.STRING);
+    instanceProv.valueField(null, valueList, RdfConstants.STRING);
+
+
+    String schema = instanceProv.getSchema().toString();
+
+    assertThat(schema, containsString("input TypeEditInput {\n" +
+      "  additions: TypeAdditionsInput\n" +
+      "  deletions: TypeDeletionsInput\n" +
+      "  replacements: TypeReplacementsInput\n" +
+      "  provenance: rootTypeProvenanceInput\n" +
       "}\n\n"));
   }
 
@@ -92,13 +140,56 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .hasDirection(Direction.OUT)
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
-    instance.valueField(null, valueNonList, RdfConstants.STRING);
-    instance.valueField(null, valueList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueNonList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueList, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, containsString("input TypeCreateInput {\n" +
       "  creations: TypeCreationsInput\n" +
+      "}\n\n"));
+  }
+
+  @Test
+  public void createsAnCreateInputTypeWithProvenance() {
+    Predicate valueNonList = predicate().withName("http://example.com/valueNonList")
+                                        .hasDirection(Direction.OUT)
+                                        .build();
+    graphQlNameForPredicate("http://example.com/valueNonList", false, "short_singleValue");
+    Predicate valueList = predicate().withName("http://example.com/valueList")
+                                     .isList()
+                                     .hasDirection(Direction.OUT)
+                                     .build();
+    graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
+    instanceProv.valueField(null, valueNonList, RdfConstants.STRING);
+    instanceProv.valueField(null, valueList, RdfConstants.STRING);
+
+    String schema = instanceProv.getSchema().toString();
+
+    assertThat(schema, containsString("input TypeCreateInput {\n" +
+      "  creations: TypeCreationsInput\n" +
+      "  provenance: rootTypeProvenanceInput\n" +
+      "}\n\n"));
+  }
+
+  @Test
+  public void createsADeleteInputTypeWithProvenance() {
+    Predicate valueNonList = predicate().withName("http://example.com/valueNonList")
+                                        .hasDirection(Direction.OUT)
+                                        .build();
+    graphQlNameForPredicate("http://example.com/valueNonList", false, "short_singleValue");
+    Predicate valueList = predicate().withName("http://example.com/valueList")
+                                     .isList()
+                                     .hasDirection(Direction.OUT)
+                                     .build();
+    graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
+    instanceProv.valueField(null, valueNonList, RdfConstants.STRING);
+    instanceProv.valueField(null, valueList, RdfConstants.STRING);
+
+    String schema = instanceProv.getSchema().toString();
+
+    assertThat(schema, containsString("input TypeDeleteInput {\n" +
+      "  provenance: rootTypeProvenanceInput\n" +
       "}\n\n"));
   }
 
@@ -119,10 +210,10 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .withValueType(RdfConstants.STRING)
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
-    instance.valueField(null, valueNonList, RdfConstants.STRING);
-    instance.valueField(null, valueList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueNonList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueList, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
       containsString("input TypeAdditionsInput {\n" +
@@ -151,10 +242,10 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .withValueType(RdfConstants.STRING)
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
-    instance.valueField(null, valueNonList, RdfConstants.STRING);
-    instance.valueField(null, valueList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueNonList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueList, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
       containsString("input TypeCreationsInput {\n" +
@@ -166,7 +257,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
   @Test
   public void createAnEmptySchemaWhenNoPropertiesAreAdded() {
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, isEmptyString());
   }
@@ -177,9 +268,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                         .hasDirection(Direction.OUT)
                                         .build();
     graphQlNameForPredicate("http://example.com/valueNonList", false, "short_singleValue");
-    instance.valueField(null, valueNonList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueNonList, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
       not(containsString("input TypeAdditionsInput {\n" +
@@ -204,9 +295,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .build();
     graphQlNameForPredicate("http://example.com/wasSingleList", false, "short_wasSingle");
     graphQlNameForPredicate("http://example.com/wasSingleList", true, "short_wasSingleList");
-    instance.valueField(null, valueList, RdfConstants.STRING);
+    instanceNoProv.valueField(null, valueList, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
       containsString("input TypeReplacementsInput {\n" +
@@ -225,9 +316,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                       .hasDirection(Direction.OUT)
                                       .build();
     graphQlNameForPredicate("http://example.com/unused", true, "short_wasListList");
-    instance.valueField(null, unusedPred, RdfConstants.STRING);
+    instanceNoProv.valueField(null, unusedPred, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
       containsString("input TypeReplacementsInput {\n" +
@@ -245,9 +336,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                       .hasDirection(Direction.OUT)
                                       .build();
     graphQlNameForPredicate("http://example.com/unused", false, "short_unUsed");
-    instance.valueField(null, unusedPred, RdfConstants.STRING);
+    instanceNoProv.valueField(null, unusedPred, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema,containsString("input TypeReplacementsInput {\n" +
         "  short_unUsed: PropertyInput" +
@@ -266,9 +357,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                       .build();
 
     graphQlNameForPredicate("http://example.com/unused", false, "short_unUsed");
-    instance.valueField(null, unusedPred, RdfConstants.STRING);
+    instanceNoProv.valueField(null, unusedPred, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema,containsString("input TypeReplacementsInput {\n" +
       "  short_unUsed: PropertyInput\n" +
@@ -282,9 +373,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .hasDirection(Direction.OUT)
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
-    instance.objectField(null, valueList, "http://example.org/person");
+    instanceNoProv.objectField(null, valueList, "http://example.org/person");
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
       containsString("input TypeCreationsInput {\n" +
@@ -314,8 +405,8 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
 
-    instance.unionField(null, valueList, Sets.newHashSet(type1, type2));
-    String schema = instance.getSchema().toString();
+    instanceNoProv.unionField(null, valueList, Sets.newHashSet(type1, type2));
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
       containsString("input TypeCreationsInput {\n" +
@@ -340,7 +431,8 @@ public class DerivedInputTypeSchemaGeneratorTest {
       ROOT_TYPE,
       graphQlNameGenerator,
       derivedSchemaContainer,
-      readOnlyChecker
+      readOnlyChecker,
+      new CustomProvenance(Collections.emptyList())
     );
     Predicate predicate = predicate().withName("http://example.com/value")
                                      .hasDirection(Direction.OUT)
@@ -358,9 +450,9 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .hasDirection(Direction.OUT)
                                      .withValueType(RdfConstants.STRING)
                                      .build();
-    instance.valueField(null, predicate, RdfConstants.STRING);
+    instanceNoProv.valueField(null, predicate, RdfConstants.STRING);
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
     assertThat(schema, isEmptyString());
   }
 
@@ -371,14 +463,32 @@ public class DerivedInputTypeSchemaGeneratorTest {
                                      .hasDirection(Direction.OUT)
                                      .build();
     graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
-    instance.objectField(null, valueList, "http://example.org/person");
+    instanceNoProv.objectField(null, valueList, "http://example.org/person");
 
-    String schema = instance.getSchema().toString();
+    String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, containsString("}\n\ntype TypeMutations {\n" +
       "  create(uri: String! entity: TypeCreateInput!): Type @createMutation(dataSet: rootType typeUri: \"" +
       TYPE_URI + "\")\n" +
-      "  edit(uri: String! entity: TypeEditInput!): Type @editMutation(dataSet: rootType)\n"));
+      "  edit(uri: String! entity: TypeEditInput!): Type @editMutation(dataSet: rootType)\n" +
+      "  delete(uri: String!): RemovedEntity! @deleteMutation(dataSet: rootType)\n"));
   }
 
+  @Test
+  public void addsCreateAndEditAndDeleteMethodsToTypeWithProvenance() {
+    Predicate valueList = predicate().withName("http://example.com/valueList")
+                                     .isList()
+                                     .hasDirection(Direction.OUT)
+                                     .build();
+    graphQlNameForPredicate("http://example.com/valueList", true, "short_multiValueList");
+    instanceProv.objectField(null, valueList, "http://example.org/person");
+
+    String schema = instanceProv.getSchema().toString();
+
+    assertThat(schema, containsString("}\n\ntype TypeMutations {\n" +
+      "  create(uri: String! entity: TypeCreateInput!): Type @createMutation(dataSet: rootType typeUri: \"" +
+      TYPE_URI + "\")\n" +
+      "  edit(uri: String! entity: TypeEditInput!): Type @editMutation(dataSet: rootType)\n" +
+      "  delete(uri: String! entity: TypeDeleteInput): RemovedEntity! @deleteMutation(dataSet: rootType)\n"));
+  }
 }

@@ -88,6 +88,11 @@ class FileSystemDataSetStorage implements DataSetStorage {
   }
 
   @Override
+  public File getCustomProvenanceFile() {
+    return fileHelper.fileInDataSet(ownerPrefix, dataSetId, "customProvenance.json");
+  }
+
+  @Override
   public JsonDataStore<LogList> getLogList() throws IOException {
     return JsonFileBackedData.getOrCreate(logFile, LogList::new, new TypeReference<LogList>(){});
   }
@@ -100,7 +105,7 @@ class FileSystemDataSetStorage implements DataSetStorage {
     this.deleteDataSetData(fileHelper.dataSetPath(ownerPrefix, dataSetId), 5);
 
   }
-  
+
   private void deleteDataSetData(File path, int retryCount) {
     try {
       FileUtils.deleteDirectory(path);
