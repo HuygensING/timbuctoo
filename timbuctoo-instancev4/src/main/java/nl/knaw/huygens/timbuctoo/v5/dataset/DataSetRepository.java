@@ -348,8 +348,8 @@ public class DataSetRepository {
           )
         );
       }
-      dataSet.stop();
       dataSetMap.get(ownerId).remove(dataSetName);
+      dataSet.stop();
       permissionFetcher.removeAuthorizations(combinedId);
     } catch (PermissionFetchingException e) {
       throw new IOException(e);
