@@ -150,6 +150,7 @@
     <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
     <rdf4j.version>2.4.0</rdf4j.version>
     <xmlunit.version>2.4.0</xmlunit.version>
+    <jackson.version>2.9.8</jackson.version>
   </properties>
 
   <dependencyManagement>
@@ -426,17 +427,17 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-guava</artifactId>
-      <version>2.9.6</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
-      <version>2.9.6</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
-      <version>2.9.6</version>
+      <version>${jackson.version}</version>
     </dependency>
     <!-- ### Std lib additions ## -->
 
