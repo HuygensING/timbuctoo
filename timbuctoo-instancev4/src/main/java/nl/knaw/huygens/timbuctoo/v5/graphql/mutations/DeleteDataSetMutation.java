@@ -1,29 +1,30 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class DeleteDataSetMutation implements DataFetcher {
+public class DeleteDataSetMutation extends Mutation {
 
 
   private static final Logger LOG = LoggerFactory.getLogger(DeleteDataSetMutation.class);
   private final DataSetRepository dataSetRepository;
 
-  public DeleteDataSetMutation(DataSetRepository dataSetRepository) {
+  public DeleteDataSetMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }
 
   @Override
-  public Object get(DataFetchingEnvironment environment) {
+  public Object executeAction(DataFetchingEnvironment environment) {
     String combinedId = environment.getArgument("dataSetId");
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(combinedId);
     User user = MutationHelpers.getUser(environment);

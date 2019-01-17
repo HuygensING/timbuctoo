@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -16,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ExtendSchemaMutation implements DataFetcher {
+public class ExtendSchemaMutation extends Mutation {
   private static final Logger LOG = LoggerFactory.getLogger(ExtendSchemaMutation.class);
 
   private final DataSetRepository dataSetRepository;
@@ -37,12 +37,13 @@ public class ExtendSchemaMutation implements DataFetcher {
     .enable(SerializationFeature.INDENT_OUTPUT);
 
 
-  public ExtendSchemaMutation(DataSetRepository dataSetRepository) {
+  public ExtendSchemaMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }
 
   @Override
-  public Object get(DataFetchingEnvironment env) {
+  public Object executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.EXTEND_SCHEMA);
     final SchemaStore generatedSchema = dataSet.getSchemaStore();

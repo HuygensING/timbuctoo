@@ -95,6 +95,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
@@ -295,17 +296,22 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetRepository,
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
-        new RdfWiringFactory(
+        (schemaUpdater) -> new RdfWiringFactory(
           dataSetRepository,
           argHelper,
           configuration.getDefaultSummaryProps(),
           uriHelper,
-          redirectionService
+          redirectionService,
+          schemaUpdater
         ),
         new DerivedSchemaGenerator(argHelper),
         environment.getObjectMapper(),
         new ResourceSyncFileLoader(httpClient),
-        resourceSyncService
+        resourceSyncService,
+        (updateSchema) -> new GraphQlSchemaUpdater(
+          environment.lifecycle().executorService("schemaUpdate").build(),
+          updateSchema
+        )
       ),
       serializerWriterRegistry,
       securityConfig.getUserValidator(),

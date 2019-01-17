@@ -1,29 +1,30 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MutationHelpers.getUser;
 
-public class CreateDataSetMutation implements DataFetcher {
+public class CreateDataSetMutation extends Mutation {
   private static final Logger LOG = LoggerFactory.getLogger(CreateDataSetMutation.class);
 
   private final DataSetRepository dataSetRepository;
 
-  public CreateDataSetMutation(DataSetRepository dataSetRepository) {
+  public CreateDataSetMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }
 
   @Override
-  public Object get(DataFetchingEnvironment env) {
+  public Object executeAction(DataFetchingEnvironment env) {
     User currentUser = getUser(env);
 
     String dataSetName = env.getArgument("dataSetName");

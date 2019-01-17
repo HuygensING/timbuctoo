@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
@@ -13,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.DeleteMutationChangeLog;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -21,14 +21,15 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
-public class DeleteMutation implements DataFetcher {
+public class DeleteMutation extends Mutation {
   private final DataSetRepository dataSetRepository;
   private final String dataSetName;
   private final String ownerId;
   private final UserUriCreator userUriCreator;
 
-  public DeleteMutation(DataSetRepository dataSetRepository, UriHelper uriHelper,
+  public DeleteMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository, UriHelper uriHelper,
                         String dataSetId) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
     dataSetName = dataSetIdSplit.getRight();
@@ -37,7 +38,7 @@ public class DeleteMutation implements DataFetcher {
   }
 
   @Override
-  public Object get(DataFetchingEnvironment environment) {
+  public Object executeAction(DataFetchingEnvironment environment) {
     final String uri = environment.getArgument("uri");
     final Map entity = environment.getArgument("entity");
     ImmutableContextData contextData = environment.getContext();

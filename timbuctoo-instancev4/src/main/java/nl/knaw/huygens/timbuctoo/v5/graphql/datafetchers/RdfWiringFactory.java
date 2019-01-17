@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SetCustomProvenanceMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,7 @@ public class RdfWiringFactory implements WiringFactory {
   private final PaginationArgumentsHelper argumentsHelper;
   private final UriHelper uriHelper;
   private final RedirectionService redirectionService;
+  private final GraphQlSchemaUpdater schemaUpdater;
   private final EntityTitleFetcher entityTitleFetcher;
   private final EntityDescriptionFetcher entityDescriptionFetcher;
   private final EntityImageFetcher entityImageFetcher;
@@ -69,11 +71,13 @@ public class RdfWiringFactory implements WiringFactory {
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
                           DefaultSummaryProps defaultSummaryProps, UriHelper uriHelper,
-                          RedirectionService redirectionService) {
+                          RedirectionService redirectionService,
+                          GraphQlSchemaUpdater schemaUpdater) {
     this.dataSetRepository = dataSetRepository;
     this.argumentsHelper = argumentsHelper;
     this.uriHelper = uriHelper;
     this.redirectionService = redirectionService;
+    this.schemaUpdater = schemaUpdater;
     objectTypeResolver = new ObjectTypeResolver();
     uriFetcher = new UriFetcher();
     subjectFetcher = new QuadStoreLookUpSubjectByUriFetcher();
@@ -194,9 +198,14 @@ public class RdfWiringFactory implements WiringFactory {
       String dataSetName = dataSet.getName();
       String typeUriName = typeUri.getValue();
 
-      return createMutationMap.computeIfAbsent(dataSetName, s -> {
-        return new CreateMutation(dataSetRepository, uriHelper, subjectFetcher, dataSetName, typeUriName);
-      });
+      return createMutationMap.computeIfAbsent(dataSetName, s -> new CreateMutation(
+        schemaUpdater,
+        dataSetRepository,
+        uriHelper,
+        subjectFetcher,
+        dataSetName,
+        typeUriName
+      ));
     } else if (environment.getFieldDefinition().getDirective("editMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("editMutation");
       EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
@@ -204,7 +213,7 @@ public class RdfWiringFactory implements WiringFactory {
       String dataSetName = dataSet.getName();
 
       return editMutationMap.computeIfAbsent(dataSetName, s -> {
-        return new EditMutation(dataSetRepository, uriHelper, subjectFetcher, dataSetName);
+        return new EditMutation(schemaUpdater, dataSetRepository, uriHelper, subjectFetcher, dataSetName);
       });
     } else if (environment.getFieldDefinition().getDirective("deleteMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("deleteMutation");
@@ -213,18 +222,18 @@ public class RdfWiringFactory implements WiringFactory {
       String dataSetName = dataSet.getName();
 
       return deleteMutationMap.computeIfAbsent(dataSetName, s -> {
-        return new DeleteMutation(dataSetRepository, uriHelper, dataSetName);
+        return new DeleteMutation(schemaUpdater, dataSetRepository, uriHelper, dataSetName);
       });
     } else if (environment.getFieldDefinition().getDirective("persistEntityMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("persistEntityMutation");
       EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
       String dataSetName = dataSet.getName();
-      return new PersistEntityMutation(redirectionService, dataSetName, uriHelper);
+      return new PersistEntityMutation(schemaUpdater, redirectionService, dataSetName, uriHelper);
     } else if (environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("setCustomProvenanceMutation");
       EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
       String dataSetId = dataSet.getName();
-      return new SetCustomProvenanceMutation(dataSetRepository, dataSetId);
+      return new SetCustomProvenanceMutation(schemaUpdater, dataSetRepository, dataSetId);
     }
     return null;
   }

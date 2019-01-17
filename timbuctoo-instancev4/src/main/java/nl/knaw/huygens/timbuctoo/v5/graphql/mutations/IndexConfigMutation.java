@@ -2,12 +2,12 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.concurrent.ExecutionException;
@@ -16,16 +16,17 @@ import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutati
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
-public class IndexConfigMutation implements DataFetcher {
+public class IndexConfigMutation extends Mutation {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final DataSetRepository dataSetRepository;
 
-  public IndexConfigMutation(DataSetRepository dataSetRepository) {
+  public IndexConfigMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }
 
   @Override
-  public Object get(DataFetchingEnvironment env) {
+  public Object executeAction(DataFetchingEnvironment env) {
 
     String collectionUri = env.getArgument("collectionUri");
     Object indexConfig = env.getArgument("indexConfig");

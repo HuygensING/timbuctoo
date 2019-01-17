@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,16 +92,20 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final ResourceSyncService resourceSyncService;
   private final SchemaParser schemaParser;
   private final String staticQuery;
+  private final GraphQlSchemaUpdater schemaUpdater;
+  private GraphQLSchema graphQlSchema;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
-                   String archetypes, RdfWiringFactory wiringFactory,
+                   String archetypes, Function<GraphQlSchemaUpdater, RdfWiringFactory> wiringFactory,
                    DerivedSchemaGenerator typeGenerator, ObjectMapper objectMapper,
-                   ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService)
+                   ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService,
+                   Function<Runnable, GraphQlSchemaUpdater> schemaUpdaterFunction)
     throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
     this.archetypes = archetypes;
-    this.wiringFactory = wiringFactory;
+    schemaUpdater = schemaUpdaterFunction.apply(this::rebuildSchema);
+    this.wiringFactory = wiringFactory.apply(schemaUpdater);
     this.typeGenerator = typeGenerator;
     this.objectMapper = objectMapper;
     this.resourceSyncFileLoader = resourceSyncFileLoader;
@@ -109,7 +114,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     schemaParser = new SchemaParser();
   }
 
-  public synchronized GraphQLSchema rebuildSchema() {
+  private synchronized void rebuildSchema() {
     final TypeDefinitionRegistry staticQuery = schemaParser.parse(this.staticQuery);
     if (archetypes != null && !archetypes.isEmpty()) {
       staticQuery.merge(schemaParser.parse(
@@ -262,19 +267,19 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.type("Mutation", builder -> builder
-      .dataFetcher("setViewConfig", new ViewConfigMutation(dataSetRepository))
-      .dataFetcher("setSummaryProperties", new SummaryPropsMutation(dataSetRepository))
-      .dataFetcher("setIndexConfig", new IndexConfigMutation(dataSetRepository))
-      .dataFetcher("createDataSet", new CreateDataSetMutation(dataSetRepository))
-      .dataFetcher("deleteDataSet", new DeleteDataSetMutation(dataSetRepository))
-      .dataFetcher("publish", new MakePublicMutation(dataSetRepository))
-      .dataFetcher("extendSchema", new ExtendSchemaMutation(dataSetRepository))
-      .dataFetcher("setDataSetMetadata", new DataSetMetadataMutation(dataSetRepository))
-      .dataFetcher("setCollectionMetadata", new CollectionMetadataMutation(dataSetRepository))
+      .dataFetcher("setViewConfig", new ViewConfigMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("setSummaryProperties", new SummaryPropsMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("setIndexConfig", new IndexConfigMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("createDataSet", new CreateDataSetMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("deleteDataSet", new DeleteDataSetMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("publish", new MakePublicMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("extendSchema", new ExtendSchemaMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("setDataSetMetadata", new DataSetMetadataMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("setCollectionMetadata", new CollectionMetadataMutation(schemaUpdater, dataSetRepository))
       .dataFetcher("resourceSyncImport",
-        new ResourceSyncImportMutation(dataSetRepository, resourceSyncFileLoader))
+        new ResourceSyncImportMutation(schemaUpdater, dataSetRepository, resourceSyncFileLoader))
       .dataFetcher("resourceSyncUpdate",
-        new ResourceSyncUpdateMutation(dataSetRepository, resourceSyncFileLoader))
+        new ResourceSyncUpdateMutation(schemaUpdater, dataSetRepository, resourceSyncFileLoader))
     );
 
     wiring.wiringFactory(wiringFactory);
@@ -363,7 +368,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     }
 
     SchemaGenerator schemaGenerator = new SchemaGenerator();
-    return schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
+    graphQlSchema = schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
   }
 
   public CollectionMetadataList getCollections(DataSetMetaData input, Optional<User> userOpt) {
@@ -439,7 +444,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   @Override
   public GraphQLSchema get() {
-    return rebuildSchema();
+    if (graphQlSchema == null) {
+      rebuildSchema();
+    }
+    return graphQlSchema;
   }
 
 }

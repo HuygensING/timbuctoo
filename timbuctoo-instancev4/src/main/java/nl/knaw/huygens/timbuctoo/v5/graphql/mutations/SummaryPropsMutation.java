@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -12,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.io.IOException;
@@ -29,16 +29,17 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYDESCRIPT
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYIMAGEPREDICATE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_SUMMARYTITLEPREDICATE;
 
-public class SummaryPropsMutation implements DataFetcher {
+public class SummaryPropsMutation extends Mutation {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
   private final DataSetRepository dataSetRepository;
 
-  public SummaryPropsMutation(DataSetRepository dataSetRepository) {
+  public SummaryPropsMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }
 
   @Override
-  public Object get(DataFetchingEnvironment env) {
+  public Object executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     MutationHelpers.checkPermission(env, dataSet.getMetadata(),Permission.CHANGE_SUMMARYPROPS);
     try {
