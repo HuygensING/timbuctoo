@@ -211,6 +211,7 @@ public abstract class DataSet {
         .changesRetriever(changesRetriever)
         .currentStateRetriever(currentStateRetriever)
         .readOnlyChecker(readOnlyChecker)
+        // .updateListners(Lists.newArrayList()) // to make sure update listeners can be added
         .build();
       importManager.init(dataSet);
 
@@ -317,5 +318,10 @@ public abstract class DataSet {
     return new LogInfo(getDataSetStorage().getLogList().getData());
   }
 
+  public void addUpdateListener(Runnable updateListener) {
+    // getUpdateListeners().add(updateListener);
+    getImportManager().subscribeImportSucceeded(updateListener);
+  }
 
+  protected abstract List<Runnable> getUpdateListeners();
 }

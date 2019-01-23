@@ -180,6 +180,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
+            protected List<Runnable> getUpdateListeners() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
             public DataSetStorage getDataSetStorage() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }

@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -93,7 +94,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final SchemaParser schemaParser;
   private final String staticQuery;
   private final GraphQlSchemaUpdater schemaUpdater;
+  private final ReentrantReadWriteLock.ReadLock readLock;
   private GraphQLSchema graphQlSchema;
+  private final ReentrantReadWriteLock.WriteLock writeLock;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
                    String archetypes, Function<GraphQlSchemaUpdater, RdfWiringFactory> wiringFactory,
@@ -112,9 +115,22 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     this.resourceSyncService = resourceSyncService;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
     schemaParser = new SchemaParser();
+    dataSetRepository.subscribeToDataSetsUpdated(schemaUpdater::updateSchema);
+    ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
+    readLock = readWriteLock.readLock();
+    writeLock = readWriteLock.writeLock();
   }
 
-  private synchronized void rebuildSchema() {
+  private void rebuildSchema() {
+    writeLock.lock();
+    try {
+      graphQlSchema = this.generateSchema();
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  private GraphQLSchema generateSchema() {
     final TypeDefinitionRegistry staticQuery = schemaParser.parse(this.staticQuery);
     if (archetypes != null && !archetypes.isEmpty()) {
       staticQuery.merge(schemaParser.parse(
@@ -367,8 +383,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       }
     }
 
-    SchemaGenerator schemaGenerator = new SchemaGenerator();
-    graphQlSchema = schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
+    return new SchemaGenerator().makeExecutableSchema(staticQuery, wiring.build());
   }
 
   public CollectionMetadataList getCollections(DataSetMetaData input, Optional<User> userOpt) {
@@ -445,9 +460,14 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   @Override
   public GraphQLSchema get() {
     if (graphQlSchema == null) {
-      rebuildSchema();
+      this.rebuildSchema();
     }
-    return graphQlSchema;
+    readLock.lock();
+    try {
+      return graphQlSchema;
+    } finally {
+      readLock.unlock();
+    }
   }
 
 }
