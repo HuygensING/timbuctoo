@@ -34,7 +34,9 @@ public class UserPermissionCheck {
         if (dataSetPermissionMap.containsKey(dataSetId)) {
           return dataSetPermissionMap.get(dataSetId);
         }
-        return dataSetPermissionMap.put(dataSetId, permissionFetcher.getPermissions(user, dataSetMetaData));
+        // put returns the previous value
+        dataSetPermissionMap.put(dataSetId, permissionFetcher.getPermissions(user, dataSetMetaData));
+        return dataSetPermissionMap.get(dataSetId);
       } catch (PermissionFetchingException e) {
         LOG.error("Could not fetch permissions for user '{}' on data set '{}'",
           user.getDisplayName(),
