@@ -381,6 +381,7 @@ public class DataSetRepository {
 
   public void subscribeToDataSetsUpdated(Runnable dataSetsUpdatedListener) {
     this.dataSetsUpdatedListeners.add(dataSetsUpdatedListener);
+    this.getDataSets().forEach(dataSet -> dataSet.addUpdateListener(dataSetsUpdatedListener));
   }
 
   public class DataSetDoesNotExistException extends Exception {
