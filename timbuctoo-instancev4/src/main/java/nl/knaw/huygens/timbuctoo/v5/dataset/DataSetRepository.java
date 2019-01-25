@@ -136,7 +136,7 @@ public class DataSetRepository {
               dataSetName,
               value
             );
-            dataSetsUpdatedListeners.forEach(value::addUpdateListener);
+            dataSetsUpdatedListeners.forEach(value::subscribeToDataChanges);
           } catch (DataStoreCreationException e) {
             throw new IOException(e);
           }
@@ -255,7 +255,7 @@ public class DataSetRepository {
             dataSetId,
             createdDataset
           );
-          dataSetsUpdatedListeners.forEach(createdDataset::addUpdateListener);
+          dataSetsUpdatedListeners.forEach(createdDataset::subscribeToDataChanges);
         } catch (PermissionFetchingException | AuthorizationCreationException | IOException e) {
           throw new DataStoreCreationException(e);
         }
@@ -381,7 +381,7 @@ public class DataSetRepository {
 
   public void subscribeToDataSetsUpdated(Runnable dataSetsUpdatedListener) {
     this.dataSetsUpdatedListeners.add(dataSetsUpdatedListener);
-    this.getDataSets().forEach(dataSet -> dataSet.addUpdateListener(dataSetsUpdatedListener));
+    this.getDataSets().forEach(dataSet -> dataSet.subscribeToDataChanges(dataSetsUpdatedListener));
   }
 
   public class DataSetDoesNotExistException extends Exception {
