@@ -49,6 +49,7 @@ public class ImportStatus {
 
   private LogEntry currentLogEntry;
   private long currentEntryStart;
+  private String currentEntryName;
 
   public ImportStatus(LogList logList) {
     this.logList = logList;
@@ -60,6 +61,7 @@ public class ImportStatus {
   public synchronized void start(String methodName, String baseUri) {
     messages.clear();
     errors.clear();
+    currentEntryName = null;
     this.methodName = methodName;
     this.baseUri = baseUri;
     setStatus("Started " + this.methodName);
@@ -79,10 +81,14 @@ public class ImportStatus {
   }
 
   public synchronized void addError(String message, Throwable error) {
-    String errorString = "[" + Instant.now().toString() + "] " +
-      "; method: " + methodName +
-      "; message: " + message +
-      "; error: " + error.getMessage();
+    StringBuilder errorMessage = new StringBuilder("[" + Instant.now().toString() + "] ");
+    if (currentEntryName != null) {
+      errorMessage.append("; file: " + currentEntryName);
+    }
+    errorMessage.append("; method: " + methodName);
+    errorMessage.append("; message: " + message);
+    errorMessage.append("; error: " + error.getMessage());
+    String errorString = errorMessage.toString();
     if (currentLogEntry != null) {
       currentLogEntry.getImportStatus().addError(errorString);
     } else {
@@ -203,5 +209,9 @@ public class ImportStatus {
 
   public void startProgressItem(String itemName) {
     currentLogEntry.getImportStatus().startProgressItem(itemName);
+  }
+
+  public void setEntryName(String name) {
+    currentEntryName = name;
   }
 }
