@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server;
 
-import com.codahale.metrics.JmxAttributeGauge;
 import com.codahale.metrics.health.HealthCheck;
+import com.codahale.metrics.jvm.JmxAttributeGauge;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
