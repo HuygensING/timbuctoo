@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntity;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -23,7 +22,7 @@ public class PersistEntityMutation extends Mutation{
   private final String ownerId;
   private final UriHelper uriHelper;
 
-  public PersistEntityMutation(GraphQlSchemaUpdater schemaUpdater, RedirectionService redirectionService,
+  public PersistEntityMutation(Runnable schemaUpdater, RedirectionService redirectionService,
                                String dataSetId, UriHelper uriHelper) {
     super(schemaUpdater);
     this.redirectionService = redirectionService;

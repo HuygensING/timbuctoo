@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.MutationOperation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.Map;
@@ -25,7 +24,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.MARKDOWN;
 public class DataSetMetadataMutation extends Mutation {
   private final DataSetRepository dataSetRepository;
 
-  public DataSetMetadataMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+  public DataSetMetadataMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }

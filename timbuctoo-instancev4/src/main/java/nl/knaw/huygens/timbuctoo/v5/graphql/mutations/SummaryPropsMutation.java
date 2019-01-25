@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ public class SummaryPropsMutation extends Mutation {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
   private final DataSetRepository dataSetRepository;
 
-  public SummaryPropsMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+  public SummaryPropsMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }

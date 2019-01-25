@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,7 @@ public class CreateDataSetMutation extends Mutation {
 
   private final DataSetRepository dataSetRepository;
 
-  public CreateDataSetMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+  public CreateDataSetMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }

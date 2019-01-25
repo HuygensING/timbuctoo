@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.concurrent.ExecutionException;
@@ -20,7 +19,7 @@ public class ViewConfigMutation extends Mutation {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final DataSetRepository dataSetRepository;
 
-  public ViewConfigMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+  public ViewConfigMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }

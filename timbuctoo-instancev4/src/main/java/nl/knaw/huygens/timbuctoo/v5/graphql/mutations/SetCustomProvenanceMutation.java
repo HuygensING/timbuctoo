@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -23,7 +22,7 @@ public class SetCustomProvenanceMutation extends Mutation {
   private final String dataSetName;
   private final String ownerId;
 
-  public SetCustomProvenanceMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository,
+  public SetCustomProvenanceMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository,
                                      String dataSetId) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;

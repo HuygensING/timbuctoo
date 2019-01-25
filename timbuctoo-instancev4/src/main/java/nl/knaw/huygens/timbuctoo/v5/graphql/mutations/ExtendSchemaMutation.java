@@ -15,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeSchemas;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ public class ExtendSchemaMutation extends Mutation {
     .enable(SerializationFeature.INDENT_OUTPUT);
 
 
-  public ExtendSchemaMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository) {
+  public ExtendSchemaMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }

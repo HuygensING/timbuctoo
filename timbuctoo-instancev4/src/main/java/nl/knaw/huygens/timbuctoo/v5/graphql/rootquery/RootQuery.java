@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -91,34 +92,38 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final ObjectMapper objectMapper;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final ResourceSyncService resourceSyncService;
+  private final ExecutorService schemaUpdateQueue;
   private final SchemaParser schemaParser;
   private final String staticQuery;
-  private final GraphQlSchemaUpdater schemaUpdater;
   private final ReentrantReadWriteLock.ReadLock readLock;
   private GraphQLSchema graphQlSchema;
   private final ReentrantReadWriteLock.WriteLock writeLock;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
-                   String archetypes, Function<GraphQlSchemaUpdater, RdfWiringFactory> wiringFactory,
+                   String archetypes, Function<Runnable, RdfWiringFactory> wiringFactory,
                    DerivedSchemaGenerator typeGenerator, ObjectMapper objectMapper,
                    ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService,
-                   Function<Runnable, GraphQlSchemaUpdater> schemaUpdaterFunction)
+                   ExecutorService schemaUpdateQueue)
     throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
     this.archetypes = archetypes;
-    schemaUpdater = schemaUpdaterFunction.apply(this::rebuildSchema);
-    this.wiringFactory = wiringFactory.apply(schemaUpdater);
+    this.wiringFactory = wiringFactory.apply(this::scheduleRebuild);
     this.typeGenerator = typeGenerator;
     this.objectMapper = objectMapper;
     this.resourceSyncFileLoader = resourceSyncFileLoader;
     this.resourceSyncService = resourceSyncService;
+    this.schemaUpdateQueue = schemaUpdateQueue;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
     schemaParser = new SchemaParser();
-    dataSetRepository.subscribeToDataSetsUpdated(schemaUpdater::updateSchema);
+    dataSetRepository.subscribeToDataSetsUpdated(this::scheduleRebuild);
     ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
     readLock = readWriteLock.readLock();
     writeLock = readWriteLock.writeLock();
+  }
+
+  private void scheduleRebuild() {
+    schemaUpdateQueue.submit(this::rebuildSchema);
   }
 
   private void rebuildSchema() {
@@ -283,19 +288,21 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.type("Mutation", builder -> builder
-      .dataFetcher("setViewConfig", new ViewConfigMutation(schemaUpdater, dataSetRepository))
-      .dataFetcher("setSummaryProperties", new SummaryPropsMutation(schemaUpdater, dataSetRepository))
-      .dataFetcher("setIndexConfig", new IndexConfigMutation(schemaUpdater, dataSetRepository))
-      .dataFetcher("createDataSet", new CreateDataSetMutation(schemaUpdater, dataSetRepository))
-      .dataFetcher("deleteDataSet", new DeleteDataSetMutation(schemaUpdater, dataSetRepository))
-      .dataFetcher("publish", new MakePublicMutation(schemaUpdater, dataSetRepository))
-      .dataFetcher("extendSchema", new ExtendSchemaMutation(schemaUpdater, dataSetRepository))
-      .dataFetcher("setDataSetMetadata", new DataSetMetadataMutation(schemaUpdater, dataSetRepository))
-      .dataFetcher("setCollectionMetadata", new CollectionMetadataMutation(schemaUpdater, dataSetRepository))
+      .dataFetcher("setViewConfig", new ViewConfigMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("setSummaryProperties", new SummaryPropsMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("setIndexConfig", new IndexConfigMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("createDataSet", new CreateDataSetMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("deleteDataSet", new DeleteDataSetMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("publish", new MakePublicMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("extendSchema", new ExtendSchemaMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("setDataSetMetadata",
+        new DataSetMetadataMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("setCollectionMetadata",
+        new CollectionMetadataMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("resourceSyncImport",
-        new ResourceSyncImportMutation(schemaUpdater, dataSetRepository, resourceSyncFileLoader))
+        new ResourceSyncImportMutation(this::scheduleRebuild, dataSetRepository, resourceSyncFileLoader))
       .dataFetcher("resourceSyncUpdate",
-        new ResourceSyncUpdateMutation(schemaUpdater, dataSetRepository, resourceSyncFileLoader))
+        new ResourceSyncUpdateMutation(this::scheduleRebuild, dataSetRepository, resourceSyncFileLoader))
     );
 
     wiring.wiringFactory(wiringFactory);

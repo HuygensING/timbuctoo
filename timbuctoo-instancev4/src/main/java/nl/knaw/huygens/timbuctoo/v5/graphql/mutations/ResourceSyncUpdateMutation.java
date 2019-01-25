@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
@@ -23,7 +22,7 @@ public class ResourceSyncUpdateMutation extends Mutation {
   private final DataSetRepository dataSetRepository;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
 
-  public ResourceSyncUpdateMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository,
+  public ResourceSyncUpdateMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository,
                                     ResourceSyncFileLoader resourceSyncFileLoader) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;

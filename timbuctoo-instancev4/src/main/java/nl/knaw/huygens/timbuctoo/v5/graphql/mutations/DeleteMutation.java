@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.DeleteMutationChangeLog;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -27,7 +26,7 @@ public class DeleteMutation extends Mutation {
   private final String ownerId;
   private final UserUriCreator userUriCreator;
 
-  public DeleteMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository, UriHelper uriHelper,
+  public DeleteMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository, UriHelper uriHelper,
                         String dataSetId) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;

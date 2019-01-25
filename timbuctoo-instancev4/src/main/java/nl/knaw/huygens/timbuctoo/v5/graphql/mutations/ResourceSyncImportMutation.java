@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ public class ResourceSyncImportMutation extends Mutation {
   private final DataSetRepository dataSetRepository;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
 
-  public ResourceSyncImportMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository,
+  public ResourceSyncImportMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository,
                                     ResourceSyncFileLoader resourceSyncFileLoader) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;

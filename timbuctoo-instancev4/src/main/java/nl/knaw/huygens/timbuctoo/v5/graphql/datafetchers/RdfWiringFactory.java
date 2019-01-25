@@ -39,7 +39,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SetCustomProvenanceMutation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,7 @@ public class RdfWiringFactory implements WiringFactory {
   private final PaginationArgumentsHelper argumentsHelper;
   private final UriHelper uriHelper;
   private final RedirectionService redirectionService;
-  private final GraphQlSchemaUpdater schemaUpdater;
+  private final Runnable schemaUpdater;
   private final EntityTitleFetcher entityTitleFetcher;
   private final EntityDescriptionFetcher entityDescriptionFetcher;
   private final EntityImageFetcher entityImageFetcher;
@@ -72,7 +71,7 @@ public class RdfWiringFactory implements WiringFactory {
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
                           DefaultSummaryProps defaultSummaryProps, UriHelper uriHelper,
                           RedirectionService redirectionService,
-                          GraphQlSchemaUpdater schemaUpdater) {
+                          Runnable schemaUpdater) {
     this.dataSetRepository = dataSetRepository;
     this.argumentsHelper = argumentsHelper;
     this.uriHelper = uriHelper;

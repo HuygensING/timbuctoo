@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -29,7 +28,7 @@ public class EditMutation extends Mutation {
   private final String ownerId;
   private final UserUriCreator userUriCreator;
 
-  public EditMutation(GraphQlSchemaUpdater schemaUpdater, DataSetRepository dataSetRepository, UriHelper uriHelper,
+  public EditMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository, UriHelper uriHelper,
                       QuadStoreLookUpSubjectByUriFetcher subjectFetcher,
                       String dataSetId) {
     super(schemaUpdater);

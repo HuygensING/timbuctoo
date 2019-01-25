@@ -2,13 +2,12 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.GraphQlSchemaUpdater;
 
 public abstract class Mutation<T> implements DataFetcher<T> {
 
-  private final GraphQlSchemaUpdater schemaUpdater;
+  private final Runnable schemaUpdater;
 
-  public Mutation(GraphQlSchemaUpdater schemaUpdater) {
+  public Mutation(Runnable schemaUpdater) {
 
     this.schemaUpdater = schemaUpdater;
   }
@@ -16,7 +15,7 @@ public abstract class Mutation<T> implements DataFetcher<T> {
   @Override
   public final T get(DataFetchingEnvironment environment) {
     T value = this.executeAction(environment);
-    schemaUpdater.updateSchema();
+    schemaUpdater.run();
     return value;
   }
 
