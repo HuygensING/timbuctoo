@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
@@ -15,7 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
-public class PersistEntityMutation implements DataFetcher {
+public class PersistEntityMutation extends Mutation{
 
   private final RedirectionService redirectionService;
   private final String dataSetId;
@@ -23,8 +22,9 @@ public class PersistEntityMutation implements DataFetcher {
   private final String ownerId;
   private final UriHelper uriHelper;
 
-  public PersistEntityMutation(RedirectionService redirectionService, String dataSetId,
-                               UriHelper uriHelper) {
+  public PersistEntityMutation(Runnable schemaUpdater, RedirectionService redirectionService,
+                               String dataSetId, UriHelper uriHelper) {
+    super(schemaUpdater);
     this.redirectionService = redirectionService;
     this.dataSetId = dataSetId;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
@@ -34,7 +34,7 @@ public class PersistEntityMutation implements DataFetcher {
   }
 
   @Override
-  public Object get(DataFetchingEnvironment env) {
+  public Object executeAction(DataFetchingEnvironment env) {
     User user = MutationHelpers.getUser(env);
     String entityUri = env.getArgument("entityUri");
     URI uri;

@@ -295,17 +295,19 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetRepository,
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
-        new RdfWiringFactory(
+        (schemaUpdater) -> new RdfWiringFactory(
           dataSetRepository,
           argHelper,
           configuration.getDefaultSummaryProps(),
           uriHelper,
-          redirectionService
+          redirectionService,
+          schemaUpdater
         ),
         new DerivedSchemaGenerator(argHelper),
         environment.getObjectMapper(),
         new ResourceSyncFileLoader(httpClient),
-        resourceSyncService
+        resourceSyncService,
+        environment.lifecycle().executorService("GraphQLSchemaUpdate").build()
       ),
       serializerWriterRegistry,
       securityConfig.getUserValidator(),

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -9,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.MutationOperation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.Map;
@@ -23,15 +21,16 @@ import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutati
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.MARKDOWN;
 
-public class DataSetMetadataMutation implements DataFetcher {
+public class DataSetMetadataMutation extends Mutation {
   private final DataSetRepository dataSetRepository;
 
-  public DataSetMetadataMutation(DataSetRepository dataSetRepository) {
+  public DataSetMetadataMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
   }
 
   @Override
-  public Object get(DataFetchingEnvironment env) {
+  public Object executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     MutationHelpers.checkPermission(env, dataSet.getMetadata(),Permission.EDIT_DATASET_METADATA);
 

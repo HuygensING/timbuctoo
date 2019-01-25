@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
@@ -22,16 +21,17 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
-public class EditMutation implements DataFetcher {
+public class EditMutation extends Mutation {
   private final DataSetRepository dataSetRepository;
   private final QuadStoreLookUpSubjectByUriFetcher subjectFetcher;
   private final String dataSetName;
   private final String ownerId;
   private final UserUriCreator userUriCreator;
 
-  public EditMutation(DataSetRepository dataSetRepository, UriHelper uriHelper,
+  public EditMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository, UriHelper uriHelper,
                       QuadStoreLookUpSubjectByUriFetcher subjectFetcher,
                       String dataSetId) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
     this.subjectFetcher = subjectFetcher;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
@@ -41,7 +41,7 @@ public class EditMutation implements DataFetcher {
   }
 
   @Override
-  public Object get(DataFetchingEnvironment environment) {
+  public Object executeAction(DataFetchingEnvironment environment) {
     final String uri = environment.getArgument("uri");
     final Map entity = environment.getArgument("entity");
     ImmutableContextData contextData = environment.getContext();

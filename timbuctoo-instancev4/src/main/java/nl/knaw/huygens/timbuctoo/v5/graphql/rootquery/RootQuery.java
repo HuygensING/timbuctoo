@@ -69,6 +69,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -89,27 +92,50 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final ObjectMapper objectMapper;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final ResourceSyncService resourceSyncService;
+  private final ExecutorService schemaUpdateQueue;
   private final SchemaParser schemaParser;
   private final String staticQuery;
+  private final ReentrantReadWriteLock.ReadLock readLock;
+  private GraphQLSchema graphQlSchema;
+  private final ReentrantReadWriteLock.WriteLock writeLock;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
-                   String archetypes, RdfWiringFactory wiringFactory,
+                   String archetypes, Function<Runnable, RdfWiringFactory> wiringFactory,
                    DerivedSchemaGenerator typeGenerator, ObjectMapper objectMapper,
-                   ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService)
+                   ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService,
+                   ExecutorService schemaUpdateQueue)
     throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
     this.archetypes = archetypes;
-    this.wiringFactory = wiringFactory;
+    this.wiringFactory = wiringFactory.apply(this::scheduleRebuild);
     this.typeGenerator = typeGenerator;
     this.objectMapper = objectMapper;
     this.resourceSyncFileLoader = resourceSyncFileLoader;
     this.resourceSyncService = resourceSyncService;
+    this.schemaUpdateQueue = schemaUpdateQueue;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
     schemaParser = new SchemaParser();
+    dataSetRepository.subscribeToDataSetsUpdated(this::scheduleRebuild);
+    ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
+    readLock = readWriteLock.readLock();
+    writeLock = readWriteLock.writeLock();
   }
 
-  public synchronized GraphQLSchema rebuildSchema() {
+  private void scheduleRebuild() {
+    schemaUpdateQueue.submit(this::rebuildSchema);
+  }
+
+  private void rebuildSchema() {
+    writeLock.lock();
+    try {
+      graphQlSchema = this.generateSchema();
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  private GraphQLSchema generateSchema() {
     final TypeDefinitionRegistry staticQuery = schemaParser.parse(this.staticQuery);
     if (archetypes != null && !archetypes.isEmpty()) {
       staticQuery.merge(schemaParser.parse(
@@ -262,19 +288,21 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.type("Mutation", builder -> builder
-      .dataFetcher("setViewConfig", new ViewConfigMutation(dataSetRepository))
-      .dataFetcher("setSummaryProperties", new SummaryPropsMutation(dataSetRepository))
-      .dataFetcher("setIndexConfig", new IndexConfigMutation(dataSetRepository))
-      .dataFetcher("createDataSet", new CreateDataSetMutation(dataSetRepository))
-      .dataFetcher("deleteDataSet", new DeleteDataSetMutation(dataSetRepository))
-      .dataFetcher("publish", new MakePublicMutation(dataSetRepository))
-      .dataFetcher("extendSchema", new ExtendSchemaMutation(dataSetRepository))
-      .dataFetcher("setDataSetMetadata", new DataSetMetadataMutation(dataSetRepository))
-      .dataFetcher("setCollectionMetadata", new CollectionMetadataMutation(dataSetRepository))
+      .dataFetcher("setViewConfig", new ViewConfigMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("setSummaryProperties", new SummaryPropsMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("setIndexConfig", new IndexConfigMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("createDataSet", new CreateDataSetMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("deleteDataSet", new DeleteDataSetMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("publish", new MakePublicMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("extendSchema", new ExtendSchemaMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("setDataSetMetadata",
+        new DataSetMetadataMutation(this::scheduleRebuild, dataSetRepository))
+      .dataFetcher("setCollectionMetadata",
+        new CollectionMetadataMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("resourceSyncImport",
-        new ResourceSyncImportMutation(dataSetRepository, resourceSyncFileLoader))
+        new ResourceSyncImportMutation(this::scheduleRebuild, dataSetRepository, resourceSyncFileLoader))
       .dataFetcher("resourceSyncUpdate",
-        new ResourceSyncUpdateMutation(dataSetRepository, resourceSyncFileLoader))
+        new ResourceSyncUpdateMutation(this::scheduleRebuild, dataSetRepository, resourceSyncFileLoader))
     );
 
     wiring.wiringFactory(wiringFactory);
@@ -362,8 +390,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       }
     }
 
-    SchemaGenerator schemaGenerator = new SchemaGenerator();
-    return schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
+    return new SchemaGenerator().makeExecutableSchema(staticQuery, wiring.build());
   }
 
   public CollectionMetadataList getCollections(DataSetMetaData input, Optional<User> userOpt) {
@@ -439,7 +466,15 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   @Override
   public GraphQLSchema get() {
-    return rebuildSchema();
+    if (graphQlSchema == null) {
+      this.rebuildSchema();
+    }
+    readLock.lock();
+    try {
+      return graphQlSchema;
+    } finally {
+      readLock.unlock();
+    }
   }
 
 }

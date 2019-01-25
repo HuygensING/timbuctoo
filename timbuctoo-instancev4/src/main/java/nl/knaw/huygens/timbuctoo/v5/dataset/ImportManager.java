@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
@@ -54,6 +55,7 @@ public class ImportManager implements DataProvider {
   private final List<RdfProcessor> subscribedProcessors;
   private final Runnable webhooks;
   private final ImportStatus importStatus;
+  private final ArrayList<Runnable> importSucceededListeners;
   private DataSet dataSet;
 
   public ImportManager(JsonDataStore<LogList> logListStore, FileStorage fileStorage, FileStorage imageStorage,
@@ -68,6 +70,7 @@ public class ImportManager implements DataProvider {
     this.logListStore = logListStore;
     subscribedProcessors = new ArrayList<>();
     importStatus = new ImportStatus(this.logListStore.getData());
+    importSucceededListeners = Lists.newArrayList();
   }
 
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
@@ -260,6 +263,7 @@ public class ImportManager implements DataProvider {
     if (dataWasAdded) {
       webhooks.run();
     }
+    importSucceededListeners.forEach(Runnable::run);
     importStatus.finishList();
     // update log.json
     try {
@@ -296,4 +300,7 @@ public class ImportManager implements DataProvider {
     this.dataSet = dataSet;
   }
 
+  public void subscribeImportSucceeded(Runnable importSucceededListener) {
+    this.importSucceededListeners.add(importSucceededListener);
+  }
 }

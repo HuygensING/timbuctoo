@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -55,6 +56,7 @@ public class DataSetRepository {
   private final String rdfBaseUri;
   private final boolean publicByDefault;
   private final ReadOnlyChecker readOnlyChecker;
+  private final List<Runnable> dataSetsUpdatedListeners;
   private Consumer<String> onUpdated;
   private final DataStorage dataStorage;
 
@@ -108,6 +110,7 @@ public class DataSetRepository {
       }
 
     };
+    dataSetsUpdatedListeners = Lists.newArrayList();
   }
 
   private void loadDataSetsFromJson() throws IOException {
@@ -121,17 +124,19 @@ public class DataSetRepository {
         for (DataSetMetaData dataSetMetaData : ownerMetaDatas) {
           String dataSetName = dataSetMetaData.getDataSetId();
           try {
+            DataSet value = dataSet(
+              dataSetMetaData,
+              executorService,
+              rdfBaseUri,
+              dataStoreFactory,
+              () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
+              dataStorage.getDataSetStorage(ownerId, dataSetName), readOnlyChecker
+            );
             ownersSets.put(
               dataSetName,
-              dataSet(
-                dataSetMetaData,
-                executorService,
-                rdfBaseUri,
-                dataStoreFactory,
-                () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
-                dataStorage.getDataSetStorage(ownerId, dataSetName), readOnlyChecker
-              )
+              value
             );
+            dataSetsUpdatedListeners.forEach(value::subscribeToDataChanges);
           } catch (DataStoreCreationException e) {
             throw new IOException(e);
           }
@@ -239,16 +244,18 @@ public class DataSetRepository {
       if (!userDataSets.containsKey(dataSetId)) {
         try {
           permissionFetcher.initializeOwnerAuthorization(user, dataSet.getOwnerId(), dataSet.getDataSetId());
+          DataSet createdDataset = dataSet(
+            dataSet,
+            executorService,
+            rdfBaseUri,
+            dataStoreFactory,
+            () -> onUpdated.accept(dataSet.getCombinedId()),
+            dataStorage.getDataSetStorage(ownerPrefix, dataSetId), readOnlyChecker);
           userDataSets.put(
             dataSetId,
-            dataSet(
-              dataSet,
-              executorService,
-              rdfBaseUri,
-              dataStoreFactory,
-              () -> onUpdated.accept(dataSet.getCombinedId()),
-              dataStorage.getDataSetStorage(ownerPrefix, dataSetId), readOnlyChecker)
+            createdDataset
           );
+          dataSetsUpdatedListeners.forEach(createdDataset::subscribeToDataChanges);
         } catch (PermissionFetchingException | AuthorizationCreationException | IOException e) {
           throw new DataStoreCreationException(e);
         }
@@ -370,6 +377,11 @@ public class DataSetRepository {
   public void start() throws IOException {
     dataStoreFactory.start();
     loadDataSetsFromJson();
+  }
+
+  public void subscribeToDataSetsUpdated(Runnable dataSetsUpdatedListener) {
+    this.dataSetsUpdatedListeners.add(dataSetsUpdatedListener);
+    this.getDataSets().forEach(dataSet -> dataSet.subscribeToDataChanges(dataSetsUpdatedListener));
   }
 
   public class DataSetDoesNotExistException extends Exception {

@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -17,13 +16,15 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import java.io.IOException;
 import java.util.Optional;
 
-public class SetCustomProvenanceMutation implements DataFetcher {
+public class SetCustomProvenanceMutation extends Mutation {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final DataSetRepository dataSetRepository;
   private final String dataSetName;
   private final String ownerId;
 
-  public SetCustomProvenanceMutation(DataSetRepository dataSetRepository, String dataSetId) {
+  public SetCustomProvenanceMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository,
+                                     String dataSetId) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
     dataSetName = dataSetIdSplit.getRight();
@@ -31,7 +32,7 @@ public class SetCustomProvenanceMutation implements DataFetcher {
   }
 
   @Override
-  public Object get(DataFetchingEnvironment environment) {
+  public Object executeAction(DataFetchingEnvironment environment) {
     ImmutableContextData contextData = environment.getContext();
     Optional<User> userOpt = contextData.getUser();
     if (!userOpt.isPresent()) {

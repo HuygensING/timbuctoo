@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import com.google.common.collect.Lists;
-import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
@@ -22,19 +21,20 @@ import java.time.Instant;
 import java.util.Date;
 
 
-public class ResourceSyncImportMutation implements DataFetcher {
+public class ResourceSyncImportMutation extends Mutation {
   private static final Logger LOG = LoggerFactory.getLogger(ResourceSyncImportMutation.class);
   private final DataSetRepository dataSetRepository;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
 
-  public ResourceSyncImportMutation(DataSetRepository dataSetRepository,
+  public ResourceSyncImportMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository,
                                     ResourceSyncFileLoader resourceSyncFileLoader) {
+    super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
     this.resourceSyncFileLoader = resourceSyncFileLoader;
   }
 
   @Override
-  public Object get(DataFetchingEnvironment env) {
+  public Object executeAction(DataFetchingEnvironment env) {
     User user = MutationHelpers.getUser(env);
 
     String dataSetName = env.getArgument("dataSetName");

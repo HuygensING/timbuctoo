@@ -317,5 +317,8 @@ public abstract class DataSet {
     return new LogInfo(getDataSetStorage().getLogList().getData());
   }
 
+  public void subscribeToDataChanges(Runnable updateListener) {
+    getImportManager().subscribeImportSucceeded(updateListener);
+  }
 
 }
