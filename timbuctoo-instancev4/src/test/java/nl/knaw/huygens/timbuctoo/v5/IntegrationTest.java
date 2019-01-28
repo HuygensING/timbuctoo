@@ -42,6 +42,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -199,6 +200,178 @@ public class IntegrationTest {
         .count(),
       is(37L)
     );
+
+  }
+
+  @Test
+  public void rdfUploadReplaceOldData() throws Exception {
+    String dataSetName = "replacedata" + UUID.randomUUID().toString().replace("-", "_");
+    String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+        "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+        new File(getResource(IntegrationTest.class, "smalldataset.nt").toURI()),
+        "application/n-triples",
+        ImmutableMap.of(
+            "encoding", "UTF-8",
+            "uri", "http://example.com/replacedata"
+        )
+    );
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    // query person before delete
+    Response queryData = call("/v5/graphql")
+        .accept(MediaType.APPLICATION_JSON)
+        .post(Entity.entity(jsnO(
+            "query",
+            jsn(
+                "query {\n" +
+                    "  dataSets {\n" +
+                    "    " + dataSetId + "{\n" +
+                    "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+                    "        schema_familyName {\n" +
+                    "          value\n" +
+                    "        }\n" +
+                    "        schema_givenNameList {\n" +
+                    "          items {\n" +
+                    "            value\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}"
+            )
+        ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryData.readEntity(ObjectNode.class), is(jsnO(
+        "data",
+        jsnO(
+            "dataSets",
+            jsnO(
+                dataSetId,
+                jsnO(
+                    "schema_Person", jsnO(
+                        "schema_familyName",
+                        jsnO(
+                            "value", jsn("Jansen")
+                        ),
+                        "schema_givenNameList", jsnO(
+                            "items", jsnA(
+                                jsnO(
+                                    "value", jsn("Jan")
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )));
+
+    uploadResponse = multipartPost(
+        "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?replace=true",
+        new File(getResource(IntegrationTest.class, "overridedataset.nt").toURI()),
+        "application/n-triples",
+        ImmutableMap.of(
+            "encoding", "UTF-8",
+            "uri", "http://example.com/replacedata"
+        )
+    );
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    // person no longer in data set available
+    queryData = call("/v5/graphql")
+        .accept(MediaType.APPLICATION_JSON)
+        .post(Entity.entity(jsnO(
+            "query",
+            jsn(
+                "query {\n" +
+                    "  dataSets {\n" +
+                    "    " + dataSetId + "{\n" +
+                    "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+                    "        schema_familyName {\n" +
+                    "          value\n" +
+                    "        }\n" +
+                    "        schema_givenNameList {\n" +
+                    "          items {\n" +
+                    "            value\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}"
+            )
+        ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryData.readEntity(ObjectNode.class), is(jsnO(
+        "data",
+        jsnO(
+            "dataSets",
+            jsnO(
+                dataSetId,
+                jsnO(
+                    "schema_Person", jsnO(
+                        "schema_familyName",
+                        null,
+                        "schema_givenNameList",jsnO(
+                            "items", jsnA()
+                        )
+                    )
+                )
+            )
+        )
+    )));
+
+    // check new person is added
+    queryData = call("/v5/graphql")
+        .accept(MediaType.APPLICATION_JSON)
+        .post(Entity.entity(jsnO(
+            "query",
+            jsn(
+                "query {\n" +
+                    "  dataSets {\n" +
+                    "    " + dataSetId + "{\n" +
+                    "      schema_Person(uri: \"http://example.org/person3\") {\n" +
+                    "        schema_familyName {\n" +
+                    "          value\n" +
+                    "        }\n" +
+                    "        schema_givenNameList {\n" +
+                    "          items {\n" +
+                    "            value\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}"
+            )
+        ).toString(), MediaType.APPLICATION_JSON));
+
+    assertThat(queryData.readEntity(ObjectNode.class), is(jsnO(
+        "data",
+        jsnO(
+            "dataSets",
+            jsnO(
+                dataSetId,
+                jsnO(
+                    "schema_Person", jsnO(
+                        "schema_familyName",
+                        jsnO(
+                            "value", jsn("Pietersen")
+                        ),
+                        "schema_givenNameList", jsnO(
+                            "items", jsnA(
+                                jsnO(
+                                    "value", jsn("Piet")
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )));
 
   }
 
