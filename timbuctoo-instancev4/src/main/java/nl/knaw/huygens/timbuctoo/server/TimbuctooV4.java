@@ -307,7 +307,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         environment.getObjectMapper(),
         new ResourceSyncFileLoader(httpClient),
         resourceSyncService,
-        environment.lifecycle().executorService("GraphQLSchemaUpdate").build()
+        environment.lifecycle().executorService("GraphQLSchemaUpdate").maxThreads(1).build()
       ),
       serializerWriterRegistry,
       securityConfig.getUserValidator(),
