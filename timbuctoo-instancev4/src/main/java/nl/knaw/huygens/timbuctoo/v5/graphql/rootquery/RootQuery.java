@@ -466,10 +466,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   @Override
   public GraphQLSchema get() {
+    readLock.lock();
     if (graphQlSchema == null) {
       this.rebuildSchema();
     }
-    readLock.lock();
     try {
       return graphQlSchema;
     } finally {
