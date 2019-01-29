@@ -69,8 +69,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -92,18 +92,16 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final ObjectMapper objectMapper;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final ResourceSyncService resourceSyncService;
-  private final ExecutorService schemaUpdateQueue;
+  private final ExecutorService schemaAccessQueue;
   private final SchemaParser schemaParser;
   private final String staticQuery;
-  private final ReentrantReadWriteLock.ReadLock readLock;
   private GraphQLSchema graphQlSchema;
-  private final ReentrantReadWriteLock.WriteLock writeLock;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
                    String archetypes, Function<Runnable, RdfWiringFactory> wiringFactory,
                    DerivedSchemaGenerator typeGenerator, ObjectMapper objectMapper,
                    ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService,
-                   ExecutorService schemaUpdateQueue)
+                   ExecutorService schemaAccessQueue)
     throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
@@ -113,26 +111,18 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     this.objectMapper = objectMapper;
     this.resourceSyncFileLoader = resourceSyncFileLoader;
     this.resourceSyncService = resourceSyncService;
-    this.schemaUpdateQueue = schemaUpdateQueue;
+    this.schemaAccessQueue = schemaAccessQueue;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
     schemaParser = new SchemaParser();
     dataSetRepository.subscribeToDataSetsUpdated(this::scheduleRebuild);
-    ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
-    readLock = readWriteLock.readLock();
-    writeLock = readWriteLock.writeLock();
   }
 
   private void scheduleRebuild() {
-    schemaUpdateQueue.submit(this::rebuildSchema);
+    schemaAccessQueue.submit(this::rebuildSchema);
   }
 
   private void rebuildSchema() {
-    writeLock.lock();
-    try {
-      graphQlSchema = this.generateSchema();
-    } finally {
-      writeLock.unlock();
-    }
+    graphQlSchema = this.generateSchema();
   }
 
   private GraphQLSchema generateSchema() {
@@ -466,14 +456,14 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   @Override
   public GraphQLSchema get() {
-    readLock.lock();
     if (graphQlSchema == null) {
-      this.rebuildSchema();
+      this.scheduleRebuild();
     }
     try {
-      return graphQlSchema;
-    } finally {
-      readLock.unlock();
+      return schemaAccessQueue.submit(() -> graphQlSchema).get();
+    } catch (InterruptedException | ExecutionException e) {
+      LOG.error("Unable to read schema", e);
+      throw new RuntimeException("Unable to read schema");
     }
   }
 
