@@ -457,7 +457,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   @Override
   public GraphQLSchema get() {
     if (graphQlSchema == null) {
-      this.rebuildSchema();
+      this.scheduleRebuild();
     }
     try {
       return schemaAccessQueue.submit(() -> graphQlSchema).get();
