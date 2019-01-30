@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
+
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
@@ -18,6 +19,7 @@ public class LogEntryImportStatus {
   private final List<String> errors;
   private final String source;
   private final List<ProgressStep> progress;
+  private final List<ErrorObject> errorObjects;
 
   public LogEntryImportStatus(LogEntry logEntry, int id, boolean unprocessed) {
     this.id = "" + id;
@@ -25,6 +27,7 @@ public class LogEntryImportStatus {
     this.errors = logEntry.getImportStatus().getErrors();
     this.source = logEntry.getLogToken().orElse("");
     this.progress = createProgress(logEntry);
+    this.errorObjects = errors.stream().map(ErrorObject::parse).collect(Collectors.toList());
   }
 
   private static ImportStatusLabel createStatus(LogEntry logEntry, boolean unprocessed) {
@@ -63,11 +66,20 @@ public class LogEntryImportStatus {
     return source;
   }
 
+  /**
+   * @deprecated deprecated in the GraphQL schema
+   */
+  @Deprecated
   public List<String> getErrors() {
     return errors;
+  }
+
+  public List<ErrorObject> getErrorObjects() {
+    return errorObjects;
   }
 
   public List<ProgressStep> getProgress() {
     return progress;
   }
+
 }
