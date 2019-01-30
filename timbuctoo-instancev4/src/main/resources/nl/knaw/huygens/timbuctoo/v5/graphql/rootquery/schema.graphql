@@ -116,8 +116,17 @@ type ImportStatus {
   id: String!
   status: ImportStatusLabel!
   source: String!
-  errors: [String!]!
+  errors: [String!]! @deprecated(reason: "use errorObjects instead")
+  errorObjects: [ErrorObject!]!
   progress: [ProgressStep!]!
+}
+
+type ErrorObject {
+  dateStamp: String!
+  file: String
+  method: String!
+  message: String!
+  error: String!
 }
 
 type ProgressStep {
