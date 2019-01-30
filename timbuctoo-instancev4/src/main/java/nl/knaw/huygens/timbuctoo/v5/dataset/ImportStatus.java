@@ -81,6 +81,9 @@ public class ImportStatus {
   }
 
   public synchronized void addError(String message, Throwable error) {
+    /* errors have a tight semantic coupling with nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ErrorObject
+     * if this construction is changed the parse method of the ErrorObject should be changed as wel
+     */
     StringBuilder errorMessage = new StringBuilder("[" + Instant.now().toString() + "] ");
     if (currentEntryName != null) {
       errorMessage.append("; file: " + currentEntryName);
