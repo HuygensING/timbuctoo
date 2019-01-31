@@ -118,8 +118,8 @@
     <rpm.app-home>/data/timbuctoo/app</rpm.app-home>
 
     <!--version numbers-->
-    <jdk.version>1.8</jdk.version>
-    <maven-compiler.version>3.5.1</maven-compiler.version>
+    <jdk.version>11</jdk.version>
+    <maven-compiler.version>3.8.0</maven-compiler.version>
     <!-- code dependencies -->
     <activemq.version>5.13.0</activemq.version>
     <concoridion.version>1.5.1</concoridion.version>
@@ -132,7 +132,7 @@
     <huygens.persistence.version>2.2.0</huygens.persistence.version>
     <junit.version>4.12</junit.version>
     <timbuctoo-test-services.version>1.0.0-SNAPSHOT</timbuctoo-test-services.version>
-    <mockito.version>2.2.22</mockito.version>
+    <mockito.version>2.23.4</mockito.version>
     <huygens.security.version>1.0.0-SNAPSHOT</huygens.security.version>
     <!-- Maven plugins -->
     <appassembler.version>1.10</appassembler.version>
@@ -166,6 +166,10 @@
             <groupId>com.fasterxml.jackson</groupId>
             <artifactId>jackson-bom</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -179,12 +183,40 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- Java 11 new dependencies -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>2.3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>activation</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+
+    <!-- support voor dropwizard -->
+    <dependency>
+      <groupId>org.javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <version>3.23.1-GA</version>
+    </dependency>
 
     <!-- list checkstyle so the bazel build also downloads it -->
     <dependency>
       <groupId>com.puppycrawl.tools</groupId>
       <artifactId>checkstyle</artifactId>
-      <version>6.11.2</version>
+      <version>8.17</version>
     </dependency>
 
     <!-- ## Main dependencies ## -->
@@ -598,7 +630,7 @@
     <dependency>
       <groupId>org.mock-server</groupId>
       <artifactId>mockserver-netty</artifactId>
-      <version>3.10.4</version>
+      <version>5.5.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -706,8 +738,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler.version}</version>
         <configuration>
-          <source>${jdk.version}</source>
-          <target>${jdk.version}</target>
+          <release>${jdk.version}</release>
         </configuration>
       </plugin>
       <plugin>
