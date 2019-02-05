@@ -1,10 +1,13 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class ErrorObject {
+  public static final Logger LOG = LoggerFactory.getLogger(ErrorObject.class);
   private final String dateStamp;
   private final String file;
   private final String method;
@@ -48,7 +51,7 @@ public class ErrorObject {
             error = value;
             break;
           default:
-            throw new RuntimeException("This should not happen");
+            LOG.warn("This should not happen '{}' is unknown prop", name);
         }
       }
     }
