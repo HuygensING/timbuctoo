@@ -1,10 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class ErrorObject {
   public static final Logger LOG = LoggerFactory.getLogger(ErrorObject.class);
@@ -24,39 +21,17 @@ public class ErrorObject {
 
 
   public static ErrorObject parse(String errorString) {
-    String dateStamp = null;
-    String file = null;
-    String method = null;
-    String message = null;
-    String error = null;
-    final String[] parts = errorString.split("; ");
-    final ObjectNode object = jsnO();
-    for (String part : parts) {
-      if (!part.contains(": ")) {
-        dateStamp = part.trim();
-      } else {
-        final String name = part.substring(0, part.indexOf(":"));
-        final String value = part.substring(part.indexOf(": ") + 1).trim();
-        switch (name) {
-          case "file":
-            file = value;
-            break;
-          case "method":
-            method = value;
-            break;
-          case "message":
-            message = value;
-            break;
-          case "error":
-            error = value;
-            break;
-          default:
-            LOG.warn("This should not happen '{}' is unknown prop", name);
-        }
-      }
-    }
+    String dateStamp = errorString.substring(0, errorString.indexOf("; ")).trim();
+    String file = errorString.contains("file") ? errorString.substring(
+        errorString.indexOf("file: ") + 6,
+        errorString.indexOf("; method")
+    ).trim() : null;
+    String method = errorString.substring(errorString.indexOf("method: ") + 8, errorString.indexOf("; message")).trim();
+    String message = errorString.substring(errorString.indexOf("message: ") + 9, errorString.indexOf("; error")).trim();
 
-    return new ErrorObject(dateStamp, file, method, message, error);
+    String errorAsString = errorString.substring(errorString.indexOf("error: ") + 7).trim();
+
+    return new ErrorObject(dateStamp, file, method, message, errorAsString);
   }
 
   public String getDateStamp() {
