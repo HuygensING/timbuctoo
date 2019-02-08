@@ -89,6 +89,12 @@
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
+      <id>KM</id>
+      <name>Kerim Meijer</name>
+      <organization>KNAW Humanities Cluster</organization>
+      <organizationUrl>https://huc.knaw.nl/</organizationUrl>
+    </developer>
+    <developer>
       <id>JN</id>
       <name>Jauco Noordzij</name>
       <organization>Huygens ING</organization>
