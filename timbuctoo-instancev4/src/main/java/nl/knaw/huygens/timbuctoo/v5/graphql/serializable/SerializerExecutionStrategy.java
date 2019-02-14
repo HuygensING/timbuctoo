@@ -5,6 +5,7 @@ import graphql.ExecutionResultImpl;
 import graphql.execution.AsyncExecutionStrategy;
 import graphql.execution.ExecutionContext;
 import graphql.execution.ExecutionStrategyParameters;
+import graphql.execution.FieldValueInfo;
 import graphql.execution.NonNullableFieldWasNullException;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
@@ -24,12 +25,15 @@ import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.graphql.DirectiveRetriever.getDirectiveArgument;
+import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList.graphqlIntrospectionList;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject.graphqlIntrospectionObject;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList.serializableList;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -42,7 +46,7 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
   public CompletableFuture<ExecutionResult> execute(ExecutionContext executionContext,
                                                     ExecutionStrategyParameters parameters)
       throws NonNullableFieldWasNullException {
-    GraphQLObjectType parentType = (GraphQLObjectType) parameters.getParent().getExecutionStepInfo().getType();
+    GraphQLObjectType parentType = (GraphQLObjectType) parameters.getExecutionStepInfo().getUnwrappedNonNullType();
 
     return super.execute(executionContext, parameters).thenApply(sourceResult -> {
       Map<String, Object> data  = sourceResult.getData();
@@ -137,6 +141,35 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
       }
     });
 
+  }
+
+  @Override
+  protected FieldValueInfo completeValueForList(ExecutionContext executionContext,
+                                                ExecutionStrategyParameters parameters,
+                                                Iterable<Object> result) {
+
+
+    final FieldValueInfo fieldValueInfo = super.completeValueForList(executionContext, parameters, result);
+    final CompletableFuture<ExecutionResult> value =
+        fieldValueInfo.getFieldValue().thenApply(completedResult -> {
+          List<Object> data = completedResult.getData();
+          List<Serializable> copy = data.stream().map(item -> {
+            if (item == null || item instanceof Serializable) {
+              return ((Serializable) item);
+            } else {
+              return Value.fromRawJavaType(item);
+            }
+          }).collect(Collectors.toList());
+          return new ExecutionResultImpl(
+              graphqlIntrospectionList(copy),
+              completedResult.getErrors(),
+              completedResult.getExtensions()
+          );
+        });
+    return FieldValueInfo.newFieldValueInfo(fieldValueInfo.getCompleteValueType())
+                         .fieldValue(value)
+                         .fieldValueInfos(fieldValueInfo.getFieldValueInfos())
+                         .build();
   }
 
 }
