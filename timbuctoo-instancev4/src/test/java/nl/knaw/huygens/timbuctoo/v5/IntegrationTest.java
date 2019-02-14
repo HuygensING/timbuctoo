@@ -1263,7 +1263,6 @@ public class IntegrationTest {
     assertThat(graphQlCall.getStatus(), is(200));
     // check if the dataset is created
     List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy();
-    System.out.println("datasets: " + dataSetNamesOfDummy);
     assertThat(dataSetNamesOfDummy, hasItem(PREFIX + "__" + dataSetName));
 
   }
