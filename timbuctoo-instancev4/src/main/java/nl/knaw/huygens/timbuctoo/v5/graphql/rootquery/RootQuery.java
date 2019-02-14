@@ -122,7 +122,12 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   }
 
   private void rebuildSchema() {
-    graphQlSchema = this.generateSchema();
+    try {
+      graphQlSchema = this.generateSchema();
+    } catch (Exception | Error e) {
+      LOG.error("Schema generation error", e);
+      throw e;
+    }
   }
 
   private GraphQLSchema generateSchema() {

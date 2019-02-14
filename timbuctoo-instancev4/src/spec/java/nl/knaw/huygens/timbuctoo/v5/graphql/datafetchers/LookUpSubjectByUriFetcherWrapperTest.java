@@ -1,7 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
+import graphql.execution.ExecutionContext;
 import graphql.execution.ExecutionId;
-import graphql.execution.ExecutionTypeInfo;
+import graphql.execution.ExecutionStepInfo;
 import graphql.language.Field;
 import graphql.language.FragmentDefinition;
 import graphql.schema.DataFetchingEnvironment;
@@ -30,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
+import org.dataloader.DataLoader;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -249,13 +251,18 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     }
 
     @Override
+    public Field getField() {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+    }
+
+    @Override
     public GraphQLOutputType getFieldType() {
       throw new IllegalStateException("Not implemented yet");
     }
 
     @Override
-    public ExecutionTypeInfo getFieldTypeInfo() {
-      throw new UnsupportedOperationException("");//FIXME: implement
+    public ExecutionStepInfo getExecutionStepInfo() {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
     }
 
     @Override
@@ -281,6 +288,16 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     @Override
     public DataFetchingFieldSelectionSet getSelectionSet() {
       throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public ExecutionContext getExecutionContext() {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+    }
+
+    @Override
+    public <K, V> DataLoader<K, V> getDataLoader(String dataLoaderName) {
+      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
     }
   }
 }

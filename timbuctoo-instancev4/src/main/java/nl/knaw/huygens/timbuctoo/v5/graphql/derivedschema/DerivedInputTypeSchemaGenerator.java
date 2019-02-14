@@ -120,27 +120,25 @@ class DerivedInputTypeSchemaGenerator {
 
     if (!creations.isEmpty()) {
       schema.append("  create(").append("uri: String! ").append("entity: ").append(name).append("CreateInput!): ")
-            .append(name).append(" @createMutation(dataSet: ").append(rootType)
+            .append(name).append(" @createMutation(dataSet: \"").append(rootType).append("\"")
             .append(" typeUri: \"").append(typeUri).append("\")").append("\n");
     }
 
     if (!additions.isEmpty() || !deletions.isEmpty() || !replacements.isEmpty()) {
       schema.append("  edit(").append("uri: String! ").append("entity: ").append(name).append("EditInput!): ")
-            .append(name).append(" @editMutation(dataSet: ").append(rootType).append(")").append("\n");
+            .append(name).append(" @editMutation(dataSet: \"").append(rootType).append("\")").append("\n");
     }
 
     if (!deletions.isEmpty() && !hasCustomProvenance) {
-      schema.append("  delete(").append("uri: String!): RemovedEntity! @deleteMutation(dataSet: ")
-            .append(rootType).append(")").append("\n");
+      schema.append("  delete(").append("uri: String!): RemovedEntity! ")
+            .append("@deleteMutation(dataSet: \"").append(rootType).append("\")").append("\n");
     } else if (!deletions.isEmpty()) {
       schema.append("  delete(").append("uri: String! ").append("entity: ").append(name).append("DeleteInput): ")
-            .append("RemovedEntity! @deleteMutation(dataSet: ")
-            .append(rootType).append(")").append("\n");
+            .append("RemovedEntity! @deleteMutation(dataSet: \"").append(rootType).append("\")").append("\n");
     }
 
     schema.append("  persistEntity(").append("entityUri: String!): ").append("Message")
-          .append(" @persistEntityMutation(dataSet: ").append(rootType)
-          .append(")").append("}\n");
+          .append(" @persistEntityMutation(dataSet: \"").append(rootType).append("\")").append("}\n");
 
     return schema;
   }
