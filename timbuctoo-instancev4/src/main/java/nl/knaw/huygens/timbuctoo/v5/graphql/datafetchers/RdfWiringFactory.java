@@ -191,10 +191,10 @@ public class RdfWiringFactory implements WiringFactory {
       return dynamicRelationDataFetcher;
     } else if (environment.getFieldDefinition().getDirective("createMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("createMutation");
-      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
+      StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       StringValue typeUri = (StringValue) directive.getArgument("typeUri").getValue();
 
-      String dataSetName = dataSet.getName();
+      String dataSetName = dataSet.getValue();
       String typeUriName = typeUri.getValue();
 
       return createMutationMap.computeIfAbsent(dataSetName, s -> new CreateMutation(
@@ -207,31 +207,31 @@ public class RdfWiringFactory implements WiringFactory {
       ));
     } else if (environment.getFieldDefinition().getDirective("editMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("editMutation");
-      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
+      StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
 
-      String dataSetName = dataSet.getName();
+      String dataSetName = dataSet.getValue();
 
       return editMutationMap.computeIfAbsent(dataSetName, s -> {
         return new EditMutation(schemaUpdater, dataSetRepository, uriHelper, subjectFetcher, dataSetName);
       });
     } else if (environment.getFieldDefinition().getDirective("deleteMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("deleteMutation");
-      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
+      StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
 
-      String dataSetName = dataSet.getName();
+      String dataSetName = dataSet.getValue();
 
       return deleteMutationMap.computeIfAbsent(dataSetName, s -> {
         return new DeleteMutation(schemaUpdater, dataSetRepository, uriHelper, dataSetName);
       });
     } else if (environment.getFieldDefinition().getDirective("persistEntityMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("persistEntityMutation");
-      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
-      String dataSetName = dataSet.getName();
+      StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
+      String dataSetName = dataSet.getValue();
       return new PersistEntityMutation(schemaUpdater, redirectionService, dataSetName, uriHelper);
     } else if (environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("setCustomProvenanceMutation");
-      EnumValue dataSet = (EnumValue) directive.getArgument("dataSet").getValue();
-      String dataSetId = dataSet.getName();
+      StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
+      String dataSetId = dataSet.getValue();
       return new SetCustomProvenanceMutation(schemaUpdater, dataSetRepository, dataSetId);
     }
     return null;

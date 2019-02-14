@@ -74,7 +74,7 @@ public class DerivedSchemaContainerTest {
     assertThat(schema, containsString(
       "type rootTypeMutations{\n" +
         "  setCustomProvenance(customProvenance: CustomProvenanceInput!): Message!" +
-        " @setCustomProvenanceMutation(dataSet: rootType)\n"
+        " @setCustomProvenanceMutation(dataSet: \"rootType\")\n"
     ));
   }
 
