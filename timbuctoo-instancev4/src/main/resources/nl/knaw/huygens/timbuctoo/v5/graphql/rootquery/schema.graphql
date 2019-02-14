@@ -1,3 +1,25 @@
+# Directives have to be declared before the can be used se  https://www.graphql-java.com/documentation/v11/sdl-directives/
+directive @fromCollection(uri:String! listAll:Boolean indexName: String) on FIELD_DEFINITION
+directive @lookupUri on FIELD_DEFINITION
+directive @rdf(predicate:String! direction:String! isList: Boolean!, isObject: Boolean!, isValue: Boolean!) on FIELD_DEFINITION
+directive @uri on FIELD_DEFINITION
+directive @passThrough on FIELD_DEFINITION
+directive @related(source:String! predicate:String! direction:String!) on FIELD_DEFINITION
+directive @dataSet(userId:String! dataSetId:String!) on FIELD_DEFINITION
+directive @entityTitle on FIELD_DEFINITION
+directive @entityDescription on FIELD_DEFINITION
+directive @entityImage on FIELD_DEFINITION
+directive @otherDataSets on FIELD_DEFINITION
+directive @getAllOfPredicate on FIELD_DEFINITION
+directive @createMutation(dataSet:String! typeUri:String!) on FIELD_DEFINITION
+directive @editMutation(dataSet:String!) on FIELD_DEFINITION
+directive @deleteMutation(dataSet:String!) on FIELD_DEFINITION
+directive @persistEntityMutation(dataSet:String!) on FIELD_DEFINITION
+directive @setCustomProvenanceMutation(dataSet:String!) on FIELD_DEFINITION
+directive @rdfType(uri:String!) on OBJECT
+# override deprecated to support the directive on input fields as wel
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
+
 schema {
   query: Query,
   mutation: Mutation
@@ -30,13 +52,13 @@ type DataSetLink {
 }
 
 type Facet {
-    caption: String!	@fake(type: productCategory)
+    caption: String!
     options: [Option!]!
 }
 
 type Option {
-    name: String!	@fake(type: productName)
-    count: Int! @fake(type:money)
+    name: String!
+    count: Int!
 }
 
 type Query {

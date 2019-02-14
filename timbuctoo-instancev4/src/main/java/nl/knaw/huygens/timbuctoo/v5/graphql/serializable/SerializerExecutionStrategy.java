@@ -6,7 +6,6 @@ import graphql.execution.AsyncExecutionStrategy;
 import graphql.execution.ExecutionContext;
 import graphql.execution.ExecutionStrategyParameters;
 import graphql.execution.NonNullableFieldWasNullException;
-import graphql.language.Field;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -25,15 +24,12 @@ import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.graphql.DirectiveRetriever.getDirectiveArgument;
-import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList.graphqlIntrospectionList;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject.graphqlIntrospectionObject;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList.serializableList;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -46,14 +42,13 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
   public CompletableFuture<ExecutionResult> execute(ExecutionContext executionContext,
                                                     ExecutionStrategyParameters parameters)
       throws NonNullableFieldWasNullException {
-    Map<String, java.util.List<Field>> fields = parameters.fields();
-    GraphQLObjectType parentType = parameters.typeInfo().castType(GraphQLObjectType.class);
+    GraphQLObjectType parentType = (GraphQLObjectType) parameters.getParent().getExecutionStepInfo().getType();
 
     return super.execute(executionContext, parameters).thenApply(sourceResult -> {
       Map<String, Object> data  = sourceResult.getData();
-      if (parameters.source() instanceof TypedValue) {
-        String value = ((TypedValue) parameters.source()).getValue();
-        String typename = ((TypedValue) parameters.source()).getType();
+      if (parameters.getSource() instanceof TypedValue) {
+        String value = ((TypedValue) parameters.getSource()).getValue();
+        String typename = ((TypedValue) parameters.getSource()).getType();
         Value result;
         if (value == null) {
           result = null;
@@ -67,9 +62,9 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
           sourceResult.getErrors(),
           sourceResult.getExtensions()
         );
-      } else if (parameters.source() instanceof SubjectReference) {
-        final String uri = ((SubjectReference) parameters.source()).getSubjectUri();
-        final Set<String> types = ((SubjectReference) parameters.source()).getTypes();
+      } else if (parameters.getSource() instanceof SubjectReference) {
+        final String uri = ((SubjectReference) parameters.getSource()).getSubjectUri();
+        final Set<String> types = ((SubjectReference) parameters.getSource()).getTypes();
         final String graphqlType = getDirectiveArgument(parentType, "rdfType", "uri").orElse(null);
         String type;
         if (graphqlType != null && types.contains(graphqlType)) {
@@ -107,8 +102,8 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
           sourceResult.getErrors(),
           sourceResult.getExtensions()
         );
-      } else if (parameters.source() instanceof PaginatedList) {
-        PaginatedList<? extends DatabaseResult> source = (PaginatedList) parameters.source();
+      } else if (parameters.getSource() instanceof PaginatedList) {
+        PaginatedList<? extends DatabaseResult> source = (PaginatedList) parameters.getSource();
         return new ExecutionResultImpl(
           serializableList(
             source.getPrevCursor().orElse(null),
@@ -142,27 +137,6 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
       }
     });
 
-  }
-
-  @Override
-  protected CompletableFuture<ExecutionResult> completeValueForList(ExecutionContext executionContext,
-                                                                    ExecutionStrategyParameters parameters,
-                                                                    Iterable<Object> result) {
-    return super.completeValueForList(executionContext, parameters, result).thenApply(completedResult -> {
-      List<Object> data = completedResult.getData();
-      List<Serializable> copy = data.stream().map(item -> {
-        if (item == null || item instanceof Serializable) {
-          return ((Serializable) item);
-        } else {
-          return Value.fromRawJavaType(item);
-        }
-      }).collect(Collectors.toList());
-      return new ExecutionResultImpl(
-        graphqlIntrospectionList(copy),
-        completedResult.getErrors(),
-        completedResult.getExtensions()
-      );
-    });
   }
 
 }
