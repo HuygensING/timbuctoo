@@ -453,7 +453,7 @@ public class DatabaseGetter<KeyT, ValueT> {
           } else {
             status = iteration.apply(cursor);
           }
-        } catch (DatabaseException e) {
+        } catch (DatabaseException | IllegalStateException e) {
           LOG.error("Database exception!", e);
           status = OperationStatus.NOTFOUND;
         }
