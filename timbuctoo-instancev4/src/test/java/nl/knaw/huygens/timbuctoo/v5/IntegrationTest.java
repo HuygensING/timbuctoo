@@ -2694,6 +2694,56 @@ public class IntegrationTest {
     assertThat(dataSetIds, hasItem(dataSetId));
   }
 
+  @Test
+  public void csvExportIsPossibleForLists() throws Exception {
+    String dataSetName = "replacedata" + UUID.randomUUID().toString().replace("-", "_");
+    String dataSetId = createDataSetId(dataSetName);
+    Response uploadResponse = multipartPost(
+        "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+        new File(getResource(IntegrationTest.class, "smalldataset.nt").toURI()),
+        "application/n-triples",
+        ImmutableMap.of(
+            "encoding", "UTF-8",
+            "uri", "http://example.com/replacedata"
+        )
+    );
+    assertThat(uploadResponse.getStatus(), is(201));
+
+    // query person before delete
+    Response queryData = call("/v5/graphql")
+        .accept("text/csv")
+        .post(Entity.entity(jsnO(
+            "query",
+            jsn(
+                "query {\n" +
+                    "  dataSets {\n" +
+                    "    " + dataSetId + "{\n" +
+                    "      schema_PersonList {\n" +
+                    "        items {\n" +
+                    "          schema_familyName {\n" +
+                    "            value\n" +
+                    "          }\n" +
+                    "          schema_givenNameList {\n" +
+                    "            items {\n" +
+                    "              value\n" +
+                    "            }\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}"
+            )
+        ).toString(), MediaType.APPLICATION_JSON));
+
+    final String data = queryData.readEntity(String.class);
+    assertThat(data, is(
+        "schema_familyName,schema_givenNameList.0,schema_givenNameList.1,schema_givenNameList.2\r\n" +
+        "Jansen,Jan,,\r\n" +
+        "van Hasselt,Alexander,Michiel,Willem\r\n"
+    ));
+  }
+
   private List<String> getDataSetNamesOfDummy() {
     Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
