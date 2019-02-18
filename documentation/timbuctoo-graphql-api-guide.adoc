@@ -459,3 +459,6 @@ query CollectionMetadata {
   }
 }
 ----
+
+=== Set the index configuration
+See for more information link:create_an_index_config[Create an index configuration]
