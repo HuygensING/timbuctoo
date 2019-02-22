@@ -17,6 +17,7 @@ directive @deleteMutation(dataSet:String!) on FIELD_DEFINITION
 directive @persistEntityMutation(dataSet:String!) on FIELD_DEFINITION
 directive @setCustomProvenanceMutation(dataSet:String!) on FIELD_DEFINITION
 directive @rdfType(uri:String!) on OBJECT
+directive @resetIndex(dataSet:String!) on FIELD_DEFINITION
 # override deprecated to support the directive on input fields as wel
 directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
 
