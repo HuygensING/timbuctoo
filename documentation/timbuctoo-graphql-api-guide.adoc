@@ -462,3 +462,20 @@ query CollectionMetadata {
 
 === Set the index configuration
 See for more information link:create_an_index_config[Create an index configuration]
+
+=== Reset index configuration to default
+
+This will remove the old search indexes from all the collections of the data set.
+It will add an full text search index on the title field of each collection.
+
+----
+mutation resetIndex{
+  dataSets {
+     <dataSetId> {
+      resetIndex {
+        message
+      }
+    }
+  }
+}
+----
