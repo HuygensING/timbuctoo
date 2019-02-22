@@ -54,6 +54,14 @@ public class MutationHelpers {
       .get();
   }
 
+  public static void addMutations(DataSet dataSet, PredicateMutation... mutations)
+      throws LogStorageFailedException, ExecutionException, InterruptedException {
+
+    final String baseUri = dataSet.getMetadata().getBaseUri();
+    dataSet.getImportManager().generateLog(baseUri, baseUri, new PredicateMutationRdfPatcher(mutations))
+           .get();
+  }
+
   public interface DataSetFetcher {
     Optional<DataSet> getDataSet(User user, String ownerId, String dataSetName);
   }

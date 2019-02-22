@@ -9,6 +9,7 @@ import graphql.language.Field;
 import graphql.language.InlineFragment;
 import graphql.language.Selection;
 import graphql.language.StringValue;
+import graphql.language.Value;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -35,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DefaultSummaryProps;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DefaultIndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DeleteMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
@@ -126,7 +128,8 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("editMutation") != null ||
       environment.getFieldDefinition().getDirective("deleteMutation") != null ||
       environment.getFieldDefinition().getDirective("persistEntityMutation") != null ||
-      environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null;
+      environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null ||
+      environment.getFieldDefinition().getDirective("resetIndex") != null;
   }
 
   @Override
@@ -233,6 +236,10 @@ public class RdfWiringFactory implements WiringFactory {
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       String dataSetId = dataSet.getValue();
       return new SetCustomProvenanceMutation(schemaUpdater, dataSetRepository, dataSetId);
+    } else if (environment.getFieldDefinition().getDirective("resetIndex") != null) {
+      final Directive resetIndex = environment.getFieldDefinition().getDirective("resetIndex");
+      final StringValue dataSet = (StringValue) resetIndex.getArgument("dataSet").getValue();
+      return new DefaultIndexConfigMutation(schemaUpdater, dataSetRepository, dataSet.getValue());
     }
     return null;
   }
