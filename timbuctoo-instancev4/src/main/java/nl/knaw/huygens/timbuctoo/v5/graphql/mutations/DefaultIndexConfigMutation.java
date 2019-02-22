@@ -56,6 +56,7 @@ public class DefaultIndexConfigMutation extends Mutation {
     final PredicateMutation[] resetIndexPredicates = dataSet
         .getSchemaStore().getStableTypes().values().stream()
         .map(Type::getName)
+        // The read-only data is non user data, where we do not need an search index for.
         .filter(uri -> !readOnlyChecker.isReadonlyType(uri))
         .map(collectionUri -> createIndexPredicate(predicateMutation, typeNameStore, collectionUri))
         .toArray(PredicateMutation[]::new);
