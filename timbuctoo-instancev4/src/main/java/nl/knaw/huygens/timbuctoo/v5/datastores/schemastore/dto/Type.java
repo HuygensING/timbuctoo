@@ -48,6 +48,9 @@ public class Type {
     return subjectsWithThisType;
   }
 
+  /**
+   * The RDF name i.e. the URI
+   */
   public String getName() {
     return name;
   }
