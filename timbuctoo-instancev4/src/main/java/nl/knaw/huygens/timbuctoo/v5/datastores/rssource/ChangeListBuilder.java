@@ -47,7 +47,7 @@ public class ChangeListBuilder {
         }
       } else {
         Optional<String> language = quad.getLanguage();
-        if (language != null && language.isPresent() && dataType.equals(RdfConstants.LANGSTRING)) {
+        if (language != null && language.isPresent() && dataType.get().equals(RdfConstants.LANGSTRING)) {
           if (quad.getChangeType() == ChangeType.ASSERTED) {
             return changesQuadGenerator.onLanguageTaggedString(
               quad.getSubject(),
@@ -64,24 +64,24 @@ public class ChangeListBuilder {
               language.get(),
               graph
             );
-          } else {
-            if (quad.getChangeType() == ChangeType.ASSERTED) {
-              return changesQuadGenerator.onValue(
-                quad.getSubject(),
-                quad.getPredicate(),
-                quad.getObject(),
-                dataType.get(),
-                graph
-              );
-            } else if (quad.getChangeType() == ChangeType.RETRACTED) {
-              return changesQuadGenerator.delValue(
-                quad.getSubject(),
-                quad.getPredicate(),
-                quad.getObject(),
-                dataType.get(),
-                graph
-              );
-            }
+          }
+        } else {
+          if (quad.getChangeType() == ChangeType.ASSERTED) {
+            return changesQuadGenerator.onValue(
+              quad.getSubject(),
+              quad.getPredicate(),
+              quad.getObject(),
+              dataType.get(),
+              graph
+            );
+          } else if (quad.getChangeType() == ChangeType.RETRACTED) {
+            return changesQuadGenerator.delValue(
+              quad.getSubject(),
+              quad.getPredicate(),
+              quad.getObject(),
+              dataType.get(),
+              graph
+            );
           }
         }
       }
