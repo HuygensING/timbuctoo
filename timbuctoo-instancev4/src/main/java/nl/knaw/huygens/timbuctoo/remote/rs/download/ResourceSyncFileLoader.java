@@ -125,7 +125,7 @@ public class ResourceSyncFileLoader {
 
         for (UrlItem resourceListItem : rsFile.getItemList()) {
           if (MIME_TYPE_FOR_EXTENSION.values().contains(resourceListItem.getMetadata().getMimeType()) ||
-            RdfExtensions.createFromFile(resourceListItem.getLoc()) != null) {
+            SupportedRdfResourceListExtensions.createFromFile(resourceListItem.getLoc()) != null) {
             resources.add(getRemoteFile(new Tuple<>(resourceListItem.getLoc(), resourceListItem.getMetadata()),
               authString));
           }
@@ -167,23 +167,23 @@ public class ResourceSyncFileLoader {
       .replace("rs.md", "rs:md"), UrlSet.class);
   }
 
-  private enum RdfExtensions {
+  private enum SupportedRdfResourceListExtensions {
     NQ("nq"),
     TRIG("trig"),
     NT("nt"),
     TTL("ttl"),
     N3("n3"),
     RDF_XML("xml"),
-    JSONLD("jsonld");
+    JSONLD("jsonld"),;
 
     private final String extension;
 
-    RdfExtensions(String extension) {
+    SupportedRdfResourceListExtensions(String extension) {
       this.extension = extension;
     }
 
-    public static RdfExtensions createFromFile(String fileName) {
-      for (RdfExtensions rdfExtensions : RdfExtensions.values()) {
+    public static SupportedRdfResourceListExtensions createFromFile(String fileName) {
+      for (SupportedRdfResourceListExtensions rdfExtensions : SupportedRdfResourceListExtensions.values()) {
         if (fileName.endsWith("." + rdfExtensions.getExtension())) {
           return rdfExtensions;
         }
