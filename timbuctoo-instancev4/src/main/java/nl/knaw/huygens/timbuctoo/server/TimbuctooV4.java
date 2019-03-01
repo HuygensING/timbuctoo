@@ -46,7 +46,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacySingleEntityRedir
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
@@ -115,7 +114,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static nl.knaw.huygens.timbuctoo.handle.HandleAdder.HANDLE_QUEUE;
@@ -360,8 +358,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
 
-    final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
-    register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
       authCheck
