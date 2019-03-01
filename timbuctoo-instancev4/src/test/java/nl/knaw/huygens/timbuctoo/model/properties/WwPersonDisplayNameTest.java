@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.model.properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
 import org.apache.tinkerpop.gremlin.structure.Graph;

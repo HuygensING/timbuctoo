@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 
-import javaslang.control.Either;
+import io.vavr.control.Either;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;

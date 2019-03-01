@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.model.properties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.HasOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;

@@ -137,7 +137,7 @@
     <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
     <neo4j.version>3.1.0</neo4j.version>
     <hamcrest-library.version>2.1</hamcrest-library.version>
-    <javaslang.version>2.0.6</javaslang.version>
+    <vavr.version>0.10.0</vavr.version>
     <huygens.persistence.version>2.2.0</huygens.persistence.version>
     <junit.version>4.12</junit.version>
     <timbuctoo-test-services.version>1.0.0-SNAPSHOT</timbuctoo-test-services.version>
@@ -479,9 +479,9 @@
 
     <!--Try monad-->
     <dependency>
-      <groupId>io.javaslang</groupId>
-      <artifactId>javaslang</artifactId>
-      <version>${javaslang.version}</version>
+      <groupId>io.vavr</groupId>
+      <artifactId>vavr</artifactId>
+      <version>${vavr.version}</version>
     </dependency>
 
     <!-- Java implementation of Json-ld specification -->

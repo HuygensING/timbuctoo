@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
