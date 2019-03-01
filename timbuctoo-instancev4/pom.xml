@@ -133,6 +133,9 @@
     <dropwizard-activemq.version>0.3.13</dropwizard-activemq.version>
     <jsonassert.version>1.2.3</jsonassert.version>
     <tinkerpop3.version>3.1.0-incubating</tinkerpop3.version>
+    <!-- The number after the dash is the Neo4j version -->
+    <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
+    <neo4j.version>3.1.0</neo4j.version>
     <hamcrest-library.version>1.3</hamcrest-library.version>
     <javaslang.version>2.0.0-RC4</javaslang.version>
     <huygens.persistence.version>2.2.0</huygens.persistence.version>
@@ -151,9 +154,6 @@
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
     <jsonld-java.version>0.8.3</jsonld-java.version>
-    <neo4j.version>3.1.0</neo4j.version>
-    <!-- The number after the dash is the Neo4j version -->
-    <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
     <rdf4j.version>2.4.0</rdf4j.version>
     <xmlunit.version>2.4.0</xmlunit.version>
     <jackson.version>2.9.8</jackson.version>
