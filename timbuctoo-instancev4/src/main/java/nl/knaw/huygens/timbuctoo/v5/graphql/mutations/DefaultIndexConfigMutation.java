@@ -54,7 +54,7 @@ public class DefaultIndexConfigMutation extends Mutation {
     final DataSet dataSet = dataSetOpt.get();
     ImmutableContextData contextData = env.getContext();
     if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.CONFIG_INDEX)) {
-      throw new RuntimeException("User should have permissions to edit entities of the data set.");
+      throw new RuntimeException("User has no permissions to change the index configuration.");
     }
 
     final ReadOnlyChecker readOnlyChecker = dataSet.getReadOnlyChecker();
