@@ -10,7 +10,9 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
 import java.util.Optional;
@@ -50,6 +52,11 @@ public class DefaultIndexConfigMutation extends Mutation {
     }
 
     final DataSet dataSet = dataSetOpt.get();
+    ImmutableContextData contextData = env.getContext();
+    if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.CONFIG_INDEX)) {
+      throw new RuntimeException("User should have permissions to edit entities of the data set.");
+    }
+
     final ReadOnlyChecker readOnlyChecker = dataSet.getReadOnlyChecker();
     final PredicateMutation predicateMutation = new PredicateMutation();
     final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
