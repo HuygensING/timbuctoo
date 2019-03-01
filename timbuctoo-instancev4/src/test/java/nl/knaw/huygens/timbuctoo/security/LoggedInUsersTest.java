@@ -43,7 +43,9 @@ public class LoggedInUsersTest {
       authenticator,
       userStore,
       ONE_SECOND_TIMEOUT,
-      x-> { throw new UnauthorizedException(); }
+      x -> {
+        throw new UnauthorizedException();
+      }
     );
 
     Authenticator authenticator1 = AuthenticatorMockBuilder.authenticator()
@@ -56,7 +58,9 @@ public class LoggedInUsersTest {
       authenticator1,
       userStore1,
       ONE_SECOND_TIMEOUT,
-      x-> { throw new UnauthorizedException(); }
+      x -> {
+        throw new UnauthorizedException();
+      }
     );
 
   }

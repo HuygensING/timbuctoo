@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
-import javaslang.control.Either;
+import io.vavr.control.Either;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.TabularRdfCreator;

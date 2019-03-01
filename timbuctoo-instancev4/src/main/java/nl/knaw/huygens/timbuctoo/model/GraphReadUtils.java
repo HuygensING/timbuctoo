@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model;
 
-import javaslang.Value;
-import javaslang.control.Try;
+import io.vavr.Value;
+import io.vavr.control.Try;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.apache.tinkerpop.gremlin.structure.Element;

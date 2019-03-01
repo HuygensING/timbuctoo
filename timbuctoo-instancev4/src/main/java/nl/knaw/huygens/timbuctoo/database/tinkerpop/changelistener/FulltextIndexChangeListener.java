@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

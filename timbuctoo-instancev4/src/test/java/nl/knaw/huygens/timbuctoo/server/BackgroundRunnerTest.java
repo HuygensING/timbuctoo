@@ -40,7 +40,7 @@ public class BackgroundRunnerTest {
       mock(ScheduledExecutorService.class)
     );
 
-    instance.start(()->"yeey!");
+    instance.start(() -> "yeey!");
     assertThat(instance.getMostRecentResult().get(), is("yeey!"));
   }
 
@@ -51,7 +51,7 @@ public class BackgroundRunnerTest {
     //The clock determines what 16:00 means. In this case we have a clock at UTC, so 16 means 16:00 UTC
     BackgroundRunner<String> instance = new BackgroundRunner<>(16, Clock.fixed(two_oclock, ZoneId.of("Z")), mock);
 
-    instance.start(()->"");
+    instance.start(() -> "");
 
     assertThat(mock.initialDelay, is(2L));
     assertThat(mock.unit, is(TimeUnit.HOURS));
@@ -69,7 +69,7 @@ public class BackgroundRunnerTest {
       mock
     );
 
-    instance.start(()->"");
+    instance.start(() -> "");
 
     assertThat(mock.initialDelay, is(2L));
     assertThat(mock.unit, is(TimeUnit.HOURS));
@@ -81,7 +81,7 @@ public class BackgroundRunnerTest {
     final Instant midnight = Instant.parse("1970-01-01T00:00:00Z");
     BackgroundRunner<String> instance = new BackgroundRunner<>(24, Clock.fixed(midnight, ZoneId.of("Z")), mock);
 
-    instance.start(()->"");
+    instance.start(() -> "");
 
     assertThat(mock.initialDelay, is(24L));
   }
@@ -92,7 +92,7 @@ public class BackgroundRunnerTest {
     final Instant midnight = Instant.parse("1970-01-01T23:59:59Z");
     BackgroundRunner<String> instance = new BackgroundRunner<>(24, Clock.fixed(midnight, ZoneId.of("Z")), mock);
 
-    instance.start(()->"");
+    instance.start(() -> "");
 
     assertThat(mock.initialDelay, is(1L));
   }
@@ -103,7 +103,7 @@ public class BackgroundRunnerTest {
     final Instant midnight = Instant.parse("1970-01-01T14:00:00Z");
     BackgroundRunner<String> instance = new BackgroundRunner<>(2, Clock.fixed(midnight, ZoneId.of("Z")), mock);
 
-    instance.start(()->"");
+    instance.start(() -> "");
 
     assertThat(mock.initialDelay, is(12L));
   }
@@ -117,7 +117,7 @@ public class BackgroundRunnerTest {
       mock
     );
 
-    instance.start(()->"");
+    instance.start(() -> "");
 
     assertThat(mock.period, is(24L));
     assertThat(mock.unit, is(TimeUnit.HOURS));

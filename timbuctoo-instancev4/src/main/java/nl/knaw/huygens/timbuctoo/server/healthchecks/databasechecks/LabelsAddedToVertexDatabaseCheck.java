@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks;
 
 import com.google.common.collect.Sets;
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ElementValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;

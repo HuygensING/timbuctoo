@@ -151,7 +151,7 @@ public class HandleServiceTest {
 
     @Override
     public void send(Object object) {
-      receiverList.forEach(receiver-> receiver.accept(object));
+      receiverList.forEach(receiver -> receiver.accept(object));
     }
   }
 

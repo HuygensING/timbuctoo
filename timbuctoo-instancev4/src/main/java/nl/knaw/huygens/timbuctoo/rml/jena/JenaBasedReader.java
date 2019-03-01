@@ -95,7 +95,7 @@ public class JenaBasedReader {
         .findAny()
         .flatMap(RdfResource::asLiteral)
         .map(RdfLiteral::getValue)
-        .orElseThrow(() ->InvalidRdfResourceException.noValue(node));
+        .orElseThrow(() -> InvalidRdfResourceException.noValue(node));
   }
 
   private void buildSubjectMap(RdfResource object, SubjectMapBuilder builder) {
