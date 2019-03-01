@@ -14,7 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
-public class PersistEntityMutation extends Mutation{
+public class PersistEntityMutation extends Mutation {
 
   private final RedirectionService redirectionService;
   private final String dataSetId;
