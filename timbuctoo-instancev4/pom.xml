@@ -143,6 +143,12 @@
     <timbuctoo-test-services.version>1.0.0-SNAPSHOT</timbuctoo-test-services.version>
     <mockito.version>2.2.22</mockito.version>
     <huygens.security.version>1.0.0-SNAPSHOT</huygens.security.version>
+    <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
+    <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
+    <jsonld-java.version>0.8.3</jsonld-java.version>
+    <rdf4j.version>2.4.0</rdf4j.version>
+    <xmlunit.version>2.4.0</xmlunit.version>
+    <jackson.version>2.9.8</jackson.version>
     <!-- Maven plugins -->
     <appassembler.version>1.10</appassembler.version>
     <build-helper-maven-plugin.version>1.10</build-helper-maven-plugin.version>
@@ -151,12 +157,6 @@
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
     <rpm-maven-plugin.version>2.1.5</rpm-maven-plugin.version>
-    <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
-    <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
-    <jsonld-java.version>0.8.3</jsonld-java.version>
-    <rdf4j.version>2.4.0</rdf4j.version>
-    <xmlunit.version>2.4.0</xmlunit.version>
-    <jackson.version>2.9.8</jackson.version>
   </properties>
 
   <dependencyManagement>
