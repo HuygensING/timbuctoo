@@ -479,6 +479,27 @@
       <artifactId>javaslang</artifactId>
       <version>${javaslang.version}</version>
     </dependency>
+
+    <!-- Java implementation of Json-ld specification -->
+    <dependency>
+      <groupId>com.github.jsonld-java</groupId>
+      <artifactId>jsonld-java</artifactId>
+      <version>0.12.0</version>
+    </dependency>
+
+    <!-- Twitter-4j oauth for twitter -->
+    <dependency>
+      <groupId>org.twitter4j</groupId>
+      <artifactId>twitter4j-core</artifactId>
+      <version>[4.0,)</version>
+    </dependency>
+
+    <!-- Bit.ly java client -->
+    <dependency>
+      <groupId>net.swisstech</groupId>
+      <artifactId>bitly-api-client</artifactId>
+      <version>0.8.0</version>
+    </dependency>
     <!-- ## End of main dependencies ## -->
 
     <!-- ## Test dependencies ## -->
@@ -626,27 +647,6 @@
       <artifactId>xmlunit-matchers</artifactId>
       <version>${xmlunit.version}</version>
       <scope>test</scope>
-    </dependency>
-
-    <!-- Java implementation of Json-ld specification -->
-    <dependency>
-      <groupId>com.github.jsonld-java</groupId>
-      <artifactId>jsonld-java</artifactId>
-      <version>0.11.0</version>
-    </dependency>
-
-    <!-- Twitter-4j oauth for twitter -->
-    <dependency>
-      <groupId>org.twitter4j</groupId>
-      <artifactId>twitter4j-core</artifactId>
-      <version>[4.0,)</version>
-    </dependency>
-
-    <!-- Bit.ly java client -->
-    <dependency>
-      <groupId>net.swisstech</groupId>
-      <artifactId>bitly-api-client</artifactId>
-      <version>0.8.0</version>
     </dependency>
     <!-- ## End of test dependencies ## -->
   </dependencies>
