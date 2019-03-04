@@ -4,7 +4,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.time.Clock;
 
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 

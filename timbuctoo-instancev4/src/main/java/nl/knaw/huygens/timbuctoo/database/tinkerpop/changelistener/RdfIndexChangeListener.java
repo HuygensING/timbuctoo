@@ -8,8 +8,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_SYNONYM_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_URI_PROP;
 
 public class RdfIndexChangeListener implements ChangeListener {
 

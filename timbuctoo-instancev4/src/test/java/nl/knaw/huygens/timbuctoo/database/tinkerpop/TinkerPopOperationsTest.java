@@ -32,10 +32,7 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
-import nl.knaw.huygens.timbuctoo.rdf.Database;
-import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -79,8 +76,8 @@ import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.VreStubs.minimalCorrectVre;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_SYNONYM_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -2915,33 +2912,6 @@ public class TinkerPopOperationsTest {
     List<String> entitiesWithUnknownType = instance.getEntitiesWithUnknownType(vre);
 
     assertThat(entitiesWithUnknownType, containsInAnyOrder("http://example.org/entity1", "http://example.org/entity2"));
-  }
-
-  @Test
-  public void getEntitiesWithUnknownTypeDoesNotReturnEntitiesWithACollection() {
-    TinkerPopGraphManager wrap = newGraph().wrap();
-    TinkerPopOperations instance = forGraphWrapper(wrap);
-    final Database legacyRdfDatabase = new Database(wrap);
-    Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
-
-    Vre admin = instance.ensureVreExists("Admin");
-    instance.addCollectionToVre(admin, CreateCollection.defaultCollection("Admin"));
-
-    vre = instance.loadVres().getVre("vre");
-
-    instance.assertEntity(vre, "http://example.org/entity1");
-    instance.assertEntity(vre, "http://example.org/entity2");
-    nl.knaw.huygens.timbuctoo.rdf.Collection collection =
-      legacyRdfDatabase.findOrCreateCollection("vre",
-        NodeFactory.createURI("http://example.org/myCollection").getURI(),
-        NodeFactory.createURI("http://example.org/myCollection").getLocalName());
-    Optional<Entity> entity = legacyRdfDatabase.findEntity("vre", NodeFactory.createURI("http://example.org/entity1"));
-    entity.get().addToCollection(collection);
-
-    List<String> entitiesWithUnknownType = instance.getEntitiesWithUnknownType(vre);
-
-    assertThat(entitiesWithUnknownType, containsInAnyOrder("http://example.org/entity2"));
   }
 
   @Test

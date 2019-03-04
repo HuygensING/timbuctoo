@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
@@ -30,7 +29,7 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_R
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_URI_PROP;
 
 
 public class Collection {

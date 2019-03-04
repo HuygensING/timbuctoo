@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDFINDEX_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_SYNONYM_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_URI_PROP;
 
 public class RelationTypeRdfUriMigration implements DatabaseMigration {
   private static final Logger LOG = LoggerFactory.getLogger(RelationTypeRdfUriMigration.class);

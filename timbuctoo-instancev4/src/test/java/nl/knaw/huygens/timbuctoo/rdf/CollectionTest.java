@@ -24,7 +24,7 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_N
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;

@@ -36,7 +36,7 @@ class CollectionDescription {
   }
 
   public static CollectionDescription fromVertex(String vreName, Vertex vertex) {
-    VertexProperty<String> rdfUri = vertex.property(Database.RDF_URI_PROP);
+    VertexProperty<String> rdfUri = vertex.property(RdfProperties.RDF_URI_PROP);
     Boolean isUnknown = vertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME).isPresent() ?
       vertex.value(COLLECTION_IS_UNKNOWN_PROPERTY_NAME) : false;
     final String entityTypeName = vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);

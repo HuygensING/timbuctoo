@@ -135,8 +135,8 @@ import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NE
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDFINDEX_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration.TIMBUCTOO_NAMESPACE;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;

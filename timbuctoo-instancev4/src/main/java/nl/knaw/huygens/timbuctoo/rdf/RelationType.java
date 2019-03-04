@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_URI_PROP;
 
 public class RelationType {
 

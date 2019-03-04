@@ -29,7 +29,7 @@ import java.util.UUID;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDFINDEX_NAME;
 
 public class Neo4jIndexHandler implements IndexHandler {
   private static final String QUICK_SEARCH_PROP_NAME = "quickSearch";
