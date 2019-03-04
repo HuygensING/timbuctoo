@@ -31,13 +31,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface DataStoreOperations extends AutoCloseable {
-  void clearMappingErrors(Vre vre);
-
-  Map<String, Map<String, String>> getMappingErrors(String vreName);
-
-  boolean hasMappingErrors(String vreName);
-
-  void saveRmlMappingState(String vreName, String rdfData);
 
   void success();
 
@@ -93,14 +86,6 @@ public interface DataStoreOperations extends AutoCloseable {
   Vre ensureVreExists(String vreName);
 
   void deleteVre(String vreName);
-
-  void setVrePublishState(String vreName, Vre.PublishState publishState);
-
-  void removeCollectionsAndEntities(Vre vre);
-
-  void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate);
-
-  void setVreImage(String vreName, byte[] uploadedBytes, MediaType mediaType);
 
   byte[] getVreImageBlob(String vreName);
 

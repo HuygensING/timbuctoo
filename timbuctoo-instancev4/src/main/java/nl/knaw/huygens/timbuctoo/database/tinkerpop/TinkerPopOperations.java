@@ -53,7 +53,6 @@ import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
-import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
 import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
@@ -85,7 +84,6 @@ import org.neo4j.graphdb.index.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
@@ -94,7 +92,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -105,11 +102,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.ERROR_PREFIX;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_ITEM_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_PROPERTY_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.SAVED_MAPPING_STATE;
 import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_ENTITIES_LABEL;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_IS_UNKNOWN_PROPERTY_NAME;
@@ -126,6 +118,9 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_ITEM_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_PROPERTY_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
@@ -329,49 +324,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       .emit();
   }
 
-  @Override
-  public void clearMappingErrors(Vre vre) {
-    getMappingErrorsTraversal(vre.getVreName())
-      .forEachRemaining(vertex -> {
-        vertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
-        vertex.properties().forEachRemaining(property -> {
-          if (property.key().startsWith(ERROR_PREFIX)) {
-            property.remove();
-          }
-        });
-      });
-  }
-
-  @Override
-  public Map<String, Map<String, String>> getMappingErrors(String vreName) {
-    Map<String, Map<String, String>> result = new HashMap<>();
-    getMappingErrorsTraversal(vreName).forEachRemaining(vertex -> {
-      Map<String, String> errors = new HashMap<>();
-      vertex.properties().forEachRemaining(p -> {
-        if (p.key().startsWith(ERROR_PREFIX)) {
-          try {
-            errors.put(p.key().substring(ERROR_PREFIX.length()), (String) p.value());
-          } catch (ClassCastException e) {
-            LOG.error("Raw entity error was not a String", e);
-            errors.put(p.key().substring(ERROR_PREFIX.length()), "Unknown error");
-          }
-        }
-      });
-      if (!errors.isEmpty()) {
-        try {
-          result.put(vertex.value("tim_id"), errors);
-        } catch (ClassCastException e) {
-          LOG.error("tim_id was not a String", e);
-          errors.put(vertex.id() + "", "Unknown error");
-        } catch (NoSuchElementException e) {
-          LOG.error("vertex " + vertex.id() + " does not have a tim_id", e);
-          errors.put(vertex.id() + "", "Unknown error");
-        }
-      }
-    });
-    return result;
-  }
-
   private GraphTraversal<Vertex, Vertex> getVreTraversal(String vreName) {
     return traversal
       .V()
@@ -381,40 +333,6 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
     return getVreTraversal(vreName).out(RAW_COLLECTION_EDGE_NAME);
-  }
-
-  @Override
-  public void setVrePublishState(String vreName, Vre.PublishState publishState) {
-    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
-
-    if (vreT.hasNext()) {
-      vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
-    }
-  }
-
-  @Override
-  public void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate) {
-    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
-
-    if (vreT.hasNext()) {
-      final Vertex vreVertex = vreT.next();
-      vreMetadataUpdate.updateVreVertex(vreVertex);
-    }
-  }
-
-  @Override
-  public void setVreImage(String vreName, byte[] uploadedBytes, MediaType mediaType) {
-    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
-
-    if (vreT.hasNext()) {
-      final Vertex vreVertex = vreT.next();
-      final Integer imageRev = vreVertex.property(Vre.IMAGE_REV_PROPERTY_NAME).isPresent() ?
-        vreVertex.<Integer>value(Vre.IMAGE_REV_PROPERTY_NAME) + 1 : 1;
-
-      vreVertex.property(Vre.IMAGE_REV_PROPERTY_NAME, imageRev);
-      vreVertex.property(Vre.IMAGE_BLOB_PROPERTY_NAME, uploadedBytes);
-      vreVertex.property(Vre.IMAGE_MEDIA_TYPE_PROPERTY_NAME, mediaType.toString());
-    }
   }
 
   @Override
@@ -428,21 +346,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       }
     }
     return null;
-  }
-
-  @Override
-  public boolean hasMappingErrors(String vreName) {
-    return getMappingErrorsTraversal(vreName).hasNext();
-  }
-
-  @Override
-  public void saveRmlMappingState(String vreName, String rdfData) {
-    final GraphTraversal<Vertex, Vertex>
-      vreT = getVreTraversal(vreName);
-
-    if (vreT.hasNext()) {
-      vreT.next().property(SAVED_MAPPING_STATE, rdfData);
-    }
   }
 
   @Override
@@ -960,16 +863,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       )
       .drop()
       .toList();//force traversal and thus side-effects
-  }
-
-  @Override
-  public void removeCollectionsAndEntities(Vre vre) {
-    traversal
-      .V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-      .tryNext()
-      .ifPresent((vreV) -> removeCollectionsAndEntities(vreV, false));
   }
 
   /*******************************************************************************************************************
