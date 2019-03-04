@@ -1,9 +1,0 @@
-# N-triples conversion
-
-This package generates an N-triples representation of our resources that should allow the lod-browser to also browse timbuctoo data. It is not ready for usage as resourcesync source. For this to work the following tasks should also be completed:
-
-- todo:feature["Some of the value-types can be represented in RDF in various ways. We need to decide which representation to implement and make sure that our importer and exporter use the same representation."]
-- todo:feature["Use an rdf library to create the triples for the export. (now I chose not to, because we are going to replace jena in the near future)"]
-- todo:feature["implement patch"]
-- todo:feature["Add support for the widely used rdf data types"]
-- bug:if["a predicate has values that are encoded in two different types (e.g. a personnames and an int, both under the same predicate) timbuctoo will now save them in the database according to their own types but then create a propdesc for only one of 'em. This causes the properties to not show up during a GET"]

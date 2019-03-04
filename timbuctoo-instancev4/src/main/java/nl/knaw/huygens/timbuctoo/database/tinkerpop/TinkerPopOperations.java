@@ -114,7 +114,6 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
   private final GraphDatabaseService graphDatabase;
-  private final IntermediateCommitter committer;
   private final boolean ownTransaction;
   private final Map<String, Vertex> defaultCollectionVerticesCache = new HashMap<>();
   private final PropertyDescriptorFactory propertyDescriptorFactory =
@@ -184,10 +183,6 @@ public class TinkerPopOperations implements DataStoreOperations {
     this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
     this.graphDatabase = graphManager.getGraphDatabase(); //FIXME move to IndexHandler
 
-    this.committer = new IntermediateCommitter(250_000, () -> {
-      this.transaction.commit();
-      this.transaction.open();
-    });
   }
 
   private static UUID asUuid(String input, Element source) {
