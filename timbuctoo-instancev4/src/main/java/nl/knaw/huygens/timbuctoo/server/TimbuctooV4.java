@@ -53,7 +53,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntityNTriple;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Import;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
@@ -334,7 +333,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       environment,
       new SingleEntity(securityConfig.getUserValidator(), crudServiceFactory, transactionEnforcer)
     );
-    register(environment, new SingleEntityNTriple(transactionEnforcer, uriHelper));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
