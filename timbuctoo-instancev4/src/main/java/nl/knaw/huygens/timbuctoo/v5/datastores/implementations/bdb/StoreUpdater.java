@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Stopwatch;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
@@ -10,10 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import org.apache.jena.graph.impl.TripleStore;
-import org.apache.jena.update.Update;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
