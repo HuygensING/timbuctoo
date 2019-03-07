@@ -1,7 +1,7 @@
 [{
 	"@type": "vreauthorization",
 	"vreId": "WomenWriters",
-	"userId": "USER000000000001",
+	"userId": "pid",
 	"roles": ["USER"],
 	"_id": "VREA000000000001",
 	"^rev": 0,

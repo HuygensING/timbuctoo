@@ -9,7 +9,7 @@
     "commonName": "givenName surname",
     "organisation": "organization",
     "vreAuthorization": null,
-    "_id": "USER000000000001",
+    "_id": "pid",
     "^rev": 0,
     "^created": null,
     "^modified": null
