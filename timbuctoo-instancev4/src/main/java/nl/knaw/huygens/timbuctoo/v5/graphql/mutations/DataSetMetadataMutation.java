@@ -48,7 +48,9 @@ public class DataSetMetadataMutation extends Mutation {
             this.<String>parseProp(md, "description", v -> replace("http://purl.org/dc/terms/description", value(v,
               MARKDOWN))),
             this.<String>parseProp(md, "imageUrl", v -> replace("http://xmlns.com/foaf/0.1/depiction", value(v))),
-            this.<String>parseProp(md, "license", v -> replace("http://purl.org/dc/terms/license", subject(v))),
+            this.<Map>parseProp(md, "license", v -> this.<String>parseProp(v, "uri",
+              uri -> replace("http://purl.org/dc/terms/license", subject(uri))
+            )),
             this.<Map>parseProp(md, "owner", owner -> getOrCreate(
               "http://purl.org/dc/terms/rightsHolder",
               baseUri + "rightsHolder",
