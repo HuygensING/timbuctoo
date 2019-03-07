@@ -442,12 +442,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       customRelationProperties).mapEntity(entityT, true);
   }
 
-  @Override
-  public Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
-    Optional<Vertex> vertex = indexHandler.findVertexInRdfIndex(collection.getVre(), uri);
-
-    return vertex.map(v -> new TinkerPopToEntityMapper(collection, traversal, mappings).mapEntity(v, withRelations));
-  }
 
   @Override
   public List<RelationType> getRelationTypes() {

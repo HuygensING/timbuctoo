@@ -80,10 +80,7 @@ public interface DataStoreOperations extends AutoCloseable {
 
   void addPid(UUID id, int rev, URI pidUri) throws NotFoundException;
 
-  /**
-   * Get the latest version of the entity with a certain rdf uri.
-   */
-  Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations);
+
 
   List<RelationType> getRelationTypes();
 

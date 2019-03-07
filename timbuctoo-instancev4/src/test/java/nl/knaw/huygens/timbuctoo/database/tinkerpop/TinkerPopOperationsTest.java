@@ -2400,52 +2400,6 @@ public class TinkerPopOperationsTest {
     assertThat(result, hasSize(1));
   }
 
-  @Test
-  public void getEntityByRdfUriReturnsAnEmptyOptionalIfTheEntityCannotBeFound() {
-    Vres vres = createConfiguration();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(newGraph().wrap(), vres);
-    Collection collection = vres.getCollection("testthings").get();
-
-    Optional<ReadEntity> readEntity = instance.getEntityByRdfUri(collection, "http://example.com/entity", false);
-
-    assertThat(readEntity, is(not(present())));
-  }
-
-  @Test
-  public void getEntityByRdfUriReturnsTheLatestEntity() {
-    UUID id1 = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("rdfUri", "http://example.com/entity")
-        .withProperty("rev", 2)
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("rdfUri", "http://example.com/entity")
-        .isLatest(false)
-        .withProperty("rev", 1)
-        .withLabel("testthing")
-      )
-      .wrap();
-    Vres vres = createConfiguration();
-    IndexHandler indexHandler = mock(IndexHandler.class);
-    Vertex vertex = graphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
-    when(indexHandler.findVertexInRdfIndex(any(Vre.class), anyString())).thenReturn(Optional.of(vertex));
-    TinkerPopOperations instance = forGraphMappingsAndIndex(graphManager, vres, indexHandler);
-    Collection collection = vres.getCollection("testthings").get();
-
-    Optional<ReadEntity> readEntity = instance.getEntityByRdfUri(collection, "http://example.com/entity", false);
-
-    assertThat(readEntity, is(present()));
-    assertThat(readEntity.get(), hasProperty("rev", equalTo(2)));
-  }
 
   @Test
   public void getRelationTypesReturnsAllTheRelationTypesInTheDatabase() {
