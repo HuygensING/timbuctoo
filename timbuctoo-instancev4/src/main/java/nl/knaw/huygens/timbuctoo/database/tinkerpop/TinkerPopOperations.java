@@ -30,7 +30,6 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CollectionHas
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.IdIndexChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.RdfIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -42,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
-import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentDisplayNameDescriptor;
@@ -64,8 +62,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.index.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +90,6 @@ import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
-import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDFINDEX_NAME;
 import static nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration.TIMBUCTOO_NAMESPACE;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -140,8 +135,7 @@ public class TinkerPopOperations implements DataStoreOperations {
         new AddLabelChangeListener(),
         new FulltextIndexChangeListener(indexHandler, graphManager),
         new IdIndexChangeListener(indexHandler),
-        new CollectionHasEntityRelationChangeListener(graphManager),
-        new RdfIndexChangeListener(indexHandler)
+        new CollectionHasEntityRelationChangeListener(graphManager)
       ),
       indexHandler -> new Neo4jLuceneEntityFetcher(graphManager, indexHandler),
       null,
@@ -873,12 +867,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       "rdfUri", rdfUri,
       "rdfAlternatives", rdfAlternatives
     );
-
-    //FIXME move to IndexHandler
-    final Index<Node> rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
-    org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
-    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfUri);
-    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfAlternatives[0]);
 
     systemPropertyModifier.setCreated(vertex, "timbuctoo", "timbuctoo");
   }
