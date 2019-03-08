@@ -235,105 +235,16 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.rollback();
   }
 
-  //================== RDF ==================
-  public Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
-    return dataStoreOperations.getEntityByRdfUri(collection, uri, withRelations);
-  }
-
   public Vre getVre(String vreName) {
     return loadVres().getVre(vreName);
   }
 
-  public List<RelationType> getRelationTypes() {
-    return dataStoreOperations.getRelationTypes();
-  }
 
-  public boolean hasMappingErrors(String vreName) {
-    return dataStoreOperations.hasMappingErrors(vreName);
-  }
-
-  public Map<String, Map<String, String>> getMappingErrors(String vreName) {
-    return dataStoreOperations.getMappingErrors(vreName);
-  }
-
-  public void ensureVreExists(String vreName) {
-    dataStoreOperations.ensureVreExists(vreName);
-  }
-
-  public void saveRmlMappingState(String vreName, String rdfData) {
-    dataStoreOperations.saveRmlMappingState(vreName, rdfData);
-  }
-
-  /**
-   * This method removes all the data previously imported into this data set.
-   * If you want to add data to a data set use {@link #rdfUpdateImportSession(String, Function)}.
-   */
-  public void rdfCleanImportSession(String vreName, Function<RdfImportSession, TransactionState> sessionConsumer) {
-    RdfImportSession session = RdfImportSession.cleanImportSession(
-      vreName,
-      dataStoreOperations,
-      new EntityFinisherHelper(uriToRedirectToFromPersistentUrls, Clock.systemDefaultZone(), "rdf-importer")
-    );
-
-    rdfImportSession(sessionConsumer, session);
-  }
-
-  /**
-   * This method makes it possible to add data to an existing data set.
-   * This method will not clean the data set when it contains any data.
-   * Use {@link #rdfCleanImportSession(String, Function)} to clean the old data of a data set.
-   */
-  public void rdfUpdateImportSession(String vreName, Function<RdfImportSession, TransactionState> sessionConsumer) {
-    RdfImportSession session = RdfImportSession.updateImportSession(
-      vreName,
-      dataStoreOperations,
-      new EntityFinisherHelper(uriToRedirectToFromPersistentUrls, Clock.systemDefaultZone(), "rdf-importer")
-    );
-    rdfImportSession(sessionConsumer, session);
-  }
-
-  private void rdfImportSession(Function<RdfImportSession, TransactionState> sessionConsumer,
-                                RdfImportSession session) {
-    try {
-      TransactionState result = sessionConsumer.apply(session);
-      if (result.wasCommitted()) {
-        session.commit();
-      } else {
-        session.rollback();
-      }
-    } catch (RuntimeException e) {
-      session.rollback();
-      throw e;
-    } finally {
-      session.close();
-    }
-  }
-
-  public void setVrePublishState(String vreName, Vre.PublishState publishState) {
-    dataStoreOperations.setVrePublishState(vreName, publishState);
-  }
-
-  public void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate) {
-    dataStoreOperations.setVreMetadata(vreName, vreMetadataUpdate);
-  }
-
-  public void setVreImage(String vreName, byte[] uploadedBytes, MediaType mediaType) {
-    dataStoreOperations.setVreImage(vreName, uploadedBytes, mediaType);
-  }
 
   public byte[] getVreImageBlob(String vreName) {
     return dataStoreOperations.getVreImageBlob(vreName);
   }
-
-  public void deleteVre(String vreName, User user) throws PermissionFetchingException {
-    boolean isAdmin = permissionFetcher.getOldPermissions(user, vreName).contains(Permission.REMOVE_DATASET);
-    if (isAdmin) {
-      dataStoreOperations.deleteVre(vreName);
-    } else {
-      throw new PermissionFetchingException("Admin permission not found.");
-    }
-  }
-
+  
 
   //================== Inner classes ==================
   @FunctionalInterface

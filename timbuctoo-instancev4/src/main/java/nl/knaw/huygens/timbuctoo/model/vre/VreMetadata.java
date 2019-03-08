@@ -55,21 +55,6 @@ public class VreMetadata {
     this.label = label;
   }
 
-  public void updateVreVertex(Vertex vreVertex) {
-    if (provenance != null) {
-      vreVertex.property(Vre.PROVENANCE_PROPERTY_NAME, provenance);
-    }
-    if (label != null) {
-      vreVertex.property(VRE_LABEL_PROPERTY_NAME, label);
-    }
-    if (description != null) {
-      vreVertex.property(Vre.DESCRIPTION_PROPERTY_NAME, description);
-    }
-    if (colorCode != null) {
-      vreVertex.property(Vre.COLOR_CODE_PROPERTY_NAME, colorCode);
-    }
-  }
-
   public String getUploadedFilename() {
     return uploadedFilename;
   }

@@ -45,15 +45,6 @@ public interface IndexHandler {
 
   void removeFromIdIndex(Vertex vertex);
 
-  //=====================RDF Uri index=====================
-  Optional<Vertex> findVertexInRdfIndex(Vre vre, String nodeUri);
-
-  void upsertIntoRdfIndex(Vre vre, String nodeUri, Vertex vertex);
-
-  void upsertIntoAdminRdfIndex(String nodeUri, Vertex vertex);
-
-  void removeFromRdfIndex(Vre vre, Vertex vertex);
-
   //=====================Edge tim_id index=====================
   Optional<Edge> findEdgeById(UUID edgeId);
 

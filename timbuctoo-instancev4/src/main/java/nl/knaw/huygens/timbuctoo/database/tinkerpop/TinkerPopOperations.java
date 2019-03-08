@@ -3,15 +3,12 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.core.EntityFinisherHelper;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.RelationNotPossibleException;
-import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -25,22 +22,14 @@ import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.ImmutableVresDto;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.core.dto.rdf.CreateProperty;
-import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutablePredicateInUse;
-import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutableValueTypeInUse;
-import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
-import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
-import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfReadProperty;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.IdIndexChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.RdfIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -49,14 +38,9 @@ import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
-import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
-import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentDisplayNameDescriptor;
@@ -69,7 +53,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -78,14 +61,10 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.index.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
@@ -94,7 +73,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -102,41 +80,16 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.ERROR_PREFIX;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_ITEM_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_PROPERTY_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.SAVED_MAPPING_STATE;
-import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_ENTITIES_LABEL;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_IS_UNKNOWN_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.DATABASE_LABEL;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PREDICATE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.EdgeManipulator.duplicateEdge;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
-import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
-import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration.TIMBUCTOO_NAMESPACE;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -145,8 +98,6 @@ import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public class TinkerPopOperations implements DataStoreOperations {
-  public static final String HAS_NEXT_ERROR = "hasNextError";
-  private static final String RDF_URI_PROP = "rdfUri";
   private static final Logger LOG = LoggerFactory.getLogger(TinkerPopOperations.class);
   private final Transaction transaction;
   private final ChangeListener listener;
@@ -158,10 +109,8 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
   private final GraphDatabaseService graphDatabase;
-  private final IntermediateCommitter committer;
   private final boolean ownTransaction;
   private final Map<String, Vertex> defaultCollectionVerticesCache = new HashMap<>();
-  private final Map<String, Vertex> predicateValueTypeVerticesCache = new HashMap<>();
   private final PropertyDescriptorFactory propertyDescriptorFactory =
     new PropertyDescriptorFactory(new PropertyParserFactory());
   private final Map<String, PropertyDescriptor> customDescriptors = ImmutableMap.<String, PropertyDescriptor>builder()
@@ -186,8 +135,7 @@ public class TinkerPopOperations implements DataStoreOperations {
         new AddLabelChangeListener(),
         new FulltextIndexChangeListener(indexHandler, graphManager),
         new IdIndexChangeListener(indexHandler),
-        new CollectionHasEntityRelationChangeListener(graphManager),
-        new RdfIndexChangeListener(indexHandler)
+        new CollectionHasEntityRelationChangeListener(graphManager)
       ),
       indexHandler -> new Neo4jLuceneEntityFetcher(graphManager, indexHandler),
       null,
@@ -229,10 +177,6 @@ public class TinkerPopOperations implements DataStoreOperations {
     this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
     this.graphDatabase = graphManager.getGraphDatabase(); //FIXME move to IndexHandler
 
-    this.committer = new IntermediateCommitter(250_000, () -> {
-      this.transaction.commit();
-      this.transaction.open();
-    });
   }
 
   private static UUID asUuid(String input, Element source) {
@@ -289,16 +233,6 @@ public class TinkerPopOperations implements DataStoreOperations {
     }
   }
 
-  private static Edge getExpectedEdge(GraphTraversalSource traversal, String timId) {
-    GraphTraversal<Edge, Edge> edge = traversal.E().has("tim_id", timId);
-    if (edge.hasNext()) {
-      return edge.next();
-    } else {
-      throw new ObjectSuddenlyDisappearedException("The code assumes that the edge with id " + timId + " is " +
-        "available, but it isn't!");
-    }
-  }
-
   private static Optional<RelationType> getRelationDescription(GraphTraversalSource traversal, UUID typeId) {
     return getFirst(traversal
       .V()
@@ -323,98 +257,11 @@ public class TinkerPopOperations implements DataStoreOperations {
     }
   }
 
-  private GraphTraversal<Vertex, Vertex> getMappingErrorsTraversal(String vreName) {
-    return getRawCollectionsTraversal(vreName)
-      .repeat(__.out(HAS_NEXT_ERROR))
-      .emit();
-  }
-
-  @Override
-  public void clearMappingErrors(Vre vre) {
-    getMappingErrorsTraversal(vre.getVreName())
-      .forEachRemaining(vertex -> {
-        vertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
-        vertex.properties().forEachRemaining(property -> {
-          if (property.key().startsWith(ERROR_PREFIX)) {
-            property.remove();
-          }
-        });
-      });
-  }
-
-  @Override
-  public Map<String, Map<String, String>> getMappingErrors(String vreName) {
-    Map<String, Map<String, String>> result = new HashMap<>();
-    getMappingErrorsTraversal(vreName).forEachRemaining(vertex -> {
-      Map<String, String> errors = new HashMap<>();
-      vertex.properties().forEachRemaining(p -> {
-        if (p.key().startsWith(ERROR_PREFIX)) {
-          try {
-            errors.put(p.key().substring(ERROR_PREFIX.length()), (String) p.value());
-          } catch (ClassCastException e) {
-            LOG.error("Raw entity error was not a String", e);
-            errors.put(p.key().substring(ERROR_PREFIX.length()), "Unknown error");
-          }
-        }
-      });
-      if (!errors.isEmpty()) {
-        try {
-          result.put(vertex.value("tim_id"), errors);
-        } catch (ClassCastException e) {
-          LOG.error("tim_id was not a String", e);
-          errors.put(vertex.id() + "", "Unknown error");
-        } catch (NoSuchElementException e) {
-          LOG.error("vertex " + vertex.id() + " does not have a tim_id", e);
-          errors.put(vertex.id() + "", "Unknown error");
-        }
-      }
-    });
-    return result;
-  }
-
   private GraphTraversal<Vertex, Vertex> getVreTraversal(String vreName) {
     return traversal
       .V()
       .hasLabel(Vre.DATABASE_LABEL)
       .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
-  }
-
-  private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
-    return getVreTraversal(vreName).out(RAW_COLLECTION_EDGE_NAME);
-  }
-
-  @Override
-  public void setVrePublishState(String vreName, Vre.PublishState publishState) {
-    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
-
-    if (vreT.hasNext()) {
-      vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
-    }
-  }
-
-  @Override
-  public void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate) {
-    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
-
-    if (vreT.hasNext()) {
-      final Vertex vreVertex = vreT.next();
-      vreMetadataUpdate.updateVreVertex(vreVertex);
-    }
-  }
-
-  @Override
-  public void setVreImage(String vreName, byte[] uploadedBytes, MediaType mediaType) {
-    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
-
-    if (vreT.hasNext()) {
-      final Vertex vreVertex = vreT.next();
-      final Integer imageRev = vreVertex.property(Vre.IMAGE_REV_PROPERTY_NAME).isPresent() ?
-        vreVertex.<Integer>value(Vre.IMAGE_REV_PROPERTY_NAME) + 1 : 1;
-
-      vreVertex.property(Vre.IMAGE_REV_PROPERTY_NAME, imageRev);
-      vreVertex.property(Vre.IMAGE_BLOB_PROPERTY_NAME, uploadedBytes);
-      vreVertex.property(Vre.IMAGE_MEDIA_TYPE_PROPERTY_NAME, mediaType.toString());
-    }
   }
 
   @Override
@@ -428,21 +275,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       }
     }
     return null;
-  }
-
-  @Override
-  public boolean hasMappingErrors(String vreName) {
-    return getMappingErrorsTraversal(vreName).hasNext();
-  }
-
-  @Override
-  public void saveRmlMappingState(String vreName, String rdfData) {
-    final GraphTraversal<Vertex, Vertex>
-      vreT = getVreTraversal(vreName);
-
-    if (vreT.hasNext()) {
-      vreT.next().property(SAVED_MAPPING_STATE, rdfData);
-    }
   }
 
   @Override
@@ -604,12 +436,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       customRelationProperties).mapEntity(entityT, true);
   }
 
-  @Override
-  public Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
-    Optional<Vertex> vertex = indexHandler.findVertexInRdfIndex(collection.getVre(), uri);
-
-    return vertex.map(v -> new TinkerPopToEntityMapper(collection, traversal, mappings).mapEntity(v, withRelations));
-  }
 
   @Override
   public List<RelationType> getRelationTypes() {
@@ -899,79 +725,6 @@ public class TinkerPopOperations implements DataStoreOperations {
     vre.save(graph);
   }
 
-  @Override
-  public Vre ensureVreExists(String vreName) {
-    Vre vre = VreBuilder.vre(vreName, vreName)
-                        .withCollection(vreName + "relations", CollectionBuilder::isRelationCollection)
-                        .build();
-    saveVre(vre);
-    return vre;
-  }
-
-  @Override
-  public void deleteVre(String vreName) {
-    final GraphTraversal<Vertex, Vertex> vreT = traversal
-      .V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
-
-    if (vreT.hasNext()) {
-      final Vertex vreV = vreT.next();
-
-      removeAllRawCollections(vreV);
-      removeCollectionsAndEntities(vreV, true);
-      //indices are automatically kept in sync
-      //edges are also automatically removed
-      vreV.remove();
-
-      loadVres().reload();
-    }
-  }
-
-  private void removeAllRawCollections(Vertex vreV) {
-    traversal.V(vreV.id())
-             .out(RAW_COLLECTION_EDGE_NAME)
-             .union(
-               __.out(RAW_ITEM_EDGE_NAME),
-               __.out(RAW_PROPERTY_EDGE_NAME),
-               __.identity() //the collection
-             )
-             .drop()
-             .toList();//force traversal and thus side-effects
-  }
-
-  private void removeCollectionsAndEntities(Vertex vreV, boolean includingRelationCollection) {
-    GraphTraversal<Vertex, Vertex> traversal = this.traversal
-      .V(vreV.id())
-      .out(HAS_COLLECTION_RELATION_NAME);
-    if (!includingRelationCollection) {
-      traversal = traversal.not(has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true));
-    }
-    traversal
-      .union(
-        __.out(HAS_DISPLAY_NAME_RELATION_NAME),
-        __.out(HAS_PROPERTY_RELATION_NAME),
-        __.out(HAS_ENTITY_NODE_RELATION_NAME)
-          .union(
-            __.out(HAS_ENTITY_RELATION_NAME), //the entities
-            __.identity() //the entityNodes container
-          ),
-        __.identity() //the collection
-      )
-      .drop()
-      .toList();//force traversal and thus side-effects
-  }
-
-  @Override
-  public void removeCollectionsAndEntities(Vre vre) {
-    traversal
-      .V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-      .tryNext()
-      .ifPresent((vreV) -> removeCollectionsAndEntities(vreV, false));
-  }
-
   /*******************************************************************************************************************
    * Support methods:
    ******************************************************************************************************************/
@@ -1115,12 +868,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       "rdfAlternatives", rdfAlternatives
     );
 
-    //FIXME move to IndexHandler
-    final Index<Node> rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
-    org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
-    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfUri);
-    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfAlternatives[0]);
-
     systemPropertyModifier.setCreated(vertex, "timbuctoo", "timbuctoo");
   }
 
@@ -1139,404 +886,6 @@ public class TinkerPopOperations implements DataStoreOperations {
         vertex.property("pid", pidUri.toString());
       }
     );
-  }
-
-  @Override
-  public void addCollectionToVre(Vre vre, CreateCollection createCollection) {
-    // FIXME think of a default way to add collections to VRE's.
-    boolean vreHasCollection = traversal.V()
-                                        .hasLabel(Vre.DATABASE_LABEL)
-                                        .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-                                        .outE(HAS_COLLECTION_RELATION_NAME).otherV()
-                                        .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre))
-                                        .hasNext();
-
-    if (vreHasCollection) {
-      return;
-    }
-
-    Vertex collectionVertex = graph.addVertex(DATABASE_LABEL);
-    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre));
-    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, createCollection.getEntityTypeName(vre));
-    collectionVertex.property(RDF_URI_PROP, createCollection.getRdfUri(vre));
-    collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
-    collectionVertex.property(
-      COLLECTION_IS_UNKNOWN_PROPERTY_NAME,
-      createCollection.isUnknownCollection(vre.getVreName())
-    );
-    final GraphTraversal<Vertex, Vertex> archetypeCollection = traversal.V()
-                                                                        .hasLabel(Vre.DATABASE_LABEL)
-                                                                        .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
-                                                                        .out(HAS_COLLECTION_RELATION_NAME)
-                                                                        .has(COLLECTION_NAME_PROPERTY_NAME,
-                                                                          createCollection.getArchetypeName());
-
-    if (archetypeCollection.hasNext()) {
-      collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.next());
-    }
-
-
-    final Vertex displayName = graph.addVertex(ReadableProperty.DATABASE_LABEL);
-    displayName.property(ReadableProperty.CLIENT_PROPERTY_NAME, "@displayName");
-    displayName.property(LocalProperty.DATABASE_PROPERTY_NAME, RDF_SYNONYM_PROP);
-    displayName.property(ReadableProperty.PROPERTY_TYPE_NAME, RdfImportedDefaultDisplayname.TYPE);
-    collectionVertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayName);
-
-    // add entities vertex
-    Vertex containerVertex = graph.addVertex(COLLECTION_ENTITIES_LABEL);
-    collectionVertex.addEdge(HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
-
-    // add collection to VRE
-    Vertex vreVertex = graph.traversal().V()
-                            .hasLabel(Vre.DATABASE_LABEL)
-                            .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-                            .next();
-    vreVertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
-  }
-
-  @Override
-  public void addPredicateValueTypeVertexToVre(Vre vre) {
-    Vertex predicateValueTypeVertex = graph.addVertex();
-    getVreTraversal(vre.getVreName())
-      .next().addEdge(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME, predicateValueTypeVertex);
-  }
-
-  private Iterator<Vertex> collectionsFor(Vertex entity) {
-    return traversal.V(entity.id())
-                    .in(HAS_ENTITY_RELATION_NAME)
-                    .in(HAS_ENTITY_NODE_RELATION_NAME)
-                    .union(__.identity(), __.out(HAS_ARCHETYPE_RELATION_NAME));
-  }
-
-  @Override
-  public void assertProperty(Vre vre, String entityRdfUri, RdfProperty property) {
-    Vertex vertex = assertEntity(vre, entityRdfUri);
-    Object value;
-    try {
-      // The TinkerPopConverter does not need a collection for the external -> db case.
-      // It does need one for the db -> external case (but we're not using that one here)
-      TinkerPopPropertyConverter propertyConverter = new TinkerPopPropertyConverter(null);
-      Tuple<String, Object> convert = property.getTimProperty().convert(propertyConverter);
-      value = convert.getRight();
-    } catch (IOException e) {
-      LOG.error(
-        "Could not parse timproperty of '{}' with value '{}' for entity '{}'",
-        property.getPredicateUri(),
-        property.getValue(),
-        entityRdfUri
-      );
-      value = property.getValue();
-    }
-    final Object val = value; // to be able to use the value in a lambda
-
-    collectionsFor(vertex).forEachRemaining(collection -> {
-      getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
-        vertex.property(createPropName(entityTypeName, property.getPredicateUri()), val);
-      });
-    });
-
-    assertPredicateAndValueType(vertex, getPredicateValueTypeVertexFor(vre), property);
-    committer.tick();
-  }
-
-  private void assertPredicateAndValueType(Vertex entity, Vertex col, RdfProperty property) {
-    final GraphTraversal<Vertex, Vertex> predicate =
-      traversal.V(col.id()).out(HAS_PREDICATE_RELATION_NAME).has("predicateUri", property.getPredicateUri());
-
-    Vertex predicateVertex;
-    Vertex valueTypeVertex;
-    if (predicate.hasNext()) {
-      predicateVertex = predicate.next();
-    } else {
-      predicateVertex = traversal.addV("predicate").next();
-      predicateVertex.property("predicateUri", property.getPredicateUri());
-      col.addEdge(HAS_PREDICATE_RELATION_NAME, predicateVertex);
-    }
-    GraphTraversal<Vertex, Vertex> valueTypeT = traversal.V(predicateVertex.id()).out(
-      Collection.HAS_VALUE_TYPE_RELATION_NAME)
-                                                         .has("typeUri", property.getTypeUri());
-    if (valueTypeT.hasNext()) {
-      valueTypeVertex = valueTypeT.next();
-    } else {
-      valueTypeVertex = traversal.addV("valueType").next();
-      valueTypeVertex.property("typeUri", property.getTypeUri());
-      predicateVertex.addEdge(Collection.HAS_VALUE_TYPE_RELATION_NAME, valueTypeVertex);
-    }
-
-    valueTypeVertex.addEdge(Collection.APPLIES_TO_RELATION_NAME, entity);
-
-  }
-
-  @Override
-  public void retractProperty(Vre vre, String entityRdfUri, RdfProperty property) {
-    getVertexByRdfUri(vre, entityRdfUri).ifPresent(entity -> {
-      collectionsFor(entity).forEachRemaining(collection -> {
-        getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
-          entity.property(createPropName(entityTypeName, property.getPredicateUri()), property.getValue()).remove();
-        });
-      });
-
-      retractPredicateAndValueType(property, entity);
-    });
-    committer.tick();
-  }
-
-  private void retractPredicateAndValueType(RdfProperty property, Vertex entity) {
-    traversal.V(entity.id()).inE(Collection.APPLIES_TO_RELATION_NAME
-    ).where(__.otherV().has("typeUri", property.getTypeUri())).forEachRemaining(
-      edge -> {
-        Vertex valueType = edge.outVertex();
-        edge.remove();
-        if (!valueType.edges(Direction.OUT, Collection.APPLIES_TO_RELATION_NAME).hasNext()) {
-          Vertex predicateVertex = traversal.V(valueType.id()).in(Collection.HAS_VALUE_TYPE_RELATION_NAME)
-                                            .has("predicateUri", property.getPredicateUri())
-                                            .next();
-          valueType.edges(Direction.IN, Collection.HAS_VALUE_TYPE_RELATION_NAME).forEachRemaining(
-            valueTypeEdge -> valueType.remove()
-          );
-          if (!predicateVertex.edges(Direction.OUT, Collection.HAS_VALUE_TYPE_RELATION_NAME).hasNext()) {
-            predicateVertex.edges(Direction.BOTH).forEachRemaining(
-              predicateEdge -> predicateEdge.remove()
-            );
-            predicateVertex.remove();
-          }
-
-          valueType.remove();
-        }
-      });
-  }
-
-  @Override
-  public Optional<RdfReadProperty> retrieveProperty(Vre vre, String entityRdfUri, String propertyUri) {
-    Optional<Vertex> entityOpt = indexHandler.findVertexInRdfIndex(vre, entityRdfUri);
-
-    if (entityOpt.isPresent()) {
-      Vertex entity = entityOpt.get();
-
-      Iterable<Vertex> collectionOfEntity = () -> collectionsFor(entity);
-
-      Optional<Collection> colOpt = StreamSupport.stream(collectionOfEntity.spliterator(), false)
-                                                 .map(col -> getProp(col, COLLECTION_NAME_PROPERTY_NAME, String.class))
-                                                 .filter(colNameProp -> colNameProp.isPresent())
-                                                 .map(colNameProp -> colNameProp.get())
-                                                 .map(vre::getCollectionForCollectionName)
-                                                 .filter(Optional::isPresent)
-                                                 .map(Optional::get)
-                                                 .findFirst();
-      if (colOpt.isPresent()) {
-        Collection collection = colOpt.get();
-        VertexProperty<String> property = entity.property(createPropName(collection.getEntityTypeName(), propertyUri));
-
-        if (property.isPresent()) {
-          return Optional.of(new RdfReadProperty(propertyUri, property.value()));
-        }
-      }
-    }
-
-    return Optional.empty();
-  }
-
-  @Override
-  public List<PredicateInUse> getPredicatesFor(Collection collection) {
-    List<PredicateInUse> result = Lists.newArrayList();
-    Map<String, Map<String, List<String>>> preds = Maps.newHashMap();
-
-    traversal.V().hasLabel("collection").has("collectionName", collection.getCollectionName())
-             .out(HAS_ENTITY_NODE_RELATION_NAME).out(HAS_ENTITY_RELATION_NAME)
-             .in(Collection.APPLIES_TO_RELATION_NAME)
-             .in(Collection.HAS_VALUE_TYPE_RELATION_NAME)
-             .path()
-             .by() // collection
-             .by() // entityNode
-             .by(RDF_SYNONYM_PROP) // entity
-             .by("typeUri") // valueType
-             .by("predicateUri") // predicate;
-             .forEachRemaining(p -> {
-               List<Object> objects = p.objects();
-               String predicate = (String) objects.get(4);
-               String valueType = (String) objects.get(3);
-               String entityRdfUri = ((String[]) objects.get(2))[0];
-               Map<String, List<String>> valueTypes = preds.computeIfAbsent(predicate, s -> Maps.newHashMap());
-               valueTypes.computeIfAbsent(valueType, s -> Lists.newArrayList(entityRdfUri));
-             });
-    preds.forEach((pk, pv) -> {
-      ImmutablePredicateInUse.Builder predicate = ImmutablePredicateInUse.builder().predicateUri(pk);
-      pv.forEach((vt, entity) -> {
-        predicate.addValueTypes(ImmutableValueTypeInUse.builder().typeUri(vt).addAllEntitiesConnected(entity).build());
-      });
-      result.add(predicate.build());
-    });
-
-    return result;
-  }
-
-  @Override
-  public List<String> getEntitiesWithUnknownType(Vre vre) {
-    Collection defaultColl = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
-
-    return entitiesOfCollection(defaultColl)
-      //all entities cannot reach a collectionNode with a name that is different from the default collection name
-      .not(
-        __.in(HAS_ENTITY_RELATION_NAME)
-          .in(HAS_ENTITY_NODE_RELATION_NAME)
-          .has("collectionName", P.neq(defaultColl.getCollectionName()))
-      )
-      .has(RDF_SYNONYM_PROP)
-      .map(v -> v.get().<String[]>value(RDF_SYNONYM_PROP)[0]).toList();
-  }
-
-  private GraphTraversal<Vertex, Vertex> entitiesOfCollection(Collection coll) {
-    return traversal.V().hasLabel("collection")
-                    .has("collectionName", coll.getCollectionName())
-                    .out(HAS_ENTITY_NODE_RELATION_NAME)
-                    .out(HAS_ENTITY_RELATION_NAME);
-  }
-
-  @Override
-  public void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper) {
-    vre.getCollections().values().forEach(col -> {
-      Long isLatest = entitiesOfCollection(col).has("isLatest").count().next();
-      if (isLatest > 0) {
-        LOG.info("Zo, da's raar! " + isLatest + " " + col.getEntityTypeName());
-      }
-    });
-    vre.getCollections().values().forEach(col -> entitiesOfCollection(col)
-      .not(has("isLatest", false)) //everything without isLatest and everything with isLatest = true
-      .forEachRemaining(v -> {
-        try {
-          UUID uuid = entityFinisherHelper.newId();
-          URI rdfUri = entityFinisherHelper.getRdfUri(col.getCollectionName(), uuid);
-          v.property(RDF_URI_PROP, rdfUri.toString());
-          v.property("tim_id", uuid.toString());
-          v.property("rev", entityFinisherHelper.getRev());
-          setCreated(v, entityFinisherHelper.getChangeTime());
-          if (!v.property("isLatest").isPresent()) { //this is the first time the vertex passes this body
-            v.property("isLatest", true);
-            v = duplicateVertex(traversal, v, indexHandler);
-          }
-          listener.onCreate(col, v);
-          listener.onAddToCollection(col, Optional.empty(), v);
-          committer.tick();
-        } catch (Exception e) {
-          LOG.error("Exception at finishEntities", e);
-        }
-      })
-    );
-  }
-
-  @Override
-  public void addPropertiesToCollection(Collection collection, List<CreateProperty> createProperties) {
-    Vertex vertex = traversal.V().hasLabel("collection").has("collectionName", collection.getCollectionName()).next();
-    String entityTypeName = collection.getEntityTypeName();
-
-    createProperties.forEach(createProperty -> {
-      Vertex newPropertyConfig = graph.addVertex("property");
-      newPropertyConfig.property(LocalProperty.CLIENT_PROPERTY_NAME, createProperty.getClientName());
-      newPropertyConfig
-        .property(LocalProperty.DATABASE_PROPERTY_NAME,
-          createPropName(entityTypeName, createProperty.getRdfUri()));
-      newPropertyConfig.property(LocalProperty.PROPERTY_TYPE_NAME, createProperty.getPropertyType());
-      newPropertyConfig.property("rdfUri", createProperty.getRdfUri());
-      newPropertyConfig.property("typeUri", createProperty.getTypeUri());
-
-      vertex.addEdge(HAS_PROPERTY_RELATION_NAME, newPropertyConfig);
-      if (!vertex.edges(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME).hasNext()) {
-        vertex.addEdge(HAS_INITIAL_PROPERTY_RELATION_NAME, newPropertyConfig);
-      } else {
-        Vertex lastProperty = getLastProperty(vertex.id());
-        lastProperty.addEdge(HAS_NEXT_PROPERTY_RELATION_NAME, newPropertyConfig);
-      }
-    });
-  }
-
-  @Override
-  public void setAdminCollection(Collection collection, Collection adminCollection) {
-    Vertex adminCollectionVertex = traversal
-      .V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .has(VRE_NAME_PROPERTY_NAME, "Admin")
-      .out(HAS_COLLECTION_RELATION_NAME)
-      .has(COLLECTION_NAME_PROPERTY_NAME, adminCollection.getCollectionName())
-      .next();
-
-    Vertex collectionVertex = traversal
-      .V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .out(HAS_COLLECTION_RELATION_NAME)
-      .has(COLLECTION_NAME_PROPERTY_NAME, collection.getCollectionName())
-      .next();
-
-    collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, adminCollectionVertex);
-  }
-
-  private Vertex getLastProperty(Object collectionId) {
-    return traversal.V(collectionId)
-                    .out(HAS_INITIAL_PROPERTY_RELATION_NAME)
-                    .until(__.not(__.outE(HAS_NEXT_PROPERTY_RELATION_NAME)))
-                    .repeat(__.out(HAS_NEXT_PROPERTY_RELATION_NAME))
-                    .next();
-  }
-
-  Vertex assertEntity(Vre vre, String rdfUri) {
-    return getVertexByRdfUri(vre, rdfUri)
-      .orElseGet(() -> createRdfEntity(vre, rdfUri));
-  }
-
-  private Vertex createRdfEntity(Vre vre, String rdfUri) {
-    Vertex vertex = traversal.addV().next();
-    vertex.property(RDF_SYNONYM_PROP, new String[]{rdfUri});
-    vertex.property(
-      "types",
-      jsnA(
-        jsn(defaultEntityTypeName(vre.getVreName())),
-        jsn(defaultEntityTypeName("Admin"))
-      ).toString()
-    );
-    indexHandler.upsertIntoRdfIndex(vre, rdfUri, vertex);
-    indexHandler.upsertIntoAdminRdfIndex(rdfUri, vertex);
-
-    getDefaultCollectionVertex(vre.getVreName()).ifPresent(vreVertex -> {
-      vreVertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
-               .next()
-               .addEdge(HAS_ENTITY_RELATION_NAME, vertex);
-    });
-    //
-    // getDefaultCollectionVertex("Admin").ifPresent(vreVertex -> {
-    //   vreVertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
-    //            .next()
-    //            .addEdge(HAS_ENTITY_RELATION_NAME, vertex);
-    // });
-
-    return vertex;
-  }
-
-  private Optional<Vertex> getDefaultCollectionVertex(String vreName) {
-    if (defaultCollectionVerticesCache.containsKey(vreName)) {
-      return Optional.of(defaultCollectionVerticesCache.get(vreName));
-    } else {
-      GraphTraversal<Vertex, Vertex> vre =
-        traversal.V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vreName));
-      if (vre.hasNext()) {
-        Vertex vreVertex = vre.next();
-        defaultCollectionVerticesCache.put(vreName, vreVertex);
-        return Optional.of(vreVertex);
-      } else {
-        return Optional.empty();
-      }
-    }
-  }
-
-  private Vertex getPredicateValueTypeVertexFor(Vre vre) {
-    return predicateValueTypeVerticesCache.computeIfAbsent(
-      vre.getVreName(),
-      name -> getVreTraversal(vre.getVreName())
-        .out(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME)
-        .next()
-    );
-  }
-
-  Optional<Vertex> getVertexByRdfUri(Vre vre, String uri) {
-    return indexHandler.findVertexInRdfIndex(vre, uri);
   }
 
 }

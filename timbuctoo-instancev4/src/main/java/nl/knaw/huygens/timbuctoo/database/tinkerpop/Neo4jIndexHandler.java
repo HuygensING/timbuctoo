@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import org.apache.lucene.queryparser.flexible.standard.QueryParserUtil;
@@ -29,7 +28,6 @@ import java.util.UUID;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
 
 public class Neo4jIndexHandler implements IndexHandler {
   private static final String QUICK_SEARCH_PROP_NAME = "quickSearch";
@@ -170,67 +168,6 @@ public class Neo4jIndexHandler implements IndexHandler {
     return indexManager().forNodes(ID_INDEX);
   }
 
-  //=====================RDF Uri index=====================
-  @Override
-  public Optional<Vertex> findVertexInRdfIndex(Vre vre, String nodeUri) {
-    String vreName = vre.getVreName();
-    IndexHits<Node> rdfurls = indexManager().forNodes(RDFINDEX_NAME).get(vreName, nodeUri);
-    if (rdfurls.hasNext()) {
-      long vertexId = rdfurls.next().getId();
-      if (rdfurls.hasNext()) {
-        StringBuilder errorMessage = new StringBuilder().append("There is more then one node in ")
-                                                        .append(RDFINDEX_NAME)
-                                                        .append(" for the vre ")
-                                                        .append(vreName)
-                                                        .append(" and the rdfUri ")
-                                                        .append(nodeUri)
-                                                        .append(" namely ")
-                                                        .append(vertexId);
-        rdfurls.forEachRemaining(x -> errorMessage.append(", ").append(x.getId()));
-        LOG.error(errorMessage.toString());
-      }
-      GraphTraversal<Vertex, Vertex> vertexLookup = traversal().V(vertexId);
-      if (vertexLookup.hasNext()) {
-        Vertex vertex = vertexLookup.next();
-        return Optional.of(vertex);
-      } else {
-        LOG.error("Index returned a Node for " + vreName + " - " + nodeUri + " but the node id " + vertexId +
-          "could not be found using Tinkerpop.");
-      }
-    }
-    return Optional.empty();
-  }
-
-  @Override
-  public void upsertIntoRdfIndex(Vre vre, String nodeUri, Vertex vertex) {
-    String vreName = vre.getVreName();
-
-    upsertIntoRdfIndexByName(vreName, nodeUri, vertex);
-  }
-
-  @Override
-  public void upsertIntoAdminRdfIndex(String nodeUri, Vertex vertex) {
-    upsertIntoRdfIndexByName("Admin", nodeUri, vertex);
-  }
-
-  private void upsertIntoRdfIndexByName(String vreName, String nodeUri, Vertex vertex) {
-    Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
-    IndexHits<Node> oldVertex = rdfIndex.get(vreName, nodeUri);
-    if (oldVertex.hasNext()) {
-      rdfIndex.remove(oldVertex.next(), vreName, nodeUri);
-    }
-    Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
-    rdfIndex.add(neo4jNode, vreName, nodeUri);
-  }
-
-  @Override
-  public void removeFromRdfIndex(Vre vre, Vertex vertex) {
-    Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
-    Optional<Node> neo4jNode = vertexToNode(vertex);
-    if (neo4jNode.isPresent()) {
-      rdfIndex.remove(neo4jNode.get(), vre.getVreName());
-    }
-  }
 
   //=====================Edge tim_id index=====================
   @Override

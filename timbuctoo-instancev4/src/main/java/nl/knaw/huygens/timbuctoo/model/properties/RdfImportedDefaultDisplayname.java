@@ -5,7 +5,7 @@ import io.vavr.control.Try;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.RdfProperties.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class RdfImportedDefaultDisplayname extends ReadableProperty {
