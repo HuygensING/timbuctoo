@@ -56,13 +56,15 @@ NOTE: The "import status" of a dataSet can be queried as a metadata property.
 
 ----
 query retrieveData($dataSet:ID!){
-  dataSet(dataSetId:$dataSet){
-    <collection>{
+  dataSet{
+    <datasetName> {
+      <collection>List{
         <items>{
-            <property1>
-            <property2>
-            ...
+          <property1>
+          <property2>
+          ...
         }
+      }
     }
   }
 }
