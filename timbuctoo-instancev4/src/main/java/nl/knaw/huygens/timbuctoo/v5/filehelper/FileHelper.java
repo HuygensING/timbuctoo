@@ -42,17 +42,10 @@ public class FileHelper {
     return createPathToFileSystem(userPath, dataSetId);
   }
 
-  public File fileInRoot(String fileName) {
-    return new File(rootDir, fileName);
-  }
-
   private File createPathToFileSystem(File parent, String pathToCreate) {
     File path = new File(parent, pathToCreate);
     path.mkdir();
     return path;
   }
 
-  public String getRelativePath(File file) {
-    return rootDir.toURI().relativize(file.toURI()).getPath();
-  }
 }
