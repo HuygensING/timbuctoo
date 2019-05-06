@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
@@ -37,6 +38,8 @@ public class CreateDataSetMutation extends Mutation {
       throw new RuntimeException("Data set could not be created");
     } catch (IllegalDataSetNameException e) {
       throw new RuntimeException("Data set id is not supported: " + e.getMessage());
+    } catch (DataSetCreationException e) {
+      throw new RuntimeException(e.getMessage());
     }
   }
 }

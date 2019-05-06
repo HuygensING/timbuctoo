@@ -4,6 +4,7 @@ import io.vavr.control.Either;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
@@ -47,7 +48,8 @@ public class AuthCheck {
         try {
           final DataSet dataSet = dataSetRepository.createDataSet(user, dataSetId);
           return Either.right(Tuple.tuple(user, dataSet));
-        } catch (DataStoreCreationException e) {
+        } catch (DataStoreCreationException | DataSetCreationException e) {
+          LOG.error(e.getMessage());
           return Either.left(Response.serverError().build());
         } catch (IllegalDataSetNameException e) {
           return Either.left(Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build());

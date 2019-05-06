@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage;
@@ -60,12 +61,10 @@ public class DataSetRepositoryTest {
     tempFile.delete();
   }
 
-  @Test
-  public void createDataSetReturnsTheSamesDataSetForEachCall() throws Exception {
-    DataSet dataSet1 = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-    DataSet dataSet2 = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-
-    assertThat(dataSet1, is(sameInstance(dataSet2)));
+  @Test(expected = DataSetCreationException.class)
+  public void createDataSetThrowsAnExceptionWhenTheDataSetAlreadyExist() throws Exception {
+    dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
   }
 
   public ImportManager getImportManager(String user, String dataset) throws Exception {
