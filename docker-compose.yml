@@ -24,9 +24,9 @@ services:
       - 3006:80
   timbuctoo:
     image: huygensing/timbuctoo
-    command: sh -c "if ! [ -f /mapped-data/auth/users.json ]; then mkdir -p /mapped-data/auth; echo '[]' > /mapped-data/auth/users.json; fi; if ! [ -f /mapped-data/auth/logins.json ]; then mkdir -p /mapped-data/auth; echo '[]' > /mapped-data/auth/logins.json; fi; /app/bin/timbuctoo server /app/example_config.yaml"
+    command: sh -c "if ! [ -f /mapped-data/auth/users.json ]; then mkdir -p /mapped-data/auth; echo '[{\"@type\":\"user\",\"displayName\":\"givenNamesurname\",\"persistentId\":\"pid\",\"_id\":\"bc75a716-7965-49b5-bb93-68004ba0d900\"}]' > /mapped-data/auth/users.json; fi; if ! [ -f /mapped-data/auth/logins.json ]; then mkdir -p /mapped-data/auth; echo '[{\"@type\":\"login\",\"userPid\":\"pid\",\"password\":\"Cbjk8GMdx7HhQHgZkAR74FBo76eNWcb9q8R8WPMbup0=\",\"salt\":\"YTQzMjMzMjQtYWJmNC00YjYxLTk2ZDYtZDhkMDY1Nzc5MGJm\",\"userName\":\"user\",\"givenName\":\"givenName\",\"surName\":\"surname\",\"emailAddress\":\"email\",\"organization\":\"organization\"}]' > /mapped-data/auth/logins.json; fi; if ! [ -f /mapped-data/datasets/authorizations.json ]; then mkdir -p /mapped-data/datasets; echo '[{\"vreId\":\"indexer\",\"userId\":\"pid\",\"roles\":[\"USER\"]}]' > /mapped-data/datasets/authorizations.json; fi; /app/bin/timbuctoo server /app/example_config.yaml"
     environment:
-      timbuctoo_elasticsearch_host: http://elasticsearch
+      timbuctoo_elasticsearch_host: elasticsearch
       timbuctoo_elasticsearch_port: 9200
       base_uri: http://localhost:8080
       JAVA_OPTS: ${JAVA_OPTS}
