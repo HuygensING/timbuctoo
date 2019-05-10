@@ -321,4 +321,7 @@ public abstract class DataSet {
     getImportManager().subscribeImportSucceeded(updateListener);
   }
 
+  public List<String> getUnavailableStores() {
+    return getBdbEnvironmentCreator().getUnavailableDatabases(getMetadata().getOwnerId(), getMetadata().getDataSetId());
+  }
 }

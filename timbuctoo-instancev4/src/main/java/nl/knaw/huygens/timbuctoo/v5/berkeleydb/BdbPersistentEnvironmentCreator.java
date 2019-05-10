@@ -18,9 +18,11 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   private static final Logger LOG = LoggerFactory.getLogger(BdbPersistentEnvironmentCreator.class);
@@ -121,4 +123,21 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
 
   }
 
+  @Override
+  public List<String> getUnavailableDatabases(String ownerId, String dataSetName) {
+    final String environmentKey = environmentKey(ownerId, dataSetName);
+    return databases.keySet().stream().filter(key -> key.startsWith(environmentKey)).map(key -> databases.get(key))
+                    .filter(db -> {
+                      try {
+                        db.getConfig();
+                        return false;
+                      } catch (IllegalStateException e) {
+                        return true;
+                      }
+                    })
+                    .map(Database::getDatabaseName)
+                    .map(dbName -> dbName.replace(environmentKey, ""))
+                    .collect(Collectors.toList());
+
+  }
 }
