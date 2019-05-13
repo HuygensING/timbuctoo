@@ -88,7 +88,10 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RsEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.healthchecks.DatabaseAvailabilityCheck;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.ReloadDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StagingBackup;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StopBdbDataStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
@@ -214,6 +217,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
 
     environment.lifecycle().manage(new DataSetRepositoryManager(dataSetRepository));
+    environment.healthChecks().register("dataStoreAvailabilityCheck", new DatabaseAvailabilityCheck(dataSetRepository));
 
     RedirectionServiceFactory redirectionServiceFactory = configuration.getRedirectionServiceFactory();
     RedirectionService redirectionService = redirectionServiceFactory.makeRedirectionService(
@@ -370,6 +374,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, getEntity);
 
     // Admin resources
+    environment.admin().addTask(new ReloadDataSet(dataSetRepository));
     if (securityConfig instanceof OldStyleSecurityFactory) {
       final OldStyleSecurityFactory oldStyleSecurityFactory = (OldStyleSecurityFactory) securityConfig;
       environment.admin().addTask(new UserCreationTask(new LocalUserCreator(
@@ -399,6 +404,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         configuration.getDatabases().getDatabaseLocation()
       )));
     }
+
+    environment.admin().addTask(new StopBdbDataStore(configuration.getDatabases()));
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance

@@ -20,6 +20,11 @@ public class FileHelper {
     rootDir.mkdir();
   }
 
+  public boolean dataSetExists(String userId, String dataSetId) {
+    final File file = new File(new File(rootDir, userId), dataSetId);
+    return file.exists();
+  }
+
   /**
    * Creates a File object and creates the paths on the file system as well.
    */

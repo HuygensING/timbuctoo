@@ -42,6 +42,11 @@ public class FileSystemDataStorage implements DataStorage {
   }
 
   @Override
+  public boolean dataSetExists(String ownerId, String dataSetName) {
+    return fileHelper.dataSetExists(ownerId, dataSetName);
+  }
+
+  @Override
   public DataSetStorage getDataSetStorage(String ownerId, String dataSetName) {
     return new FileSystemDataSetStorage(ownerId, dataSetName, fileHelper, rdfIo);
   }

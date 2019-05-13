@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetExcept
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -59,7 +60,7 @@ public class ResourceSyncImportMutation extends Mutation {
       );
 
     } catch (DataStoreCreationException | IllegalDataSetNameException | IOException |
-      CantRetrieveFileException | CantDetermineDataSetException e) {
+      CantRetrieveFileException | CantDetermineDataSetException | DataSetCreationException e) {
       LOG.error("Failed to do a resource sync import. ", e);
       throw new RuntimeException(e);
     }

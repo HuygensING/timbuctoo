@@ -18,9 +18,11 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -131,5 +133,26 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
         }
       }
     }
+  }
+
+  @Override
+  public List<String> getUnavailableDatabases(String ownerId, String dataSetName) {
+    return databases.keySet().stream().filter(key -> key.startsWith(ownerId)).map(databases::get)
+                    .filter(db -> {
+                      try {
+                        db.getStats(null);
+                        return false;
+                      } catch (IllegalStateException e) {
+                        return true;
+                      }
+                    })
+                    .map(Database::getDatabaseName)
+                    .collect(Collectors.toList());
+
+  }
+
+  @Override
+  public void closeDatabase(String ownerId, String dataSetId, String dataStore) {
+    throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
   }
 }
