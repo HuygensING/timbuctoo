@@ -89,6 +89,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.healthchecks.DatabaseAvailabilityCheck;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.ReloadDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StagingBackup;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
@@ -372,6 +373,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, getEntity);
 
     // Admin resources
+    environment.admin().addTask(new ReloadDataSet(dataSetRepository));
     if (securityConfig instanceof OldStyleSecurityFactory) {
       final OldStyleSecurityFactory oldStyleSecurityFactory = (OldStyleSecurityFactory) securityConfig;
       environment.admin().addTask(new UserCreationTask(new LocalUserCreator(

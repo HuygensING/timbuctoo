@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public interface DataSetMetaData {
 
+  /**
+   * @return the name of the data set without owner prefix
+   */
   String getDataSetId();
 
   String getOwnerId();

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -131,7 +132,8 @@ public class DataSetRepository {
               rdfBaseUri,
               dataStoreFactory,
               () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
-              dataStorage.getDataSetStorage(ownerId, dataSetName), readOnlyChecker
+              dataStorage.getDataSetStorage(ownerId, dataSetName),
+              readOnlyChecker
             );
             ownersSets.put(
               dataSetName,
@@ -142,6 +144,35 @@ public class DataSetRepository {
             throw new IOException(e);
           }
         }
+      }
+    }
+  }
+
+  /**
+   * Method to reload a data set.
+   * This method should only be used by the {@link nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.ReloadDataSet}.
+   * @param dataSetId the combined id of data set to reload
+   */
+  public void reloadDataSet(String dataSetId) throws IOException, DataStoreCreationException {
+    final Tuple<String, String> userDataSet = DataSetMetaData.splitCombinedId(dataSetId);
+    final String userId = userDataSet.getLeft();
+    if (dataSetMap.containsKey(userId)) {
+      final Map<String, DataSet> userSets = dataSetMap.get(userId);
+      final String dataSetName = userDataSet.getRight();
+      if (userSets.containsKey(dataSetName)) {
+        final DataSet dataSet = userSets.remove(dataSetName);
+        final DataSetMetaData metadata = dataSet.getMetadata();
+        dataSet.stop();
+        final DataSet reloadedDataSet = dataSet(
+          metadata,
+          executorService,
+          rdfBaseUri,
+          dataStoreFactory,
+          () -> onUpdated.accept(metadata.getCombinedId()),
+          dataStorage.getDataSetStorage(userId, dataSetName),
+          readOnlyChecker
+        );
+        userSets.put(dataSetName, reloadedDataSet);
       }
     }
   }
