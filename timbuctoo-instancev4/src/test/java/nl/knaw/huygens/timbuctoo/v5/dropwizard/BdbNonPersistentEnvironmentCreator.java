@@ -150,4 +150,9 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
                     .collect(Collectors.toList());
 
   }
+
+  @Override
+  public void closeDatabase(String ownerId, String dataSetId, String dataStore) {
+    throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+  }
 }

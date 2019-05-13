@@ -91,6 +91,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.healthchecks.DatabaseAvailabilityCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.ReloadDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StagingBackup;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StopBdbDataStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
@@ -403,6 +404,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         configuration.getDatabases().getDatabaseLocation()
       )));
     }
+
+    environment.admin().addTask(new StopBdbDataStore(configuration.getDatabases()));
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance

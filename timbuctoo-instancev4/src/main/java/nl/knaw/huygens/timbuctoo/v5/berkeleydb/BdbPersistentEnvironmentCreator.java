@@ -43,7 +43,7 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   }
 
   @Override
-  public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
+  public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetName, String databaseName,
                                                              boolean allowDuplicates, EntryBinding<KeyT> keyBinder,
                                                              EntryBinding<ValueT> valueBinder,
                                                              IsCleanHandler<KeyT, ValueT> cleanHandler)
@@ -53,12 +53,12 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     config.setDeferredWrite(true);
     config.setSortedDuplicates(allowDuplicates);
 
-    String environmentKey = environmentKey(userId, dataSetId);
-    String databaseKey = environmentKey + "_" + databaseName;
+    String environmentKey = environmentKey(userId, dataSetName);
+    String databaseKey = databaseKey(environmentKey, databaseName);
     if (!databases.containsKey(databaseKey)) {
       if (!environmentMap.containsKey(environmentKey)) {
         try {
-          File dbDir = fileHelper.pathInDataSet(userId, dataSetId, "databases");
+          File dbDir = fileHelper.pathInDataSet(userId, dataSetName, "databases");
           Environment dataSetEnvironment = new Environment(dbDir, configuration);
           environmentMap.put(environmentKey, dataSetEnvironment);
         } catch (DatabaseException e) {
@@ -79,6 +79,10 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
       valueBinder,
       cleanHandler
     );
+  }
+
+  private String databaseKey(String environmentKey, String databaseName) {
+    return environmentKey + "_" + databaseName;
   }
 
   private String environmentKey(String userId, String dataSetId) {
@@ -140,4 +144,13 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
                     .collect(Collectors.toList());
 
   }
+
+  @Override
+  public void closeDatabase(String ownerId, String dataSetId, String dataStore) {
+    final String databaseKey = databaseKey(environmentKey(ownerId, dataSetId), dataStore);
+    if (databases.containsKey(databaseKey)) {
+      databases.get(databaseKey).close();
+    }
+  }
+
 }
