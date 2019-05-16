@@ -7,11 +7,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
+import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -22,6 +24,7 @@ import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -33,6 +36,7 @@ public class ElasticSearchFilter implements CollectionFilter {
   public static final String UNIQUE_FIELD_NAME = "_uid";
 
   private static final String METHOD_GET = "GET";
+  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final RestClient restClient;
   private final ObjectMapper mapper;
@@ -72,6 +76,28 @@ public class ElasticSearchFilter implements CollectionFilter {
 
     JsonNode responseNode = mapper.readTree(response.getEntity().getContent());
     return new EsFilterResult(queryNode, responseNode);
+  }
+
+  @Override
+  public Tuple<Boolean, String> isHealthy() {
+    try {
+      final Response response = restClient.performRequest(METHOD_GET, "_cluster/health");
+      final StatusLine statusLine = response.getStatusLine();
+      if (statusLine.getStatusCode() != 200) {
+        return Tuple.tuple(false, "Request failed: " + statusLine.getReasonPhrase());
+      }
+
+      final JsonNode jsonNode = OBJECT_MAPPER.readTree(response.getEntity().getContent());
+      final String status = jsonNode.get("status").asText();
+      if (status.equals("red")) {
+        return Tuple.tuple(false, "Elasticsearch cluster status is 'red'.");
+      }
+
+      return Tuple.tuple(true, "Elasticsearch filter is healthy.");
+    } catch (IOException e) {
+      LoggerFactory.getLogger(ElasticSearchFilter.class).error("Elasticsearch request failed", e);
+      return Tuple.tuple(false, "Request threw an exception: " + e.getMessage());
+    }
   }
 
   protected ObjectNode elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize)

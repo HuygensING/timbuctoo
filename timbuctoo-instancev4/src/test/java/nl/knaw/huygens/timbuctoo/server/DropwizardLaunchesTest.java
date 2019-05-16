@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server;
 
+import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.junit.ClassRule;
@@ -32,7 +33,11 @@ public class DropwizardLaunchesTest {
   @ClassRule
   public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
     TimbuctooV4.class,
-    "example_config.yaml"
+    "example_config.yaml",
+    ConfigOverride.config(
+        "collectionFilters.elasticsearch.@class",
+        "nl.knaw.huygens.timbuctoo.server.TestCollectionFilter"
+    )
   );
 
 

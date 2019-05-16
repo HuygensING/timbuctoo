@@ -88,6 +88,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RsEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.healthchecks.CollectionFilterCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.healthchecks.DatabaseAvailabilityCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.ReloadDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StagingBackup;
@@ -179,6 +180,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight()));
     });
 
+    configuration.getCollectionFilters().entrySet().forEach(entry -> {
+      register(environment, entry.getKey() + "Check", new CollectionFilterCheck(entry.getValue()));
+    });
+
     // Database migration
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
 
@@ -191,7 +196,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
     final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
 
-    UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
+    final UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
     final UrlGenerator pathWithoutVersionAndRevision =
@@ -217,7 +222,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
 
     environment.lifecycle().manage(new DataSetRepositoryManager(dataSetRepository));
-    environment.healthChecks().register("dataStoreAvailabilityCheck", new DatabaseAvailabilityCheck(dataSetRepository));
+    register(environment, "dataStoreAvailabilityCheck", new DatabaseAvailabilityCheck(dataSetRepository));
 
     RedirectionServiceFactory redirectionServiceFactory = configuration.getRedirectionServiceFactory();
     RedirectionService redirectionService = redirectionServiceFactory.makeRedirectionService(
