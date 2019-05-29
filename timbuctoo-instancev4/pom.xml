@@ -148,7 +148,7 @@
     <jsonld-java.version>0.12.3</jsonld-java.version>
     <rdf4j.version>2.4.5</rdf4j.version>
     <xmlunit.version>2.6.2</xmlunit.version>
-    <jackson.version>2.9.8</jackson.version>
+    <jackson.version>2.9.9</jackson.version>
     <!-- Maven plugins -->
     <appassembler.version>2.0.0</appassembler.version>
     <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
