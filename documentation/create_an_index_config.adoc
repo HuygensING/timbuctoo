@@ -18,7 +18,7 @@ mutation setIndexConfig($dataSetId:String! $collectionUri:String! $indexConfig: 
 [source, json]
 ----
 {
-	"dataSetId": "ufdsasb282bf87b44e9222112670efdsa668571f4__data_set",
+  "dataSetId": "ufdsasb282bf87b44e9222112670efdsa668571f4__data_set",
   "collectionUri": "http://full.uri/to/collection",
   "indexConfig": {
     "facet": [
