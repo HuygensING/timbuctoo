@@ -463,7 +463,7 @@ query CollectionMetadata {
 ----
 
 === Set the index configuration
-See for more information link:create_an_index_config[Create an index configuration]
+See for more information link:create_an_index_config.adoc[Create an index configuration]
 
 === Reset index configuration to default
 
