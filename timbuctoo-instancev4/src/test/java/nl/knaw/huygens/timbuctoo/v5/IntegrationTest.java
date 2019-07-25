@@ -642,7 +642,7 @@ public class IntegrationTest {
   }
 
   @Test
-  public void resourceSyncDataSet() throws Exception{
+  public void resourceSyncDataSet() throws Exception {
     String dataSetName = "resourcesync" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
         "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
