@@ -642,6 +642,37 @@ public class IntegrationTest {
   }
 
   @Test
+  public void resourceSyncDataSet() throws Exception{
+    String dataSetName = "resourcesync" + UUID.randomUUID().toString().replace("-", "_");
+    Response uploadResponse = multipartPost(
+        "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+        new File(getResource(IntegrationTest.class, "test.nqud").toURI()),
+        "application/n-quads",
+        ImmutableMap.of(
+            "encoding", "UTF-8"
+        )
+    );
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
+
+    Response getDataSet = call("/v5/resourcesync/" + PREFIX + "/" + dataSetName + "/dataset.nq").get();
+    assertThat(getDataSet.getStatus(), is(200));
+
+    final String dataSet = getDataSet.readEntity(String.class);
+
+    String graph = "<http://example.org/datasets/" + PREFIX + "/" + dataSetName + "/>";
+    String subject1 = "<http://one.example/subject1>";
+    String subject2 = "<http://one.example/subject2>";
+    String object1 = "<http://one.example/object1>";
+    String object2 = "<http://one.example/object2>";
+    String predicate1 = "<http://one.example/predicate1>";
+    String predicate2 = "<http://one.example/predicate2>";
+    assertThat(dataSet, is(
+        subject1 + " " + predicate1 + " " + object1 + " " + graph +  " .\n" +
+        subject2 + " " + predicate2 + " " + object2 + " " + graph +  " .\n"
+    ));
+  }
+
+  @Test
   public void succeedingRdfUploadResourceSync() throws Exception {
     String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
