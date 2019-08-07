@@ -45,12 +45,13 @@ public class EsFilterResult implements FilterResult {
 
   @Override
   public String getNextToken() {
-    String token = null;
-    List<JsonNode> sortNodes = resultNode.findValues("sort");
-    if (!sortNodes.isEmpty()) {
-      token = sortNodes.get(sortNodes.size() - 1).toString();
+    final int prevFrom = queryNode.has("from") ? queryNode.get("from").asInt() : 0;
+    final int size = queryNode.get("size").asInt();
+    final int nextFrom = prevFrom + size;
+    if (getTotal() > nextFrom) {
+      return "" + nextFrom;
     }
-    return token;
+    return null;
   }
 
   @Override
