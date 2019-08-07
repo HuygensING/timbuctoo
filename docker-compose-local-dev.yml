@@ -26,7 +26,7 @@ services:
     image: huygensing/timbuctoo
     command: ${CMD:-/app/bin/timbuctoo server /app/example_config.yaml}
     environment:
-      timbuctoo_elasticsearch_host: http://elasticsearch
+      timbuctoo_elasticsearch_host: elasticsearch
       timbuctoo_elasticsearch_port: 9200
       base_uri: http://localhost:8080
       JAVA_OPTS: ${JAVA_OPTS}
