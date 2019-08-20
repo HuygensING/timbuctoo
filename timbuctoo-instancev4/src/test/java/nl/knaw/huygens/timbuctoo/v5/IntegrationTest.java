@@ -42,7 +42,6 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -2740,7 +2739,6 @@ public class IntegrationTest {
     );
     assertThat(uploadResponse.getStatus(), is(201));
 
-    // query person before delete
     Response queryData = call("/v5/graphql")
         .accept("text/csv")
         .post(Entity.entity(jsnO(
@@ -2773,6 +2771,69 @@ public class IntegrationTest {
         "Jansen,Jan,,\r\n" +
         "van Hasselt,Alexander,Michiel,Willem\r\n"
     ));
+  }
+
+  @Test
+  public void collectionHasCursors() throws Exception {
+    String dataSetName = "cursors" + UUID.randomUUID().toString().replace("-", "_");
+    String dataSetId = createDataSetId(dataSetName);
+    multipartPost(
+        "/v5/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
+        new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+        "text/turtle",
+        ImmutableMap.of(
+            "encoding", "UTF-8",
+            "uri", "http://example.com/replacedata"
+        )
+    );
+
+    Response nextCursorResponse = call("/v5/graphql")
+        .accept(MediaType.APPLICATION_JSON)
+        .post(Entity.entity(jsnO(
+            "query",
+            jsn(
+                "query {\n" +
+                    "  dataSets {\n" +
+                    "    " + dataSetId + "{\n" +
+                    "      clusius_PersonsList {\n" +
+                    "        nextCursor" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}"
+            )
+        ).toString(), MediaType.APPLICATION_JSON));
+    ObjectNode responseData = nextCursorResponse.readEntity(ObjectNode.class);
+    JsonNode nextCursor = responseData.findValue("nextCursor");
+    assertThat(nextCursor.isTextual(), is(true));
+
+
+    Response prevCursorResponse = call("/v5/graphql")
+        .accept(MediaType.APPLICATION_JSON)
+        .post(Entity.entity(jsnO(
+            "query",
+            jsn(
+                "query($cursor: ID)  {\n" +
+                    "  dataSets {\n" +
+                    "    " + dataSetId + " {\n" +
+                    "      clusius_PersonsList(cursor: $cursor) {\n" +
+                    "        prevCursor\n" +
+                    "        nextCursor\n" +
+                    "        items {\n" +
+                    "          title {\n" +
+                    "            value\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}"
+            ),
+            "variables", jsnO("cursor", jsn(nextCursor.asText()))
+        ).toString(), MediaType.APPLICATION_JSON));
+    responseData = prevCursorResponse.readEntity(ObjectNode.class);
+    JsonNode prevCursor = responseData.findValue("prevCursor");
+    assertThat(prevCursor.isTextual(), is(true));
   }
 
   private List<String> getDataSetNamesOfDummy() {
