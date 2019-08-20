@@ -45,4 +45,37 @@ public class EsFilterResultTest {
     assertThat(nextToken, is(nullValue()));
   }
 
+  @Test
+  public void getPrevTokenReturnsNullWhenCurrentFromIsZero() {
+    final ObjectNode queryNode = jsnO("from", jsn(0), "size", jsn(10));
+    final ObjectNode resultNode = jsnO("hits", jsnO("total", jsn(20)));
+    final EsFilterResult instance = new EsFilterResult(queryNode, resultNode);
+
+    final String prevToken = instance.getPrevToken();
+
+    assertThat(prevToken, is(nullValue()));
+  }
+
+  @Test
+  public void getPrevTokenReturnsNonNullWhenCurrentFromIsBiggerThatZero() {
+    final ObjectNode queryNode = jsnO("from", jsn(10), "size", jsn(10));
+    final ObjectNode resultNode = jsnO("hits", jsnO("total", jsn(20)));
+    final EsFilterResult instance = new EsFilterResult(queryNode, resultNode);
+
+    final String prevToken = instance.getPrevToken();
+
+    assertThat(prevToken, is(notNullValue()));
+  }
+
+  @Test
+  public void getPrevTokenReturnsZeroWhenCurrentFromMinusSizeIsSmallerThanZero() {
+    final ObjectNode queryNode = jsnO("from", jsn(10), "size", jsn(12));
+    final ObjectNode resultNode = jsnO("hits", jsnO("total", jsn(20)));
+    final EsFilterResult instance = new EsFilterResult(queryNode, resultNode);
+
+    final String prevToken = instance.getPrevToken();
+
+    assertThat(prevToken, is("0"));
+  }
+
 }

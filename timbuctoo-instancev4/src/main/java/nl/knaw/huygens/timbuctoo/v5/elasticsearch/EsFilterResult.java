@@ -45,11 +45,21 @@ public class EsFilterResult implements FilterResult {
 
   @Override
   public String getNextToken() {
-    final int prevFrom = queryNode.has("from") ? queryNode.get("from").asInt() : 0;
+    final int currentFrom = queryNode.has("from") ? queryNode.get("from").asInt() : 0;
     final int size = queryNode.get("size").asInt();
-    final int nextFrom = prevFrom + size;
+    final int nextFrom = currentFrom + size;
     if (getTotal() > nextFrom) {
       return "" + nextFrom;
+    }
+    return null;
+  }
+
+  @Override
+  public String getPrevToken() {
+    final int currentFrom = queryNode.has("from") ? queryNode.get("from").asInt() : 0;
+    if (currentFrom > 0) {
+      final int size = queryNode.get("size").asInt();
+      return "" + Math.max(currentFrom - size, 0);
     }
     return null;
   }
@@ -98,4 +108,6 @@ public class EsFilterResult implements FilterResult {
     }
     return result;
   }
+
+
 }

@@ -10,4 +10,6 @@ public interface FilterResult {
   int getTotal();
 
   List<Facet> getFacets();
+
+  String getPrevToken();
 }

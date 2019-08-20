@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -104,7 +103,7 @@ public class ElasticSearchFilter implements CollectionFilter {
     }
   }
 
-  protected ObjectNode elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize)
+  protected ObjectNode elaborateQuery(String elasticSearchQuery, String fromValue, int preferredPageSize)
     throws IOException {
     try {
       ObjectNode node = (ObjectNode) mapper.readTree(elasticSearchQuery);
@@ -117,8 +116,8 @@ public class ElasticSearchFilter implements CollectionFilter {
       node.put("size", preferredPageSize);
 
       // from
-      if (token != null && !token.isEmpty()) {
-        node.set("from", new IntNode(getFrom(token)));
+      if (fromValue != null && !fromValue.isEmpty()) {
+        node.set("from", new IntNode(getFrom(fromValue)));
       } else {
         node.remove("from");
       }
