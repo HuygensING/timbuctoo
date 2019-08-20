@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -24,6 +25,7 @@ import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -37,6 +39,7 @@ public class ElasticSearchFilter implements CollectionFilter {
 
   private static final String METHOD_GET = "GET";
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  public static final Logger LOG = LoggerFactory.getLogger(ElasticSearchFilter.class);
 
   private final RestClient restClient;
   private final ObjectMapper mapper;
@@ -95,16 +98,15 @@ public class ElasticSearchFilter implements CollectionFilter {
 
       return Tuple.tuple(true, "Elasticsearch filter is healthy.");
     } catch (IOException e) {
-      LoggerFactory.getLogger(ElasticSearchFilter.class).error("Elasticsearch request failed", e);
+      LOG.error("Elasticsearch request failed", e);
       return Tuple.tuple(false, "Request threw an exception: " + e.getMessage());
     }
   }
 
-  protected ObjectNode elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize)
+  protected ObjectNode elaborateQuery(String elasticSearchQuery, String fromValue, int preferredPageSize)
     throws IOException {
     try {
       ObjectNode node = (ObjectNode) mapper.readTree(elasticSearchQuery);
-      ArrayNode searchAfterNode = (ArrayNode) node.findValue("search_after");
 
       // size -1 gives the default 10 results. size 0 gives 0 results. totals are always given.
       // requests without a 'query' clause are legal, so don't check.
@@ -113,15 +115,11 @@ public class ElasticSearchFilter implements CollectionFilter {
       // UNIQUE_FIELD_NAME).
       node.put("size", preferredPageSize);
 
-      // search_after
-      if (token != null && !token.isEmpty()) {
-        if (searchAfterNode == null) {
-          searchAfterNode = node.putArray("search_after");
-        }
-        searchAfterNode.removeAll();
-        searchAfterNode.addAll((ArrayNode) mapper.readTree(token));
+      // from
+      if (fromValue != null && !fromValue.isEmpty()) {
+        node.set("from", new IntNode(getFrom(fromValue)));
       } else {
-        node.remove("search_after");
+        node.remove("from");
       }
 
       // sort
@@ -138,6 +136,15 @@ public class ElasticSearchFilter implements CollectionFilter {
     } catch (IOException e) {
       throw new IOException("Elasticsearch query is not a wellformed JSON document", e);
     }
+  }
+
+  private int getFrom(String token) {
+    try {
+      return Integer.parseInt(token);
+    } catch (IllegalArgumentException ex) {
+      LOG.error("Token not a number", ex);
+    }
+    return 0;
   }
 
 

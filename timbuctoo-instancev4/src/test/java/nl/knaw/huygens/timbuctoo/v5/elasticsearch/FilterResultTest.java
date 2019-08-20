@@ -32,7 +32,7 @@ public class FilterResultTest {
     // System.out.println(pageableResult.getIdList());
     assertThat(pageableResult.getUriList(), contains("348", "490", "427"));
 
-    String expectedToken = "[1463,\"account#427\"]";
+    String expectedToken = "3";
     assertThat(pageableResult.getNextToken(), equalTo(expectedToken));
 
     assertThat(pageableResult.getTotal(), equalTo(1000));
@@ -41,7 +41,7 @@ public class FilterResultTest {
 
   @Test
   public void readEmptyResult() throws Exception {
-    EsFilterResult pageableResult = new EsFilterResult(null, createEmptyResult(), "_id");
+    EsFilterResult pageableResult = new EsFilterResult(createQuery(), createEmptyResult(), "_id");
 
     assertThat(pageableResult.getUriList().size(), equalTo(0));
     assertThat(pageableResult.getNextToken(), equalTo(null));

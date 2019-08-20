@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -12,9 +10,6 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-/**
- * Created on 2017-10-02 12:57.
- */
 public class ElasticSearchFilterTest {
 
   private static ElasticSearchFilter eSearch;
@@ -26,7 +21,7 @@ public class ElasticSearchFilterTest {
 
   @Test
   public void elaborateEmptyQuery() throws Exception {
-    // empty query with and without token.
+    // empty query with and without from.
     String query = "{}";
     String expectedSort = "{\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\":\"desc\"}";
 
@@ -34,43 +29,39 @@ public class ElasticSearchFilterTest {
 
     JsonNode sizeNode = node.findValue("size");
     assertThat(sizeNode.asInt(), equalTo(5));
-    assertThat(node.has("search_after"), equalTo(false));
+    assertThat(node.has("from"), equalTo(false));
     JsonNode sortNode = node.findValue("sort");
     assertThat(sortNode.elements().next().toString(), equalTo(expectedSort));
     String expected = "{\"size\":5,\"sort\":[" + expectedSort + "]}";
     assertThat(node.toString(), equalTo(expected));
-    //System.out.println(node.toString()); // {"size":5,"sort":[{"_uid":"desc"}]}
 
-    ArrayNode token = JsonNodeFactory.instance.arrayNode();
-    token.add(123);
-    expected = "{\"size\":6,\"search_after\":[123],\"sort\":[" + expectedSort + "]}";
-    node = eSearch.elaborateQuery(query, token.toString(), 6);
+    // Add from to query
+    expected = "{\"size\":6,\"from\":123,\"sort\":[" + expectedSort + "]}";
+    node = eSearch.elaborateQuery(query, "123", 6);
 
     sizeNode = node.findValue("size");
     assertThat(sizeNode.asInt(), equalTo(6));
-    ArrayNode searchAfterNode = (ArrayNode) node.findValue("search_after");
-    assertThat(searchAfterNode.elements().next().asInt(), equalTo(123));
+    JsonNode from = node.findValue("from");
+    assertThat(from.asInt(), equalTo(123));
     sortNode = node.findValue("sort");
     assertThat(sortNode.elements().next().toString(), equalTo(expectedSort));
     assertThat(node.toString(), equalTo(expected));
-    //System.out.println(node.toString()); // {"size":6,"search_after":[123],"sort":[{"_uid":"desc"}]}
   }
 
   @Test
   public void elaborateCompleteQuery() throws Exception {
     String query = "{\n" +
-      "    \"size\": 3,\n" +
-      "    \"query\": {\n" +
-      "        \"match\" : {\n" +
-      "            \"gender\" : \"F\"\n" +
-      "        }\n" +
-      "    },\n" +
-      "    \"search_after\": [1314, 315],\n" +
-      "    \"sort\": [\n" +
-      "        {\"balance\": \"asc\"},\n" +
-      "        {\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
-      "    ]\n" +
-      "}";
+        "    \"size\": 3,\n" +
+        "    \"query\": {\n" +
+        "        \"match\" : {\n" +
+        "            \"gender\" : \"F\"\n" +
+        "        }\n" +
+        "    },\n" +
+        "    \"sort\": [\n" +
+        "        {\"balance\": \"asc\"},\n" +
+        "        {\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
+        "    ]\n" +
+        "}";
     testElaborate(query);
   }
 
@@ -78,17 +69,17 @@ public class ElasticSearchFilterTest {
   public void elaborateIncompleteQuery() throws Exception {
     // missing unique field.
     String query = "{\n" +
-      "    \"size\": 3,\n" +
-      "    \"query\": {\n" +
-      "        \"match\" : {\n" +
-      "            \"gender\" : \"F\"\n" +
-      "        }\n" +
-      "    },\n" +
-      "    \"search_after\": [1314, 315],\n" +
-      "    \"sort\": [\n" +
-      "        {\"balance\": \"asc\"}\n" +
-      "    ]\n" +
-      "}";
+        "    \"size\": 3,\n" +
+        "    \"query\": {\n" +
+        "        \"match\" : {\n" +
+        "            \"gender\" : \"F\"\n" +
+        "        }\n" +
+        "    },\n" +
+        "    \"sort\": [\n" +
+        "        {\"balance\": \"asc\"}\n" +
+        "    ],\n" +
+        "    \"from\": 1314\n" +
+        "}";
     testElaborate(query);
   }
 
@@ -109,27 +100,20 @@ public class ElasticSearchFilterTest {
     String expectedSort = expectedSort1 + "," + expectedSort2;
     String expected = "{\"size\":5,\"query\":{\"match\":{\"gender\":\"F\"}},\"sort\":[" + expectedSort + "]}";
     assertThat(node.toString(), equalTo(expected));
-    // System.out.println(node.toString());
-    // {"size":5,"query":{"match":{"gender":"F"}},"sort":[{"balance":"asc"},{"_uid":"desc"}]}
 
-    ArrayNode token = JsonNodeFactory.instance.arrayNode();
-    token.add(49223);
-    token.add(123);
-    expected = "{\"size\":6,\"query\":{\"match\":{\"gender\":\"F\"}},\"search_after\":[49223,123]," +
-      "\"sort\":[" + expectedSort + "]}";
-    node = eSearch.elaborateQuery(query, token.toString(), 6);
+    expected = "{\"size\":6,\"query\":{\"match\":{\"gender\":\"F\"}},\"sort\":[" + expectedSort + "]," +
+        "\"from\":49223}";
+    node = eSearch.elaborateQuery(query, "49223", 6);
 
     sizeNode = node.findValue("size");
     assertThat(sizeNode.asInt(), equalTo(6));
-    ArrayNode searchAfterNode = (ArrayNode) node.findValue("search_after");
-    assertThat(searchAfterNode.toString(), equalTo("[49223,123]"));
+    JsonNode searchAfterNode = node.findValue("from");
+    assertThat(searchAfterNode.toString(), equalTo("49223"));
     sortNode = node.findValue("sort");
     sortIter = sortNode.elements();
     assertThat(sortIter.next().toString(), equalTo(expectedSort1));
     assertThat(sortIter.next().toString(), equalTo(expectedSort2));
     assertThat(node.toString(), equalTo(expected));
-    // System.out.println(node.toString());
-    // {"size":6,"query":{"match":{"gender":"F"}},"search_after":[49223,123],"sort":[{"balance":"asc"},{"_uid":"desc"}]}
   }
 
 }

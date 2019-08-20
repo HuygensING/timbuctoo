@@ -36,7 +36,7 @@ public class CollectionDataFetcher implements CollectionFetcher {
       try {
         final FilterResult result = arguments.getFilter().get().query();
         return PaginatedList.create(
-          null,
+          result.getPrevToken(),
           result.getNextToken(),
           result.getUriList().stream().map(x -> new LazyTypeSubjectReference(x, dataSet)).collect(Collectors.toList()),
           Optional.of((long) result.getTotal()),
