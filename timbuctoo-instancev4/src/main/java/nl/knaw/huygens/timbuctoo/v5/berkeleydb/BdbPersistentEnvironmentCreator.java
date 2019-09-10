@@ -9,6 +9,7 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Durability;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.je.util.DbBackup;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
@@ -87,6 +88,35 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
 
   private String environmentKey(String userId, String dataSetId) {
     return userId + "_" + dataSetId;
+  }
+
+  @Override
+  public void backUpDatabases(String ownerId, String dataSetId) {
+    final Environment environment = environmentMap.get(environmentKey(ownerId, dataSetId));
+    // make sure all data synced to disc
+    environment.sync();
+
+    // final DbBackup dbBackup = new DbBackup(environment);
+    //
+    // try {
+    //      // Copy the necessary files to archival storage.
+    //       String[] filesToCopy = dbBackup.getLogFilesInBackupSet();
+    //       myCopyFiles(env, dbBackup, filesToCopy, destDir);
+    //
+    //       // Delete files that are no longer needed.
+    //       // WARNING: This should only be done after copying all new files.
+    //       String[] filesInSnapshot = backupHelper.getLogFilesInSnapshot();
+    //       myDeleteUnusedFiles(destDir, filesInSnapshot);
+    //
+    //      // Update knowledge of last file saved in the backup set.
+    //       lastFileInPrevBackup = backupHelper.getLastFileInBackupSet();
+    //       // Save lastFileInPrevBackup persistently here ...
+    //  } finally {
+    //      // Remember to exit backup mode, or the JE cleaner cannot delete
+    //       // log files and disk usage will grow without bounds.
+    //   dbBackup.endBackup();
+    //   }
+
   }
 
   public void closeEnvironment(String ownerId, String dataSetId) {

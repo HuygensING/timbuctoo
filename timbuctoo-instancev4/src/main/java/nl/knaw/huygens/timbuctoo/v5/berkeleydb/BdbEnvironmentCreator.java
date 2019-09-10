@@ -25,4 +25,6 @@ public interface BdbEnvironmentCreator {
   List<String> getUnavailableDatabases(String ownerId, String dataSetName);
 
   void closeDatabase(String ownerId, String dataSetId, String dataStore);
+
+  void backUpDatabases(String ownerId, String dataSetId);
 }
