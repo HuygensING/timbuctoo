@@ -15,7 +15,7 @@ The custom provenance will be added to the plan that contains all of the data fo
 The provenance will also be added to the entity, so it can be used by the user.
 
 === Provenance schema additions
-For the whole provenance schema see link:tim-default-provenance.adoc[Timbuctoo ctoprovenance schema]
+For the whole provenance schema see link:tim-default-provenance.adoc[Timbuctoo provenance schema]
 
 Additions to `prov:Plan`:
 ----
