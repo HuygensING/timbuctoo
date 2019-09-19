@@ -1,8 +1,8 @@
-FROM openjdk:8-jdk
+FROM openjdk:11-jdk
 
 RUN apt-get update && apt-get install -y curl tar
 
-ARG MAVEN_VERSION=3.3.9
+ARG MAVEN_VERSION=3.6.2
 ARG USER_HOME_DIR="/root"
 
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
@@ -25,7 +25,7 @@ COPY ./timbuctoo-instancev4/pom.xml ./timbuctoo-instancev4/pom.xml
 COPY ./pom.xml ./pom.xml
 COPY ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml
 
-COPY ./maven-prefill /root/.m2/repository
+# COPY ./maven-prefill /root/.m2/repository
 
 RUN mvn clean package dependency:go-offline
 
