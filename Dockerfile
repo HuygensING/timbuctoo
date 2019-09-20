@@ -1,4 +1,4 @@
-FROM huygensing/timbuctoo:buildbase
+FROM huygensing/timbuctoo:buildbase-11
 
 COPY ./ContractDiff ./ContractDiff
 COPY ./HttpCommand ./HttpCommand
