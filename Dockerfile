@@ -1,4 +1,4 @@
-FROM huygensing/timbuctoo:buildbase
+FROM huygensing/timbuctoo:buildbase-11
 
 COPY ./ContractDiff ./ContractDiff
 COPY ./HttpCommand ./HttpCommand
@@ -11,12 +11,11 @@ COPY ./pom.xml ./pom.xml
 COPY ./timbuctoo-instancev4/example_config.yaml ./timbuctoo-instancev4/example_config.yaml
 RUN mvn clean package
 
-FROM openjdk:8-jre-alpine
+FROM openjdk:11-jre-slim
 
 WORKDIR /app
 
-RUN apk add --no-cache jq && \
-  mkdir -p /root/data/dataSets && \
+RUN mkdir -p /root/data/dataSets && \
   mkdir -p /root/data/neo4j && \
   mkdir -p /root/data/auth/authorizations && \
   echo "[]" > /root/data/auth/logins.json && \
