@@ -325,7 +325,7 @@ public abstract class DataSet {
     return getBdbEnvironmentCreator().getUnavailableDatabases(getMetadata().getOwnerId(), getMetadata().getDataSetId());
   }
 
-  public void backupDatabases() {
+  public void backupDatabases() throws IOException {
     getBdbEnvironmentCreator().backUpDatabases(getMetadata().getOwnerId(), getMetadata().getDataSetId());
   }
 }

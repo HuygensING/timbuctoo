@@ -4,6 +4,7 @@ import com.sleepycat.bind.EntryBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface BdbEnvironmentCreator {
@@ -26,5 +27,5 @@ public interface BdbEnvironmentCreator {
 
   void closeDatabase(String ownerId, String dataSetId, String dataStore);
 
-  void backUpDatabases(String ownerId, String dataSetId);
+  void backUpDatabases(String ownerId, String dataSetId) throws IOException;
 }
