@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,8 +29,9 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   private static final Logger LOG = LoggerFactory.getLogger(BdbPersistentEnvironmentCreator.class);
   protected final EnvironmentConfig configuration;
   private final String databaseLocation;
-  Map<String, Environment> environmentMap = new HashMap<>();
-  Map<String, Database> databases = new HashMap<>();
+  private final BdbBackupper bdbBackupper;
+  private Map<String, Environment> environmentMap = new HashMap<>();
+  private Map<String, Database> databases = new HashMap<>();
   private FileHelper fileHelper;
 
   @JsonCreator
@@ -40,6 +42,7 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     configuration.setDurability(Durability.COMMIT_NO_SYNC);
     configuration.setAllowCreate(true);
     configuration.setSharedCache(true);
+    bdbBackupper = new BdbBackupper();
   }
 
   @Override
@@ -58,7 +61,7 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     if (!databases.containsKey(databaseKey)) {
       if (!environmentMap.containsKey(environmentKey)) {
         try {
-          File dbDir = fileHelper.pathInDataSet(userId, dataSetName, "databases");
+          File dbDir = databasesPath(userId, dataSetName);
           Environment dataSetEnvironment = new Environment(dbDir, configuration);
           environmentMap.put(environmentKey, dataSetEnvironment);
         } catch (DatabaseException e) {
@@ -81,12 +84,32 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     );
   }
 
+  private File databasesPath(String userId, String dataSetName) {
+    return fileHelper.pathInDataSet(userId, dataSetName, "databases");
+  }
+
+  private File databaseBackupPath(String ownerId, String dataSetId) {
+    return fileHelper.pathInDataSet(ownerId, dataSetId, "databases.bak");
+  }
+
   private String databaseKey(String environmentKey, String databaseName) {
     return environmentKey + "_" + databaseName;
   }
 
   private String environmentKey(String userId, String dataSetId) {
     return userId + "_" + dataSetId;
+  }
+
+  @Override
+  public void backUpDatabases(String ownerId, String dataSetId) throws IOException {
+    final Environment environment = environmentMap.get(environmentKey(ownerId, dataSetId));
+    // make sure all data synced to disc
+
+    bdbBackupper.backupDatabase(
+        environment,
+        databasesPath(ownerId, dataSetId).toPath(),
+        databaseBackupPath(ownerId, dataSetId).toPath()
+    );
   }
 
   public void closeEnvironment(String ownerId, String dataSetId) {

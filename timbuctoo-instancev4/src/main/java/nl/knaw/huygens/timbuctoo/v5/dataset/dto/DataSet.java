@@ -324,4 +324,8 @@ public abstract class DataSet {
   public List<String> getUnavailableStores() {
     return getBdbEnvironmentCreator().getUnavailableDatabases(getMetadata().getOwnerId(), getMetadata().getDataSetId());
   }
+
+  public void backupDatabases() throws IOException {
+    getBdbEnvironmentCreator().backUpDatabases(getMetadata().getOwnerId(), getMetadata().getDataSetId());
+  }
 }

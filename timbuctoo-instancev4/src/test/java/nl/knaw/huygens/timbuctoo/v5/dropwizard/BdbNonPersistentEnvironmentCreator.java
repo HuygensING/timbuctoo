@@ -107,6 +107,10 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
     }
   }
 
+  @Override
+  public void backUpDatabases(String ownerId, String dataSetId) {
+    // nothing to do
+  }
 
   public void close() throws DatabaseException, IOException {
     for (Database database : databases.values()) {
