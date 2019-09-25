@@ -30,8 +30,8 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   protected final EnvironmentConfig configuration;
   private final String databaseLocation;
   private final BdbBackupper bdbBackupper;
-  Map<String, Environment> environmentMap = new HashMap<>();
-  Map<String, Database> databases = new HashMap<>();
+  private Map<String, Environment> environmentMap = new HashMap<>();
+  private Map<String, Database> databases = new HashMap<>();
   private FileHelper fileHelper;
 
   @JsonCreator

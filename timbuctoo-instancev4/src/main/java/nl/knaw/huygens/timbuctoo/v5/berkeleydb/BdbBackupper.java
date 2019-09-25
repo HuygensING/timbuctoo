@@ -11,7 +11,6 @@ import java.nio.file.Path;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 public class BdbBackupper {
   public void backupDatabase(Environment environment, Path dbPath, Path backupPath) throws IOException {
