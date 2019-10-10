@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -88,8 +90,12 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     return fileHelper.pathInDataSet(userId, dataSetName, "databases");
   }
 
-  private File databaseBackupPath(String ownerId, String dataSetId) {
-    return fileHelper.pathInDataSet(ownerId, dataSetId, "databases.bak");
+  private Path databaseBackupPath(String backupPath, String ownerId, String dataSetId) {
+    final Path path = Paths.get(backupPath, ownerId, dataSetId, "databases.bak");
+    // make sure the backup path exists
+    path.toFile().mkdirs();
+    return path;
+
   }
 
   private String databaseKey(String environmentKey, String databaseName) {
@@ -101,14 +107,14 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   }
 
   @Override
-  public void backUpDatabases(String ownerId, String dataSetId) throws IOException {
+  public void backUpDatabases(String backupPath, String ownerId, String dataSetId) throws IOException {
     final Environment environment = environmentMap.get(environmentKey(ownerId, dataSetId));
     // make sure all data synced to disc
 
     bdbBackupper.backupDatabase(
         environment,
         databasesPath(ownerId, dataSetId).toPath(),
-        databaseBackupPath(ownerId, dataSetId).toPath()
+        databaseBackupPath(backupPath, ownerId, dataSetId)
     );
   }
 

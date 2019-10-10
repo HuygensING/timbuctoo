@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
@@ -325,7 +326,7 @@ public abstract class DataSet {
     return getBdbEnvironmentCreator().getUnavailableDatabases(getMetadata().getOwnerId(), getMetadata().getDataSetId());
   }
 
-  public void backupDatabases() throws IOException {
-    getBdbEnvironmentCreator().backUpDatabases(getMetadata().getOwnerId(), getMetadata().getDataSetId());
+  public void backupDatabases(String backupPath) throws IOException {
+    getBdbEnvironmentCreator().backUpDatabases(backupPath, getMetadata().getOwnerId(), getMetadata().getDataSetId());
   }
 }

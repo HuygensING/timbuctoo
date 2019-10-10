@@ -4,7 +4,7 @@
 
 === 1. Sync databases with disc:
 ----
-curl -X POST http://localhost:{admin-port}/tasks/backup
+curl -X POST --data "backupPath={path-on-server}/datasets" http://localhost:{admin-port}/tasks/backup
 ----
 `adminport` is `8081` by default. +
 When request is done, the databases of each data set will synced with disc and the contents will duplicated to folder `databases.bak`.
@@ -26,6 +26,10 @@ The restore can be done per data set or all the data of Timbuctoo.
 ==== Whole Timbuctoo restore
 . Copy the data to `/path/to/timbuctoo/data`.
 . Rename all the folders `databases.bak` to `databases`.
+In `/path/to/timbuctoo/data` execute:
+----
+ls -d  */*/*/*/ | grep databases.bak | rename 's/databases.bak/databases/g'
+----
 . Restart Timbuctoo
 
 === Data set restore
@@ -35,3 +39,5 @@ The restore can be done per data set or all the data of Timbuctoo.
 ... The data set name will be `dwc`.
 . Paste the data of the backup to the right folder: `/path/to/timbuctoo/data/{uuid-of-the-user}/{data-set-name}`.
 . Restart Timbuctoo
+
+

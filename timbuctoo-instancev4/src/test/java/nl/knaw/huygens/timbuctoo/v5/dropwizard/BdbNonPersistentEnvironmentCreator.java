@@ -108,7 +108,7 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
   }
 
   @Override
-  public void backUpDatabases(String ownerId, String dataSetId) {
+  public void backUpDatabases(String backupPath, String ownerId, String dataSetId) {
     // nothing to do
   }
 

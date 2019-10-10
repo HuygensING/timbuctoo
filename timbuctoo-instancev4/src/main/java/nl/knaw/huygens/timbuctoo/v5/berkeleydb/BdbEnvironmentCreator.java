@@ -27,5 +27,5 @@ public interface BdbEnvironmentCreator {
 
   void closeDatabase(String ownerId, String dataSetId, String dataStore);
 
-  void backUpDatabases(String ownerId, String dataSetId) throws IOException;
+  void backUpDatabases(String backupPath, String ownerId, String dataSetId) throws IOException;
 }
