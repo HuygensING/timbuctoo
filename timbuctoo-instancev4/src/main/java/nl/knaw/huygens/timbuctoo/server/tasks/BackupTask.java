@@ -40,6 +40,7 @@ public class BackupTask extends Task {
         LOG.error("Exception thrown", t);
       }
     }
+    LOG.info("backup complete");
     output.println("backup complete");
     output.flush();
   }
