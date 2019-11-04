@@ -264,8 +264,8 @@ public class ImportManager implements DataProvider {
     } // end main while loop
     if (dataWasAdded) {
       webhooks.run();
+      importSucceededListeners.forEach(Runnable::run);
     }
-    importSucceededListeners.forEach(Runnable::run);
     importStatus.finishList();
     // update log.json
     try {
