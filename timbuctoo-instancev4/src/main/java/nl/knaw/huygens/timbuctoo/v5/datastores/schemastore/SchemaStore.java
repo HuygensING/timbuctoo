@@ -6,6 +6,9 @@ import java.util.Map;
 
 public interface SchemaStore {
 
+  /**
+   * @return a map that can be empty
+   */
   Map<String, Type> getStableTypes();
 
   void close();
