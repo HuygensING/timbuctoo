@@ -1,0 +1,34 @@
+# OpenID Connect
+
+## Use case
+
+Currently the Humanities Cluster of the KNAW is switching to an OpenID Connect solution for authentication.
+This is a good moment to switch from a custom solution to a more general solution.
+
+## Design
+
+### Configuration
+
+Security configuration excerpt form the Timbuctoo configuration.
+[source, yaml]
+----
+securityConfiguration:
+  "@class": nl.knaw.huygens.timbuctoo.v5.security.openidconnect.OpenIdSecurityFactoryConfiguration
+  clientId: {client-id}
+  clientSecret: {client-secret}
+  discoveryUrl: http://example.org/.well-known/openid-configuration
+  autoLogoutTimeout:
+    duration: 8
+    timeUnit: HOURS # java.util.concurrent.TimeUnit
+----
+
+### Endpoints
+
+Login endpoint: http://timbuctoo-host.org/v5/openid-connect/login
+----
+GET /v5/openid-connect/login?
+    redirect-uri=http%3A%2F%2Ftimbuctoo-frontend.example.org
+Host: http://timbuctoo-host.example.org
+----
+
+OpenID Connect 'redirect_uri': http://timbuctoo-host.org/v5/openid-connect/callback
