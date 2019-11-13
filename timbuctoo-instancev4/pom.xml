@@ -407,6 +407,13 @@
       <version>${huygens.security.version}</version>
     </dependency>
 
+    <!-- OpenID Connect -->
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>oauth2-oidc-sdk</artifactId>
+      <version>6.18</version>
+    </dependency>
+
     <!--Azure libraries for using azure services when running there -->
     <dependency>
       <groupId>com.microsoft.azure</groupId>
