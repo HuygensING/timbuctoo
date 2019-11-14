@@ -214,4 +214,17 @@ public class JsonCrudService {
     }
 
   }
+
+  /**
+   * Only added for the admin task AddTypeToNeo4JVertexTask
+   * Do not use this method anywhere else
+   */
+  public void addTypeToEntity(UUID id, String typeToAdd)
+    throws InvalidCollectionException, NotFoundException {
+    final Collection newCollection = mappings.getCollection(typeToAdd)
+                                          .orElseThrow(() -> new InvalidCollectionException(typeToAdd));
+
+    timDbAccess.addTypeToEntity(id, newCollection);
+
+  }
 }
