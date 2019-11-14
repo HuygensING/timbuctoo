@@ -185,7 +185,8 @@ public class ChangeListenerTest {
       "assertProperty",
       "addPropertiesToCollection",
       "getEntitiesWithUnknownType",
-      "retrieveProperty"
+      "retrieveProperty",
+      "addTypeToEntity"
     );
     Method[] allMethods = TinkerPopOperations.class.getDeclaredMethods();
     for (Method method : allMethods) {

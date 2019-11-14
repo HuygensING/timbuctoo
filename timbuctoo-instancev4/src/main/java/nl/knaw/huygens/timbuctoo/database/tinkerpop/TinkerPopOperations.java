@@ -49,6 +49,7 @@ import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -888,4 +889,36 @@ public class TinkerPopOperations implements DataStoreOperations {
     );
   }
 
+  @Override
+  public void addTypeToEntity(UUID id, Collection typeToAdd) throws NotFoundException {
+
+    GraphTraversal<Vertex, Vertex> entityTraversal = this.traversal.V()
+                                                                   .has("tim_id", id.toString())
+                                                                   .has("isLatest", true);
+
+    if (!entityTraversal.hasNext()) {
+      throw new NotFoundException();
+    }
+
+    Vertex entityVertex = entityTraversal.next();
+    String entityTypesStr = getProp(entityVertex, "types", String.class).orElse("[]");
+
+    String entityTypeName = typeToAdd.getEntityTypeName();
+    if (!entityTypesStr.contains("\"" + entityTypeName + "\"")) {
+      try {
+        ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
+        entityTypes.add(entityTypeName);
+
+        entityVertex.property("types", entityTypes.toString());
+        if (entityVertex instanceof Neo4jVertex) {
+          ((Neo4jVertex) entityVertex).addLabel(entityTypeName);
+        }
+      } catch (IOException e) {
+        // FIXME potential bug?
+        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
+      }
+    }
+    listener.onAddToCollection(typeToAdd, Optional.empty(), entityVertex);
+
+  }
 }

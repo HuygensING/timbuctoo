@@ -85,4 +85,5 @@ public interface DataStoreOperations extends AutoCloseable {
   List<RelationType> getRelationTypes();
 
 
+  void addTypeToEntity(UUID id, Collection typeToAdd) throws NotFoundException;
 }
