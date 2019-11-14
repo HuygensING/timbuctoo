@@ -1,0 +1,5 @@
+= Add new type to Vertex
+This admin task can be used to add missing types to entities of the v2.1 API.
+----
+curl -X POST --data="id={tim-id};typeToAdd={type-to-add}" http://{timbuctoo-host}:{admin-port}/tasks/addTypeToNeo4JVertex
+----
