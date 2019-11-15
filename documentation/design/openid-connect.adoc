@@ -14,12 +14,23 @@ Security configuration excerpt form the Timbuctoo configuration.
 ----
 securityConfiguration:
   "@class": nl.knaw.huygens.timbuctoo.v5.security.openidconnect.OpenIdSecurityFactoryConfiguration
-  clientId: {client-id}
-  clientSecret: {client-secret}
-  discoveryUrl: http://example.org/.well-known/openid-configuration
+  openIdClient:
+    clientId: {client-id}
+    clientSecret: {client-secret}
+    discoveryUrl: http://example.org/ # the library Timbuctoo uses will add .well-known/openid-configuration
+    scope: openid email profile
+    baseUri: {base_uri} # the external uri of Timbuctoo
+    port: {tim_port} # the external port of Timbuctoo
   autoLogoutTimeout:
     duration: 8
     timeUnit: HOURS # java.util.concurrent.TimeUnit
+  accessFactory:
+    "@class": nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory
+    authorizationsPath: ${timbuctoo_dataPath}/datasets
+    permissionConfig: ${timbuctoo_dataPath}/permissionConfig.json
+    loginsFilePath: ${timbuctoo_authPath}/logins.json
+    usersFilePath: ${timbuctoo_authPath}/users.json
+
 ----
 
 ### Endpoints
