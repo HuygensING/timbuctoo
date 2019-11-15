@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TwitterSecurityFactory implements SecurityFactory {
@@ -76,5 +77,10 @@ public class TwitterSecurityFactory implements SecurityFactory {
       public void removeAuthorizations(String vreId) throws PermissionFetchingException {
       }
     };
+  }
+
+  @Override
+  public void register(Consumer<Object> registerToJersey) throws NoSuchAlgorithmException, AccessNotPossibleException {
+    registerToJersey.accept(new TwitterLogin());
   }
 }

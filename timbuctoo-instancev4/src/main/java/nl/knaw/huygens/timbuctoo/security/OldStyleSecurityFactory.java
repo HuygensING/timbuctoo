@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.security;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.HttpCaller;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.LoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
@@ -16,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class OldStyleSecurityFactory implements SecurityFactory {
@@ -149,6 +151,11 @@ public class OldStyleSecurityFactory implements SecurityFactory {
   @Override
   public PermissionFetcher getPermissionFetcher() throws AccessNotPossibleException {
     return new BasicPermissionFetcher(getVreAuthorizationCreator(), getPermissionConfig());
+  }
+
+  @Override
+  public void register(Consumer<Object> registerToJersey) throws NoSuchAlgorithmException, AccessNotPossibleException {
+    registerToJersey.accept(new Authenticate(getLoggedInUsers()));
   }
 
   private PermissionConfiguration getPermissionConfig() throws AccessNotPossibleException {

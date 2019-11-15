@@ -102,6 +102,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.openidconnect.LoginEndPoint;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -324,15 +325,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     register(environment, graphQlEndpoint);
 
-    if (securityConfig instanceof TwitterSecurityFactory) {
-      final TwitterLogin twitterLogin = new TwitterLogin();
-      register(environment, twitterLogin);
-    }
+
+    securityConfig.register(component -> register(environment, component));
 
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
-    if (securityConfig instanceof OldStyleSecurityFactory) {
-      register(environment, new Authenticate(((OldStyleSecurityFactory) securityConfig).getLoggedInUsers()));
-    }
+
     register(environment, new Me(securityConfig.getUserValidator()));
     register(environment, new Search(configuration, uriHelper, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
