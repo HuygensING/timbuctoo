@@ -97,6 +97,8 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     try {
       vreAuthorizationCrud.createAuthorization(vreId, user, "ADMIN");
     } catch (AuthorizationCreationException e) {
+      LOG.error("Could not initialize VRE Authorization {}", vreId);
+      LOG.error("Exception thrown", e);
       throw e;
     }
 

@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
+  public static final Logger LOG = LoggerFactory.getLogger(LocalFileVreAuthorizationAccess.class);
   private final ObjectMapper objectMapper;
   private final Path authorizationsFolder;
 
@@ -51,6 +54,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
           return vreAuthorization;
         }
       } catch (IOException e) {
+        LOG.error("Error creating VRE Authorization", e);
         throw new AuthorizationUnavailableException(e.getMessage());
       }
     }
@@ -91,6 +95,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
                                            .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
                                            .findAny();
       } catch (IOException e) {
+        LOG.error("Could not read VRE Authorizations file", e);
         throw new AuthorizationUnavailableException(e.getMessage());
       }
     }
