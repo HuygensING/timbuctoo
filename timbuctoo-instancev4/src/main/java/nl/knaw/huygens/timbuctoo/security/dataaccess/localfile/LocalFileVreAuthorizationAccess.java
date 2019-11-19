@@ -95,6 +95,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
                                            .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
                                            .findAny();
       } catch (IOException e) {
+        LOG.error("Error reading VRE Authorizations file '{}' ", file.getAbsolutePath());
         LOG.error("Could not read VRE Authorizations file", e);
         throw new AuthorizationUnavailableException(e.getMessage());
       }

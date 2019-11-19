@@ -292,6 +292,7 @@ public class DataSetRepository {
           );
           dataSetsUpdatedListeners.forEach(createdDataset::subscribeToDataChanges);
         } catch (PermissionFetchingException | AuthorizationCreationException | IOException e) {
+          LOG.error("Could not create data set", e);
           throw new DataStoreCreationException(e);
         }
       }
