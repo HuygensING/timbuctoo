@@ -227,4 +227,8 @@ public class JsonCrudService {
     timDbAccess.addTypeToEntity(id, newCollection);
 
   }
+
+  public void moveEdges(int fromVertex, int toVertex) throws NotFoundException {
+    timDbAccess.moveEdges(fromVertex, toVertex);
+  }
 }

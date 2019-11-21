@@ -921,4 +921,26 @@ public class TinkerPopOperations implements DataStoreOperations {
     listener.onAddToCollection(typeToAdd, Optional.empty(), entityVertex);
 
   }
+
+  @Override
+  public void moveEdges(int fromVertexId, int toVertexId) throws NotFoundException {
+    final GraphTraversal<Vertex, Vertex> from = this.traversal.V(fromVertexId);
+
+    if (!from.hasNext()) {
+      throw new NotFoundException("Could not find vertex with id " + from);
+    }
+
+    final GraphTraversal<Vertex, Vertex> to = this.traversal.V(toVertexId);
+
+    if (!to.hasNext()) {
+      throw new NotFoundException("Could not find vertex with id " + to);
+    }
+
+    final Vertex fromVertex = from.next();
+    final Vertex toVertex = to.next();
+    VertexDuplicator.moveIncomingEdges(fromVertex, toVertex, indexHandler);
+    VertexDuplicator.moveOutgoingEdges(fromVertex, toVertex, indexHandler);
+  }
+
+
 }
