@@ -140,6 +140,14 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.addTypeToEntity(id, typeToAdd);
   }
 
+  /**
+   * Only added for the admin task MoveEdgesTask
+   * Do not use this method anywhere else
+   */
+  public void moveEdges(int fromVertex, int toVertex) throws NotFoundException {
+    dataStoreOperations.moveEdges(fromVertex, toVertex);
+  }
+
   private Change createChange(User user) {
     Change change = new Change();
     change.setUserId(user.getId());
@@ -247,7 +255,7 @@ public class TimbuctooActions implements AutoCloseable {
   public byte[] getVreImageBlob(String vreName) {
     return dataStoreOperations.getVreImageBlob(vreName);
   }
-  
+
 
   //================== Inner classes ==================
   @FunctionalInterface

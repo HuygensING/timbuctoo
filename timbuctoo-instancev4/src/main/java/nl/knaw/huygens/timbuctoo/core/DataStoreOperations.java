@@ -86,4 +86,6 @@ public interface DataStoreOperations extends AutoCloseable {
 
 
   void addTypeToEntity(UUID id, Collection typeToAdd) throws NotFoundException;
+
+  void moveEdges(int fromVertex, int toVertex) throws NotFoundException;
 }

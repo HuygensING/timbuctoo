@@ -43,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyIndexRedirect;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacySingleEntityRedirect;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
@@ -70,6 +69,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.BackupTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
+import nl.knaw.huygens.timbuctoo.server.tasks.MoveEdgesTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
@@ -102,9 +102,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
-import nl.knaw.huygens.timbuctoo.v5.security.openidconnect.LoginEndPoint;
-import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
-import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -412,6 +409,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.admin().addTask(new StopBdbDataStore(configuration.getDatabases()));
     environment.admin().addTask(new BackupTask(dataSetRepository));
     environment.admin().addTask(new AddTypeToNeo4JVertexTask(transactionEnforcer, crudServiceFactory));
+    environment.admin().addTask(new MoveEdgesTask(transactionEnforcer, crudServiceFactory));
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance
