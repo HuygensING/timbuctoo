@@ -8,11 +8,9 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
-import org.slf4j.Logger;
 
 
 public class HandleServiceFactory implements RedirectionServiceFactory {
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleServiceFactory.class);
   private PersistenceManager manager;
 
   @JsonCreator
@@ -25,7 +23,7 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
       Strings.isNullOrEmpty(cypher) ||
       Strings.isNullOrEmpty(namingAuthority) ||
       Strings.isNullOrEmpty(prefix)) {
-      LOG.error("Configuration must have: \n" +
+      System.err.println("Configuration must have: \n" +
         "    persistenceManager:\n" +
         "      privateKeyFile: ...\n" +
         "      cypher: ...\n" +
@@ -35,8 +33,9 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
         "'privateKeyFile', 'cypher', 'namingAuthority' and 'prefix' must be provided"
       );
     } else {
-      LOG.info("Using real handle server");
+      System.out.println("Using real handle server");
       try {
+        System.out.println("handle private key file " + privateKeyFile);
         manager =  HandleManager.newHandleManager(
           cypher,
           namingAuthority,
@@ -44,6 +43,8 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
           privateKeyFile
         );
       } catch (PersistenceManagerCreationException e) {
+        System.err.println("Creation of PersistenceManager failed");
+        e.printStackTrace();
         //this factory is written for use in the dropwizard configuration class where you can specify with @notnull if a
         //property's existence should prevent the software from starting.
         //
