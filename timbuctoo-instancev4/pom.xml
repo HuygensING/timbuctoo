@@ -137,7 +137,7 @@
     <neo4j.version>3.1.0</neo4j.version>
     <hamcrest-library.version>2.1</hamcrest-library.version>
     <vavr.version>0.10.0</vavr.version>
-    <huygens.persistence.version>2.2.0</huygens.persistence.version>
+    <huygens.persistence.version>2.3.0</huygens.persistence.version>
     <junit.version>4.12</junit.version>
     <timbuctoo-test-services.version>1.0.0-SNAPSHOT</timbuctoo-test-services.version>
     <mockito.version>2.24.5</mockito.version>
