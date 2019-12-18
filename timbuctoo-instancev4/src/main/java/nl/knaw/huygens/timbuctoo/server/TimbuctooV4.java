@@ -64,6 +64,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCh
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
+import nl.knaw.huygens.timbuctoo.server.tasks.AddPidsToWomenWritersEntities;
 import nl.knaw.huygens.timbuctoo.server.tasks.AddTypeToNeo4JVertexTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BackupTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
@@ -410,6 +411,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.admin().addTask(new BackupTask(dataSetRepository));
     environment.admin().addTask(new AddTypeToNeo4JVertexTask(transactionEnforcer, crudServiceFactory));
     environment.admin().addTask(new MoveEdgesTask(transactionEnforcer, crudServiceFactory));
+    environment.admin().addTask(new AddPidsToWomenWritersEntities(
+        graphManager,
+        redirectionService,
+        uriToRedirectToFromPersistentUrls)
+    );
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance
