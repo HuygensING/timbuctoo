@@ -5,6 +5,8 @@
 Currently the Humanities Cluster of the KNAW is switching to an OpenID Connect solution for authentication.
 This is a good moment to switch from a custom solution to a more general solution.
 
+N.B. This solution is tested with Satosa: https://github.com/IdentityPython/SATOSA
+
 ## Design
 
 ### Configuration
@@ -43,3 +45,24 @@ Host: http://timbuctoo-host.example.org
 ----
 
 OpenID Connect 'redirect_uri': http://timbuctoo-host.org/v5/openid-connect/callback
+
+## Local test
+
+A useful blog post for local https applications: https://codewithhugo.com/docker-compose-local-https/
+
+### Certificates
+
+Use `mkcert`: https://github.com/FiloSottile/mkcert#installation
+
+1 Create a local CA and add it to the system trust store:
+----
+mkcert -install
+----
+
+2 Create a certificate:
+----
+./mkcert timbuctoo.example.org
+----
+
+3 Change `/etc/hosts` to make sure the uri goes to your localhost.
+
