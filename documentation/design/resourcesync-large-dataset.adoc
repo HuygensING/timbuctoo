@@ -1,0 +1,9 @@
+= Resourcesync for large datasets
+
+== Problem
+Resourcesync gets too slow with large datasets.
+So slow that a *gateway timeout* is returned for datasets with the size around 10G (size on disk).
+
+== Approach
+. Find the part that makes it slow.
+. Think of ways to fix the problem.
