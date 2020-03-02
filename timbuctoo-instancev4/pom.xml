@@ -701,17 +701,17 @@
     <repository>
       <id>oracleReleases</id>
       <name>Oracle Released Java Packages</name>
-      <url>http://download.oracle.com/maven</url>
+      <url>https://download.oracle.com/maven</url>
       <layout>default</layout>
     </repository>
     <repository>
       <id>central</id>
       <name>Central repository</name>
-      <url>http://repo1.maven.org/maven2/</url>
+      <url>https://repo1.maven.org/maven2/</url>
     </repository>
     <repository>
       <id>sun-repo-2</id>
-      <url>http://download.java.net/maven/2/</url>
+      <url>https://download.java.net/maven/2/</url>
     </repository>
     <repository>
       <id>apache</id>
@@ -719,7 +719,7 @@
     </repository>
     <repository>
       <id>oracle</id>
-      <url>http://download.oracle.com/maven/</url>
+      <url>https://download.oracle.com/maven/</url>
     </repository>
     <repository>
       <id>Huygens</id>
