@@ -40,3 +40,8 @@ Another part of the problem is that finding a deletion takes much more time, tha
 . Wrap TruePatchStore API.
 .. Let it open multiple Berkeley databases.
 . Divide data over the multiple databases.
+
+== Test results
+=== Create a new Berkeley TruePatchStore for each version
+* Resourcesync is much faster and works with larger datasets.
+* Size on disk is similar
