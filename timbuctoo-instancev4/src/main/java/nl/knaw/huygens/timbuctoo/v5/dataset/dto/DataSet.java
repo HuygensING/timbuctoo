@@ -113,17 +113,6 @@ public abstract class DataSet {
         )),
         importManager.getImportStatus()
       );
-      final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
-        dataStoreFactory.getDatabase(
-          userId,
-          dataSetId,
-          "truePatch",
-          true,
-          stringBinding,
-          stringBinding,
-          stringStringIsCleanHandler
-        )
-      );
       final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
       final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
         dataStoreFactory.getDatabase(
@@ -145,6 +134,18 @@ public abstract class DataSet {
             }
           }
         )
+      );
+      final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
+          dataStoreFactory.getDatabase(
+              userId,
+              dataSetId,
+              "truePatch" + version,
+              true,
+              stringBinding,
+              stringBinding,
+              stringStringIsCleanHandler
+          ),
+          updatedPerPatchStore
       );
       final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
         dataStoreFactory.getDatabase(
@@ -328,5 +329,9 @@ public abstract class DataSet {
 
   public void backupDatabases(String backupPath) throws IOException {
     getBdbEnvironmentCreator().backUpDatabases(backupPath, getMetadata().getOwnerId(), getMetadata().getDataSetId());
+  }
+
+  public void migrate() {
+    getTruePatchStore().migrate();
   }
 }

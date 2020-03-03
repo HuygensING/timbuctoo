@@ -482,17 +482,17 @@ public class SchemaGenerationTest {
       GRAPH
     );
 
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
+    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
       dataStoreFactory.getDatabase(
         USER,
         DATA_SET,
-        "truePatch",
+        "truePatch" + version,
         true,
         STRING_BINDING,
         STRING_BINDING,
         STRING_IS_CLEAN_HANDLER
-      )
-    );
+      ),
+        mock(UpdatedPerPatchStore.class));
     final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
     final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
       dataStoreFactory.getDatabase(

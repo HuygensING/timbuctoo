@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 
 public class ChangeFetcherImplTest {
 
@@ -26,15 +27,15 @@ public class ChangeFetcherImplTest {
       TupleBinding.getPrimitiveBinding(String.class),
       new StringStringIsCleanHandler()
     ));
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(databaseCreator.getDatabase(
+    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version -> databaseCreator.getDatabase(
       "a",
       "b",
-      "truePatch",
+      "truePatch" + version,
       true,
       TupleBinding.getPrimitiveBinding(String.class),
       TupleBinding.getPrimitiveBinding(String.class),
       new StringStringIsCleanHandler()
-    ));
+    ), mock(UpdatedPerPatchStore.class));
 
     bdbTripleStore.putQuad("subj", "pred", OUT, "obj", null, null);
     truePatchStore.put("subj", 0, "pred", OUT, true, "obj", null, null);
