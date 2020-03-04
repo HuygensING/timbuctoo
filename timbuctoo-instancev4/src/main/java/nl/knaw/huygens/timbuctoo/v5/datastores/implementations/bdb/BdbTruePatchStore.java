@@ -173,35 +173,20 @@ public class BdbTruePatchStore {
     } catch (BdbDbCreationException e) {
       throw new RuntimeException(e);
     }
-    for (Map.Entry<Integer, BdbWrapper<String, String>> bdbWrapperEntry : bdbWrappers.entrySet()) {
-      final BdbWrapper<String, String> bdbWrapper = bdbWrapperEntry.getValue();
-      final Integer version = bdbWrapperEntry.getKey();
-      // .partialKey("\n" + version + "\n" + (assertions ?
-      // "1" : "0"), (pf,
-      // key) -> key.endsWith(pf))
-      // .dontSkip()
-      // .forwards()
-      try (Stream<Tuple<String, String>> data = database.databaseGetter()
-                                                        .getAll()
-                                                        // .partialKey("\n" + version + "\n" + (assertions ?
-                                                        // "1" : "0"), (pf,
-                                                        // key) -> key.endsWith(pf))
-                                                        // .dontSkip()
-                                                        // .forwards()
-                                                        .getKeysAndValues(
-                                                            bdbWrapper.keyValueConverter(Tuple::tuple))
-                                                        .filter(kv -> kv.getLeft().endsWith(version + "\n0") ||
-                                                            kv.getLeft().endsWith(version + "\n1"))) {
-        data.forEach(kv -> {
-          try {
-            bdbWrapper.put(kv.getLeft(), kv.getRight());
-          } catch (DatabaseWriteException e) {
-            e.printStackTrace();
-          }
-        });
+
+    database.databaseGetter().getAll().getKeysAndValues(database.keyValueConverter(Tuple::tuple)).forEach(tuple -> {
+      final String[] split = tuple.getLeft().split("\n");
+      final String version = split[split.length - 2];
+
+      try {
+        bdbWrappers.get(Integer.parseInt(version)).put(tuple.getLeft(), tuple.getRight());
+      } catch (DatabaseWriteException e) {
+        e.printStackTrace();
       }
-      bdbWrapper.commit();
-    }
+    });
+
+    bdbWrappers.values().forEach(BdbWrapper::commit);
+
     database.empty();
     database.close();
 
