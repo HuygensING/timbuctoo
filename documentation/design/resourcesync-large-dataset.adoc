@@ -33,8 +33,11 @@ Another part of the problem is that finding a deletion takes much more time, tha
 
 == Actions
 === Test PostGreSQL
+. Create separate Github repository for the test.
+. Copy the required BerkeleyDB actions and make them work with PostGreSQL.
 . Import RDF
 .. Create a PostGreSQL RDF importer.
+. Extract resourcesync actions to separate project
 
 === Create a new Berkeley TruePatchStore for each version
 . Wrap TruePatchStore API.
