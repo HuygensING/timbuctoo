@@ -5,6 +5,7 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -34,7 +35,7 @@ public class ChangeListBuilderTest {
   @Test
   public void retrieveChangesReturnsQuadsForGivenVersionAndSubjects() throws Exception {
     BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
-    BdbTruePatchStore bdbTruePatchStore = new BdbTruePatchStore(dataStoreFactory.getDatabase(
+    TruePatchStore truePatchStore = new BdbTruePatchStore(dataStoreFactory.getDatabase(
       "user",
       "dataSet",
       "schema",
@@ -45,15 +46,15 @@ public class ChangeListBuilderTest {
     ));
 
     int version = 1;
-    bdbTruePatchStore.put("s1", version, "p1", Direction.OUT, true, "o1", null, null);
-    bdbTruePatchStore.put("s2", version, "p2", Direction.OUT, false, "o2", null, null);
-    bdbTruePatchStore.put("s3", version, "p3", Direction.OUT, true, "o3", RdfConstants.STRING, null);
-    bdbTruePatchStore.put("s4", version, "p4", Direction.OUT, false, "o4", RdfConstants.STRING, null);
-    bdbTruePatchStore.put("s5", version, "p5", Direction.OUT, true, "o5", RdfConstants.LANGSTRING, "en");
-    bdbTruePatchStore.put("s6", version, "p6", Direction.OUT, false, "o6", RdfConstants.LANGSTRING, "en");
+    truePatchStore.put("s1", version, "p1", Direction.OUT, true, "o1", null, null);
+    truePatchStore.put("s2", version, "p2", Direction.OUT, false, "o2", null, null);
+    truePatchStore.put("s3", version, "p3", Direction.OUT, true, "o3", RdfConstants.STRING, null);
+    truePatchStore.put("s4", version, "p4", Direction.OUT, false, "o4", RdfConstants.STRING, null);
+    truePatchStore.put("s5", version, "p5", Direction.OUT, true, "o5", RdfConstants.LANGSTRING, "en");
+    truePatchStore.put("s6", version, "p6", Direction.OUT, false, "o6", RdfConstants.LANGSTRING, "en");
 
     ChangeListBuilder changeListBuilder = new ChangeListBuilder("graph");
-    ChangesRetriever changesRetriever = new ChangesRetriever(bdbTruePatchStore, null);
+    ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore, null);
 
     List<String> changes = changeListBuilder.retrieveChanges(changesRetriever, version).collect(Collectors.toList());
 

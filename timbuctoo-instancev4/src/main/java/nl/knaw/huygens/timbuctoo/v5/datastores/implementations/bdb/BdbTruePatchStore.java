@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 
-public class BdbTruePatchStore {
+public class BdbTruePatchStore implements TruePatchStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(BdbTruePatchStore.class);
   private final BdbWrapper<String, String> bdbWrapper;
@@ -25,6 +26,7 @@ public class BdbTruePatchStore {
     this.bdbWrapper = bdbWrapper;
   }
 
+  @Override
   public void put(String subject, int currentversion, String predicate, Direction direction, boolean isAssertion,
                   String object, String valueType, String language) throws DatabaseWriteException {
     //if we assert something and then retract it in the same patch, it's as if it never happened at all
@@ -48,6 +50,7 @@ public class BdbTruePatchStore {
     );
   }
 
+  @Override
   public Stream<CursorQuad> getChangesOfVersion(int version, boolean assertions) {
     // FIXME partialKey does not work well with endsWidth, it stops the iterator with the first match
     // See issue T141 on https://github.com/knaw-huc/backlogs/blob/master/structured-data.txt
@@ -61,6 +64,7 @@ public class BdbTruePatchStore {
                      .map((value) -> makeCursorQuad(value.getLeft().split("\n")[0], assertions, value.getRight()));
   }
 
+  @Override
   public Stream<CursorQuad> getChanges(String subject, int version, boolean assertions) {
     return bdbWrapper.databaseGetter()
       .key(subject + "\n" + version + "\n" + (assertions ? "1" : "0"))
@@ -70,6 +74,7 @@ public class BdbTruePatchStore {
       .map(v -> makeCursorQuad(subject, assertions, v));
   }
 
+  @Override
   public Stream<CursorQuad> getChanges(String subject, String predicate, Direction direction, int version,
                                        boolean assertions) {
     return bdbWrapper.databaseGetter()
@@ -81,7 +86,7 @@ public class BdbTruePatchStore {
                      .map(v -> makeCursorQuad(subject, assertions, v));
   }
 
-  public CursorQuad makeCursorQuad(String subject, boolean assertions, String value) {
+  private CursorQuad makeCursorQuad(String subject, boolean assertions, String value) {
     String[] parts = value.split("\n", 5);
     Direction direction = parts[1].charAt(0) == '1' ? OUT : IN;
     ChangeType changeType = assertions ? ChangeType.ASSERTED :  ChangeType.RETRACTED;
@@ -97,6 +102,7 @@ public class BdbTruePatchStore {
     );
   }
 
+  @Override
   public void close() {
     try {
       bdbWrapper.close();
@@ -105,18 +111,22 @@ public class BdbTruePatchStore {
     }
   }
 
+  @Override
   public void commit() {
     bdbWrapper.commit();
   }
 
+  @Override
   public void start() {
     bdbWrapper.beginTransaction();
   }
 
+  @Override
   public boolean isClean() {
     return bdbWrapper.isClean();
   }
 
+  @Override
   public void empty() {
     bdbWrapper.empty();
   }

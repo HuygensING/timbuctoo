@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -12,11 +12,11 @@ import java.util.stream.Stream;
 
 public class ChangesRetriever {
 
-  private BdbTruePatchStore bdbTruePatchStore;
+  private TruePatchStore truePatchStore;
   private UpdatedPerPatchStore updatedPerPatchStore;
 
-  public ChangesRetriever(BdbTruePatchStore bdbTruePatchStore, UpdatedPerPatchStore updatedPerPatchStore) {
-    this.bdbTruePatchStore = bdbTruePatchStore;
+  public ChangesRetriever(TruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore) {
+    this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
   }
 
@@ -30,8 +30,8 @@ public class ChangesRetriever {
 
   public Stream<CursorQuad> retrieveChanges(Integer version) {
     return Stream.concat(
-      bdbTruePatchStore.getChangesOfVersion(version, false),
-      bdbTruePatchStore.getChangesOfVersion(version, true)
+      truePatchStore.getChangesOfVersion(version, false),
+      truePatchStore.getChangesOfVersion(version, true)
     ).filter(quad -> quad.getDirection().equals(Direction.OUT));
   }
 

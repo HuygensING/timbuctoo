@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.Test;
@@ -26,7 +27,7 @@ public class ChangeFetcherImplTest {
       TupleBinding.getPrimitiveBinding(String.class),
       new StringStringIsCleanHandler()
     ));
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(databaseCreator.getDatabase(
+    final TruePatchStore truePatchStore = new BdbTruePatchStore(databaseCreator.getDatabase(
       "a",
       "b",
       "truePatch",

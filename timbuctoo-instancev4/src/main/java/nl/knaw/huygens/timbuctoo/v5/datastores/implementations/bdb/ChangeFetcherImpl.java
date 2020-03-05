@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 
@@ -10,11 +11,11 @@ import static com.google.common.collect.Streams.stream;
 
 class ChangeFetcherImpl implements ChangeFetcher {
 
-  private final BdbTruePatchStore truePatchStore;
+  private final TruePatchStore truePatchStore;
   private final BdbTripleStore tripleStore;
   private final int currentversion;
 
-  public ChangeFetcherImpl(BdbTruePatchStore truePatchStore, BdbTripleStore tripleStore, int currentversion) {
+  public ChangeFetcherImpl(TruePatchStore truePatchStore, BdbTripleStore tripleStore, int currentversion) {
     this.truePatchStore = truePatchStore;
     this.tripleStore = tripleStore;
     this.currentversion = currentversion;

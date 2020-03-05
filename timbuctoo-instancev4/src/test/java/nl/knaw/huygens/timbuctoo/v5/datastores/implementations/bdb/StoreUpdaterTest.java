@@ -6,10 +6,10 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -93,12 +93,12 @@ public class StoreUpdaterTest {
     VersionStore versionStore = mock(VersionStore.class);
     BdbTypeNameStore bdbTypeNameStore = mock(BdbTypeNameStore.class);
     BdbTripleStore bdbTripleStore = mock(BdbTripleStore.class);
-    BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
+    TruePatchStore truePatchStore = mock(BdbTruePatchStore.class);
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
     return new StoreUpdater(
       bdbTripleStore,
       bdbTypeNameStore,
-      bdbTruePatchStore,
+        truePatchStore,
       updatedPerPatchStore,
       listeners,
       versionStore,

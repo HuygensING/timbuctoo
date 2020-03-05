@@ -2,11 +2,13 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.dropwizard.db.DataSourceFactory;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
+import org.jdbi.v3.core.Jdbi;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -25,16 +27,18 @@ public interface DataSetConfiguration {
 
   default DataSetRepository createRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                                              BdbPersistentEnvironmentCreator databases,
+                                             Jdbi sqlDatabase,
                                              TimbuctooRdfIdHelper rdfIdHelper,
                                              Consumer<String> onUpdated, boolean publicByDefault) {
     return new DataSetRepository(
-      executorService,
-      permissionFetcher,
-      databases,
-      rdfIdHelper,
-      onUpdated,
-      publicByDefault,
-      getDataStorage()
+        executorService,
+        permissionFetcher,
+        databases,
+        rdfIdHelper,
+        onUpdated,
+        publicByDefault,
+        getDataStorage(),
+        sqlDatabase
     );
   }
 }

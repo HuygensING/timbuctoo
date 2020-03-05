@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -188,7 +189,7 @@ public class RsDocumentBuilderTest {
     given(updatedPerPatchStore.getVersions()).willReturn(Stream.of(1));
     given(updatedPerPatchStore.ofVersion(1)).willReturn(Stream.of("s1", "s2"));
 
-    BdbTruePatchStore truePatchStore = mock(BdbTruePatchStore.class);
+    TruePatchStore truePatchStore = mock(BdbTruePatchStore.class);
 
     CursorQuad cursorQuad1 = mock(CursorQuad.class);
     given(cursorQuad1.getSubject()).willReturn("s1");

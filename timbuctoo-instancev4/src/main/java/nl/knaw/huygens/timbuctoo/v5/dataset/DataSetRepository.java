@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationExc
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
+import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +58,7 @@ public class DataSetRepository {
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
   private final boolean publicByDefault;
+  private final Jdbi sqlDatabase;
   private final ReadOnlyChecker readOnlyChecker;
   private final List<Runnable> dataSetsUpdatedListeners;
   private Consumer<String> onUpdated;
@@ -66,7 +68,8 @@ public class DataSetRepository {
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                            BdbEnvironmentCreator dataStoreFactory,
                            TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated,
-                           boolean publicByDefault, DataStorage dataStorage) {
+                           boolean publicByDefault, DataStorage dataStorage,
+                           Jdbi sqlDatabase) {
     this.executorService = executorService;
     this.permissionFetcher = permissionFetcher;
     this.dataStoreFactory = dataStoreFactory;
@@ -74,6 +77,7 @@ public class DataSetRepository {
     this.rdfIdHelper = rdfIdHelper;
     this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
     this.publicByDefault = publicByDefault;
+    this.sqlDatabase = sqlDatabase;
     dataSetMap = new HashMap<>();
     this.onUpdated = onUpdated;
     this.dataStorage = dataStorage;
@@ -133,8 +137,8 @@ public class DataSetRepository {
               dataStoreFactory,
               () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
               dataStorage.getDataSetStorage(ownerId, dataSetName),
-              readOnlyChecker
-            );
+              readOnlyChecker,
+                sqlDatabase);
             ownersSets.put(
               dataSetName,
               value
@@ -170,8 +174,8 @@ public class DataSetRepository {
           dataStoreFactory,
           () -> onUpdated.accept(metadata.getCombinedId()),
           dataStorage.getDataSetStorage(userId, dataSetName),
-          readOnlyChecker
-        );
+          readOnlyChecker,
+            sqlDatabase);
         userSets.put(dataSetName, reloadedDataSet);
       }
     }
@@ -285,7 +289,9 @@ public class DataSetRepository {
             rdfBaseUri,
             dataStoreFactory,
             () -> onUpdated.accept(dataSet.getCombinedId()),
-            dataStorage.getDataSetStorage(ownerPrefix, dataSetId), readOnlyChecker);
+            dataStorage.getDataSetStorage(ownerPrefix, dataSetId), readOnlyChecker,
+              sqlDatabase
+          );
           userDataSets.put(
             dataSetId,
             createdDataset

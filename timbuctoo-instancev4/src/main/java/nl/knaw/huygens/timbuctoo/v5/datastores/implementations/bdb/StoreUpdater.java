@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.slf4j.Logger;
 
@@ -26,7 +27,7 @@ public class StoreUpdater implements RdfProcessor {
   private static final Logger LOG = getLogger(StoreUpdater.class);
   private final BdbTripleStore tripleStore;
   private final BdbTypeNameStore typeNameStore;
-  private final BdbTruePatchStore truePatchStore;
+  private final TruePatchStore truePatchStore;
   private final UpdatedPerPatchStore updatedPerPatchStore;
   private final VersionStore versionStore;
   private int currentversion = -1;
@@ -38,7 +39,7 @@ public class StoreUpdater implements RdfProcessor {
   private String logString;
   private ImportStatus importStatus;
 
-  public StoreUpdater(BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore, BdbTruePatchStore truePatchStore,
+  public StoreUpdater(BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore, TruePatchStore truePatchStore,
                       UpdatedPerPatchStore updatedPerPatchStore, List<OptimizedPatchListener> listeners,
                       VersionStore versionStore, ImportStatus importStatus) {
     this.tripleStore = tripleStore;

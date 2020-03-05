@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
@@ -22,8 +21,10 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStor
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.psql.PsqlTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
@@ -33,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
+import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -52,7 +54,8 @@ public abstract class DataSet {
 
   public static DataSet dataSet(DataSetMetaData metadata, ExecutorService executorService,
                                 String rdfPrefix, BdbEnvironmentCreator dataStoreFactory,
-                                Runnable onUpdated, DataSetStorage dataSetStorage, ReadOnlyChecker readOnlyChecker)
+                                Runnable onUpdated, DataSetStorage dataSetStorage, ReadOnlyChecker readOnlyChecker,
+                                Jdbi sqlDatabase)
     throws IOException, DataStoreCreationException {
 
     String userId = metadata.getOwnerId();
@@ -113,70 +116,73 @@ public abstract class DataSet {
         )),
         importManager.getImportStatus()
       );
-      final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
-        dataStoreFactory.getDatabase(
+      final PsqlTruePatchStore truePatchStore = new PsqlTruePatchStore(
+          sqlDatabase,
+          dataStoreFactory.getDatabase(
+              userId,
+              dataSetId,
+              "truePatch",
+              true,
+              stringBinding,
+              stringBinding,
+              stringStringIsCleanHandler
+          ),
           userId,
-          dataSetId,
-          "truePatch",
-          true,
-          stringBinding,
-          stringBinding,
-          stringStringIsCleanHandler
-        )
+          dataSetId
       );
       final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
       final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
-        dataStoreFactory.getDatabase(
-          userId,
-          dataSetId,
-          "updatedPerPatch",
-          true,
-          integerBinding,
-          stringBinding,
-          new IsCleanHandler<Integer, String>() {
-            @Override
-            public Integer getKey() {
-              return Integer.MAX_VALUE;
-            }
+          dataStoreFactory.getDatabase(
+              userId,
+              dataSetId,
+              "updatedPerPatch",
+              true,
+              integerBinding,
+              stringBinding,
+              new IsCleanHandler<Integer, String>() {
+                @Override
+                public Integer getKey() {
+                  return Integer.MAX_VALUE;
+                }
 
-            @Override
-            public String getValue() {
-              return "isClean";
-            }
-          }
-        )
-      );
-      final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
-        dataStoreFactory.getDatabase(
-          userId,
-          dataSetId,
-          "rmlSource",
-          true,
-          stringBinding,
-          stringBinding,
-          stringStringIsCleanHandler
-        ),
-        importManager.getImportStatus()
+                @Override
+                public String getValue() {
+                  return "isClean";
+                }
+              }
+          )
       );
       VersionStore versionStore = new VersionStore(dataStoreFactory.getDatabase(
-        userId,
-        dataSetId,
-        "versions",
-        false,
-        stringBinding,
-        integerBinding,
-        new IsCleanHandler<String, Integer>() {
-          @Override
-          public String getKey() {
-            return "isClean";
-          }
+          userId,
+          dataSetId,
+          "versions",
+          false,
+          stringBinding,
+          integerBinding,
+          new IsCleanHandler<String, Integer>() {
+            @Override
+            public String getKey() {
+              return "isClean";
+            }
 
-          @Override
-          public Integer getValue() {
-            return Integer.MAX_VALUE;
+            @Override
+            public Integer getValue() {
+              return Integer.MAX_VALUE;
+            }
           }
-        }
       ));
+      final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
+          dataStoreFactory.getDatabase(
+              userId,
+              dataSetId,
+              "rmlSource",
+              true,
+              stringBinding,
+              stringBinding,
+              stringStringIsCleanHandler
+          ),
+          importManager.getImportStatus()
+      );
 
       final StoreUpdater storeUpdater = new StoreUpdater(
         quadStore,
@@ -294,7 +300,7 @@ public abstract class DataSet {
 
   public abstract UpdatedPerPatchStore getUpdatedPerPatchStore();
 
-  public abstract BdbTruePatchStore getTruePatchStore();
+  public abstract TruePatchStore getTruePatchStore();
 
   public abstract TypeNameStore getTypeNameStore();
 

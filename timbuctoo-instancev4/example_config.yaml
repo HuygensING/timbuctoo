@@ -92,6 +92,21 @@ dataSet:
       "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
       rdfFormat: application/n-quads
 
+dataSourceFactory:
+  driverClass: org.postgresql.Driver
+  user: timbuctoo
+  password: timbuctoo
+  url: jdbc:postgresql://localhost/timbuctoo
+  properties:
+    charSet: UTF-8
+  maxWaitForConnection: 1s
+  validationQuery: "SELECT 1" #health check query
+  minSize: 8 # min number of connections
+  maxSize: 32 #max number of connections
+  checkConnectionWhileIdle: false
+  evictionInterval: 10s
+  minIdleTime: 1 minute
+
 # The base uri will be the base uri for all the generated RDF by Timbuctoo.
 rdfUriHelper:
   rdfBaseUri: http://example.org/

@@ -10,6 +10,7 @@ import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -106,6 +107,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,6 +156,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
     // environment.jersey().property(ServerProperties.TRACING, "ALL");
     // // environment.jersey().property(ServerProperties.TRACING_THRESHOLD, "VERBOSE");
+
+    final JdbiFactory jdbiFactory = new JdbiFactory();
+    // jdbiFactory.build handles the starting and stopping of the connection
+    final Jdbi postgresql = jdbiFactory.build(environment, configuration.getDataSourceFactory(), "postgresql");
 
     //Make sure we know what version is running
     Properties properties = new Properties();
@@ -210,6 +216,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       environment.lifecycle().executorService("dataSet").build(),
       securityConfig.getPermissionFetcher(),
       configuration.getDatabases(),
+      postgresql,
       configuration.getRdfIdHelper(),
       (combinedId -> {
         try {

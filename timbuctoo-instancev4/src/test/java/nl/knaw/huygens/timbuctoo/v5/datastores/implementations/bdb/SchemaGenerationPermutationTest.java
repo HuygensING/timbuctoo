@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.TruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
@@ -294,7 +295,7 @@ public class SchemaGenerationPermutationTest {
       GRAPH
     );
 
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
+    final TruePatchStore truePatchStore = new BdbTruePatchStore(
       dataStoreFactory.getDatabase(
         USER,
         DATA_SET,

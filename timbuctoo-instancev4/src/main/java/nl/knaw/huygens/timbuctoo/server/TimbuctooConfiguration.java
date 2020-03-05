@@ -8,6 +8,7 @@ import com.kjetland.dropwizard.activemq.ActiveMQConfig;
 import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.HttpClientConfiguration;
+import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.logging.DefaultLoggingFactory;
 import io.dropwizard.logging.LoggingFactory;
 import io.dropwizard.metrics.MetricsFactory;
@@ -109,6 +110,10 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract DefaultSummaryProps getDefaultSummaryProps();
 
   public abstract Map<String, CollectionFilter> getCollectionFilters();
+
+  @JsonProperty("dataSourceFactory")
+  @Valid
+  public abstract DataSourceFactory getDataSourceFactory();
 
   @JsonIgnore
   public Optional<String> getLocalAmqJmxPath(String queueName) {
