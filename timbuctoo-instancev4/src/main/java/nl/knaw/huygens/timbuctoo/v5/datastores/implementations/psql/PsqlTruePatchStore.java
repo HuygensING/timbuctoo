@@ -134,14 +134,6 @@ public class PsqlTruePatchStore implements TruePatchStore {
 
   @Override
   public Stream<CursorQuad> getChangesOfVersion(int version, boolean assertions) {
-    LOG.info("getChanges of version: {} is assertions: {}", version, assertions);
-    final long count = handle.createQuery(String.format(GET_VERSION, tableName))
-                             .bind("version", version)
-                             .bind("is_insert", assertions)
-                             .map(mapToCursorQuad())
-                             .stream().count();
-    LOG.info("Number found: {}", count);
-
     return handle.createQuery(String.format(GET_VERSION, tableName))
                  .bind("version", version)
                  .bind("is_insert", assertions)
