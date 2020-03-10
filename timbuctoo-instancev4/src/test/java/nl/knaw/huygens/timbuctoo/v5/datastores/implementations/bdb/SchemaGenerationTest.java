@@ -482,17 +482,6 @@ public class SchemaGenerationTest {
       GRAPH
     );
 
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
-      dataStoreFactory.getDatabase(
-        USER,
-        DATA_SET,
-        "truePatch",
-        true,
-        STRING_BINDING,
-        STRING_BINDING,
-        STRING_IS_CLEAN_HANDLER
-      )
-    );
     final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
     final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
       dataStoreFactory.getDatabase(
@@ -514,6 +503,17 @@ public class SchemaGenerationTest {
           }
         }
       )
+    );
+    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
+        dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "truePatch" + version,
+            true,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        ), updatedPerPatchStore
     );
     final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
       dataStoreFactory.getDatabase(

@@ -5,6 +5,7 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -13,10 +14,13 @@ import org.junit.Test;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ChangeListBuilderTest {
 
@@ -33,16 +37,19 @@ public class ChangeListBuilderTest {
 
   @Test
   public void retrieveChangesReturnsQuadsForGivenVersionAndSubjects() throws Exception {
+    UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
+    when(updatedPerPatchStore.getVersions()).thenReturn(IntStream.of(1).boxed());
+
     BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
-    BdbTruePatchStore bdbTruePatchStore = new BdbTruePatchStore(dataStoreFactory.getDatabase(
+    BdbTruePatchStore bdbTruePatchStore = new BdbTruePatchStore(version -> dataStoreFactory.getDatabase(
       "user",
       "dataSet",
-      "schema",
+      "schema" + version,
       false,
       TupleBinding.getPrimitiveBinding(String.class),
       TupleBinding.getPrimitiveBinding(String.class),
       new StringStringIsCleanHandler()
-    ));
+    ), updatedPerPatchStore);
 
     int version = 1;
     bdbTruePatchStore.put("s1", version, "p1", Direction.OUT, true, "o1", null, null);

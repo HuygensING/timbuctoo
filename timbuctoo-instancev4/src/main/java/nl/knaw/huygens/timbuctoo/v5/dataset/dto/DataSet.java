@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
@@ -113,17 +112,6 @@ public abstract class DataSet {
         )),
         importManager.getImportStatus()
       );
-      final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(
-        dataStoreFactory.getDatabase(
-          userId,
-          dataSetId,
-          "truePatch",
-          true,
-          stringBinding,
-          stringBinding,
-          stringStringIsCleanHandler
-        )
-      );
       final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
       final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
         dataStoreFactory.getDatabase(
@@ -146,6 +134,16 @@ public abstract class DataSet {
           }
         )
       );
+      final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
+          dataStoreFactory.getDatabase(
+              userId,
+              dataSetId,
+              "truePatch" + version,
+              true,
+              stringBinding,
+              stringBinding,
+              stringStringIsCleanHandler
+          ), updatedPerPatchStore);
       final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
         dataStoreFactory.getDatabase(
           userId,
