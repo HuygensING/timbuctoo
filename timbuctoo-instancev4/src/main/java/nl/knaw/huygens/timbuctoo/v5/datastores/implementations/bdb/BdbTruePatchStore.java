@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,19 +25,26 @@ public class BdbTruePatchStore {
   private final DatabaseCreator databaseCreator;
 
   public BdbTruePatchStore(DatabaseCreator databaseCreator,
-                           UpdatedPerPatchStore updatedPerPatchStore)
-      throws DataStoreCreationException {
+                           UpdatedPerPatchStore updatedPerPatchStore) throws DataStoreCreationException {
     this.databaseCreator = databaseCreator;
     bdbWrappers = new HashMap<>();
     try (final Stream<Integer> versions = updatedPerPatchStore.getVersions()) {
       for (Integer version : versions.collect(Collectors.toList())) {
-        try {
-          bdbWrappers.put(version, this.databaseCreator.createDatabase("" + version));
-        } catch (BdbDbCreationException e) {
-          throw new DataStoreCreationException(e);
-        }
+        bdbWrappers.put(version, this.databaseCreator.createDatabase(String.valueOf(version)));
       }
+    } catch (BdbDbCreationException e) {
+      throw new DataStoreCreationException(e);
     }
+  }
+
+  public BdbWrapper<String, String> getOrCreateBdbWrapper(int version) throws BdbDbCreationException {
+    if (bdbWrappers.containsKey(version)) {
+      return bdbWrappers.get(version);
+    }
+
+    BdbWrapper<String, String> bdbWrapper = databaseCreator.createDatabase(String.valueOf(version));
+    bdbWrappers.put(version, bdbWrapper);
+    return bdbWrapper;
   }
 
   public void put(String subject, int currentversion, String predicate, Direction direction, boolean isAssertion,
@@ -67,14 +73,6 @@ public class BdbTruePatchStore {
     } catch (BdbDbCreationException e) {
       throw new DatabaseWriteException(e);
     }
-
-  }
-
-  private BdbWrapper<String, String> getOrCreateBdbWrapper(int version) throws BdbDbCreationException {
-    if (bdbWrappers.containsKey(version)) {
-      return bdbWrappers.get(version);
-    }
-    return bdbWrappers.put(version, databaseCreator.createDatabase("" + version));
   }
 
   public Stream<CursorQuad> getChangesOfVersion(int version, boolean assertions) {
@@ -142,7 +140,7 @@ public class BdbTruePatchStore {
 
   public void close() {
     try {
-      for (BdbWrapper bdbWrapper : bdbWrappers.values()) {
+      for (BdbWrapper<String, String> bdbWrapper : bdbWrappers.values()) {
         bdbWrapper.close();
       }
     } catch (Exception e) {
@@ -166,34 +164,30 @@ public class BdbTruePatchStore {
     bdbWrappers.values().forEach(BdbWrapper::empty);
   }
 
-  public void migrate()  {
-    final BdbWrapper<String, String> database;
+  public void migrate() {
     try {
-      database = databaseCreator.createDatabase("");
+      final BdbWrapper<String, String> database = databaseCreator.createDatabase("");
+      database.databaseGetter().getAll().getKeysAndValues(database.keyValueConverter(Tuple::tuple)).forEach(tuple -> {
+        try {
+          final String[] split = tuple.getLeft().split("\n");
+          final String version = split[split.length - 2];
+
+          bdbWrappers.get(Integer.parseInt(version)).put(tuple.getLeft(), tuple.getRight());
+        } catch (DatabaseWriteException e) {
+          e.printStackTrace();
+        }
+      });
+
+      bdbWrappers.values().forEach(BdbWrapper::commit);
+
+      database.empty();
+      database.close();
     } catch (BdbDbCreationException e) {
       throw new RuntimeException(e);
     }
-
-    database.databaseGetter().getAll().getKeysAndValues(database.keyValueConverter(Tuple::tuple)).forEach(tuple -> {
-      final String[] split = tuple.getLeft().split("\n");
-      final String version = split[split.length - 2];
-
-      try {
-        bdbWrappers.get(Integer.parseInt(version)).put(tuple.getLeft(), tuple.getRight());
-      } catch (DatabaseWriteException e) {
-        e.printStackTrace();
-      }
-    });
-
-    bdbWrappers.values().forEach(BdbWrapper::commit);
-
-    database.empty();
-    database.close();
-
   }
 
-
-  public static interface DatabaseCreator {
+  public interface DatabaseCreator {
     BdbWrapper<String, String> createDatabase(String version) throws BdbDbCreationException;
   }
 }

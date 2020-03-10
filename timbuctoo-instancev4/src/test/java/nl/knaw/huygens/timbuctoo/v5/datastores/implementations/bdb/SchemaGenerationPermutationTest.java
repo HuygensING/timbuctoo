@@ -294,17 +294,6 @@ public class SchemaGenerationPermutationTest {
       GRAPH
     );
 
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
-      dataStoreFactory.getDatabase(
-        USER,
-        DATA_SET,
-        "truePatch" + version,
-        true,
-        STRING_BINDING,
-        STRING_BINDING,
-        STRING_IS_CLEAN_HANDLER
-      ),
-      mock(UpdatedPerPatchStore.class));
     final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
     final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
       dataStoreFactory.getDatabase(
@@ -326,6 +315,17 @@ public class SchemaGenerationPermutationTest {
           }
         }
       )
+    );
+    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
+        dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "truePatch" + version,
+            true,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        ), updatedPerPatchStore
     );
     final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
       dataStoreFactory.getDatabase(

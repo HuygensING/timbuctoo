@@ -7,11 +7,11 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 
 import java.io.PrintWriter;
 
-public class MigrateDataSetsTask extends Task {
+public class MigrateTruePatchStoresTask extends Task {
   private final DataSetRepository dataSetRepository;
 
-  public MigrateDataSetsTask(DataSetRepository dataSetRepository) {
-    super("migrateDataSets");
+  public MigrateTruePatchStoresTask(DataSetRepository dataSetRepository) {
+    super("migrateTruePatchStores");
     this.dataSetRepository = dataSetRepository;
   }
 
@@ -20,10 +20,11 @@ public class MigrateDataSetsTask extends Task {
     for (DataSet dataSet : dataSetRepository.getDataSets()) {
       output.println("Migrate dataset: " + dataSet.getMetadata().getCombinedId());
       output.flush();
-      dataSet.migrate();
+
+      dataSet.getTruePatchStore().migrate();
+
       output.println("Finished migration of dataset: " + dataSet.getMetadata().getCombinedId());
       output.flush();
     }
-
   }
 }

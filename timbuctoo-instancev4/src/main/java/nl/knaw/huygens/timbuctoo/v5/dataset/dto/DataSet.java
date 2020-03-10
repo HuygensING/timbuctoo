@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
@@ -144,9 +143,7 @@ public abstract class DataSet {
               stringBinding,
               stringBinding,
               stringStringIsCleanHandler
-          ),
-          updatedPerPatchStore
-      );
+          ), updatedPerPatchStore);
       final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
         dataStoreFactory.getDatabase(
           userId,
@@ -329,9 +326,5 @@ public abstract class DataSet {
 
   public void backupDatabases(String backupPath) throws IOException {
     getBdbEnvironmentCreator().backUpDatabases(backupPath, getMetadata().getOwnerId(), getMetadata().getDataSetId());
-  }
-
-  public void migrate() {
-    getTruePatchStore().migrate();
   }
 }
