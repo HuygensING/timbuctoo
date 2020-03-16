@@ -12,7 +12,7 @@
       <repository>
         <id>central</id>
         <name>Central repository</name>
-        <url>http://repo1.maven.org/maven2/</url>
+        <url>https://repo1.maven.org/maven2/</url>
       </repository>
       <repository>
         <id>Huygens</id>
