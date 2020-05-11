@@ -17,9 +17,13 @@ public interface DataSetMetaData {
 
   /**
    * Returns the baseUri that is used to resolve relative uri's in uploaded rdf files that have no explicit baseUri set.
-   * The baseUri is used as the "graph" in quads.
    */
   String getBaseUri();
+
+  /**
+   * Returns the uri to be used as the "graph" in quads.
+   */
+  String getGraph();
 
   /**
    * Returns a uri that you can use to generate dataSet-local uri's
@@ -46,7 +50,7 @@ public interface DataSetMetaData {
   }
 
   String VALID_ID_DESCRIPTION = "start with a-z and be followed by a-z0-9 or 1 consecutive underscore. It must not " +
-    "end in an underscore. It must be at least 2 characters long.";
+      "end in an underscore. It must be at least 2 characters long.";
 
   static Tuple<String, String> splitCombinedId(String combinedId) {
     String[] parts = combinedId.split("__", 2);

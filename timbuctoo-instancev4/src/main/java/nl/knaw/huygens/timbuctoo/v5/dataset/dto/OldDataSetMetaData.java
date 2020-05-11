@@ -7,7 +7,6 @@ import org.immutables.value.Value;
 
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCombinedId;
 
-
 public class OldDataSetMetaData {
   private static final String VALID_ID = "^[a-z](_?[a-z0-9]+)+$";
   private final String dataSetId;
@@ -76,7 +75,8 @@ public class OldDataSetMetaData {
   public BasicDataSetMetaData convertToDataSetMetaData() throws IllegalDataSetNameException {
     BasicDataSetMetaData dataSetMetaData;
 
-    dataSetMetaData = new BasicDataSetMetaData(this.ownerId, this.dataSetId, this.baseUri,
+    String graph = baseUri.endsWith("/") ? baseUri.substring(0, baseUri.length() - 1) : baseUri;
+    dataSetMetaData = new BasicDataSetMetaData(this.ownerId, this.dataSetId, this.baseUri, graph,
       this.uriPrefix, this.promoted, false);
 
 

@@ -85,8 +85,9 @@ public class BitlyService extends RedirectionService {
     final ImportManager importManager = dataSet.getImportManager();
 
     try {
-      importManager.generateLog(dataSet.getMetadata().getBaseUri(),
-        dataSet.getMetadata().getBaseUri(),
+      importManager.generateLog(
+          dataSet.getMetadata().getBaseUri(),
+        dataSet.getMetadata().getGraph(),
         new AddTriplePatchRdfCreator(
           entityLookup.getUri().get(),
           PERSISTENT_ID,

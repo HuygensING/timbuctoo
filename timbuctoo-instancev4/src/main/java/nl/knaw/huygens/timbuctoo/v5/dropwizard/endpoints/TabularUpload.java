@@ -112,7 +112,7 @@ public class TabularUpload {
           );
           Future<ImportStatus> promise = importManager.generateLog(
             dataSet.getMetadata().getBaseUri(),
-            dataSet.getMetadata().getBaseUri(),
+            dataSet.getMetadata().getGraph(),
             new TabularRdfCreator(
               loader.get(),
               fileToken,

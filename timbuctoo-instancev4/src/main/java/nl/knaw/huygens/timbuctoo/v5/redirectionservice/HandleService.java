@@ -61,7 +61,7 @@ public class HandleService extends RedirectionService {
 
   @Override
   protected void savePid(RedirectionServiceParameters params) throws PersistenceException,
-    URISyntaxException, RedirectionServiceException {
+      URISyntaxException, RedirectionServiceException {
     URI uri = params.getUrlToRedirectTo();
     LOG.info(String.format("Retrieving persistent url for '%s'", uri));
     String persistentId = (manager.persistURL(uri.toString()));
@@ -74,9 +74,10 @@ public class HandleService extends RedirectionService {
     Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(dataSetId);
 
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(
-      entityLookup.getUser().get(),
-      ownerIdDataSetId.getLeft(),
-      ownerIdDataSetId.getRight());
+        entityLookup.getUser().get(),
+        ownerIdDataSetId.getLeft(),
+        ownerIdDataSetId.getRight()
+    );
 
     if (!maybeDataSet.isPresent()) {
       throw new PersistenceException("Can't retrieve DataSet");
@@ -87,13 +88,15 @@ public class HandleService extends RedirectionService {
     final ImportManager importManager = dataSet.getImportManager();
 
     try {
-      importManager.generateLog(dataSet.getMetadata().getBaseUri(),
-        dataSet.getMetadata().getBaseUri(),
-        new AddTriplePatchRdfCreator(
-          entityLookup.getUri().get(),
-          PERSISTENT_ID,
-          persistentUrl.toString(),
-          RdfConstants.STRING)
+      importManager.generateLog(
+          dataSet.getMetadata().getBaseUri(),
+          dataSet.getMetadata().getGraph(),
+          new AddTriplePatchRdfCreator(
+              entityLookup.getUri().get(),
+              PERSISTENT_ID,
+              persistentUrl.toString(),
+              RdfConstants.STRING
+          )
       ).get();
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RedirectionServiceException(e);

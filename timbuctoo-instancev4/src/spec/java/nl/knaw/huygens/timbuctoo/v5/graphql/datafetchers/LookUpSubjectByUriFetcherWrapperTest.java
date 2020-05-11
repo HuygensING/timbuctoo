@@ -47,7 +47,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesAbsoluteUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
+        sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
 
     sut.get(new MockEnv("http://example.com/2"));
 
@@ -59,7 +59,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesRelativeUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
+        sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
     sut.get(new MockEnv("/2"));
 
     assertThat(lookupFetcherMock.uri, is("http://example.org/2"));
@@ -69,7 +69,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesEmptyUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
+        sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
 
     sut.get(new MockEnv(""));
 
@@ -80,7 +80,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void doesntDoTooMuchNormalization() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
+        sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
 
     sut.get(new MockEnv("."));
 
@@ -156,10 +156,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             public DataSetMetaData getMetadata() {
               try {
                 return new BasicDataSetMetaData(
-                  "ownerid",
-                  "datasetid",
-                  "http://example.org",
-                  "http://example.org/prefix/", false,false
+                    "ownerid",
+                    "datasetid",
+                    "http://example.org",
+                    "http://example.org",
+                    "http://example.org/prefix/", false, false
                 );
               } catch (IllegalDataSetNameException e) {
                 throw new RuntimeException(e);

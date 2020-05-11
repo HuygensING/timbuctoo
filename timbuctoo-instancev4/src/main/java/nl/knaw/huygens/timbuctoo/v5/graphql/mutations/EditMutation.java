@@ -70,7 +70,7 @@ public class EditMutation extends Mutation {
     try {
       dataSet.getImportManager().generateLog(
         dataSet.getMetadata().getBaseUri(),
-        dataSet.getMetadata().getBaseUri(),
+        dataSet.getMetadata().getGraph(),
         new GraphQlToRdfPatch(uri, userUriCreator.create(user), new EditMutationChangeLog(uri, entity))
       ).get(); // Wait until the data is processed
     } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {

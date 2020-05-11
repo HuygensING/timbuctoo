@@ -47,7 +47,6 @@ import static nl.knaw.huygens.timbuctoo.v5.security.dto.Permission.READ;
  * - keeps track of all created dataSets across restarts (stores them in a file)
  */
 public class DataSetRepository {
-
   private static final Logger LOG = LoggerFactory.getLogger(DataSetRepository.class);
 
   private final ExecutorService executorService;
@@ -61,7 +60,6 @@ public class DataSetRepository {
   private final List<Runnable> dataSetsUpdatedListeners;
   private Consumer<String> onUpdated;
   private final DataStorage dataStorage;
-
 
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                            BdbEnvironmentCreator dataStoreFactory,
@@ -81,36 +79,35 @@ public class DataSetRepository {
       @Override
       public boolean isReadonlyPredicate(String predicateIri) {
         return predicateIri.equals(RdfConstants.RDF_TYPE) ||
-          predicateIri.equals(RdfConstants.timPredicate("latestRevision")) ||
-          predicateIri.equals(RdfConstants.timPredicate("version")) ||
-          predicateIri.equals(RdfConstants.timPredicate("deletions")) ||
-          predicateIri.equals(RdfConstants.timPredicate("hasDeletion")) ||
-          predicateIri.equals(RdfConstants.timPredicate("additions")) ||
-          predicateIri.equals(RdfConstants.timPredicate("hasAddition")) ||
-          predicateIri.equals(RdfConstants.timPredicate("replacements")) ||
-          predicateIri.equals(RdfConstants.timPredicate("hasReplacement")) ||
-          predicateIri.equals(RdfConstants.timPredicate("hasKey")) ||
-          predicateIri.equals(RdfConstants.timPredicate("hasValue")) ||
-          predicateIri.equals(RdfConstants.timPredicate("type")) ||
-          predicateIri.equals(RdfConstants.timPredicate("rawValue")) ||
-          predicateIri.equals(RdfConstants.timPredicate("nextValue")) ||
-          RdfConstants.isProvenance(predicateIri);
+            predicateIri.equals(RdfConstants.timPredicate("latestRevision")) ||
+            predicateIri.equals(RdfConstants.timPredicate("version")) ||
+            predicateIri.equals(RdfConstants.timPredicate("deletions")) ||
+            predicateIri.equals(RdfConstants.timPredicate("hasDeletion")) ||
+            predicateIri.equals(RdfConstants.timPredicate("additions")) ||
+            predicateIri.equals(RdfConstants.timPredicate("hasAddition")) ||
+            predicateIri.equals(RdfConstants.timPredicate("replacements")) ||
+            predicateIri.equals(RdfConstants.timPredicate("hasReplacement")) ||
+            predicateIri.equals(RdfConstants.timPredicate("hasKey")) ||
+            predicateIri.equals(RdfConstants.timPredicate("hasValue")) ||
+            predicateIri.equals(RdfConstants.timPredicate("type")) ||
+            predicateIri.equals(RdfConstants.timPredicate("rawValue")) ||
+            predicateIri.equals(RdfConstants.timPredicate("nextValue")) ||
+            RdfConstants.isProvenance(predicateIri);
       }
 
       @Override
       public boolean isReadonlyType(String typeUri) {
         return RdfConstants.isProvenance(typeUri) ||
-          RdfConstants.UNKNOWN.equals(typeUri) ||
-          RdfConstants.timType("Additions").equals(typeUri) ||
-          RdfConstants.timType("Addition").equals(typeUri) ||
-          RdfConstants.timType("Deletions").equals(typeUri) ||
-          RdfConstants.timType("Deletion").equals(typeUri) ||
-          RdfConstants.timType("Replacements").equals(typeUri) ||
-          RdfConstants.timType("Replacement").equals(typeUri) ||
-          RdfConstants.timType("ChangeKey").equals(typeUri) ||
-          RdfConstants.timType("Value").equals(typeUri);
+            RdfConstants.UNKNOWN.equals(typeUri) ||
+            RdfConstants.timType("Additions").equals(typeUri) ||
+            RdfConstants.timType("Addition").equals(typeUri) ||
+            RdfConstants.timType("Deletions").equals(typeUri) ||
+            RdfConstants.timType("Deletion").equals(typeUri) ||
+            RdfConstants.timType("Replacements").equals(typeUri) ||
+            RdfConstants.timType("Replacement").equals(typeUri) ||
+            RdfConstants.timType("ChangeKey").equals(typeUri) ||
+            RdfConstants.timType("Value").equals(typeUri);
       }
-
     };
     dataSetsUpdatedListeners = Lists.newArrayList();
   }
@@ -151,6 +148,7 @@ public class DataSetRepository {
   /**
    * Method to reload a data set.
    * This method should only be used by the {@link nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.ReloadDataSet}.
+   *
    * @param dataSetId the combined id of data set to reload
    */
   public void reloadDataSet(String dataSetId) throws IOException, DataStoreCreationException {
@@ -180,8 +178,9 @@ public class DataSetRepository {
   /**
    * Gets the dataSet designated by <code>ownerId</code> and <code>dataSetId</code> but only if the given
    * <code>user</code> has read-access to the dataSet.
-   * @param user the user that wants read-access, may be <code>null</code>
-   * @param ownerId ownerId
+   *
+   * @param user      the user that wants read-access, may be <code>null</code>
+   * @param ownerId   ownerId
    * @param dataSetId dataSetId
    * @return the dataSet designated by <code>ownerId</code> and <code>dataSetId</code>
    */
@@ -220,7 +219,6 @@ public class DataSetRepository {
   }
 
 
-
   public DataSet createDataSet(User user, String dataSetId,
                                List<ImportInfo> importInfos) throws DataStoreCreationException,
       IllegalDataSetNameException, DataSetCreationException {
@@ -256,10 +254,13 @@ public class DataSetRepository {
       uriPrefix = baseUri;
     }
 
+    String graph = baseUri.endsWith("/") ? baseUri.substring(0, baseUri.length() - 1) : baseUri;
+
     final DataSetMetaData dataSet = new BasicDataSetMetaData(
       ownerPrefix,
       dataSetId,
       baseUri,
+      graph,
       uriPrefix,
       false,
       publicByDefault,
@@ -271,7 +272,6 @@ public class DataSetRepository {
     } catch (DataStorageSaveException e) {
       throw new DataStoreCreationException(e);
     }
-
 
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerPrefix, key -> new HashMap<>());
@@ -305,7 +305,7 @@ public class DataSetRepository {
   }
 
   public void publishDataSet(User user, String ownerId, String dataSetName)
-    throws DataSetPublishException {
+      throws DataSetPublishException {
     Optional<DataSet> dataSet = getDataSet(user, ownerId, dataSetName);
     try {
       if (dataSet.isPresent() && permissionFetcher.hasPermission(user, dataSet.get().getMetadata(), PUBLISH_DATASET)) {
@@ -326,13 +326,13 @@ public class DataSetRepository {
 
   public Collection<DataSet> getDataSets() {
     return dataSetMap.values().stream().flatMap(x -> x.values().stream())
-      .collect(Collectors.toList());
+                     .collect(Collectors.toList());
   }
 
   public Collection<DataSet> getPromotedDataSets() {
     return dataSetMap.values().stream().flatMap(x -> x.values().stream())
-      .filter(x -> x.getMetadata().isPromoted())
-      .collect(Collectors.toList());
+                     .filter(x -> x.getMetadata().isPromoted())
+                     .collect(Collectors.toList());
   }
 
   public Collection<DataSet> getDataSetsWithWriteAccess(User user) {
@@ -354,6 +354,7 @@ public class DataSetRepository {
 
   /**
    * Gets all published dataSets and all dataSets the given <code>user</code> has read-access to.
+   *
    * @param user the user that wants read-access, may be <code>null</code>
    * @return all published dataSets + all dataSets the given <code>user</code> has read-access to
    */
@@ -374,7 +375,7 @@ public class DataSetRepository {
   }
 
   public void removeDataSet(String ownerId, String dataSetName, User user)
-    throws IOException, NotEnoughPermissionsException, DataSetDoesNotExistException {
+      throws IOException, NotEnoughPermissionsException, DataSetDoesNotExistException {
     try {
       DataSet dataSet = dataSetMap.get(ownerId).get(dataSetName);
       if (dataSet == null) {
@@ -384,11 +385,11 @@ public class DataSetRepository {
       String combinedId = dataSet.getMetadata().getCombinedId();
       if (!permissionFetcher.hasPermission(user, dataSet.getMetadata(), Permission.REMOVE_DATASET)) {
         throw new NotEnoughPermissionsException(
-          String.format(
-            "User '%s' is not allowed to remove dataset '%s'",
-            user.getDisplayName(),
-            combinedId
-          )
+            String.format(
+                "User '%s' is not allowed to remove dataset '%s'",
+                user.getDisplayName(),
+                combinedId
+            )
         );
       }
       dataSetMap.get(ownerId).remove(dataSetName);

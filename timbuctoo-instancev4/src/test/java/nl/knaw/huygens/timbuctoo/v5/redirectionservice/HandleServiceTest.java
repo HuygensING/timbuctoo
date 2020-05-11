@@ -122,6 +122,7 @@ public class HandleServiceTest {
     given(dataSetMetaData.getDataSetId()).willReturn("testDataSetId");
     given(dataSetMetaData.getOwnerId()).willReturn("testOwnerId");
     given(dataSetMetaData.getBaseUri()).willReturn("testOwnerId__testDataSetId");
+    given(dataSetMetaData.getGraph()).willReturn("testOwnerId__testGraph");
     return dataSetMetaData;
   }
 

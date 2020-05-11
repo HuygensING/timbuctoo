@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -104,7 +105,7 @@ public class RdfUpload {
           }
           promise = importManager.addLog(
             baseUri == null ? dataSet.getMetadata().getBaseUri() : baseUri.toString(),
-            defaultGraph == null ? dataSet.getMetadata().getBaseUri() : defaultGraph.toString(),
+            defaultGraph == null ? dataSet.getMetadata().getGraph() : defaultGraph.toString(),
             body.getContentDisposition().getFileName(),
             rdfInputStream,
             Optional.of(Charset.forName(encoding)),
@@ -127,7 +128,8 @@ public class RdfUpload {
 
   private void deleteCurrentData(DataSet dataSet, ImportManager importManager) throws LogStorageFailedException {
     final String dataSetBaseUri = dataSet.getMetadata().getBaseUri();
-    final ChangesQuadGenerator nqUdGenerator = new ChangesQuadGenerator(dataSetBaseUri);
+    final String graph = dataSet.getMetadata().getGraph();
+    final ChangesQuadGenerator nqUdGenerator = new ChangesQuadGenerator(graph);
     try (Stream<CursorQuad> quads = dataSet.getQuadStore().getAllQuads()) {
       Stream<byte[]> deleteCurrentData = quads.filter(quad -> quad.getDirection() == Direction.OUT)
                                               .map(quad -> {
@@ -140,7 +142,7 @@ public class RdfUpload {
                                                         quad.getPredicate(),
                                                         quad.getObject(),
                                                         quad.getLanguage().get(),
-                                                        dataSetBaseUri
+                                                        graph
                                                     );
                                                   } else {
                                                     return nqUdGenerator.delValue(
@@ -148,7 +150,7 @@ public class RdfUpload {
                                                         quad.getPredicate(),
                                                         quad.getObject(),
                                                         valueType,
-                                                        dataSetBaseUri
+                                                        graph
                                                     );
                                                   }
                                                 } else {
@@ -156,17 +158,17 @@ public class RdfUpload {
                                                       quad.getSubject(),
                                                       quad.getPredicate(),
                                                       quad.getObject(),
-                                                      dataSetBaseUri
+                                                      graph
                                                   );
                                                 }
                                               }).map(String::getBytes);
 
       final Future<ImportStatus> deletePromise = importManager.addLog(
           dataSetBaseUri,
-          dataSetBaseUri,
+          graph,
           "deleteCurrentData.nqud",
           new ByteArrayStreamInputStream(deleteCurrentData),
-          Optional.of(Charset.forName("UTF-8")),
+          Optional.of(StandardCharsets.UTF_8),
           new MediaType("application", "vnd.timbuctoo-rdf.nquads_unified_diff")
       );
       // Wait until the deletions are done, before starting to import the new data,

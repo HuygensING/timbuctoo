@@ -29,12 +29,10 @@ public class Rdf4jRdfParser implements RdfParser {
       rdfParser.setPreserveBNodeIDs(true);
       rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, defaultGraph, input.getFile().getName()));
       rdfParser.parse(input.getReader(), baseUri);
-    } catch (IOException e) {
+    } catch (IOException | UnsupportedRDFormatException e) {
       throw new RdfProcessingFailedException(e);
     } catch (RDFParseException e) {
       throw new Rdf4jRdfProcessingParseException(e, input);
-    } catch (UnsupportedRDFormatException e) {
-      throw new RdfProcessingFailedException(e);
     } catch (RDFHandlerException e) {
       if (e.getCause() instanceof RdfProcessingFailedException) {
         throw (RdfProcessingFailedException) e.getCause();

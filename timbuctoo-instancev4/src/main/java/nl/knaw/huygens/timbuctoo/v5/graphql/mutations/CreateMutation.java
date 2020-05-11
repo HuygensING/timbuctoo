@@ -72,7 +72,7 @@ public class CreateMutation extends Mutation {
     try {
       dataSet.getImportManager().generateLog(
         dataSet.getMetadata().getBaseUri(),
-        dataSet.getMetadata().getBaseUri(),
+        dataSet.getMetadata().getGraph(),
         new GraphQlToRdfPatch(uri, userUriCreator.create(user), new CreateMutationChangeLog(uri, typeUri, entity))
       ).get(); // Wait until the data is processed
     } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {

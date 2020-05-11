@@ -59,9 +59,10 @@ public class Rml {
       ImportManager importManager = dataSet.get().getImportManager();
 
       final String baseUri = dataSet.get().getMetadata().getBaseUri();
+      final String graph = dataSet.get().getMetadata().getGraph();
       Future<ImportStatus> promise = importManager.generateLog(
         baseUri,
-        baseUri,
+        graph,
         new RmlRdfCreator(baseUri, rdfData)
       );
       return handleImportManagerResult(promise);

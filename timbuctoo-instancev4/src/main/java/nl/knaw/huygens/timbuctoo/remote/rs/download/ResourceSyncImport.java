@@ -76,7 +76,7 @@ public class ResourceSyncImport {
           resourceSyncReport.importedFiles.add(file.getUrl());
           Future<ImportStatus> importedFileFuture = importManager.addLog(
             dataSet.getMetadata().getBaseUri(),
-            dataSet.getMetadata().getBaseUri(),
+            dataSet.getMetadata().getGraph(),
             file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1),
             file.getData().get(),
             Optional.of(Charsets.UTF_8),

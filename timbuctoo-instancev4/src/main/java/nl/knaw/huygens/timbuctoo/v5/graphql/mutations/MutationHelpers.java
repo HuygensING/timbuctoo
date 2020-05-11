@@ -50,7 +50,8 @@ public class MutationHelpers {
     throws LogStorageFailedException, ExecutionException, InterruptedException {
 
     final String baseUri = dataSet.getMetadata().getBaseUri();
-    dataSet.getImportManager().generateLog(baseUri, baseUri, new PredicateMutationRdfPatcher(mutation))
+    final String graph = dataSet.getMetadata().getGraph();
+    dataSet.getImportManager().generateLog(baseUri, graph, new PredicateMutationRdfPatcher(mutation))
       .get();
   }
 
@@ -58,7 +59,8 @@ public class MutationHelpers {
       throws LogStorageFailedException, ExecutionException, InterruptedException {
 
     final String baseUri = dataSet.getMetadata().getBaseUri();
-    dataSet.getImportManager().generateLog(baseUri, baseUri, new PredicateMutationRdfPatcher(mutations))
+    final String graph = dataSet.getMetadata().getGraph();
+    dataSet.getImportManager().generateLog(baseUri, graph, new PredicateMutationRdfPatcher(mutations))
            .get();
   }
 

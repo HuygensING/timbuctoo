@@ -39,6 +39,11 @@ public class DataSetWithDatabase extends LazyTypeSubjectReference implements Dat
   }
 
   @Override
+  public String getGraph() {
+    return dataSetMetaData.getGraph();
+  }
+
+  @Override
   public String getUriPrefix() {
     return dataSetMetaData.getUriPrefix();
   }

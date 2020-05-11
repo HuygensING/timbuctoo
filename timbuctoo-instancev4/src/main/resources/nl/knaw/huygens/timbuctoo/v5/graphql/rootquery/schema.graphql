@@ -115,7 +115,7 @@ type DataSetMetadata {
   description: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
   imageUrl: Value @rdf(predicate: "http://xmlns.com/foaf/0.1/depiction", direction: "OUT", isList: false, isObject: false, isValue: true)
   owner: ContactInfo @rdf(predicate: "http://purl.org/dc/terms/rightsHolder", direction: "OUT", isList: false, isObject: true, isValue: false)
-  contact: ContactInfo @rdf(predicate: "http://schema.org/ContactPoint", direction: "OUT", isList: false, isObject: true, isValue: false)
+  contact: ContactInfo @rdf(predicate: "http://schema.org/contactPoint", direction: "OUT", isList: false, isObject: true, isValue: false)
   provenanceInfo: ProvenanceInfo @rdf(predicate: "http://purl.org/dc/terms/provenance", direction: "OUT", isList: false, isObject: true, isValue: false)
   license: License @rdf(predicate: "http://purl.org/dc/terms/license", direction: "OUT", isList: false, isObject: true, isValue: false)
 

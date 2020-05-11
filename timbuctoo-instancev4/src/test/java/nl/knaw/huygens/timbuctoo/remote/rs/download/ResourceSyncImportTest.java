@@ -28,10 +28,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class ResourceSyncImportTest {
-
   private static final String BASE_URL = "http://127.0.0.1:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/";
-
-
+  private static final String GRAPH = "http://127.0.0.1:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius";
 
   private Metadata metadata = new Metadata();
   private ImportManager importManager;
@@ -47,6 +45,7 @@ public class ResourceSyncImportTest {
     DataSet dataSet = mock(DataSet.class);
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     given(dataSetMetaData.getBaseUri()).willReturn(BASE_URL);
+    given(dataSetMetaData.getGraph()).willReturn(GRAPH);
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
     given(dataSet.getImportManager()).willReturn(importManager);
     instance = new ResourceSyncImport(resourceSyncFileLoader, dataSet, true);

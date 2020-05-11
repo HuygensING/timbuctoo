@@ -51,33 +51,34 @@ public class BdbRmlDataSourceStoreTest {
   public void itWorks() throws Exception {
     BdbNonPersistentEnvironmentCreator dbCreator = new BdbNonPersistentEnvironmentCreator();
     DataSetMetaData dataSetMetadata = new BasicDataSetMetaData(
-      "userid",
-      "datasetid",
-      "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",
-      "http://example.org/prefix/", false, false
+        "userid",
+        "datasetid",
+        "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",
+        "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",
+        "http://example.org/prefix/", false, false
     );
 
     final RmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
-      dbCreator.getDatabase(
-        "userid",
-        "datasetid",
-        "rmlSource",
-        true,
-        TupleBinding.getPrimitiveBinding(String.class),
-        TupleBinding.getPrimitiveBinding(String.class),
-        new StringStringIsCleanHandler()
-      ),
-      new ImportStatus(new LogList())
+        dbCreator.getDatabase(
+            "userid",
+            "datasetid",
+            "rmlSource",
+            true,
+            TupleBinding.getPrimitiveBinding(String.class),
+            TupleBinding.getPrimitiveBinding(String.class),
+            new StringStringIsCleanHandler()
+        ),
+        new ImportStatus(new LogList())
     );
 
     RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(rmlDataSourceStore);
     RawUploadRdfSaver rawUploadRdfSaver = new RawUploadRdfSaver(
-      dataSetMetadata,
-      "fileName",
-      APPLICATION_OCTET_STREAM_TYPE,
-      rdfSerializer,
-      "origFileName",
-      Clock.systemUTC()
+        dataSetMetadata,
+        "fileName",
+        APPLICATION_OCTET_STREAM_TYPE,
+        rdfSerializer,
+        "origFileName",
+        Clock.systemUTC()
     );
     final String inputCol1 = rawUploadRdfSaver.addCollection("collection1");
     ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
@@ -96,27 +97,27 @@ public class BdbRmlDataSourceStoreTest {
     rdfSerializer.close();
 
     RdfDataSource rdfDataSource = new RdfDataSource(
-      rmlDataSourceStore,
-      inputCol1,
-      new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
+        rmlDataSourceStore,
+        inputCol1,
+        new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
     RdfDataSource rdfDataSource2 = new RdfDataSource(
-      rmlDataSourceStore,
-      inputCol2,
-      new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
+        rmlDataSourceStore,
+        inputCol2,
+        new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
 
     final List<String> collection1;
     final List<String> collection2;
     try (Stream<Row> stream = rdfDataSource.getRows(new ThrowingErrorHandler())) {
       collection1 = stream
-        .map(x -> x.getRawValue("propName1") + ":" + x.getRawValue("propName2"))
-        .collect(toList());
+          .map(x -> x.getRawValue("propName1") + ":" + x.getRawValue("propName2"))
+          .collect(toList());
     }
     try (Stream<Row> stream = rdfDataSource2.getRows(new ThrowingErrorHandler())) {
       collection2 = stream
-        .map(x -> x.getRawValue("prop3") + ":" + x.getRawValue("prop4"))
-        .collect(toList());
+          .map(x -> x.getRawValue("prop3") + ":" + x.getRawValue("prop4"))
+          .collect(toList());
     }
 
     assertThat(collection1, contains("value1:val2", "entVal1:entVal2"));
@@ -148,29 +149,28 @@ public class BdbRmlDataSourceStoreTest {
 
     @Override
     public void onRelation(String subject, String predicate, String object, String graph)
-      throws LogStorageFailedException {
+        throws LogStorageFailedException {
       triples.computeIfAbsent(subject, s -> ArrayListMultimap.create())
-        .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, object, null, null, ""));
+             .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, object, null, null, ""));
       triples.computeIfAbsent(object, s -> ArrayListMultimap.create())
-        .put(predicate + "\n" + IN, create(object, predicate, IN, ASSERTED, subject, null, null, ""));
+             .put(predicate + "\n" + IN, create(object, predicate, IN, ASSERTED, subject, null, null, ""));
     }
 
     @Override
     public void onValue(String subject, String predicate, String value, String valueType, String graph)
-      throws LogStorageFailedException {
+        throws LogStorageFailedException {
       triples.computeIfAbsent(subject, s -> ArrayListMultimap.create())
-        .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, value, valueType, null, ""));
+             .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, value, valueType, null, ""));
     }
 
     @Override
     public void onLanguageTaggedString(String subject, String predicate, String value, String language,
                                        String graph)
-      throws LogStorageFailedException {
-      triples.computeIfAbsent(subject, s -> ArrayListMultimap.create())
-        .put(
+        throws LogStorageFailedException {
+      triples.computeIfAbsent(subject, s -> ArrayListMultimap.create()).put(
           predicate + "\n" + OUT,
           create(subject, predicate, OUT, ASSERTED, value, LANGSTRING, language, "")
-        );
+      );
     }
 
     @Override

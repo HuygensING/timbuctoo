@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileSystemDataStorage implements DataStorage {
-
   @JsonIgnore
   private final FileHelper fileHelper;
   @JsonProperty("rootDir")
@@ -34,8 +33,8 @@ public class FileSystemDataStorage implements DataStorage {
 
   @JsonCreator
   public FileSystemDataStorage(
-    @JsonProperty("rootDir") String dataSetMetadataLocation,
-    @JsonProperty("rdfIo") RdfIoFactory rdfIo) {
+      @JsonProperty("rootDir") String dataSetMetadataLocation,
+      @JsonProperty("rdfIo") RdfIoFactory rdfIo) {
     fileHelper = new FileHelper(dataSetMetadataLocation);
     this.dataSetMetadataLocation = dataSetMetadataLocation;
     this.rdfIo = rdfIo;
@@ -56,23 +55,26 @@ public class FileSystemDataStorage implements DataStorage {
     Map<String, Set<DataSetMetaData>> metaDataSet = Maps.newHashMap();
 
     File[] directories = new File(dataSetMetadataLocation).listFiles(File::isDirectory);
-
-    for (int i = 0; i < directories.length; i++) {
-      String dirName = directories[i].toString();
-      String currentOwnerId = dirName.substring(dirName.lastIndexOf("/") + 1, dirName.length());
+    for (File directory : directories) {
+      String dirName = directory.toString();
+      String currentOwnerId = dirName.substring(dirName.lastIndexOf("/") + 1);
       Set<DataSetMetaData> tempMetaDataSet = new HashSet<>();
-      try (Stream<Path> fileStream = Files.walk(directories[i].toPath())) {
-        Set<Path> paths = fileStream
-          .filter(current -> Files.isDirectory(current)).collect(Collectors.toSet());
+      try (Stream<Path> fileStream = Files.walk(directory.toPath())) {
+        Set<Path> paths = fileStream.filter(current -> Files.isDirectory(current)).collect(Collectors.toSet());
         for (Path path : paths) {
           File tempFile = new File(path.toString() + "/metaData.json");
           if (tempFile.exists()) {
-            JsonFileBackedData<BasicDataSetMetaData> metaDataFromFile = null;
-            metaDataFromFile = JsonFileBackedData.getOrCreate(
-              tempFile,
-              null,
-              new TypeReference<BasicDataSetMetaData>() {
-              });
+            JsonFileBackedData<BasicDataSetMetaData> metaDataFromFile = JsonFileBackedData.getOrCreate(
+                tempFile,
+                null,
+                new TypeReference<>() {
+                });
+
+            BasicDataSetMetaData updated = metaDataFromFile.getData().update();
+            if (updated != null) {
+              metaDataFromFile.updateData(data -> updated);
+            }
+
             tempMetaDataSet.add(metaDataFromFile.getData());
           }
         }

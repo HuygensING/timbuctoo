@@ -9,6 +9,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -17,9 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
 public class FileSystemCachedLog implements CachedLog {
-
   private final MediaType mimeType;
   private final Charset charset;
   private final String name;
@@ -73,11 +75,27 @@ public class FileSystemCachedLog implements CachedLog {
 
   @Override
   public Reader getReader() throws IOException {
-    final FileInputStream in = new FileInputStream(file);
-    toClose.add(in);
-    final InputStreamReader inputStreamReader = new InputStreamReader(in, charset);
-    toClose.add(inputStreamReader);
-    return inputStreamReader;
+    final InputStream inputStream = new FileInputStream(file);
+
+    try {
+      final InputStream in = new GZIPInputStream(inputStream);
+      toClose.add(in);
+
+      final InputStreamReader inputStreamReader = new InputStreamReader(in, charset);
+      toClose.add(inputStreamReader);
+
+      return inputStreamReader;
+    } catch (ZipException ze) {
+      inputStream.close();
+
+      final InputStream in = new FileInputStream(file);
+      toClose.add(in);
+
+      final InputStreamReader inputStreamReader = new InputStreamReader(in, charset);
+      toClose.add(inputStreamReader);
+
+      return inputStreamReader;
+    }
   }
 
   @Override

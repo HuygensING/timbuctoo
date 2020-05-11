@@ -60,9 +60,6 @@ defaultSummaryProps:
   - path:
     - http://www.w3.org/2004/02/skos/core#prefLabel
     type: SimplePath
-  - path:
-    - http://www.w3.org/2004/02/skos/core#altLabel
-    type: SimplePath
   defaultDescriptions:
   - path:
     - http://schema.org/description

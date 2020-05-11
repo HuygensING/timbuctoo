@@ -48,7 +48,6 @@ public class DummyRedirectionService extends RedirectionService {
           return TransactionState.commit();
         } catch (NotFoundException e) {
           LOG.warn("Entity for entityLookup '{}' cannot be found", params.getEntityLookup());
-
           return TransactionState.rollback();
         }
       }
@@ -57,7 +56,7 @@ public class DummyRedirectionService extends RedirectionService {
 
   @Override
   protected void savePid(RedirectionServiceParameters params) throws PersistenceException, URISyntaxException,
-    RedirectionServiceException {
+      RedirectionServiceException {
     URI uri = params.getUrlToRedirectTo();
     LOG.info(String.format("Retrieving persistent url for '%s'", uri));
     String persistentId = uri.toString();
@@ -70,9 +69,9 @@ public class DummyRedirectionService extends RedirectionService {
     Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(dataSetId);
 
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(
-      entityLookup.getUser().get(),
-      ownerIdDataSetId.getLeft(),
-      ownerIdDataSetId.getRight());
+        entityLookup.getUser().get(),
+        ownerIdDataSetId.getLeft(),
+        ownerIdDataSetId.getRight());
 
     if (!maybeDataSet.isPresent()) {
       throw new PersistenceException("Can't retrieve DataSet");
@@ -83,17 +82,17 @@ public class DummyRedirectionService extends RedirectionService {
     final ImportManager importManager = dataSet.getImportManager();
 
     try {
-      importManager.generateLog(dataSet.getMetadata().getBaseUri(),
-        dataSet.getMetadata().getBaseUri(),
-        new AddTriplePatchRdfCreator(
-          entityLookup.getUri().get(),
-          PERSISTENT_ID,
-          persistentUrl.toString(),
-          RdfConstants.STRING)
+      importManager.generateLog(
+          dataSet.getMetadata().getBaseUri(),
+          dataSet.getMetadata().getGraph(),
+          new AddTriplePatchRdfCreator(
+              entityLookup.getUri().get(),
+              PERSISTENT_ID,
+              persistentUrl.toString(),
+              RdfConstants.STRING)
       ).get();
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RedirectionServiceException(e);
     }
-
   }
 }

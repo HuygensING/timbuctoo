@@ -163,7 +163,7 @@ public class RsDocumentBuilder {
       changeList = new Urlset(rsMd)
         .addLink(new RsLn(REL_UP, rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CAPABILITYLIST)));
 
-      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getGraph());
 
       ChangesRetriever changesRetriever = maybeDataSet.get().getChangesRetriever();
 
@@ -197,7 +197,7 @@ public class RsDocumentBuilder {
       DataSet dataSet = maybeDataSet.get();
       DataSetMetaData dataSetMetaData = dataSet.getMetadata();
 
-      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getBaseUri());
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getGraph());
 
       Integer version = getVersionFromFileId(fileId);
 
@@ -216,7 +216,7 @@ public class RsDocumentBuilder {
       DataSet dataSet = maybeDataSet.get();
       DataSetMetaData dataSetMetaData = dataSet.getMetadata();
 
-      ResourceFileBuilder resourceFileBuilder = new ResourceFileBuilder(dataSetMetaData.getBaseUri());
+      ResourceFileBuilder resourceFileBuilder = new ResourceFileBuilder(dataSetMetaData.getGraph());
 
       CurrentStateRetriever currentStateRetriever = dataSet.getCurrentStateRetriever();
 
