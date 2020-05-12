@@ -57,39 +57,45 @@ public class ViewConfigFetcher implements DataFetcher {
     }
   }
 
-
-
   private Map path(ArrayNode path) {
     return ImmutableMap.of(
-      "type", "PATH",
-      "formatter", ImmutableList.of(),
-      "subComponents", ImmutableList.of(),
-      "value", path.toString()
+        "type", "PATH",
+        "formatter", ImmutableList.of(),
+        "subComponents", ImmutableList.of(),
+        "value", path.toString()
     );
   }
 
   private Map title(Map value) {
     return ImmutableMap.of(
-      "type", "TITLE",
-      "formatter", ImmutableList.of(),
-      "subComponents", ImmutableList.of(value)
+        "type", "TITLE",
+        "formatter", ImmutableList.of(),
+        "subComponents", ImmutableList.of(value)
+    );
+  }
+
+  private Map image(Map value) {
+    return ImmutableMap.of(
+        "type", "IMAGE",
+        "formatter", ImmutableList.of(),
+        "subComponents", ImmutableList.of(value)
     );
   }
 
   private Map internalLink(Map href, Map caption) {
     return ImmutableMap.of(
-      "type", "INTERNAL_LINK",
-      "formatter", ImmutableList.of(),
-      "subComponents", ImmutableList.of(href, caption)
+        "type", "INTERNAL_LINK",
+        "formatter", ImmutableList.of(),
+        "subComponents", ImmutableList.of(href, caption)
     );
   }
 
   private Map keyValue(String key, Map... subComponents) {
     return ImmutableMap.of(
-      "type", "KEYVALUE",
-      "formatter", ImmutableList.of(),
-      "subComponents", ImmutableList.copyOf(subComponents),
-      "value", key
+        "type", "KEYVALUE",
+        "formatter", ImmutableList.of(),
+        "subComponents", ImmutableList.copyOf(subComponents),
+        "value", key
     );
   }
 
@@ -107,45 +113,58 @@ public class ViewConfigFetcher implements DataFetcher {
   private ArrayList<Map> makeDefaultViewConfig(String collectionUri, Map<String, Type> schema,
                                                TypeNameStore typeNameStore) {
     ArrayList<Map> result = new ArrayList<>();
+
     Type collectionType = schema.get(collectionUri);
     if (collectionType == null) {
       LOG.error(
-        "The collectionUri " + collectionUri + " does not exist in the schema! (it does contain: [ " +
-          schema.keySet().stream().collect(Collectors.joining(", ")) + " ]"
+          "The collectionUri " + collectionUri + " does not exist in the schema! (it does contain: [ " +
+              schema.keySet().stream().collect(Collectors.joining(", ")) + " ]"
       );
-    } else {
-      result.add(title(path(jsnA(jsnA(jsn("Entity"), jsn("title")), jsnA(jsn("Value"), jsn("value"))))));
-      final String collectionGraphqlTypeWithoutDataSet = typeNameStore.makeGraphQlname(collectionUri);
-      for (Predicate predicate : collectionType.getPredicates()) {
-        final String predicateAsGraphqlProp = typeNameStore.makeGraphQlnameForPredicate(
+      return result;
+    }
+
+    result.add(title(path(jsnA(jsnA(jsn("Entity"), jsn("title")), jsnA(jsn("Value"), jsn("value"))))));
+    result.add(image(path(jsnA(jsnA(jsn("Entity"), jsn("image")), jsnA(jsn("Value"), jsn("value"))))));
+    result.add(keyValue("uri", path(jsnA(jsnA(jsn("Entity"), jsn("uri"))))));
+
+    final String collectionGraphqlTypeWithoutDataSet = typeNameStore.makeGraphQlname(collectionUri);
+
+    for (Predicate predicate : collectionType.getPredicates()) {
+      final String predicateAsGraphqlProp = typeNameStore.makeGraphQlnameForPredicate(
           predicate.getName(),
           predicate.getDirection(),
           predicate.isList()
-        );
-        ArrayNode predicateReference = jsnA(
+      );
+
+      ArrayNode predicateReference = jsnA(
           jsnA(jsn(collectionGraphqlTypeWithoutDataSet), jsn(predicateAsGraphqlProp))
-        );
-        if (predicate.isList()) {
-          predicateReference.add(jsnA(jsn("items"), jsn("items")));
-        }
-        String title = "";
-        if (predicate.getDirection() == Direction.IN) {
-          title = "⬅︎ ";
-        }
-        title += typeNameStore.shorten(predicate.getName());
-        if (predicate.getReferenceTypes().values().stream().anyMatch(x -> x > 0)) {
-          //it's at least sometimes a link
-          result.add(keyValue(title, internalLink(
+      );
+
+      if (predicate.isList()) {
+        predicateReference.add(jsnA(jsn("items"), jsn("items")));
+      }
+
+      String title = "";
+      if (predicate.getDirection() == Direction.IN) {
+        title = "⬅︎ ";
+      }
+      title += typeNameStore.shorten(predicate.getName());
+
+
+      if (predicate.getReferenceTypes().values().stream().anyMatch(x -> x > 0)) {
+        //it's at least sometimes a link
+        result.add(keyValue(title, internalLink(
             path(pushImm(predicateReference, jsnA(jsn("Entity"), jsn("uri")))),
             path(pushImm(predicateReference, jsnA(jsn("Entity"), jsn("title")), jsnA(jsn("Value"), jsn("value"))))
-          )));
-        }
-        if (predicate.getValueTypes().values().stream().anyMatch(x -> x > 0)) {
-          //it's at least sometimes a normal value
-          result.add(keyValue(title, path(pushImm(predicateReference, jsnA(jsn("Value"), jsn("value"))))));
-        }
+        )));
+      }
+
+      if (predicate.getValueTypes().values().stream().anyMatch(x -> x > 0)) {
+        //it's at least sometimes a normal value
+        result.add(keyValue(title, path(pushImm(predicateReference, jsnA(jsn("Value"), jsn("value"))))));
       }
     }
+
     return result;
   }
 }
