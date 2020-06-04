@@ -150,7 +150,7 @@ include::https://github.com/HuygensING/timbuctoo-faceted-search-indexer/blob/mas
 todo:feature["A user guide has not been written yet"]
 
 == API documentation
-link:./api.html[API documentation has it's own page]
+link:./api.html[API documentation has its own page]
 
 == Development process
 === Releases
