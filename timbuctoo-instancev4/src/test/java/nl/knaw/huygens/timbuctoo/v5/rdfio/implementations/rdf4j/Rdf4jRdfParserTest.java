@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.NquadsUdParser.NquadsUdParserFactory;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.rdf4j.rio.RDFParserRegistry;
 import org.junit.Test;
 
@@ -50,11 +51,12 @@ public class Rdf4jRdfParserTest {
     Rdf4jRdfParser instance = new Rdf4jRdfParser();
 
     File tempFile = File.createTempFile("test", "rdf");
-    instance.importRdf(rdfPatchLog(reader, tempFile), "", "http://example.com/test.rdf", rdfProcessor);
+    instance.importRdf(rdfPatchLog(reader, tempFile),
+        "http://example.org/", "http://example.com/test.rdf", rdfProcessor);
 
     verify(rdfProcessor).onQuad(
       ADD,
-      "BlankNode:" + tempFile.getName() + "/alice",
+      "http://example.org/.well-known/genid/" + DigestUtils.md5Hex(tempFile.getName()) + "_alice",
       "http://pred",
       "12",
       "http://number",
@@ -72,13 +74,14 @@ public class Rdf4jRdfParserTest {
     Rdf4jRdfParser instance = new Rdf4jRdfParser();
 
     File tempFile = File.createTempFile("test", "rdf");
-    instance.importRdf(rdfPatchLog(reader, tempFile), "", "http://example.com/test.rdf", rdfProcessor);
+    instance.importRdf(rdfPatchLog(reader, tempFile),
+        "http://example.org/", "http://example.com/test.rdf", rdfProcessor);
 
     verify(rdfProcessor).onQuad(
       ADD,
-      "BlankNode:" + tempFile.getName() + "/alice",
+      "http://example.org/.well-known/genid/" + DigestUtils.md5Hex(tempFile.getName()) + "_alice",
       "http://pred",
-      "BlankNode:" + tempFile.getName() + "/bob",
+      "http://example.org/.well-known/genid/" + DigestUtils.md5Hex(tempFile.getName()) + "_bob",
       null,
       null,
       "http://some_graph"

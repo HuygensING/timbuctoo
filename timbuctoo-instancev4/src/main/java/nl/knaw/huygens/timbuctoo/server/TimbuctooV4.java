@@ -72,6 +72,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MigrateTruePatchStoresTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MoveEdgesTask;
+import nl.knaw.huygens.timbuctoo.server.tasks.ReplaceBlankNodeUrisTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
@@ -418,6 +419,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         uriToRedirectToFromPersistentUrls)
     );
     environment.admin().addTask(new MigrateTruePatchStoresTask(dataSetRepository));
+    environment.admin().addTask(new ReplaceBlankNodeUrisTask(dataSetRepository));
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance

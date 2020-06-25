@@ -23,6 +23,10 @@ public class UpdatedPerPatchStore {
     bdbWrapper.put(currentversion, subject);
   }
 
+  public void delete(int currentversion, String subject) throws DatabaseWriteException {
+    bdbWrapper.delete(currentversion, subject);
+  }
+
   public Stream<String> ofVersion(int version) {
     return bdbWrapper.databaseGetter().key(version).dontSkip().forwards().getValues(bdbWrapper.valueRetriever());
   }

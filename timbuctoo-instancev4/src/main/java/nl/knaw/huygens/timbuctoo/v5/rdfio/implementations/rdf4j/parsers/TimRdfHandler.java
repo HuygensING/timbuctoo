@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Statement;
@@ -14,12 +15,14 @@ import java.util.function.Supplier;
 public class TimRdfHandler extends AbstractRDFHandler {
   private static final int ADD = '+';
   private final RdfProcessor rdfProcessor;
+  private final String baseUri;
   private final String defaultGraph;
+  private final String fileName;
   private Supplier<Integer> actionSupplier;
-  private String fileName;
 
-  public TimRdfHandler(RdfProcessor rdfProcessor, String defaultGraph, String fileName) {
+  public TimRdfHandler(RdfProcessor rdfProcessor, String baseUri, String defaultGraph, String fileName) {
     this.rdfProcessor = rdfProcessor;
+    this.baseUri = baseUri;
     this.defaultGraph = defaultGraph;
     this.fileName = fileName;
   }
@@ -74,8 +77,8 @@ public class TimRdfHandler extends AbstractRDFHandler {
   private String handleNode(Value resource) {
     if (resource instanceof BNode) {
       String nodeName = resource.toString();
-      String nodeId = nodeName.substring(nodeName.indexOf(":") + 1, nodeName.length());
-      return "BlankNode:" + fileName + "/" + nodeId;
+      String nodeId = nodeName.substring(nodeName.indexOf(":") + 1);
+      return baseUri + ".well-known/genid/" + DigestUtils.md5Hex(fileName) + "_" + nodeId;
     } else {
       return resource.stringValue();
     }

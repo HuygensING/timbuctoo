@@ -27,7 +27,7 @@ public class Rdf4jRdfParser implements RdfParser {
         );
       RDFParser rdfParser = Rio.createParser(format);
       rdfParser.setPreserveBNodeIDs(true);
-      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, defaultGraph, input.getFile().getName()));
+      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, baseUri, defaultGraph, input.getFile().getName()));
       rdfParser.parse(input.getReader(), baseUri);
     } catch (IOException | UnsupportedRDFormatException e) {
       throw new RdfProcessingFailedException(e);
