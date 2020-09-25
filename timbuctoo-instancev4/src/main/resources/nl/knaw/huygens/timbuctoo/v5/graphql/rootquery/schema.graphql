@@ -219,6 +219,8 @@ type CollectionMetadataList {
 type CollectionMetadata {
   uri: String! @uri
 
+  shortenedUri: String!
+
   #the name of the property with which you can retrieve single items of this collection
   collectionId: ID!
 

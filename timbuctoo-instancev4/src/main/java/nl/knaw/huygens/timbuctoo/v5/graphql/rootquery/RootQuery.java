@@ -413,6 +413,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     final String fullyQualifiedTypeName = dataSet.getMetadata().getCombinedId() + "_" + collectionId;
     return ImmutableCollectionMetadata.builder()
       .subjectUri(collectionType.getName())
+      .shortenedUri(typeNameStore.shorten(collectionType.getName()))
       .types(Collections.emptySet())
       .dataSet(dataSet)
       .collectionId(collectionId)

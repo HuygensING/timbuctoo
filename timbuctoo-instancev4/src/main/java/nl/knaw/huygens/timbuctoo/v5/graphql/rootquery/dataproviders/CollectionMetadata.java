@@ -5,6 +5,8 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 public interface CollectionMetadata extends SubjectReference {
+  String getShortenedUri();
+
   String getCollectionId();
 
   String getCollectionListId();

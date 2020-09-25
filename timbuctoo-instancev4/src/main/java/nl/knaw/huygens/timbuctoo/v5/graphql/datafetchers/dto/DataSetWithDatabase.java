@@ -68,10 +68,9 @@ public class DataSetWithDatabase extends LazyTypeSubjectReference implements Dat
     return dataSetMetaData.getImportInfo();
   }
 
-
   @Override
   public String getSubjectUri() {
-    return dataSetMetaData.getBaseUri();
+    return dataSetMetaData.getGraph();
   }
 
   @Override
