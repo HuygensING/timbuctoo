@@ -1,3 +1,6 @@
+See https://confluence.socialhistoryservices.org/x/qIPVAw 
+"How to create new users with fresh credentials in Timbuctoo, using NEWW VRE (Women Writers) an an example" 
+
 Usage
 Run the localUserImport.sh {local_users_file} {server_url}
 
