@@ -70,7 +70,7 @@ public class DataSetWithDatabase extends LazyTypeSubjectReference implements Dat
 
   @Override
   public String getSubjectUri() {
-    return dataSetMetaData.getGraph();
+    return dataSetMetaData.getBaseUri();
   }
 
   @Override
