@@ -11,6 +11,7 @@
   <properties>
     <jdk.version>1.8</jdk.version>
     <maven-compiler.version>3.5.1</maven-compiler.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <jersey-client.version>2.22.2</jersey-client.version>
     <concordion.version>1.5.1</concordion.version>
