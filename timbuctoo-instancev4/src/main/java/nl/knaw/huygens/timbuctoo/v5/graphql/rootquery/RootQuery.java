@@ -46,16 +46,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncImportMutation
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncUpdateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigMutation;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadataList;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadata;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadataList;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableProperty;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePropertyList;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ViewConfigFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.*;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -211,8 +202,21 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     wiring.type("DataSetMetadata", builder -> builder
       .dataFetcher("dataSetImportStatus", new DataSetImportStatusFetcher(dataSetRepository))
       .dataFetcher("importStatus", new ImportStatusFetcher(dataSetRepository))
+      .dataFetcher("prefixMappings", env -> {
+        DataSetMetaData input = env.getSource();
+        ContextData context = env.getContext();
+        final User user = context.getUser().orElse(null);
+        final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
+        final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
+        return typeNameStore.getMappings().entrySet().stream().map(mappingEntry ->
+                ImmutablePrefixMapping
+                        .builder()
+                        .prefix(mappingEntry.getKey())
+                        .uri(mappingEntry.getValue())
+                        .build()
+        ).collect(Collectors.toList());
+      })
       .dataFetcher("collectionList", env -> getCollections(env.getSource(), ((ContextData) env.getContext()).getUser()))
-
       .dataFetcher("collection", env -> {
         String collectionId = (String) env.getArguments().get("collectionId");
         if (collectionId != null && collectionId.endsWith("List")) {

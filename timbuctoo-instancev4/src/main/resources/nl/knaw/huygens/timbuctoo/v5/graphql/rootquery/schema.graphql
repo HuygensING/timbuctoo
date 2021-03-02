@@ -118,7 +118,7 @@ type DataSetMetadata {
   contact: ContactInfo @rdf(predicate: "http://schema.org/contactPoint", direction: "OUT", isList: false, isObject: true, isValue: false)
   provenanceInfo: ProvenanceInfo @rdf(predicate: "http://purl.org/dc/terms/provenance", direction: "OUT", isList: false, isObject: true, isValue: false)
   license: License @rdf(predicate: "http://purl.org/dc/terms/license", direction: "OUT", isList: false, isObject: true, isValue: false)
-
+  prefixMappings: [PrefixMapping!]!
   #archetypes: Archetypes! @passThrough (added by the RootQuery based on the config)
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
@@ -208,6 +208,11 @@ type AboutMe {
 
   #This user may create a new dataset on this timbuctoo instance
   canCreateDataSet: Boolean!
+}
+
+type PrefixMapping {
+  prefix: String!
+  uri: String!
 }
 
 type CollectionMetadataList {
