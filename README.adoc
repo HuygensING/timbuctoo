@@ -119,7 +119,7 @@ $ (sudo) docker-compose up
     http://localhost:8080/static/graphiql
 
 
-    - You can then refer to https://github.com/HuygensING/timbuctoo/documentation/timbuctoo-graphql-api-guide.adoc[this Timbuctoo GraphQL API guide] for querying and mutation instructions with examples.
+    - You can then refer to https://github.com/HuygensING/timbuctoo/blob/master/documentation/timbuctoo-graphql-api-guide.adoc[this Timbuctoo GraphQL API guide] for querying and mutation instructions with examples.
 
 //end::gettingstarted[]
 
