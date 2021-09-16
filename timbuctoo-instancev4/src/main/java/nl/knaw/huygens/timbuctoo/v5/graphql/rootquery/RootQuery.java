@@ -362,9 +362,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append("\")\n");
 
         wiring.type(name, c -> c
-          .dataFetcher("metadata", env -> {
-            return new DataSetWithDatabase(dataSet, env.<ContextData>getContext().getUserPermissionCheck());
-          })
+          .dataFetcher("metadata", env ->
+              new DataSetWithDatabase(dataSet, env.<ContextData>getContext().getUserPermissionCheck()))
         );
 
         final DerivedSchemaContainer schema = typeGenerator.makeGraphQlTypes(

@@ -200,7 +200,7 @@ public class RdfWiringFactory implements WiringFactory {
       String dataSetName = dataSet.getValue();
       String typeUriName = typeUri.getValue();
 
-      return createMutationMap.computeIfAbsent(dataSetName, s -> new CreateMutation(
+      return createMutationMap.computeIfAbsent(dataSetName + '\n' + typeUriName, s -> new CreateMutation(
         schemaUpdater,
         dataSetRepository,
         uriHelper,
