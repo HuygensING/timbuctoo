@@ -64,7 +64,7 @@ public class PaginationHelperTest {
         getObject("c4", "http://example.org/4")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, "", Optional.empty()),
+      PaginationArguments.create(2, "", Optional.empty(), Optional.empty()),
       Optional.empty()
     );
 
@@ -84,7 +84,7 @@ public class PaginationHelperTest {
         getObject("c5", "http://example.org/4")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, "A\nc2", Optional.empty()),
+      PaginationArguments.create(2, "A\nc2", Optional.empty(), Optional.empty()),
       Optional.empty()
     );
 
@@ -105,7 +105,7 @@ public class PaginationHelperTest {
         getObject("c1", "http://example.org/1")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, "LAST", Optional.empty()),
+      PaginationArguments.create(2, "LAST", Optional.empty(), Optional.empty()),
       Optional.empty()
     );
 
@@ -126,7 +126,7 @@ public class PaginationHelperTest {
         getObject("c1", "http://example.org/1")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, "D\nc3", Optional.empty()),
+      PaginationArguments.create(2, "D\nc3", Optional.empty(), Optional.empty()),
       Optional.empty()
     );
 

@@ -51,25 +51,25 @@ public class DatabaseGetter<KeyT, ValueT> {
 
   public Stream<KeyT> getKeys(KeyRetriever<KeyT> keyRetriever) {
     return getItems(() -> Tuple.tuple(keyBinder.entryToObject(key), valueBinder.entryToObject(value)))
-      .filter(keyRetriever::filter).map(keyRetriever::get);
+        .filter(keyRetriever::filter).map(keyRetriever::get);
   }
 
   public Stream<ValueT> getValues(ValueRetriever<ValueT> valueRetriever) {
     return getItems(() -> Tuple.tuple(keyBinder.entryToObject(key), valueBinder.entryToObject(value)))
-      .filter(valueRetriever::filter).map(valueRetriever::get);
+        .filter(valueRetriever::filter).map(valueRetriever::get);
   }
 
   public <U> Stream<U> getKeysAndValues(KeyValueConverter<KeyT, ValueT, U> keyValueConverter) {
     return getItems(() -> Tuple.tuple(keyBinder.entryToObject(key), valueBinder.entryToObject(value)))
-      .filter(keyValueConverter::filter).map(keyValueConverter::convert);
+        .filter(keyValueConverter::filter).map(keyValueConverter::convert);
   }
 
   private <U> Stream<U> getItems(Supplier<U> valueMaker) {
     CursorIterator<U> data = new CursorIterator<>(
-      initializer,
-      iterator,
-      valueMaker,
-      ExceptionUtils.getStackTrace(new Throwable())
+        initializer,
+        iterator,
+        valueMaker,
+        ExceptionUtils.getStackTrace(new Throwable())
     );
 
     return stream(data).onClose(() -> {
@@ -87,15 +87,8 @@ public class DatabaseGetter<KeyT, ValueT> {
   public static <KeyT, ValueT> Builder<KeyT, ValueT> databaseGetter(EntryBinding<KeyT> keyBinder,
                                                                     EntryBinding<ValueT> valueBinder,
                                                                     Database database,
-                                                                    Map<Cursor, String> cursors,
-                                                                    KeyT keyToIgnore,
-                                                                    ValueT valueToIgnore) {
-    return new DatabaseGetterBuilderImpl<>(keyBinder, valueBinder, database, cursors, keyToIgnore, valueToIgnore);
-  }
-
-  private interface DatabaseFunctionMaker<KeyT, ValueT> {
-    DatabaseFunction make(DatabaseEntry keyEntry, DatabaseEntry valueEntry, DatabaseFunction iterator,
-                          EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder);
+                                                                    Map<Cursor, String> cursors) {
+    return new DatabaseGetterBuilderImpl<>(keyBinder, valueBinder, database, cursors);
   }
 
   public interface Builder<KeyT, ValueT> {
@@ -108,6 +101,11 @@ public class DatabaseGetter<KeyT, ValueT> {
      * The resulting getter will only return items that have this exact key
      */
     ScopedBuilder<KeyT, ValueT> key(KeyT key);
+
+    /**
+     * The resulting getter will skip to this exact key
+     */
+    ScopedBuilder<KeyT, ValueT> skipToKey(KeyT key);
 
     /**
      * The resulting getter will return items for which the isNearEnough function returns true, starting with the
@@ -136,7 +134,6 @@ public class DatabaseGetter<KeyT, ValueT> {
      * move to the end of the items with the aforementioned key (you probably want to iterate backwards)
      */
     PrimedBuilder<KeyT, ValueT> skipToEnd();
-
   }
 
   public interface PartialValueBuilder<KeyT, ValueT> {
@@ -152,7 +149,6 @@ public class DatabaseGetter<KeyT, ValueT> {
   }
 
   public interface PrimedBuilder<KeyT, ValueT> {
-
     /**
      * Skip the first item (can be called more then once)
      */
@@ -171,16 +167,15 @@ public class DatabaseGetter<KeyT, ValueT> {
   }
 
   public static class DatabaseGetterBuilderImpl<KeyT, ValueT> implements Builder<KeyT, ValueT>,
-    ScopedBuilder<KeyT, ValueT>, PrimedBuilder<KeyT, ValueT>, PartialValueBuilder<KeyT, ValueT> {
+      ScopedBuilder<KeyT, ValueT>, PrimedBuilder<KeyT, ValueT>, PartialValueBuilder<KeyT, ValueT> {
 
     private final EntryBinding<KeyT> keyBinder;
     private final EntryBinding<ValueT> valueBinder;
     private final Database database;
     private final Map<Cursor, String> cursors;
-    private final KeyT keyToIgnore;
-    private final ValueT valueToIgnore;
 
     private KeyT key = null;
+    private boolean isStartKey = false;
     private BiFunction<KeyT, KeyT, Boolean> keyCheck = null;
 
     private ValueT startValue = null;
@@ -192,13 +187,11 @@ public class DatabaseGetter<KeyT, ValueT> {
     private int skipCount = 0;
 
     public DatabaseGetterBuilderImpl(EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder, Database database,
-                                     Map<Cursor, String> cursors, KeyT keyToIgnore, ValueT valueToIgnore) {
+                                     Map<Cursor, String> cursors) {
       this.keyBinder = keyBinder;
       this.valueBinder = valueBinder;
       this.database = database;
       this.cursors = cursors;
-      this.keyToIgnore = keyToIgnore;
-      this.valueToIgnore = valueToIgnore;
     }
 
     @Override
@@ -209,18 +202,25 @@ public class DatabaseGetter<KeyT, ValueT> {
       DatabaseFunction iterator = dbCursor -> dbCursor.getNext(key, value, LockMode.DEFAULT);
 
       return new DatabaseGetter<>(
-        keyBinder,
-        valueBinder,
-        iterator,
-        iterator,
-        database,
-        cursors,
-        key, value);
+          keyBinder,
+          valueBinder,
+          iterator,
+          iterator,
+          database,
+          cursors,
+          key, value);
     }
 
     @Override
     public ScopedBuilder<KeyT, ValueT> key(KeyT key) {
       this.key = key;
+      return this;
+    }
+
+    @Override
+    public ScopedBuilder<KeyT, ValueT> skipToKey(KeyT key) {
+      this.key = key;
+      this.isStartKey = true;
       return this;
     }
 
@@ -310,8 +310,8 @@ public class DatabaseGetter<KeyT, ValueT> {
       } else {
         if (keyCheck != null) {
           throw new UnsupportedOperationException("You can't skip to a partial key and then to value within the " +
-            "keys that match that partial key.That would require iterating over all keys and testing them until " +
-            "one is reached that doesn't match");
+              "keys that match that partial key.That would require iterating over all keys and testing them until " +
+              "one is reached that doesn't match");
         }
         valueBinder.objectToEntry(startValue, valueEntry);
 
@@ -330,28 +330,20 @@ public class DatabaseGetter<KeyT, ValueT> {
         }
       }
 
-      if (keyCheck == null) {
-        if (valueCheck == null) {
-          if (direction == Iterate.FORWARDS) {
-            iterator = dbCursor -> dbCursor.getNextDup(keyEntry, valueEntry, LockMode.DEFAULT);
-          } else {
-            iterator = dbCursor -> dbCursor.getPrevDup(keyEntry, valueEntry, LockMode.DEFAULT);
-          }
+      if (keyCheck == null && !isStartKey) {
+        if (direction == Iterate.FORWARDS) {
+          iterator = dbCursor -> {
+            final OperationStatus result = dbCursor.getNextDup(keyEntry, valueEntry, LockMode.DEFAULT);
+            return result == OperationStatus.SUCCESS ? check.get() : result;
+          };
         } else {
-          if (direction == Iterate.FORWARDS) {
-            iterator = dbCursor -> {
-              final OperationStatus result = dbCursor.getNextDup(keyEntry, valueEntry, LockMode.DEFAULT);
-              return result == OperationStatus.SUCCESS ? check.get() : result;
-            };
-          } else {
-            iterator = dbCursor -> {
-              final OperationStatus result = dbCursor.getPrevDup(keyEntry, valueEntry, LockMode.DEFAULT);
-              return result == OperationStatus.SUCCESS ? check.get() : result;
-            };
-          }
+          iterator = dbCursor -> {
+            final OperationStatus result = dbCursor.getPrevDup(keyEntry, valueEntry, LockMode.DEFAULT);
+            return result == OperationStatus.SUCCESS ? check.get() : result;
+          };
         }
       } else {
-        //valueCheck must be null, otherwise we'd have thrown an exception earlier
+        // valueCheck must be null, otherwise we'd have thrown an exception earlier
         if (direction == Iterate.FORWARDS) {
           iterator = dbCursor -> {
             final OperationStatus result = dbCursor.getNext(keyEntry, valueEntry, LockMode.DEFAULT);
@@ -364,7 +356,6 @@ public class DatabaseGetter<KeyT, ValueT> {
           };
         }
       }
-
 
       if (skipCount > 0) {
         countSkipper = c -> {
@@ -382,18 +373,12 @@ public class DatabaseGetter<KeyT, ValueT> {
 
       if (startAtEnd) {
         initialSkip = dbCursor -> {
-          final OperationStatus result;
-          if (dbCursor.getNextNoDup(keyEntry, valueEntry, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-            result = dbCursor.getPrev(keyEntry, valueEntry, LockMode.DEFAULT);
-          } else {
-            //go to end
-            result = dbCursor.getLast(keyEntry, valueEntry, LockMode.DEFAULT);
-          }
-          if (result == OperationStatus.SUCCESS) {
-            return countSkipper.apply(dbCursor);
-          } else {
-            return result;
-          }
+          final OperationStatus result =
+              dbCursor.getNextNoDup(keyEntry, valueEntry, LockMode.DEFAULT) == OperationStatus.SUCCESS ?
+                  dbCursor.getPrev(keyEntry, valueEntry, LockMode.DEFAULT) :
+                  dbCursor.getLast(keyEntry, valueEntry, LockMode.DEFAULT);
+
+          return result == OperationStatus.SUCCESS ? countSkipper.apply(dbCursor) : result;
         };
       } else {
         initialSkip = countSkipper;
@@ -419,7 +404,6 @@ public class DatabaseGetter<KeyT, ValueT> {
         valueEntry
       );
     }
-
   }
 
   private class CursorIterator<T> implements Iterator<T> {
@@ -471,5 +455,4 @@ public class DatabaseGetter<KeyT, ValueT> {
       return valueMaker.get();
     }
   }
-
 }

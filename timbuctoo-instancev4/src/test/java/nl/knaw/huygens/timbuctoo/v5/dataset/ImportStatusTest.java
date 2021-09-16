@@ -37,7 +37,7 @@ public class ImportStatusTest {
       is(true));
 
     status.finishEntry();
-    status.finishList();
+    status.finishList(true);
 
     String json = new ObjectMapper()
       .enable(SerializationFeature.INDENT_OUTPUT)

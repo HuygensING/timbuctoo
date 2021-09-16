@@ -1,22 +1,14 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
-import com.google.common.base.Charsets;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CursorList;
 import org.immutables.value.Value;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
-public interface PaginatedDynamicList {
-
-  Base64.Encoder ENCODER = Base64.getEncoder();
-
-  Optional<String> getPrevCursor();
-
-  Optional<String> getNextCursor();
-
+public interface PaginatedDynamicList extends CursorList {
   List<SubjectReference> getEntities();
 
   List<TypedValue> getValues();
@@ -37,18 +29,10 @@ public interface PaginatedDynamicList {
     }
 
     return ImmutablePaginatedDynamicList.builder()
-      .prevCursor(prevCursor.map(PaginatedDynamicList::encode))
-      .nextCursor(nextCursor.map(PaginatedDynamicList::encode))
+      .prevCursor(prevCursor.map(CursorList::encode))
+      .nextCursor(nextCursor.map(CursorList::encode))
       .entities(entities)
       .values(values)
       .build();
-  }
-
-  static String encode(String prevCursor) {
-    if (prevCursor == null) {
-      return null;
-    } else {
-      return ENCODER.encodeToString(prevCursor.getBytes(Charsets.UTF_8));
-    }
   }
 }

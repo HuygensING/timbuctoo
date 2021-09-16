@@ -24,10 +24,10 @@ public class LogList {
   private TimeWithUnit lastImportDuration;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private List<String> listErrors = new ArrayList<>();
+  private final List<String> listErrors = new ArrayList<>();
 
   @JsonProperty
-  private List<LogEntry> logEntries = new ArrayList<>();
+  private final List<LogEntry> logEntries = new ArrayList<>();
 
   public int addEntry(LogEntry entry) {
     logEntries.add(entry);

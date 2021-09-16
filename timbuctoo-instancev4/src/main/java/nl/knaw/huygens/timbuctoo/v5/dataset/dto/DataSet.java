@@ -312,10 +312,6 @@ public abstract class DataSet {
 
   public abstract ReadOnlyChecker getReadOnlyChecker();
 
-  public LogInfo getLogInfo() throws IOException {
-    return new LogInfo(getDataSetStorage().getLogList().getData());
-  }
-
   public void subscribeToDataChanges(Runnable updateListener) {
     getImportManager().subscribeImportSucceeded(updateListener);
   }

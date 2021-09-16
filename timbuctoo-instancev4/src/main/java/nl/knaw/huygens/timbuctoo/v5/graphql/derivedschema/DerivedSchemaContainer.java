@@ -40,21 +40,18 @@ public class DerivedSchemaContainer {
 
     String inputTypeName = typeName + "PropertyInput";
 
-    if (!types.keySet().contains(inputTypeName)) {
+    if (!types.containsKey(inputTypeName)) {
       String enumTypeName = typeName + "PropertyInputEnum";
-      types.put(inputTypeName, new DerivedTypeSchemaGenerator() {
-        @Override
-        public StringBuilder getSchema() {
-          StringBuilder schema = new StringBuilder("input ").append(inputTypeName).append("{\n")
-                                     .append("  type: ").append(enumTypeName).append("!\n")
-                                     .append("  value: ").append(" String!\n")
-                                     .append("}\n\n");
-          schema.append("enum ").append(enumTypeName).append("{\n");
-          refs.stream().map(nameGenerator::graphQlName)
-                     .forEach(ref -> schema.append("  ").append(ref).append("\n"));
-          schema.append("}\n\n");
-          return schema;
-        }
+      types.put(inputTypeName, () -> {
+        StringBuilder schema = new StringBuilder("input ").append(inputTypeName).append("{\n")
+                                   .append("  type: ").append(enumTypeName).append("!\n")
+                                   .append("  value: ").append(" String!\n")
+                                   .append("}\n\n");
+        schema.append("enum ").append(enumTypeName).append("{\n");
+        refs.stream().map(nameGenerator::graphQlName)
+                   .forEach(ref -> schema.append("  ").append(ref).append("\n"));
+        schema.append("}\n\n");
+        return schema;
       });
     }
 
@@ -85,15 +82,16 @@ public class DerivedSchemaContainer {
 
 
   String unionType(Set<String> refs) {
-    String unionName = "Union_";
+    StringBuilder unionName = new StringBuilder("Union_");
     for (String type : refs) {
-      unionName += type + "__";
+      unionName.append(type).append("__");
     }
-    if (!types.containsKey(unionName)) {
-      DerivedTypeSchemaGenerator derivedUnionTypeSchemaGenerator = new DerivedUnionTypeSchemaGenerator(unionName, refs);
-      types.put(unionName, derivedUnionTypeSchemaGenerator);
+    if (!types.containsKey(unionName.toString())) {
+      DerivedTypeSchemaGenerator derivedUnionTypeSchemaGenerator = new DerivedUnionTypeSchemaGenerator(
+          unionName.toString(), refs);
+      types.put(unionName.toString(), derivedUnionTypeSchemaGenerator);
     }
-    return unionName;
+    return unionName.toString();
   }
 
   String valueType(String typeUri) {

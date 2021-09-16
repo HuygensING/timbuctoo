@@ -10,7 +10,6 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
-import com.sleepycat.je.StatsConfig;
 import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
@@ -90,9 +89,7 @@ public class BdbWrapper<KeyT, ValueT> {
       keyBinder,
       valueBinder,
       database,
-      cursors,
-      isCleanHandler.getKey(),
-      isCleanHandler.getValue());
+      cursors);
   }
 
   public boolean isClean() {
@@ -103,13 +100,12 @@ public class BdbWrapper<KeyT, ValueT> {
     }
 
     try (Stream<ValueT> values = databaseGetter().key(isCleanHandler.getKey()).dontSkip().forwards().getValues(
-      new NonFilteringValueRetriever<>())) {
+        new NonFilteringValueRetriever<>())) {
       Optional<ValueT> first = values.findFirst();
       if (first.isPresent()) {
         ValueT value = first.get();
         return Objects.equals(value, isCleanHandler.getValue());
       }
-
     }
     return false;
   }
@@ -259,7 +255,7 @@ public class BdbWrapper<KeyT, ValueT> {
     ValueT get(Tuple<?, ValueT> keyValue);
   }
 
-  private class NonFilteringKeyRetriever<FKeyT> implements KeyRetriever<FKeyT> {
+  private static class NonFilteringKeyRetriever<FKeyT> implements KeyRetriever<FKeyT> {
     @Override
     public boolean filter(Tuple<FKeyT, ?> keyValue) {
       return true;
@@ -316,7 +312,7 @@ public class BdbWrapper<KeyT, ValueT> {
     }
   }
 
-  private class NonFilteringValueRetriever<FValueT> implements ValueRetriever<FValueT> {
+  private static class NonFilteringValueRetriever<FValueT> implements ValueRetriever<FValueT> {
     @Override
     public boolean filter(Tuple<?, FValueT> keyValue) {
       return true;

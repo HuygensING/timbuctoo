@@ -1,11 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto;
 
+import nl.knaw.huygens.timbuctoo.v5.datastores.CursorValue;
 import org.immutables.value.Value;
 
 import java.util.Optional;
 
 @Value.Immutable
-public interface CursorQuad {
+public interface CursorQuad extends CursorValue {
   String getSubject();
 
   String getPredicate();
@@ -20,9 +21,6 @@ public interface CursorQuad {
 
   @Value.Auxiliary
   ChangeType getChangeType();
-
-  @Value.Auxiliary
-  String getCursor();
 
   static CursorQuad create(String subject, String predicate, Direction direction, String object, String valueType,
                            String language, String cursor) {
@@ -42,5 +40,4 @@ public interface CursorQuad {
       .changeType(changeType)
       .build();
   }
-
 }

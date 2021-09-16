@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.NAME)
 public class ImportStatus {
 
-  private static TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
+  private static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
 
   private final LogList logList;
   private final Stopwatch stopwatch;
@@ -116,13 +116,15 @@ public class ImportStatus {
     });
   }
 
-  public synchronized void finishList() {
-    stopwatch.stop();
-    int errorCount = errors.size();
-    setStatus("Finished import with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
-    date = Instant.now().toString();
-    logList.setLastImportDate(date);
-    logList.setLastImportDuration(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT)));
+  public synchronized void finishList(boolean dataWasAdded) {
+    if (dataWasAdded) {
+      stopwatch.stop();
+      int errorCount = errors.size();
+      setStatus("Finished import with " + errorCount + " error" + (errorCount == 1 ? "" : "s"));
+      date = Instant.now().toString();
+      logList.setLastImportDate(date);
+      logList.setLastImportDuration(new TimeWithUnit(TIME_UNIT, stopwatch.elapsed(TIME_UNIT)));
+    }
     reset();
   }
 

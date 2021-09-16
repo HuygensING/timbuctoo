@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
 import org.immutables.value.Value;
 
+import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -29,10 +30,17 @@ public interface PaginationArguments {
    */
   Optional<ConfiguredFilter> getFilter();
 
-  static PaginationArguments create(int count, String cursor, Optional<ConfiguredFilter> filter) {
+  /**
+   * If a timestamp is present, only the uri's that were changed since the given timestamp are returned
+   */
+  Optional<ZonedDateTime> getTimeSince();
+
+  static PaginationArguments create(int count, String cursor,
+                                    Optional<ConfiguredFilter> filter, Optional<ZonedDateTime> timeSince) {
     return ImmutablePaginationArguments.builder()
       .count(count)
       .filter(filter)
+      .timeSince(timeSince)
       .cursor(cursor)
       .build();
   }

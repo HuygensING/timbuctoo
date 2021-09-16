@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.CollectionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.DynamicRelationDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.OldItemsDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationsOfSubjectDataFetcher;
@@ -69,6 +70,7 @@ public class RdfWiringFactory implements WiringFactory {
   private final Map<String, EditMutation> editMutationMap = Maps.newHashMap();
   private final Map<String, DeleteMutation> deleteMutationMap = Maps.newHashMap();
   private final DynamicRelationDataFetcher dynamicRelationDataFetcher;
+  private final OldItemsDataFetcher oldItemsDataFetcher;
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
                           DefaultSummaryProps defaultSummaryProps, UriHelper uriHelper,
@@ -88,6 +90,7 @@ public class RdfWiringFactory implements WiringFactory {
     entityImageFetcher = new EntityImageFetcher(defaultSummaryProps.getDefaultImages());
     otherDataSetFetcher = new OtherDataSetFetcher(dataSetRepository);
     dynamicRelationDataFetcher = new DynamicRelationDataFetcher(argumentsHelper);
+    oldItemsDataFetcher = new OldItemsDataFetcher(argumentsHelper);
   }
 
   @Override
@@ -129,7 +132,8 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("deleteMutation") != null ||
       environment.getFieldDefinition().getDirective("persistEntityMutation") != null ||
       environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null ||
-      environment.getFieldDefinition().getDirective("resetIndex") != null;
+      environment.getFieldDefinition().getDirective("resetIndex") != null ||
+      environment.getFieldDefinition().getDirective("oldItems") != null;
   }
 
   @Override
@@ -176,12 +180,7 @@ public class RdfWiringFactory implements WiringFactory {
       String dataSetId = ((StringValue) directive.getArgument("dataSetId").getValue()).getValue();
       final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(userId, dataSetId)
                                                .orElse(null);
-      return dataFetchingEnvironment -> new DatabaseResult() {
-        @Override
-        public DataSet getDataSet() {
-          return dataSet;
-        }
-      };
+      return dataFetchingEnvironment -> (DatabaseResult) () -> dataSet;
     } else if (environment.getFieldDefinition().getDirective("entityTitle") != null) {
       return entityTitleFetcher;
     } else if (environment.getFieldDefinition().getDirective("entityDescription") != null) {
@@ -214,18 +213,16 @@ public class RdfWiringFactory implements WiringFactory {
 
       String dataSetName = dataSet.getValue();
 
-      return editMutationMap.computeIfAbsent(dataSetName, s -> {
-        return new EditMutation(schemaUpdater, dataSetRepository, uriHelper, subjectFetcher, dataSetName);
-      });
+      return editMutationMap.computeIfAbsent(dataSetName, s ->
+          new EditMutation(schemaUpdater, dataSetRepository, uriHelper, subjectFetcher, dataSetName));
     } else if (environment.getFieldDefinition().getDirective("deleteMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("deleteMutation");
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
 
       String dataSetName = dataSet.getValue();
 
-      return deleteMutationMap.computeIfAbsent(dataSetName, s -> {
-        return new DeleteMutation(schemaUpdater, dataSetRepository, uriHelper, dataSetName);
-      });
+      return deleteMutationMap.computeIfAbsent(dataSetName, s ->
+          new DeleteMutation(schemaUpdater, dataSetRepository, uriHelper, dataSetName));
     } else if (environment.getFieldDefinition().getDirective("persistEntityMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("persistEntityMutation");
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
@@ -240,6 +237,8 @@ public class RdfWiringFactory implements WiringFactory {
       final Directive resetIndex = environment.getFieldDefinition().getDirective("resetIndex");
       final StringValue dataSet = (StringValue) resetIndex.getArgument("dataSet").getValue();
       return new DefaultIndexConfigMutation(schemaUpdater, dataSetRepository, dataSet.getValue());
+    } else if (environment.getFieldDefinition().getDirective("oldItems") != null) {
+      return oldItemsDataFetcher;
     }
     return null;
   }
@@ -250,12 +249,8 @@ public class RdfWiringFactory implements WiringFactory {
   }
 
   private static class ObjectTypeResolver implements TypeResolver {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ObjectTypeResolver.class);
-
     @Override
     public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
-
       String typeName;
       Object object = environment.getObject();
       if (object instanceof TypedValue) {

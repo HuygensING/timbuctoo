@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ConfiguredFilter;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 
+import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
@@ -47,7 +48,14 @@ public class PaginationArgumentsHelper {
       }
     }
 
-    return PaginationArguments.create(count, cursor, Optional.ofNullable(filter));
+    ZonedDateTime timeSince = null;
+    if (environment.containsArgument("updatedSince")) {
+      timeSince = ZonedDateTime.parse(environment.getArgument("updatedSince"));
+    } else if (environment.containsArgument("deletedSince")) {
+      timeSince = ZonedDateTime.parse(environment.getArgument("deletedSince"));
+    }
+
+    return PaginationArguments.create(count, cursor, Optional.ofNullable(filter), Optional.ofNullable(timeSince));
   }
 
   public String makeListName(String outputTypeName) {
@@ -86,7 +94,8 @@ public class PaginationArgumentsHelper {
     if (!customFilters.isEmpty()) {
       customFilters = ", " + customFilters;
     }
-    return fieldName + "(cursor: ID, count: Int" + customFilters + "): " + makeCollectionListName(outputTypeName);
+    return fieldName + "(cursor: ID, count: Int" + customFilters + ", updatedSince: String): " +
+        makeCollectionListName(outputTypeName);
   }
 
 
