@@ -21,7 +21,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameExcepti
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
@@ -129,11 +128,6 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
             @Override
             public TypeNameStore getTypeNameStore() {
-              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-            }
-
-            @Override
-            public VersionStore getVersionStore() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
 

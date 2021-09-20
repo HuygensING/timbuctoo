@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringIntegerIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -39,7 +40,9 @@ public class SchemaGenerationTest {
   private static final String USER = "user";
   private static final String DATA_SET = "dataSet";
   private static final StringStringIsCleanHandler STRING_IS_CLEAN_HANDLER = new StringStringIsCleanHandler();
+  private static final StringIntegerIsCleanHandler STRING_INT_IS_CLEAN_HANDLER = new StringIntegerIsCleanHandler();
   private static final TupleBinding<String> STRING_BINDING = TupleBinding.getPrimitiveBinding(String.class);
+  private static final TupleBinding<Integer> INT_BINDING = TupleBinding.getPrimitiveBinding(Integer.class);
 
   private static final String SUBJECT_A = "http://example.org/foo";
   private static final String SUBJECT_B = "http://example.org/bar";
@@ -425,6 +428,7 @@ public class SchemaGenerationTest {
 
   private Map<String, Type> runTest(CursorQuad... quads) throws Exception {
     BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
+
     final BdbSchemaStore schema = new BdbSchemaStore(
       new BdbBackedData(dataStoreFactory.getDatabase(
         USER,
@@ -460,7 +464,8 @@ public class SchemaGenerationTest {
   private StoreUpdater createInstance(BdbNonPersistentEnvironmentCreator dataStoreFactory, BdbSchemaStore schema)
     throws DataStoreCreationException, nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException,
     IOException {
-    BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
+
+    final BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
       USER,
       DATA_SET,
       "rdfData",
@@ -469,6 +474,7 @@ public class SchemaGenerationTest {
       STRING_BINDING,
       STRING_IS_CLEAN_HANDLER
     ));
+
     final BdbTypeNameStore typeNameStore = new BdbTypeNameStore(
       new BdbBackedData(dataStoreFactory.getDatabase(
         USER,
@@ -482,28 +488,18 @@ public class SchemaGenerationTest {
       GRAPH
     );
 
-    final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
     final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
       dataStoreFactory.getDatabase(
         USER,
         DATA_SET,
         "updatedPerPatch",
         true,
-        integerBinding,
         STRING_BINDING,
-        new IsCleanHandler<Integer, String>() {
-          @Override
-          public Integer getKey() {
-            return Integer.MAX_VALUE;
-          }
-
-          @Override
-          public String getValue() {
-            return "isClean";
-          }
-        }
+        INT_BINDING,
+        STRING_INT_IS_CLEAN_HANDLER
       )
     );
+
     final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
         dataStoreFactory.getDatabase(
             USER,
@@ -515,6 +511,7 @@ public class SchemaGenerationTest {
             STRING_IS_CLEAN_HANDLER
         ), updatedPerPatchStore
     );
+
     final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
       dataStoreFactory.getDatabase(
         USER,
@@ -527,25 +524,6 @@ public class SchemaGenerationTest {
       ),
       mock(ImportStatus.class)
     );
-    VersionStore versionStore = new VersionStore(dataStoreFactory.getDatabase(
-      USER,
-      DATA_SET,
-      "versions",
-      false,
-      STRING_BINDING,
-      integerBinding,
-      new IsCleanHandler<String, Integer>() {
-        @Override
-        public String getKey() {
-          return "isClean";
-        }
-
-        @Override
-        public Integer getValue() {
-          return Integer.MAX_VALUE;
-        }
-      }
-    ));
 
     return new StoreUpdater(
       quadStore,
@@ -553,7 +531,6 @@ public class SchemaGenerationTest {
       truePatchStore,
       updatedPerPatchStore,
       Lists.newArrayList(schema, rmlDataSourceStore),
-      versionStore,
       mock(ImportStatus.class)
     );
   }

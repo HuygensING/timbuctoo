@@ -3,14 +3,19 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.updatedperpatchstore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.CursorValue;
 import org.immutables.value.Value;
 
+import java.util.Set;
+
 @Value.Immutable
 public interface SubjectCursor extends CursorValue {
   String getSubject();
 
-  static SubjectCursor create(String subject, String cursor) {
+  Set<Integer> getVersions();
+
+  static SubjectCursor create(String subject, Set<Integer> versions) {
     return ImmutableSubjectCursor.builder()
                                  .subject(subject)
-                                 .cursor(cursor)
+                                 .versions(versions)
+                                 .cursor(subject)
                                  .build();
   }
 }

@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
+import nl.knaw.huygens.timbuctoo.util.Streams;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -7,59 +9,54 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.updatedperpatchstore.SubjectCurso
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Predicate;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class UpdatedPerPatchStore {
   private static final Logger LOG = LoggerFactory.getLogger(UpdatedPerPatchStore.class);
-  private final BdbWrapper<Integer, String> bdbWrapper;
+  private final BdbWrapper<String, Integer> bdbWrapper;
 
-  public UpdatedPerPatchStore(BdbWrapper<Integer, String> bdbWrapper) throws DataStoreCreationException {
+  public UpdatedPerPatchStore(BdbWrapper<String, Integer> bdbWrapper) throws DataStoreCreationException {
     this.bdbWrapper = bdbWrapper;
   }
 
   public void put(int version, String subject) throws DatabaseWriteException {
-    bdbWrapper.put(version, subject);
-  }
-
-  public void delete(int version, String subject) throws DatabaseWriteException {
-    bdbWrapper.delete(version, subject);
+    bdbWrapper.put(subject, version);
   }
 
   public Stream<String> ofVersion(int version) {
-    return bdbWrapper.databaseGetter().key(version).dontSkip().forwards().getValues(bdbWrapper.valueRetriever());
+    return bdbWrapper.databaseGetter().getAll()
+                     .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
+                     .filter(tuple -> tuple.getRight() == version)
+                     .map(Tuple::getLeft);
   }
 
-  public Stream<SubjectCursor> fromVersion(int version, String cursor, Predicate<String> subjectFilter) {
-    String startSubject = null;
-    int cursorVersion = -1;
-    if (!cursor.isEmpty()) {
-      String[] fields = cursor.substring(2).split("\n", 2);
-      cursorVersion = Integer.parseInt(fields[0]);
-      startSubject = fields[1];
-    }
-
-    int startVersion = Math.max(cursorVersion, version);
+  public Stream<SubjectCursor> fromVersion(int version, String cursor) {
+    Stream<Tuple<String, Integer>> stream;
+    String startSubject = !cursor.isEmpty() ? cursor.substring(2) : null;
     if (startSubject != null) {
-      return bdbWrapper.databaseGetter()
-                       .skipToKey(startVersion)
-                       .skipToValue(startSubject)
-                       .skipOne()
-                       .forwards()
-                       .getKeysAndValues(bdbWrapper.keyValueConverter(UpdatedPerPatchStore::makeSubjectCursor))
-                       .filter(subjectCursor -> subjectFilter.test(subjectCursor.getSubject()));
+      stream = bdbWrapper.databaseGetter()
+                         .skipToKey(startSubject)
+                         .skipToEnd()
+                         .skipOne()
+                         .forwards()
+                         .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new));
+    } else {
+      stream = bdbWrapper.databaseGetter().getAll()
+                         .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new));
     }
 
-    return bdbWrapper.databaseGetter()
-                     .skipToKey(startVersion)
-                     .dontSkip()
-                     .forwards()
-                     .getKeysAndValues(bdbWrapper.keyValueConverter(UpdatedPerPatchStore::makeSubjectCursor))
-                     .filter(subjectCursor -> subjectFilter.test(subjectCursor.getSubject()));
+    return Streams.combine(stream, (scA, scB) -> scA.getLeft().equals(scB.getLeft()))
+                  .map(UpdatedPerPatchStore::makeSubjectCursor)
+                  .filter(subjectCursor -> subjectCursor.getVersions().stream().anyMatch(v -> v >= version));
   }
 
   public Stream<Integer> getVersions() {
-    return bdbWrapper.databaseGetter().getAll().getKeys(bdbWrapper.keyRetriever()).distinct();
+    return bdbWrapper.databaseGetter().getAll()
+                     .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
+                     .map(Tuple::getRight).distinct();
   }
 
   public void close() {
@@ -86,7 +83,9 @@ public class UpdatedPerPatchStore {
     bdbWrapper.empty();
   }
 
-  private static SubjectCursor makeSubjectCursor(int version, String subject) {
-    return SubjectCursor.create(subject, String.format("%s\n%s", version, subject));
+  private static SubjectCursor makeSubjectCursor(Set<Tuple<String, Integer>> subjectVersions) {
+    Optional<String> subject = subjectVersions.stream().findAny().map(Tuple::getLeft);
+    Set<Integer> versions = subjectVersions.stream().map(Tuple::getRight).collect(Collectors.toSet());
+    return subject.map(s -> SubjectCursor.create(s, versions)).orElse(null);
   }
 }

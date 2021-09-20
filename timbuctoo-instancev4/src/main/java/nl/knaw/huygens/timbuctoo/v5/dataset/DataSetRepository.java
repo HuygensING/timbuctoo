@@ -58,7 +58,7 @@ public class DataSetRepository {
   private final boolean publicByDefault;
   private final ReadOnlyChecker readOnlyChecker;
   private final List<Runnable> dataSetsUpdatedListeners;
-  private Consumer<String> onUpdated;
+  private final Consumer<String> onUpdated;
   private final DataStorage dataStorage;
 
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,

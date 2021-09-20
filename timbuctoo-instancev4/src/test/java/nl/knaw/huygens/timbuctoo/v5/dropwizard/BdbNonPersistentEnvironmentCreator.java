@@ -32,7 +32,7 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
   protected final File dbHome;
   private final Map<String, Database> databases;
   private static final Logger LOG = getLogger(BdbNonPersistentEnvironmentCreator.class);
-  private Map<String, Environment> environmentMap;
+  private final Map<String, Environment> environmentMap;
 
   public BdbNonPersistentEnvironmentCreator() {
     configuration = new EnvironmentConfig(new Properties());
@@ -157,6 +157,16 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
 
   @Override
   public void closeDatabase(String ownerId, String dataSetId, String dataStore) {
+    throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+  }
+
+  @Override
+  public void removeDatabase(String ownerId, String dataSetId, String dataStore) {
+    throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+  }
+
+  @Override
+  public void renameDatabase(String userId, String dataSetName, String databaseName, String newDatabaseName) {
     throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
   }
 }

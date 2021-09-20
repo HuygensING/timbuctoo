@@ -27,5 +27,9 @@ public interface BdbEnvironmentCreator {
 
   void closeDatabase(String ownerId, String dataSetId, String dataStore);
 
+  void removeDatabase(String ownerId, String dataSetId, String dataStore);
+
+  void renameDatabase(String ownerId, String dataSetId, String databaseName, String newDatabaseName);
+
   void backUpDatabases(String backupPath, String ownerId, String dataSetId) throws IOException;
 }

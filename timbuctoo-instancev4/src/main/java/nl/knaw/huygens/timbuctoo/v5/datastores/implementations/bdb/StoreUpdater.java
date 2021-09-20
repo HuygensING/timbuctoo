@@ -22,30 +22,30 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class StoreUpdater implements RdfProcessor {
-
   private static final Logger LOG = getLogger(StoreUpdater.class);
+
   private final BdbTripleStore tripleStore;
   private final BdbTypeNameStore typeNameStore;
   private final BdbTruePatchStore truePatchStore;
   private final UpdatedPerPatchStore updatedPerPatchStore;
-  private final VersionStore versionStore;
-  private int currentversion = -1;
+
+  private final List<OptimizedPatchListener> listeners;
+  private final ImportStatus importStatus;
+
+  private int version = -1;
   private Stopwatch stopwatch;
   private long count;
   private long prevCount;
-  private List<OptimizedPatchListener> listeners;
   private long prevTime;
   private String logString;
-  private ImportStatus importStatus;
 
   public StoreUpdater(BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore, BdbTruePatchStore truePatchStore,
                       UpdatedPerPatchStore updatedPerPatchStore, List<OptimizedPatchListener> listeners,
-                      VersionStore versionStore, ImportStatus importStatus) {
+                      ImportStatus importStatus) {
     this.tripleStore = tripleStore;
     this.typeNameStore = typeNameStore;
     this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
-    this.versionStore = versionStore;
     this.listeners = listeners;
     this.importStatus = importStatus;
   }
@@ -61,8 +61,8 @@ public class StoreUpdater implements RdfProcessor {
     count = 0;
     prevCount = 0;
     prevTime = stopwatch.elapsed(TimeUnit.SECONDS);
-    try (Stream<String> subjects = updatedPerPatchStore.ofVersion(currentversion)) {
-      final ChangeFetcher getQuads = new ChangeFetcherImpl(truePatchStore, tripleStore, currentversion);
+    try (Stream<String> subjects = updatedPerPatchStore.ofVersion(version)) {
+      final ChangeFetcher getQuads = new ChangeFetcherImpl(truePatchStore, tripleStore, version);
       final Iterator<String> iterator = subjects.iterator();
       while (iterator.hasNext()) {
         final boolean needUpdate = notifyUpdate();
@@ -94,8 +94,8 @@ public class StoreUpdater implements RdfProcessor {
     try {
       final boolean wasChanged = tripleStore.putQuad(subject, predicate, direction, object, valueType, language);
       if (wasChanged) {
-        truePatchStore.put(subject, currentversion, predicate, direction, true, object, valueType, language);
-        updatedPerPatchStore.put(currentversion, subject);
+        truePatchStore.put(subject, version, predicate, direction, true, object, valueType, language);
+        updatedPerPatchStore.put(version, subject);
       }
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
@@ -107,8 +107,8 @@ public class StoreUpdater implements RdfProcessor {
     try {
       final boolean wasChanged = tripleStore.deleteQuad(subject, predicate, direction, object, valueType, language);
       if (wasChanged) {
-        truePatchStore.put(subject, currentversion, predicate, direction, false, object, valueType, language);
-        updatedPerPatchStore.put(currentversion, subject);
+        truePatchStore.put(subject, version, predicate, direction, false, object, valueType, language);
+        updatedPerPatchStore.put(version, subject);
       }
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
@@ -163,15 +163,13 @@ public class StoreUpdater implements RdfProcessor {
   @Override
   public void start(int index) throws RdfProcessingFailedException {
     stopwatch = Stopwatch.createStarted();
-    currentversion = index;
+    version = index;
     startTransactions();
     logString = "Processed {} triples ({} triples/s)";
     count = 0; // reset the count to make sure the right amount of imported triples are logged.
   }
 
   private void startTransactions() {
-    versionStore.start();
-    importStatus.addProgressItem(VersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     tripleStore.start();
     importStatus.addProgressItem(BdbTripleStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     truePatchStore.start();
@@ -203,7 +201,6 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void updateStoreProgress() {
-    importStatus.updateProgressItem(VersionStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(BdbTripleStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(BdbTruePatchStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(BdbTypeNameStore.class.getSimpleName(), count);
@@ -212,7 +209,7 @@ public class StoreUpdater implements RdfProcessor {
 
   @Override
   public int getCurrentVersion() {
-    return currentversion;
+    return version;
   }
 
   @Override
@@ -224,7 +221,6 @@ public class StoreUpdater implements RdfProcessor {
       importStatus.setStatus(msg);
       stopwatch.reset();
       stopwatch.start();
-      versionStore.setVersion(currentversion);
       commitChanges();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
@@ -240,8 +236,6 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void commitChanges() throws JsonProcessingException, DatabaseWriteException {
-    versionStore.commit();
-    importStatus.finishProgressItem(VersionStore.class.getSimpleName());
     typeNameStore.commit();
     importStatus.finishProgressItem(BdbTypeNameStore.class.getSimpleName());
     tripleStore.commit();
@@ -251,5 +245,4 @@ public class StoreUpdater implements RdfProcessor {
     updatedPerPatchStore.commit();
     importStatus.finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
   }
-
 }

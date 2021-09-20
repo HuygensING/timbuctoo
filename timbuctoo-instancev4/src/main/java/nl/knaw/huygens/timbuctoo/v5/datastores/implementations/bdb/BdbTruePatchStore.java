@@ -19,7 +19,6 @@ import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 
 public class BdbTruePatchStore {
-
   private static final Logger LOG = LoggerFactory.getLogger(BdbTruePatchStore.class);
   private final HashMap<Integer, BdbWrapper<String, String>> bdbWrappers;
   private final DatabaseCreator databaseCreator;
@@ -51,25 +50,18 @@ public class BdbTruePatchStore {
                   String object, String valueType, String language) throws DatabaseWriteException {
     //if we assert something and then retract it in the same patch, it's as if it never happened at all
     //so we delete the inversion
-    final String dirStr = direction == OUT ? "1" : "0";
+    final String value = predicate + "\n" +
+        (direction == OUT ? "1" : "0") + "\n" +
+        (valueType == null ? "" : valueType) + "\n" +
+        (language == null ? "" : language) + "\n" +
+        object;
+
     try {
       getOrCreateBdbWrapper(currentversion).delete(
-        subject + "\n" + currentversion + "\n" + (!isAssertion ? 1 : 0),
-        predicate + "\n" +
-          dirStr + "\n" +
-          (valueType == null ? "" : valueType) + "\n" +
-          (language == null ? "" : language) + "\n" +
-          object
-      );
+        subject + "\n" + currentversion + "\n" + (!isAssertion ? 1 : 0), value);
 
       getOrCreateBdbWrapper(currentversion).put(
-          subject + "\n" + currentversion + "\n" + (isAssertion ? 1 : 0),
-          predicate + "\n" +
-              dirStr + "\n" +
-              (valueType == null ? "" : valueType) + "\n" +
-              (language == null ? "" : language) + "\n" +
-              object
-      );
+          subject + "\n" + currentversion + "\n" + (isAssertion ? 1 : 0), value);
     } catch (BdbDbCreationException e) {
       throw new DatabaseWriteException(e);
     }
@@ -162,29 +154,6 @@ public class BdbTruePatchStore {
 
   public void empty() {
     bdbWrappers.values().forEach(BdbWrapper::empty);
-  }
-
-  public void migrate() {
-    try {
-      final BdbWrapper<String, String> database = databaseCreator.createDatabase("");
-      database.databaseGetter().getAll().getKeysAndValues(database.keyValueConverter(Tuple::tuple)).forEach(tuple -> {
-        try {
-          final String[] split = tuple.getLeft().split("\n");
-          final String version = split[split.length - 2];
-
-          bdbWrappers.get(Integer.parseInt(version)).put(tuple.getLeft(), tuple.getRight());
-        } catch (DatabaseWriteException e) {
-          e.printStackTrace();
-        }
-      });
-
-      bdbWrappers.values().forEach(BdbWrapper::commit);
-
-      database.empty();
-      database.close();
-    } catch (BdbDbCreationException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   public interface DatabaseCreator {

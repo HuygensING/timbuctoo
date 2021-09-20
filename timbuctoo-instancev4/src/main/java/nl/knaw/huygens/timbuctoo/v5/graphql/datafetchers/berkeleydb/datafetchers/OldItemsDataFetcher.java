@@ -48,11 +48,11 @@ public class OldItemsDataFetcher implements DataFetcher<StringList> {
                  .sorted((v1, v2) -> -v1.compareTo(v2)).collect(Collectors.toList()) :
           Collections.emptyList();
 
-      try (Stream<SubjectCursor> subjectStream = dataSet.getUpdatedPerPatchStore().fromVersion(
-        version, arguments.getCursor(),
-        subject -> OldItemsDataFetcher.wasDeletedInCollection(source, versions, subject))) {
+      try (Stream<SubjectCursor> subjectStream =
+               dataSet.getUpdatedPerPatchStore().fromVersion(version, arguments.getCursor())) {
         final PaginatedList<String> paginatedList = PaginationHelper.getUpdatedPaginatedList(
-            subjectStream,
+            subjectStream.filter(subjectCursor ->
+                OldItemsDataFetcher.wasDeletedInCollection(source, versions, subjectCursor.getSubject())),
             SubjectCursor::getSubject,
             arguments);
 

@@ -32,8 +32,8 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   protected final EnvironmentConfig configuration;
   private final String databaseLocation;
   private final BdbBackupper bdbBackupper;
-  private Map<String, Environment> environmentMap = new HashMap<>();
-  private Map<String, Database> databases = new HashMap<>();
+  private final Map<String, Environment> environmentMap = new HashMap<>();
+  private final Map<String, Database> databases = new HashMap<>();
   private FileHelper fileHelper;
 
   @JsonCreator
@@ -95,7 +95,6 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     // make sure the backup path exists
     path.toFile().mkdirs();
     return path;
-
   }
 
   private String databaseKey(String environmentKey, String databaseName) {
@@ -171,7 +170,6 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
                     .map(Database::getDatabaseName)
                     .map(dbName -> dbName.replace(environmentKey, ""))
                     .collect(Collectors.toList());
-
   }
 
   @Override
@@ -182,4 +180,19 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     }
   }
 
+  @Override
+  public void removeDatabase(String ownerId, String dataSetId, String databaseName) {
+    final String environmentKey = environmentKey(ownerId, dataSetId);
+    if (environmentMap.containsKey(environmentKey)) {
+      environmentMap.get(environmentKey).removeDatabase(null, databaseName);
+    }
+  }
+
+  @Override
+  public void renameDatabase(String ownerId, String dataSetId, String databaseName, String newDatabaseName) {
+    final String environmentKey = environmentKey(ownerId, dataSetId);
+    if (environmentMap.containsKey(environmentKey)) {
+      environmentMap.get(environmentKey).renameDatabase(null, databaseName, newDatabaseName);
+    }
+  }
 }

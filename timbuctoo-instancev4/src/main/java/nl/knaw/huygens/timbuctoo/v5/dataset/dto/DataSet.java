@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringIntegerIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
@@ -22,7 +23,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchS
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.VersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Stream;
 
 @Value.Immutable
 public abstract class DataSet {
@@ -77,9 +78,13 @@ public abstract class DataSet {
     }
 
     final TupleBinding<String> stringBinding = TupleBinding.getPrimitiveBinding(String.class);
+    final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
+
     try {
       StringStringIsCleanHandler stringStringIsCleanHandler = new StringStringIsCleanHandler();
-      BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
+      StringIntegerIsCleanHandler stringIntIsCleanHandler = new StringIntegerIsCleanHandler();
+
+      final BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
         userId,
         dataSetId,
         "rdfData",
@@ -88,6 +93,7 @@ public abstract class DataSet {
         stringBinding,
         stringStringIsCleanHandler
       ));
+
       final BdbTypeNameStore typeNameStore = new BdbTypeNameStore(
         new BdbBackedData(dataStoreFactory.getDatabase(
           userId,
@@ -100,6 +106,7 @@ public abstract class DataSet {
         )),
         rdfPrefix
       );
+
       final BdbSchemaStore schema = new BdbSchemaStore(
         new BdbBackedData(dataStoreFactory.getDatabase(
           userId,
@@ -112,28 +119,38 @@ public abstract class DataSet {
         )),
         importManager.getImportStatus()
       );
-      final TupleBinding<Integer> integerBinding = TupleBinding.getPrimitiveBinding(Integer.class);
-      final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
-        dataStoreFactory.getDatabase(
+
+      BdbWrapper<String, Integer> updatedPerPatchStoreWrapper = dataStoreFactory.getDatabase(
           userId,
           dataSetId,
           "updatedPerPatch",
           true,
-          integerBinding,
           stringBinding,
-          new IsCleanHandler<Integer, String>() {
-            @Override
-            public Integer getKey() {
-              return Integer.MAX_VALUE;
-            }
-
-            @Override
-            public String getValue() {
-              return "isClean";
-            }
-          }
-        )
+          integerBinding,
+          stringIntIsCleanHandler
       );
+
+      try (Stream<String> keys = updatedPerPatchStoreWrapper.databaseGetter().getAll()
+                                                            .getKeys(updatedPerPatchStoreWrapper.keyRetriever())) {
+        keys.findFirst();
+      } catch (IllegalArgumentException e) {
+        updatedPerPatchStoreWrapper.close();
+        dataStoreFactory.closeDatabase(userId, dataSetId, "updatedPerPatch");
+        dataStoreFactory.renameDatabase(userId, dataSetId, "updatedPerPatch", "updatedPerPatchOld");
+
+        updatedPerPatchStoreWrapper = dataStoreFactory.getDatabase(
+            userId,
+            dataSetId,
+            "updatedPerPatch",
+            true,
+            stringBinding,
+            integerBinding,
+            stringIntIsCleanHandler
+        );
+      }
+
+      final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(updatedPerPatchStoreWrapper);
+
       final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
           dataStoreFactory.getDatabase(
               userId,
@@ -143,7 +160,9 @@ public abstract class DataSet {
               stringBinding,
               stringBinding,
               stringStringIsCleanHandler
-          ), updatedPerPatchStore);
+          ), updatedPerPatchStore
+      );
+
       final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
         dataStoreFactory.getDatabase(
           userId,
@@ -156,25 +175,6 @@ public abstract class DataSet {
         ),
         importManager.getImportStatus()
       );
-      VersionStore versionStore = new VersionStore(dataStoreFactory.getDatabase(
-        userId,
-        dataSetId,
-        "versions",
-        false,
-        stringBinding,
-        integerBinding,
-        new IsCleanHandler<String, Integer>() {
-          @Override
-          public String getKey() {
-            return "isClean";
-          }
-
-          @Override
-          public Integer getValue() {
-            return Integer.MAX_VALUE;
-          }
-        }
-      ));
 
       final StoreUpdater storeUpdater = new StoreUpdater(
         quadStore,
@@ -182,7 +182,6 @@ public abstract class DataSet {
         truePatchStore,
         updatedPerPatchStore,
         Lists.newArrayList(schema, rmlDataSourceStore),
-        versionStore,
         importManager.getImportStatus()
       );
       importManager.subscribeToRdf(storeUpdater);
@@ -190,7 +189,6 @@ public abstract class DataSet {
       final ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore, updatedPerPatchStore);
 
       final CurrentStateRetriever currentStateRetriever = new CurrentStateRetriever(quadStore);
-
 
       ImmutableDataSet dataSet = ImmutableDataSet.builder()
         .ownerId(userId)
@@ -202,7 +200,6 @@ public abstract class DataSet {
         .schemaStore(schema)
         .updatedPerPatchStore(updatedPerPatchStore)
         .truePatchStore(truePatchStore)
-        .versionStore(versionStore)
         .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
         .schemaStore(schema)
         .importManager(importManager)
@@ -213,9 +210,8 @@ public abstract class DataSet {
         .build();
       importManager.init(dataSet);
 
-
       if (!quadStore.isClean() || !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
-        !updatedPerPatchStore.isClean() || !rmlDataSourceStore.isClean() || !versionStore.isClean()) {
+        !updatedPerPatchStore.isClean() || !rmlDataSourceStore.isClean()) {
         LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
         quadStore.empty();
         typeNameStore.empty();
@@ -223,14 +219,11 @@ public abstract class DataSet {
         truePatchStore.empty();
         updatedPerPatchStore.empty();
         rmlDataSourceStore.empty();
-        versionStore.empty();
 
         importManager.reprocessLogs();
-
       } else {
         importManager.processLogs(); // process unprocessed logs
       }
-
 
       return dataSet;
     } catch (BdbDbCreationException e) {
@@ -295,8 +288,6 @@ public abstract class DataSet {
   public abstract BdbTruePatchStore getTruePatchStore();
 
   public abstract TypeNameStore getTypeNameStore();
-
-  public abstract VersionStore getVersionStore();
 
   public abstract ImportManager getImportManager();
 

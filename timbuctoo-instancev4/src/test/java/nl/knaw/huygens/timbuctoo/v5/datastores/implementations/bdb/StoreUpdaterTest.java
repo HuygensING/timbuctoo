@@ -25,7 +25,6 @@ public class StoreUpdaterTest {
 
     instance.start(0);
 
-    verify(importStatus).addProgressItem(VersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(BdbTruePatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(BdbTripleStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
@@ -53,7 +52,6 @@ public class StoreUpdaterTest {
     Thread.sleep(6000); // wait 6 seconds to let the second update trigger the notify
     instance.onQuad(true, "", "", "", "", "", "");
 
-    verify(importStatus).updateProgressItem(VersionStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(BdbTruePatchStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(BdbTripleStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(BdbTypeNameStore.class.getSimpleName(), 2);
@@ -68,7 +66,6 @@ public class StoreUpdaterTest {
 
     instance.commit();
 
-    verify(importStatus).finishProgressItem(VersionStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(BdbTruePatchStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(BdbTripleStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(BdbTypeNameStore.class.getSimpleName());
@@ -90,18 +87,17 @@ public class StoreUpdaterTest {
   }
 
   private StoreUpdater createInstance(ImportStatus importStatus, List<OptimizedPatchListener> listeners) {
-    VersionStore versionStore = mock(VersionStore.class);
     BdbTypeNameStore bdbTypeNameStore = mock(BdbTypeNameStore.class);
     BdbTripleStore bdbTripleStore = mock(BdbTripleStore.class);
     BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
+
     return new StoreUpdater(
       bdbTripleStore,
       bdbTypeNameStore,
       bdbTruePatchStore,
       updatedPerPatchStore,
       listeners,
-      versionStore,
       importStatus
     );
   }

@@ -94,7 +94,7 @@ public class BdbWrapper<KeyT, ValueT> {
 
   public boolean isClean() {
     try (Stream<KeyT> keys = databaseGetter().getAll().getKeys(new NonFilteringKeyRetriever<>())) {
-      if (!keys.findAny().isPresent()) { // database is empty so it is clean
+      if (keys.findAny().isEmpty()) { // database is empty so it is clean
         return true;
       }
     }

@@ -13,27 +13,22 @@ public class StreamIterator {
 
   public static <T, U extends Exception> void iterateAndCloseOrThrow(Stream<T> stream, ThrowingConsumer<T, U> consumer)
     throws U {
-    try {
+    try (stream) {
       Iterator<T> iterator = stream.iterator();
       while (iterator.hasNext()) {
         consumer.accept(iterator.next());
       }
-    } finally {
-      stream.close();
     }
   }
 
   public static <T> void iterateAndClose(Stream<T> stream, Consumer<T> consumer) {
-    try {
+    try (stream) {
       Iterator<T> iterator = stream.iterator();
       while (iterator.hasNext()) {
         consumer.accept(iterator.next());
       }
-    } finally {
-      stream.close();
     }
   }
-
 
   public interface ThrowingConsumer<T, U extends Exception> {
     void accept(T value) throws U;

@@ -65,10 +65,10 @@ public class CollectionDataFetcher implements CollectionFetcher {
         ZonedDateTime.parse(logEntry.getImportStatus().getDate()).isAfter(updatedSince)).findFirst();
     int version = startEntry.map(entries::indexOf).orElse(-1);
 
-    try (Stream<SubjectCursor> subjectStream = dataSet.getUpdatedPerPatchStore().fromVersion(
-        version, arguments.getCursor(), subject -> this.isSubjectInCollection(dataSet, subject))) {
+    try (Stream<SubjectCursor> subjectStream =
+             dataSet.getUpdatedPerPatchStore().fromVersion(version, arguments.getCursor())) {
       return PaginationHelper.getUpdatedPaginatedList(
-        subjectStream,
+        subjectStream.filter(subjectCursor -> this.isSubjectInCollection(dataSet, subjectCursor.getSubject())),
         subjectCursor -> new LazyTypeSubjectReference(subjectCursor.getSubject(), dataSet),
         arguments);
     }
@@ -92,7 +92,8 @@ public class CollectionDataFetcher implements CollectionFetcher {
   }
 
   private boolean isSubjectInCollection(DataSet dataSet, String subject) {
-    return dataSet.getQuadStore().getQuads(subject, RDF_TYPE, OUT, "")
-                  .anyMatch(quad -> quad.getObject().equals(collectionUri));
+    try (Stream<CursorQuad> stream = dataSet.getQuadStore().getQuads(subject, RDF_TYPE, OUT, "")) {
+      return stream.anyMatch(quad -> quad.getObject().equals(collectionUri));
+    }
   }
 }
