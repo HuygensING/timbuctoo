@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class StoreUpdater implements RdfProcessor {
@@ -28,6 +29,7 @@ public class StoreUpdater implements RdfProcessor {
   private final BdbTypeNameStore typeNameStore;
   private final BdbTruePatchStore truePatchStore;
   private final UpdatedPerPatchStore updatedPerPatchStore;
+  private final OldSubjectTypesStore oldSubjectTypesStore;
 
   private final List<OptimizedPatchListener> listeners;
   private final ImportStatus importStatus;
@@ -40,12 +42,13 @@ public class StoreUpdater implements RdfProcessor {
   private String logString;
 
   public StoreUpdater(BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore, BdbTruePatchStore truePatchStore,
-                      UpdatedPerPatchStore updatedPerPatchStore, List<OptimizedPatchListener> listeners,
-                      ImportStatus importStatus) {
+                      UpdatedPerPatchStore updatedPerPatchStore, OldSubjectTypesStore oldSubjectTypesStore,
+                      List<OptimizedPatchListener> listeners, ImportStatus importStatus) {
     this.tripleStore = tripleStore;
     this.typeNameStore = typeNameStore;
     this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
+    this.oldSubjectTypesStore = oldSubjectTypesStore;
     this.listeners = listeners;
     this.importStatus = importStatus;
   }
@@ -96,6 +99,11 @@ public class StoreUpdater implements RdfProcessor {
       if (wasChanged) {
         truePatchStore.put(subject, version, predicate, direction, true, object, valueType, language);
         updatedPerPatchStore.put(version, subject);
+        if (predicate.equals(RDF_TYPE)) {
+          for (int v = 0; v < version; v++) {
+            oldSubjectTypesStore.delete(subject, object, v);
+          }
+        }
       }
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
@@ -109,6 +117,9 @@ public class StoreUpdater implements RdfProcessor {
       if (wasChanged) {
         truePatchStore.put(subject, version, predicate, direction, false, object, valueType, language);
         updatedPerPatchStore.put(version, subject);
+        if (predicate.equals(RDF_TYPE)) {
+          oldSubjectTypesStore.put(subject, object, version);
+        }
       }
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
@@ -178,6 +189,8 @@ public class StoreUpdater implements RdfProcessor {
     importStatus.addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     updatedPerPatchStore.start();
     importStatus.addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    oldSubjectTypesStore.start();
+    importStatus.addProgressItem(OldSubjectTypesStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
 
     listeners.forEach(listener -> importStatus.addProgressItem(
       listener.getClass().getSimpleName(), ImportStatusLabel.PENDING)
@@ -205,6 +218,7 @@ public class StoreUpdater implements RdfProcessor {
     importStatus.updateProgressItem(BdbTruePatchStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(BdbTypeNameStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(UpdatedPerPatchStore.class.getSimpleName(), count);
+    importStatus.updateProgressItem(OldSubjectTypesStore.class.getSimpleName(), count);
   }
 
   @Override
@@ -244,5 +258,7 @@ public class StoreUpdater implements RdfProcessor {
     importStatus.finishProgressItem(BdbTruePatchStore.class.getSimpleName());
     updatedPerPatchStore.commit();
     importStatus.finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
+    oldSubjectTypesStore.commit();
+    importStatus.finishProgressItem(OldSubjectTypesStore.class.getSimpleName());
   }
 }

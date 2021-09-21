@@ -68,6 +68,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.AddPidsToWomenWritersEntities;
 import nl.knaw.huygens.timbuctoo.server.tasks.AddTypeToNeo4JVertexTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BackupTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
+import nl.knaw.huygens.timbuctoo.server.tasks.CreateOldSubjectTypesStoresTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MigrateUpdatedPerPatchStoresTask;
@@ -420,6 +421,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     environment.admin().addTask(new MigrateUpdatedPerPatchStoresTask(configuration.getDatabases(), dataSetRepository));
     environment.admin().addTask(new RemoveOldStores(configuration.getDatabases(), dataSetRepository));
+    environment.admin().addTask(new CreateOldSubjectTypesStoresTask(dataSetRepository));
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance

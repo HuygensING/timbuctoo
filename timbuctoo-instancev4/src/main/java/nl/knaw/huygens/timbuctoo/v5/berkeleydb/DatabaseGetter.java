@@ -317,13 +317,17 @@ public class DatabaseGetter<KeyT, ValueT> {
 
         if (partialValue) {
           initializer = dbCursor -> dbCursor.getSearchBothRange(keyEntry, valueEntry, LockMode.DEFAULT);
-          check = () -> {
-            if (valueCheck.apply(startValue, valueBinder.entryToObject(valueEntry))) {
-              return OperationStatus.SUCCESS;
-            } else {
-              return OperationStatus.NOTFOUND;
-            }
-          };
+          if (valueCheck != null) {
+            check = () -> {
+              if (valueCheck.apply(startValue, valueBinder.entryToObject(valueEntry))) {
+                return OperationStatus.SUCCESS;
+              } else {
+                return OperationStatus.NOTFOUND;
+              }
+            };
+          } else {
+            check = () -> OperationStatus.SUCCESS;
+          }
         } else {
           initializer = dbCursor -> dbCursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
           check = () -> OperationStatus.SUCCESS;

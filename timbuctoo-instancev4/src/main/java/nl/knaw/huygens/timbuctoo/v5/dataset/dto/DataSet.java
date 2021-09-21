@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStor
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.OldSubjectTypesStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -163,6 +164,16 @@ public abstract class DataSet {
           ), updatedPerPatchStore
       );
 
+      final OldSubjectTypesStore oldSubjectTypesStore = new OldSubjectTypesStore(dataStoreFactory.getDatabase(
+          userId,
+          dataSetId,
+          "oldSubjectTypes",
+          true,
+          stringBinding,
+          stringBinding,
+          stringStringIsCleanHandler
+      ));
+
       final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
         dataStoreFactory.getDatabase(
           userId,
@@ -181,6 +192,7 @@ public abstract class DataSet {
         typeNameStore,
         truePatchStore,
         updatedPerPatchStore,
+        oldSubjectTypesStore,
         Lists.newArrayList(schema, rmlDataSourceStore),
         importManager.getImportStatus()
       );
@@ -200,6 +212,7 @@ public abstract class DataSet {
         .schemaStore(schema)
         .updatedPerPatchStore(updatedPerPatchStore)
         .truePatchStore(truePatchStore)
+        .oldSubjectTypesStore(oldSubjectTypesStore)
         .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
         .schemaStore(schema)
         .importManager(importManager)
@@ -211,13 +224,14 @@ public abstract class DataSet {
       importManager.init(dataSet);
 
       if (!quadStore.isClean() || !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
-        !updatedPerPatchStore.isClean() || !rmlDataSourceStore.isClean()) {
+        !updatedPerPatchStore.isClean() || !oldSubjectTypesStore.isClean() || !rmlDataSourceStore.isClean()) {
         LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
         quadStore.empty();
         typeNameStore.empty();
         schema.empty();
         truePatchStore.empty();
         updatedPerPatchStore.empty();
+        oldSubjectTypesStore.empty();
         rmlDataSourceStore.empty();
 
         importManager.reprocessLogs();
@@ -234,7 +248,6 @@ public abstract class DataSet {
   public void stop() {
     // close the database environment
     getBdbEnvironmentCreator().closeEnvironment(getOwnerId(), getDataSetName());
-
   }
 
   public File getResourceSyncDescription() {
@@ -288,6 +301,8 @@ public abstract class DataSet {
   public abstract BdbTruePatchStore getTruePatchStore();
 
   public abstract TypeNameStore getTypeNameStore();
+
+  public abstract OldSubjectTypesStore getOldSubjectTypesStore();
 
   public abstract ImportManager getImportManager();
 

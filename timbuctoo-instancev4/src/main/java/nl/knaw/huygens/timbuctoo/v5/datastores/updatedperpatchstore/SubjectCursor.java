@@ -18,4 +18,12 @@ public interface SubjectCursor extends CursorValue {
                                  .cursor(subject)
                                  .build();
   }
+
+  static SubjectCursor create(String subject, Set<Integer> versions, String cursor) {
+    return ImmutableSubjectCursor.builder()
+                                 .subject(subject)
+                                 .versions(versions)
+                                 .cursor(cursor)
+                                 .build();
+  }
 }

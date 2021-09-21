@@ -525,11 +525,22 @@ public class SchemaGenerationTest {
       mock(ImportStatus.class)
     );
 
+    final OldSubjectTypesStore oldSubjectTypesStore = new OldSubjectTypesStore(dataStoreFactory.getDatabase(
+        USER,
+        DATA_SET,
+        "oldSubjectTypes",
+        true,
+        STRING_BINDING,
+        STRING_BINDING,
+        STRING_IS_CLEAN_HANDLER
+    ));
+
     return new StoreUpdater(
       quadStore,
       typeNameStore,
       truePatchStore,
       updatedPerPatchStore,
+      oldSubjectTypesStore,
       Lists.newArrayList(schema, rmlDataSourceStore),
       mock(ImportStatus.class)
     );

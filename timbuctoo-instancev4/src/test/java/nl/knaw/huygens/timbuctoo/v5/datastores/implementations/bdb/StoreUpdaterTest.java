@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -29,6 +28,7 @@ public class StoreUpdaterTest {
     verify(importStatus).addProgressItem(BdbTripleStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    verify(importStatus).addProgressItem(OldSubjectTypesStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
   }
 
   @Test
@@ -56,6 +56,7 @@ public class StoreUpdaterTest {
     verify(importStatus).updateProgressItem(BdbTripleStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(BdbTypeNameStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(UpdatedPerPatchStore.class.getSimpleName(), 2);
+    verify(importStatus).updateProgressItem(OldSubjectTypesStore.class.getSimpleName(), 2);
   }
 
   @Test
@@ -70,6 +71,7 @@ public class StoreUpdaterTest {
     verify(importStatus).finishProgressItem(BdbTripleStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(BdbTypeNameStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
+    verify(importStatus).finishProgressItem(OldSubjectTypesStore.class.getSimpleName());
   }
 
   @Test
@@ -91,19 +93,20 @@ public class StoreUpdaterTest {
     BdbTripleStore bdbTripleStore = mock(BdbTripleStore.class);
     BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
+    OldSubjectTypesStore oldSubjectTypesStore = mock(OldSubjectTypesStore.class);
 
     return new StoreUpdater(
       bdbTripleStore,
       bdbTypeNameStore,
       bdbTruePatchStore,
       updatedPerPatchStore,
+      oldSubjectTypesStore,
       listeners,
       importStatus
     );
   }
 
   private static class DerivedStore1 implements OptimizedPatchListener {
-
     @Override
     public void start() throws RdfProcessingFailedException {
     }
@@ -122,7 +125,6 @@ public class StoreUpdaterTest {
   }
 
   private static class DerivedStore2 implements OptimizedPatchListener {
-
     @Override
     public void start() throws RdfProcessingFailedException {
     }
@@ -139,5 +141,4 @@ public class StoreUpdaterTest {
     public void finish() throws RdfProcessingFailedException {
     }
   }
-
 }
