@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import graphql.schema.DataFetchingEnvironment;
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.util.Tuple;

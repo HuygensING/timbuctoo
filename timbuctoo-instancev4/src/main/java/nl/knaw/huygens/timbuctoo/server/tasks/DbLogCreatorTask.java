@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.databaselog.DatabaseFixer;
 import nl.knaw.huygens.timbuctoo.databaselog.DatabaseLog;
@@ -11,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 
 public class DbLogCreatorTask extends Task {
   public static final Logger LOG = LoggerFactory.getLogger(DbLogCreatorTask.class);
@@ -28,7 +29,7 @@ public class DbLogCreatorTask extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     // Add the missing Vertices and Edges, before creating a log.
     Stopwatch fixStopwatch = Stopwatch.createStarted();
     databaseFixer.fix();

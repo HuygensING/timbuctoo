@@ -4,17 +4,20 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;
-import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
+import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantDetermineDataSetException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ResourceSyncReport;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Optional;
 
 public class ResourceSyncUpdateMutation extends Mutation {
@@ -39,7 +42,7 @@ public class ResourceSyncUpdateMutation extends Mutation {
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(combinedId);
     Optional<DataSet> dataSetOpt;
 
-    ResourceSyncImport.ResourceSyncReport resourceSyncReport;
+    ResourceSyncReport resourceSyncReport = new ResourceSyncReport();
 
     try {
       dataSetOpt = dataSetRepository.getDataSet(user, userAndDataSet.getLeft(), userAndDataSet.getRight());
@@ -47,13 +50,18 @@ public class ResourceSyncUpdateMutation extends Mutation {
         LOG.error("DataSet does not exist.");
         throw new RuntimeException("DataSet does not exist.");
       }
+
       DataSet dataSet = dataSetOpt.get();
       MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.UPDATE_RESOURCESYNC);
-      ResourceSyncImport resourceSyncImport = new ResourceSyncImport(
-        resourceSyncFileLoader, dataSet, false);
+
       String capabilityListUri = dataSet.getMetadata().getImportInfo().get(0).getImportSource();
-      resourceSyncReport = resourceSyncImport.filterAndImport(capabilityListUri, null, true,
-        authString);
+      Date lastUpdate = dataSet.getMetadata().getImportInfo().get(0).getLastImportedOn();
+
+      dataSet.getMetadata().getImportInfo().get(0).setLastImportedOn(Date.from(Instant.now()));
+      ResourceSyncMutationFileHelper fileHelper = new ResourceSyncMutationFileHelper(dataSet, resourceSyncReport);
+
+      ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader, false);
+      resourceSyncImport.filterAndImport(capabilityListUri, null, authString, lastUpdate, fileHelper);
     } catch (IOException | CantRetrieveFileException | CantDetermineDataSetException e) {
       LOG.error("Failed to do a resource sync import. ", e);
       throw new RuntimeException(e);

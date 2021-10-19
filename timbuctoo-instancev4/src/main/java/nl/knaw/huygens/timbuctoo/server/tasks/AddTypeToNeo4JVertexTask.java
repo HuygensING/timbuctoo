@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
@@ -14,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class AddTypeToNeo4JVertexTask extends Task {
@@ -32,7 +32,7 @@ public class AddTypeToNeo4JVertexTask extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     output.println("keyset: " + parameters.keySet());
     if (!parameters.keySet().containsAll(REQUIRED_PARAMS)) {
       output.println("Make sure you provide the following parameters: " + REQUIRED_PARAMS);
@@ -40,8 +40,8 @@ public class AddTypeToNeo4JVertexTask extends Task {
       return;
     }
 
-    String id = parameters.get(ID).asList().get(0);
-    String typeToAdd = parameters.get(TYPE_TO_ADD).asList().get(0);
+    String id = parameters.get(ID).get(0);
+    String typeToAdd = parameters.get(TYPE_TO_ADD).get(0);
 
     transactionEnforcer.execute(timbuctooActions -> {
       JsonCrudService jsonCrudService = crudServiceFactory.newJsonCrudService(timbuctooActions);

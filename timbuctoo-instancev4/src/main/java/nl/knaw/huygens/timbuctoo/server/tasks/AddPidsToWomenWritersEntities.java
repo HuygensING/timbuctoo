@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
@@ -16,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -40,7 +40,7 @@ public class AddPidsToWomenWritersEntities extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     final Graph graph = graphWrapper.getGraph();
     final Transaction tx = graph.tx();
     try {

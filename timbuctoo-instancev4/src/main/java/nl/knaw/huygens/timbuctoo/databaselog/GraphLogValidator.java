@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.databaselog;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;

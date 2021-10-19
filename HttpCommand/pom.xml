@@ -9,15 +9,15 @@
   <version>1.0.0-SNAPSHOT</version>
 
   <properties>
-    <jdk.version>1.8</jdk.version>
-    <maven-compiler.version>3.5.1</maven-compiler.version>
+    <jdk.version>11</jdk.version>
+    <maven-compiler.version>3.8.1</maven-compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <jersey-client.version>2.22.2</jersey-client.version>
     <concordion.version>1.5.1</concordion.version>
-    <guava.version>21.0</guava.version>
-    <commons-lang3.version>3.4</commons-lang3.version>
-    <httpcore.version>4.4.6</httpcore.version>
+    <guava.version>31.0.1-jre</guava.version>
+    <commons-lang3.version>3.12.0</commons-lang3.version>
+    <httpcore.version>4.4.14</httpcore.version>
   </properties>
 
   <dependencies>

@@ -6,7 +6,7 @@ import org.mockito.InOrder;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class TransactionEnforcerTest {
 
@@ -35,7 +35,7 @@ public class TransactionEnforcerTest {
     instance.executeAndReturn(timbuctooActions -> TransactionStateAndResult.rollbackAndReturn(""));
 
     verify(actions).rollback();
-    verifyZeroInteractions(afterSuccessTaskExecutor);
+    verifyNoInteractions(afterSuccessTaskExecutor);
   }
 
 
@@ -49,7 +49,7 @@ public class TransactionEnforcerTest {
         throw new RuntimeException();
       });
     } finally {
-      verifyZeroInteractions(afterSuccessTaskExecutor);
+      verifyNoInteractions(afterSuccessTaskExecutor);
     }
 
 

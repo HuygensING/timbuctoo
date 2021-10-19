@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import io.dropwizard.servlets.tasks.Task;
@@ -30,7 +27,7 @@ public class UserCreationTask extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> immutableMultimap, PrintWriter printWriter) throws Exception {
+  public void execute(Map<String, List<String>> immutableMultimap, PrintWriter printWriter) throws Exception {
     LOG.debug("Input {}", immutableMultimap);
 
     Sets.SetView<String> missingKeys = Sets.difference(UserInfoKeys.all, immutableMultimap.keySet());
@@ -58,12 +55,11 @@ public class UserCreationTask extends Task {
       String.format("User created with pid '%s' and user name '%s'", userInfo.get(USER_PID), userInfo.get(USER_NAME)));
   }
 
-  private List<String> getDuplicateKeys(ImmutableMultimap<String, String> immutableMultimap) {
-    ImmutableMultiset<String> keys = immutableMultimap.keys();
-    LOG.debug("keys: {}", keys);
-    Set<String> uniques = Sets.newHashSet();
-    return keys.stream()
-               .filter(key -> !uniques.add(key)).distinct()
-               .collect(toList());
+  private List<String> getDuplicateKeys(Map<String, List<String>> map) {
+    LOG.debug("keys: {}", map.keySet());
+    return map.entrySet().stream()
+              .filter(entry -> entry.getValue().size() > 1)
+              .map(Map.Entry::getKey).distinct()
+              .collect(toList());
   }
 }

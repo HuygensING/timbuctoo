@@ -10,7 +10,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class CompositePropertyDescriptorTest {
 
@@ -27,7 +27,7 @@ public class CompositePropertyDescriptorTest {
     assertThat(value, is(valueOfDesc1));
 
     verify(propertyDescriptor1).get(any(Vertex.class));
-    verifyZeroInteractions(propertyDescriptor2);
+    verifyNoInteractions(propertyDescriptor2);
   }
 
   @Test

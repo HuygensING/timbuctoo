@@ -10,7 +10,9 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -20,7 +22,7 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class UserCreationTaskTest {
   public static final String UNKNOWN_KEY_1 = "unknownKey1";
@@ -57,30 +59,31 @@ public class UserCreationTaskTest {
     userInfo.put(UserInfoKeys.ORGANIZATION, ORGANIZATION);
     userInfo.put(UserInfoKeys.VRE_ID, VRE_ID);
     userInfo.put(UserInfoKeys.VRE_ROLE, VRE_ROLE);
-    ImmutableMultimap<String, String> immutableMultimap = ImmutableMultimap.copyOf(userInfo.entrySet());
 
-    instance.execute(immutableMultimap, mock(PrintWriter.class));
+    Map<String, List<String>> userInfoCopy = userInfo.entrySet().stream().collect(
+        Collectors.toMap(Map.Entry::getKey, entry -> List.of(entry.getValue())));
+
+    instance.execute(userInfoCopy, mock(PrintWriter.class));
 
     verify(localUserCreator).create(userInfo);
   }
 
   @Test
   public void executeFiltersAllTheUnknownKeys() throws Exception {
-    ImmutableMultimap<String, String> immutableMultimap = ImmutableMultimap.<String, String>builder()
-      .put(UserInfoKeys.USER_PID, PID)
-      .put(UserInfoKeys.USER_NAME, USER_NAME)
-      .put(UserInfoKeys.PASSWORD, PWD)
-      .put(UserInfoKeys.GIVEN_NAME, GIVEN_NAME)
-      .put(UserInfoKeys.SURNAME, SURNAME)
-      .put(UserInfoKeys.EMAIL_ADDRESS, EMAIL)
-      .put(UserInfoKeys.ORGANIZATION, ORGANIZATION)
-      .put(UserInfoKeys.VRE_ID, VRE_ID)
-      .put(UserInfoKeys.VRE_ROLE, VRE_ROLE)
-      .put(UNKNOWN_KEY_1, "val")
-      .put(UNKNOWN_KEY_2, "val2")
-      .build();
+    Map<String, List<String>> userInfo = Maps.newHashMap();
+    userInfo.put(UserInfoKeys.USER_PID, List.of(PID));
+    userInfo.put(UserInfoKeys.USER_NAME, List.of(USER_NAME));
+    userInfo.put(UserInfoKeys.PASSWORD, List.of(PWD));
+    userInfo.put(UserInfoKeys.GIVEN_NAME, List.of(GIVEN_NAME));
+    userInfo.put(UserInfoKeys.SURNAME, List.of(SURNAME));
+    userInfo.put(UserInfoKeys.EMAIL_ADDRESS, List.of(EMAIL));
+    userInfo.put(UserInfoKeys.ORGANIZATION, List.of(ORGANIZATION));
+    userInfo.put(UserInfoKeys.VRE_ID, List.of(VRE_ID));
+    userInfo.put(UserInfoKeys.VRE_ROLE, List.of(VRE_ROLE));
+    userInfo.put(UNKNOWN_KEY_1, List.of("val"));
+    userInfo.put(UNKNOWN_KEY_2, List.of("val2"));
 
-    instance.execute(immutableMultimap, mock(PrintWriter.class));
+    instance.execute(userInfo, mock(PrintWriter.class));
 
     // check the set does not has the unknown keys
     verify(localUserCreator).create(argThat(not(allOf(hasKey(UNKNOWN_KEY_1), hasKey(UNKNOWN_KEY_2)))));
@@ -88,61 +91,57 @@ public class UserCreationTaskTest {
 
   @Test
   public void executeDoesNotImportWithDuplicateKeys() throws Exception {
-    ImmutableMultimap<String, String> immutableMultimap = ImmutableMultimap.<String, String>builder()
-      .put(UserInfoKeys.USER_PID, PID)
-      .put(UserInfoKeys.USER_PID, "otherPid")
-      .put(UserInfoKeys.USER_NAME, USER_NAME)
-      .put(UserInfoKeys.PASSWORD, PWD)
-      .put(UserInfoKeys.GIVEN_NAME, GIVEN_NAME)
-      .put(UserInfoKeys.SURNAME, SURNAME)
-      .put(UserInfoKeys.EMAIL_ADDRESS, EMAIL)
-      .put(UserInfoKeys.ORGANIZATION, ORGANIZATION)
-      .put(UserInfoKeys.VRE_ID, VRE_ID)
-      .put(UserInfoKeys.VRE_ROLE, VRE_ROLE)
-      .build();
+    Map<String, List<String>> userInfo = Maps.newHashMap();
+    userInfo.put(UserInfoKeys.USER_PID, List.of(PID, "otherPid"));
+    userInfo.put(UserInfoKeys.USER_NAME, List.of(USER_NAME));
+    userInfo.put(UserInfoKeys.PASSWORD, List.of(PWD));
+    userInfo.put(UserInfoKeys.GIVEN_NAME, List.of(GIVEN_NAME));
+    userInfo.put(UserInfoKeys.SURNAME, List.of(SURNAME));
+    userInfo.put(UserInfoKeys.EMAIL_ADDRESS, List.of(EMAIL));
+    userInfo.put(UserInfoKeys.ORGANIZATION, List.of(ORGANIZATION));
+    userInfo.put(UserInfoKeys.VRE_ID, List.of(VRE_ID));
+    userInfo.put(UserInfoKeys.VRE_ROLE, List.of(VRE_ROLE));
 
-    instance.execute(immutableMultimap, printWriter);
+    instance.execute(userInfo, printWriter);
 
-    verifyZeroInteractions(localUserCreator);
+    verifyNoInteractions(localUserCreator);
     verify(printWriter).write(argThat(containsString(UserInfoKeys.USER_PID)));
   }
 
   @Test
   public void executeDoesNotImportIfKeysAreMissing() throws Exception {
     // Missing USER_PID key
-    ImmutableMultimap<String, String> immutableMultimap = ImmutableMultimap.<String, String>builder()
-      .put(UserInfoKeys.USER_NAME, USER_NAME)
-      .put(UserInfoKeys.PASSWORD, PWD)
-      .put(UserInfoKeys.GIVEN_NAME, GIVEN_NAME)
-      .put(UserInfoKeys.SURNAME, SURNAME)
-      .put(UserInfoKeys.EMAIL_ADDRESS, EMAIL)
-      .put(UserInfoKeys.ORGANIZATION, ORGANIZATION)
-      .put(UserInfoKeys.VRE_ID, VRE_ID)
-      .put(UserInfoKeys.VRE_ROLE, VRE_ROLE)
-      .build();
+    Map<String, List<String>> userInfo = Maps.newHashMap();
+    userInfo.put(UserInfoKeys.USER_NAME, List.of(USER_NAME));
+    userInfo.put(UserInfoKeys.PASSWORD, List.of(PWD));
+    userInfo.put(UserInfoKeys.GIVEN_NAME, List.of(GIVEN_NAME));
+    userInfo.put(UserInfoKeys.SURNAME, List.of(SURNAME));
+    userInfo.put(UserInfoKeys.EMAIL_ADDRESS, List.of(EMAIL));
+    userInfo.put(UserInfoKeys.ORGANIZATION, List.of(ORGANIZATION));
+    userInfo.put(UserInfoKeys.VRE_ID, List.of(VRE_ID));
+    userInfo.put(UserInfoKeys.VRE_ROLE, List.of(VRE_ROLE));
 
-    instance.execute(immutableMultimap, printWriter);
+    instance.execute(userInfo, printWriter);
 
-    verifyZeroInteractions(localUserCreator);
+    verifyNoInteractions(localUserCreator);
     verify(printWriter).write(argThat(containsString(UserInfoKeys.USER_PID)));
   }
 
   @Test(expected = UserCreationException.class)
   public void executeRethrowsTheExceptionsOfTheLocalUserCreator() throws Exception {
     doThrow(new UserCreationException("")).when(localUserCreator).create(ArgumentMatchers.any());
-    ImmutableMultimap<String, String> immutableMultimap = ImmutableMultimap.<String, String>builder()
-      .put(UserInfoKeys.USER_PID, PID)
-      .put(UserInfoKeys.USER_NAME, USER_NAME)
-      .put(UserInfoKeys.PASSWORD, PWD)
-      .put(UserInfoKeys.GIVEN_NAME, GIVEN_NAME)
-      .put(UserInfoKeys.SURNAME, SURNAME)
-      .put(UserInfoKeys.EMAIL_ADDRESS, EMAIL)
-      .put(UserInfoKeys.ORGANIZATION, ORGANIZATION)
-      .put(UserInfoKeys.VRE_ID, VRE_ID)
-      .put(UserInfoKeys.VRE_ROLE, VRE_ROLE)
-      .build();
+    Map<String, List<String>> userInfo = Maps.newHashMap();
+    userInfo.put(UserInfoKeys.USER_PID, List.of(PID));
+    userInfo.put(UserInfoKeys.USER_NAME, List.of(USER_NAME));
+    userInfo.put(UserInfoKeys.PASSWORD, List.of(PWD));
+    userInfo.put(UserInfoKeys.GIVEN_NAME, List.of(GIVEN_NAME));
+    userInfo.put(UserInfoKeys.SURNAME, List.of(SURNAME));
+    userInfo.put(UserInfoKeys.EMAIL_ADDRESS, List.of(EMAIL));
+    userInfo.put(UserInfoKeys.ORGANIZATION, List.of(ORGANIZATION));
+    userInfo.put(UserInfoKeys.VRE_ID, List.of(VRE_ID));
+    userInfo.put(UserInfoKeys.VRE_ROLE, List.of(VRE_ROLE));
 
-    instance.execute(immutableMultimap, mock(PrintWriter.class));
+    instance.execute(userInfo, mock(PrintWriter.class));
   }
 
 }

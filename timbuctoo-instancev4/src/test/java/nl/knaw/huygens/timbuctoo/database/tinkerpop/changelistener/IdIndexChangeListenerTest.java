@@ -16,7 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class IdIndexChangeListenerTest {
 
@@ -74,7 +74,7 @@ public class IdIndexChangeListenerTest {
 
     instance.onRemoveFromCollection(NULL_COLLECTION, Optional.empty(), nullVertex);
 
-    verifyZeroInteractions(indexHandler);
+    verifyNoInteractions(indexHandler);
   }
 
   @Test
@@ -83,7 +83,7 @@ public class IdIndexChangeListenerTest {
 
     instance.onAddToCollection(NULL_COLLECTION, Optional.empty(), nullVertex);
 
-    verifyZeroInteractions(indexHandler);
+    verifyNoInteractions(indexHandler);
   }
 
   @Test

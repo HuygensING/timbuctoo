@@ -17,7 +17,7 @@ import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class SortDescriptionTest {
 
@@ -104,7 +104,7 @@ public class SortDescriptionTest {
 
     instance.sort(traversal, sortParameters);
 
-    verifyZeroInteractions(traversal);
+    verifyNoInteractions(traversal);
   }
 
   @Test
@@ -115,6 +115,6 @@ public class SortDescriptionTest {
 
     instance.sort(traversal, sortParameters);
 
-    verifyZeroInteractions(traversal);
+    verifyNoInteractions(traversal);
   }
 }

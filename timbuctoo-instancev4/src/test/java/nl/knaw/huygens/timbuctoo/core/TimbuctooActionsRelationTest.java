@@ -27,7 +27,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
@@ -83,7 +83,7 @@ public class TimbuctooActionsRelationTest {
     try {
       instance.createRelation(collection, createRelation, userWithId(USER_ID));
     } finally {
-      verifyZeroInteractions(dataStoreOperations);
+      verifyNoInteractions(dataStoreOperations);
     }
   }
 
@@ -105,7 +105,7 @@ public class TimbuctooActionsRelationTest {
       instance.replaceRelation(collection, new UpdateRelation(UUID.randomUUID(), 1, false),
         userWithId(USER_ID));
     } finally {
-      verifyZeroInteractions(dataStoreOperations);
+      verifyNoInteractions(dataStoreOperations);
     }
   }
 

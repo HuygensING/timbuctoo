@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
@@ -18,6 +17,7 @@ import org.junit.Test;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -100,7 +100,7 @@ public class MigrateTruePatchStoresTaskTest {
     originalDatabase.commit();
     originalDatabase.close();
 
-    instance.execute(ImmutableMultimap.of(), mock(PrintWriter.class));
+    instance.execute(Map.of(), mock(PrintWriter.class));
 
     originalDatabase = databaseCreator.createDatabase("");
     List<Tuple<String, String>> inOrgDb = getTuples(originalDatabase);

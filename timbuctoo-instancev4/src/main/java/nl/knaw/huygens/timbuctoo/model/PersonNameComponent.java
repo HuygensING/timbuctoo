@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 

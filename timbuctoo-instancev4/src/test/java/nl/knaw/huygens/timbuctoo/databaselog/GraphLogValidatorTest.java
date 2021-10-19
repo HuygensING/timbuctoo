@@ -57,8 +57,8 @@ public class GraphLogValidatorTest {
     ArgumentCaptor<String> stringArgumentCaptor = ArgumentCaptor.forClass(String.class);
     verify(writer, times(2)).write(stringArgumentCaptor.capture());
     assertThat(stringArgumentCaptor.getAllValues(), containsInAnyOrder(
-      stringContainsInOrder(Lists.newArrayList("Vertex", VERTEX_ID_2, "2")),
-      stringContainsInOrder(Lists.newArrayList("Vertex", VERTEX_ID_2, "1"))
+        stringContainsInOrder(Lists.newArrayList("Vertex", VERTEX_ID_2, "1")),
+        stringContainsInOrder(Lists.newArrayList("Vertex", VERTEX_ID_2, "2"))
     ));
     verifyNoMoreInteractions(writer);
   }

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Sets;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.LockMode;
@@ -11,6 +10,8 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandle
 
 import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class BdbDumpTask extends Task {
 
@@ -28,7 +29,7 @@ public class BdbDumpTask extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     if (!parameters.keySet().containsAll(REQUIRED_PARAMS)) {
       output.write("Make sure you provide the following parameters: " + REQUIRED_PARAMS);
       return;
@@ -51,8 +52,8 @@ public class BdbDumpTask extends Task {
     output.write("committed data: " + database.dump(prefix, start, count, LockMode.READ_COMMITTED));
   }
 
-  private String getParam(ImmutableMultimap<String, String> parameters, String key) {
-    return parameters.get(key).asList().get(0);
+  private String getParam(Map<String, List<String>> parameters, String key) {
+    return parameters.get(key).get(0);
   }
 
 }

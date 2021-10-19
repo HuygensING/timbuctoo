@@ -30,7 +30,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class TimbuctooActionsCreateTest {
@@ -68,7 +68,7 @@ public class TimbuctooActionsCreateTest {
     try {
       instance.createEntity(mock(Collection.class), baseCollection, newArrayList(), userWithId(userId));
     } finally {
-      verifyZeroInteractions(dataStoreOperations);
+      verifyNoInteractions(dataStoreOperations);
     }
   }
 
@@ -124,7 +124,7 @@ public class TimbuctooActionsCreateTest {
 
     instance.createEntity(collection, baseCollection, newArrayList(), userWithId(userId));
 
-    verifyZeroInteractions(afterSuccessTaskExecutor);
+    verifyNoInteractions(afterSuccessTaskExecutor);
   }
 
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {

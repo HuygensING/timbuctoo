@@ -16,7 +16,7 @@ public class ElasticSearchFilterTest {
 
   @BeforeClass
   public static void initialize() throws Exception {
-    eSearch = new ElasticSearchFilter("", 0, Optional.of(""), Optional.empty());
+    eSearch = new ElasticSearchFilter("not-existing-host", 0, Optional.of(""), Optional.empty());
   }
 
   @Test

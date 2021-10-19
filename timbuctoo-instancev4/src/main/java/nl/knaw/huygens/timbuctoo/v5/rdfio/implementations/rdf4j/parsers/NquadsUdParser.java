@@ -17,6 +17,7 @@ import java.util.Stack;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.rdf4j.rio.RDFFormat.NO_NAMESPACES;
+import static org.eclipse.rdf4j.rio.RDFFormat.NO_RDF_STAR;
 import static org.eclipse.rdf4j.rio.RDFFormat.SUPPORTS_CONTEXTS;
 
 public class NquadsUdParser extends NQuadsParser {
@@ -26,9 +27,10 @@ public class NquadsUdParser extends NQuadsParser {
     UTF_8,
     "nqud",
     NO_NAMESPACES,
-    SUPPORTS_CONTEXTS
+    SUPPORTS_CONTEXTS,
+    NO_RDF_STAR
   );
-  private Stack<Integer> actions;
+  private final Stack<Integer> actions;
 
   public NquadsUdParser() {
     actions = new Stack<>();
@@ -113,8 +115,8 @@ public class NquadsUdParser extends NQuadsParser {
 
       character = assertLineTerminates(character);
     } catch (RDFParseException rdfpe) {
-      if (getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES)) {
-        reportError(rdfpe, NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+      if (getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_INVALID_LINES)) {
+        reportError(rdfpe, NTriplesParserSettings.FAIL_ON_INVALID_LINES);
         ignoredAnError = true;
       } else {
         throw rdfpe;
@@ -142,7 +144,7 @@ public class NquadsUdParser extends NQuadsParser {
   public RDFParser setRDFHandler(RDFHandler handler) {
     if (handler instanceof TimRdfHandler) {
       // It might be nicer to override statement, to make it contain the action, but it takes to much effort for now.
-      ((TimRdfHandler) handler).registerActionSupplier(() -> actions.pop());
+      ((TimRdfHandler) handler).registerActionSupplier(actions::pop);
     }
     return super.setRDFHandler(handler);
   }

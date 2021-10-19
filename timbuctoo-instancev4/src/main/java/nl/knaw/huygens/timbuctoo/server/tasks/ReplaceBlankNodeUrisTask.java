@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
@@ -15,6 +14,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +31,7 @@ public class ReplaceBlankNodeUrisTask extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     for (DataSet dataSet : dataSetRepository.getDataSets()) {
       output.println("Replace blank node URIs in dataset: " + dataSet.getMetadata().getCombinedId());
       output.flush();

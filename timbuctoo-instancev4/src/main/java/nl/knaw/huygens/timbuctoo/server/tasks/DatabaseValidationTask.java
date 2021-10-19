@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.server.tasks;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
@@ -12,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.time.Clock;
+import java.util.List;
+import java.util.Map;
 
 public class DatabaseValidationTask extends Task {
 
@@ -30,7 +31,7 @@ public class DatabaseValidationTask extends Task {
   }
 
   @Override
-  public synchronized void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public synchronized void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     long curTime = clock.millis();
     timeOut = 5000;
     if (parameters.containsKey("force") || curTime - lastExecutionTime > timeOut) {

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-import com.google.common.collect.ImmutableMultimap;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import org.junit.Test;
@@ -8,6 +7,9 @@ import org.junit.Test;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Clock;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -21,34 +23,34 @@ public class DatabaseValidationTaskTest {
   public void willExecuteTheFirstTime() throws Exception {
     TestExecutor testExecutor = new TestExecutor(5000);
 
-    assertThat(testExecutor.invokeTest(0L, ImmutableMultimap.of()), is(true));
+    assertThat(testExecutor.invokeTest(0L, Collections.emptyMap()), is(true));
   }
 
   @Test
   public void willNotExecuteWithinTimeOut() throws Exception {
     TestExecutor testExecutor = new TestExecutor(5000);
 
-    testExecutor.invokeTest(0L, ImmutableMultimap.of());
+    testExecutor.invokeTest(0L, Collections.emptyMap());
 
-    assertThat(testExecutor.invokeTest(4999L, ImmutableMultimap.of()), is(false));
+    assertThat(testExecutor.invokeTest(4999L, Collections.emptyMap()), is(false));
   }
 
   @Test
   public void willExecuteAfterTimeoutPasses() throws Exception {
     TestExecutor testExecutor = new TestExecutor(5000);
 
-    testExecutor.invokeTest(0L, ImmutableMultimap.of());
+    testExecutor.invokeTest(0L, Collections.emptyMap());
 
-    assertThat(testExecutor.invokeTest(5001L, ImmutableMultimap.of()), is(true));
+    assertThat(testExecutor.invokeTest(5001L, Collections.emptyMap()), is(true));
   }
 
   @Test
   public void willExecuteWithinTimeOutIfForced() throws Exception {
     TestExecutor testExecutor = new TestExecutor(5000);
 
-    testExecutor.invokeTest(0L, ImmutableMultimap.of());
+    testExecutor.invokeTest(0L, Collections.emptyMap());
 
-    assertThat(testExecutor.invokeTest(1000L, ImmutableMultimap.of("force", "whatever")), is(true));
+    assertThat(testExecutor.invokeTest(1000L, Map.of("force", List.of("whatever"))), is(true));
   }
 
   private class TestExecutor {
@@ -78,7 +80,7 @@ public class DatabaseValidationTaskTest {
       instance = new DatabaseValidationTask(databaseValidation, testClock, timeOut);
     }
 
-    public boolean invokeTest(Long at, ImmutableMultimap<String, String> arguments) throws Exception {
+    public boolean invokeTest(Long at, Map<String, List<String>> arguments) throws Exception {
       StringWriter out = new StringWriter();
       PrintWriter printWriter = new PrintWriter(out);
       given(testClock.millis()).willReturn(initialTime + at);

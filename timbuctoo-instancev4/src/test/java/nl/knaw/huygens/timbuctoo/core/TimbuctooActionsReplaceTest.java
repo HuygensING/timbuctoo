@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
@@ -64,7 +64,7 @@ public class TimbuctooActionsReplaceTest {
     try {
       instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
     } finally {
-      verifyZeroInteractions(dataStoreOperations);
+      verifyNoInteractions(dataStoreOperations);
     }
   }
 
