@@ -1,83 +1,37 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
-import com.google.common.base.Charsets;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-
 import javax.ws.rs.core.MediaType;
-import java.nio.charset.Charset;
 
-public class ChangesQuadGenerator {
-  private final String defaultGraph;
-
-  public ChangesQuadGenerator(String defaultGraph) {
-    this.defaultGraph = defaultGraph;
-  }
-
+public class ChangesQuadGenerator extends DataSetQuadGenerator {
   public String delRelation(String subject, String predicate, String object, String graph) {
-    if (graph == null) {
-      graph = defaultGraph;
-    }
-    return "-" + "<" + subject + "> <" + predicate + "> <" + object + "> <" + graph + "> .\n";
+    return "-" + super.onRelation(subject, predicate, object, graph);
   }
 
   public String delValue(String subject, String predicate, String value, String valueType, String graph) {
-    value = escapeCharacters(value);
-    if (graph == null) {
-      graph = defaultGraph;
-    }
-
-    return "-" + "<" + subject + "> <" + predicate + "> \"" + value + "\"^^<" + valueType + "> <" + graph + "> .\n";
-  }
-
-  private String escapeCharacters(String value) {
-    return value
-      .replace("\\", "\\\\")
-      .replace("\n", "\\n")
-      .replace("\r", "\\r")
-      .replace("\"", "\\\"");
+    return "-" + super.onValue(subject, predicate, value, valueType, graph);
   }
 
   public String delLanguageTaggedString(String subject, String predicate, String value, String language, String graph) {
-    value = escapeCharacters(value);
-    if (graph == null) {
-      graph = defaultGraph;
-    }
-    return "-" + "<" + subject + "> <" + predicate + "> \"" + value + "\"@" + language + " <" + graph + "> .\n";
+    return "-" + super.onLanguageTaggedString(subject, predicate, value, language, graph);
   }
 
-
+  @Override
   public MediaType getMediaType() {
     return new MediaType("application", "vnd.timbuctoo-rdf.nquads_unified_diff");
   }
 
-
-  public Charset getCharset() {
-    return Charsets.UTF_8;
-  }
-
-
+  @Override
   public String onRelation(String subject, String predicate, String object, String graph) {
-    if (graph == null) {
-      graph = defaultGraph;
-    }
-    return "+" + "<" + subject + "> <" + predicate + "> <" + object + "> <" + graph + "> .\n";
+    return "+" + super.onRelation(subject, predicate, object, graph);
   }
 
-
+  @Override
   public String onValue(String subject, String predicate, String value, String valueType, String graph) {
-    value = escapeCharacters(value);
-    if (graph == null) {
-      graph = defaultGraph;
-    }
-    return "+" + "<" + subject + "> <" + predicate + "> \"" + value + "\"^^<" + valueType + "> <" + graph + "> .\n";
+    return "+" + super.onValue(subject, predicate, value, valueType, graph);
   }
 
-
+  @Override
   public String onLanguageTaggedString(String subject, String predicate, String value, String language, String graph) {
-    value = escapeCharacters(value);
-    if (graph == null) {
-      graph = defaultGraph;
-    }
-    return "+" + "<" + subject + "> <" + predicate + "> \"" + value + "\"@" + language + " <" + graph + "> .\n";
+    return "+" + super.onLanguageTaggedString(subject, predicate, value, language, graph);
   }
 }

@@ -10,10 +10,12 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -42,9 +44,9 @@ public abstract class ChangeLog {
     return typeNameStore.makeUriForPredicate(graphQlpred).get().getLeft();
   }
 
-  protected Stream<Change.Value> getOldValues(DataSet dataSet, String subject, String pred) {
+  protected Stream<Change.Value> getOldValues(DataSet dataSet, Graph graph, String subject, String pred) {
     return dataSet.getQuadStore()
-                  .getQuads(subject, pred, Direction.OUT, "")
+                  .getQuadsInGraph(subject, pred, Direction.OUT, "", Optional.ofNullable(graph))
                   .map(quad -> new Change.Value(quad.getObject(), quad.getValuetype().orElse(null)));
   }
 
@@ -71,8 +73,8 @@ public abstract class ChangeLog {
     return values;
   }
 
-  protected Stream<Change> getProvenanceChanges(DataSet dataSet, String[] subjects, CustomProvenance provenance,
-                                                Map<String, JsonNode> values) {
+  protected Stream<Change> getProvenanceChanges(DataSet dataSet, Graph graph, String[] subjects,
+                                                CustomProvenance provenance, Map<String, JsonNode> values) {
     TypeNameStore typeNameStore = dataSet.getTypeNameStore();
 
     Stream<Change> customProv = provenance
@@ -80,9 +82,8 @@ public abstract class ChangeLog {
       .filter(field -> field.getValueType() != null)
       .flatMap(field -> {
         String graphQlPred = typeNameStore.makeGraphQlnameForPredicate(field.getUri(), Direction.OUT, field.isList());
-        return Stream.of(subjects)
-                     .map(subject -> new Change(subject, field.getUri(), getValues(dataSet, values.get(graphQlPred)),
-                       Stream.empty()));
+        return Stream.of(subjects).map(subject ->
+            new Change(graph, subject, field.getUri(), getValues(dataSet, values.get(graphQlPred)), Stream.empty()));
       });
 
     Stream<Change> customProvNested = provenance
@@ -97,16 +98,17 @@ public abstract class ChangeLog {
             Spliterators.spliteratorUnknownSize(objectValues.iterator(), Spliterator.ORDERED);
           return StreamSupport
             .stream(spliterator, false)
-            .flatMap(newObjectValues -> getChangesForProvObject(dataSet, newObjectValues, subjects, field));
+            .flatMap(newObjectValues -> getChangesForProvObject(dataSet, newObjectValues, graph, subjects, field));
         }
 
-        return getChangesForProvObject(dataSet, objectValues, subjects, field);
+        return getChangesForProvObject(dataSet, objectValues, graph, subjects, field);
       });
 
     return Stream.concat(customProv, customProvNested);
   }
 
-  private Stream<Change> getChangesForProvObject(DataSet dataSet, JsonNode objectValues, String[] subjects,
+  private Stream<Change> getChangesForProvObject(DataSet dataSet, JsonNode objectValues,
+                                                 Graph graph, String[] subjects,
                                                  CustomProvenance.CustomProvenanceValueFieldInput field) {
     String newSubject;
     if (objectValues.get("uri") != null) {
@@ -120,11 +122,13 @@ public abstract class ChangeLog {
 
     return Stream.concat(
       Stream.concat(
-        Stream.of(subjects).map(subject -> new Change(subject, field.getUri(), new Change.Value(newSubject, null))),
-        Stream.of(new Change(newSubject, RdfConstants.RDF_TYPE, new Change.Value(field.getObject().getType(), null)))
+        Stream.of(subjects).map(subject ->
+            new Change(graph, subject, field.getUri(), new Change.Value(newSubject, null))),
+          Stream.of(new Change(graph, newSubject, RdfConstants.RDF_TYPE,
+              new Change.Value(field.getObject().getType(), null)))
       ),
-      getProvenanceChanges(dataSet, new String[]{newSubject}, field.getObject(),
-        OBJECT_MAPPER.convertValue(objectValues, new TypeReference<Map<String, JsonNode>>() {
+      getProvenanceChanges(dataSet, graph, new String[]{newSubject}, field.getObject(),
+        OBJECT_MAPPER.convertValue(objectValues, new TypeReference<>() {
         })
       )
     );

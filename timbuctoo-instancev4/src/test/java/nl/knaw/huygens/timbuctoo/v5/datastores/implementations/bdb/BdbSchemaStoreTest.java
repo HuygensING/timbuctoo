@@ -28,7 +28,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.AllOf.allOf;
 
 public class BdbSchemaStoreTest {
-
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Test
@@ -36,9 +35,12 @@ public class BdbSchemaStoreTest {
     final DummyDataStorage dataStore = new DummyDataStorage();
 
     ChangeFetcher changeFetcher = new DummyChangeFetcher(
-      CursorQuad.create("subj", "pred", Direction.OUT, ChangeType.ASSERTED, "obj", null, null, ""),
-      CursorQuad.create("subj", RdfConstants.RDF_TYPE, Direction.OUT, ChangeType.ASSERTED, "type", null, null, ""),
-      CursorQuad.create("obj", "pred", Direction.IN, ChangeType.ASSERTED, "subj", null, null, "")
+      CursorQuad.create("subj", "pred", Direction.OUT, ChangeType.ASSERTED,
+          "obj", null, null, null, ""),
+      CursorQuad.create("subj", RdfConstants.RDF_TYPE, Direction.OUT, ChangeType.ASSERTED,
+          "type", null, null, null, ""),
+      CursorQuad.create("obj", "pred", Direction.IN, ChangeType.ASSERTED,
+          "subj", null, null, null, "")
     );
 
     BdbSchemaStore schemaStore = new BdbSchemaStore(dataStore, new ImportStatus(new LogList()));
@@ -111,7 +113,7 @@ public class BdbSchemaStoreTest {
     final DummyDataStorage dataStore = new DummyDataStorage();
 
     ChangeFetcher changeFetcher = new DummyChangeFetcher(
-      CursorQuad.create("subj", "pred", Direction.OUT, ChangeType.ASSERTED, "obj", RdfConstants.STRING, null, "")
+      CursorQuad.create("subj", "pred", Direction.OUT, ChangeType.ASSERTED, "obj", RdfConstants.STRING, null, null, "")
     );
 
     BdbSchemaStore schemaStore = new BdbSchemaStore(dataStore, new ImportStatus(new LogList()));
@@ -121,10 +123,14 @@ public class BdbSchemaStoreTest {
     schemaStore.finish();
 
     changeFetcher = new DummyChangeFetcher(
-      CursorQuad.create("subj", "pred", Direction.OUT, ChangeType.UNCHANGED, "type", RdfConstants.STRING, null, ""),
-      CursorQuad.create("subj", "pred2", Direction.OUT, ChangeType.ASSERTED, "type", RdfConstants.STRING, null, ""),
-      CursorQuad.create("subj", RdfConstants.RDF_TYPE, Direction.OUT, ChangeType.ASSERTED, "type", null, null, ""),
-      CursorQuad.create("type", RdfConstants.RDF_TYPE, Direction.IN, ChangeType.ASSERTED, "subj", null, null, "")
+      CursorQuad.create("subj", "pred", Direction.OUT, ChangeType.UNCHANGED,
+          "type", RdfConstants.STRING, null, null, ""),
+      CursorQuad.create("subj", "pred2", Direction.OUT, ChangeType.ASSERTED,
+          "type", RdfConstants.STRING, null, null, ""),
+      CursorQuad.create("subj", RdfConstants.RDF_TYPE, Direction.OUT, ChangeType.ASSERTED,
+          "type", null, null, null, ""),
+      CursorQuad.create("type", RdfConstants.RDF_TYPE, Direction.IN, ChangeType.ASSERTED,
+          "subj", null, null, null, "")
     );
 
     schemaStore.start();

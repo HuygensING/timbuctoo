@@ -21,11 +21,6 @@ public interface DataSetMetaData {
   String getBaseUri();
 
   /**
-   * Returns the uri to be used as the "graph" in quads.
-   */
-  String getGraph();
-
-  /**
    * Returns a uri that you can use to generate dataSet-local uri's
    */
   String getUriPrefix();

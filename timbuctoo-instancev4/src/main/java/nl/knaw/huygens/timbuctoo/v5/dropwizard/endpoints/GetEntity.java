@@ -22,8 +22,10 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 @Path("/v5/{ownerId}/{dataSetId}/{id}")
@@ -46,11 +48,22 @@ public class GetEntity {
 
   public static URI makeUrl(String ownerId, String dataSetId, String id) throws UnsupportedEncodingException {
     return UriBuilder.fromResource(GetEntity.class)
-      .buildFromMap(ImmutableMap.of(
-        "ownerId", ownerId,
-        "dataSetId", dataSetId,
-        "id", escapeCharacters(URLEncoder.encode(id, "UTF-8"))
-      ));
+                     .buildFromMap(ImmutableMap.of(
+                         "ownerId", ownerId,
+                         "dataSetId", dataSetId,
+                         "id", escapeCharacters(URLEncoder.encode(id, StandardCharsets.UTF_8))
+                     ));
+  }
+
+  public static URI makeUrl(String ownerId, String dataSetId, String graph, String id)
+      throws UnsupportedEncodingException {
+    return UriBuilder.fromResource(GetEntity.class)
+                     .buildFromMap(ImmutableMap.of(
+                         "ownerId", ownerId,
+                         "dataSetId", dataSetId,
+                         "graph", escapeCharacters(URLEncoder.encode(graph, StandardCharsets.UTF_8)),
+                         "id", escapeCharacters(URLEncoder.encode(id, StandardCharsets.UTF_8))
+                     ));
   }
 
   @GET
@@ -59,7 +72,23 @@ public class GetEntity {
                             @PathParam("ownerId") String ownerId,
                             @PathParam("dataSetId") String dataSetId,
                             @PathParam("id") String id) {
+    return handleRequest(authHeader, ownerId, dataSetId, dataSet -> dataSet.getQuadStore().getQuads(id));
+  }
 
+  // TODO:
+  // @GET
+  // @Produces(MediaType.TEXT_PLAIN)
+  // public Response getEntityInGraph(@HeaderParam("authorization") String authHeader,
+  //                                  @PathParam("ownerId") String ownerId,
+  //                                  @PathParam("dataSetId") String dataSetId,
+  //                                  @PathParam("graph") String graph,
+  //                                  @PathParam("id") String id) {
+  //   return handleRequest(authHeader, ownerId, dataSetId, dataSet ->
+  //       dataSet.getQuadStore().getQuadsInGraph(graph, id));
+  // }
+
+  private Response handleRequest(String authHeader, String ownerId, String dataSetId,
+                                 Function<DataSet, Stream<CursorQuad>> createStream) {
     Optional<User> user;
     try {
       user = userValidator.getUserFromAccessToken(authHeader);
@@ -75,13 +104,11 @@ public class GetEntity {
       dataSet = dataSetRepository.getDataSet(null, ownerId, dataSetId);
     }
 
-
     if (!dataSet.isPresent()) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
 
-    return streamToStreamingResponse(dataSet.get().getQuadStore().getQuads(id));
-
+    return streamToStreamingResponse(createStream.apply(dataSet.get()));
   }
 
   private Response streamToStreamingResponse(final Stream<CursorQuad> dataStream) {
@@ -98,5 +125,4 @@ public class GetEntity {
 
     return Response.ok(streamingData).build();
   }
-
 }

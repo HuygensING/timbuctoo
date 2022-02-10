@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface LogEntry {
   String getBaseUri();
 
-  String getDefaultGraph();
+  Optional<String> getDefaultGraph();
 
   Optional<RdfCreator> getRdfCreator();
 
@@ -23,7 +23,7 @@ public interface LogEntry {
   static LogEntry create(String baseUri, String defaultGraph, String token) {
     return ImmutableLogEntry.builder()
       .baseUri(baseUri)
-      .defaultGraph(defaultGraph)
+      .defaultGraph(Optional.ofNullable(defaultGraph))
       .logToken(token)
       .rdfCreator(Optional.empty())
       .importStatus(new EntryImportStatus())
@@ -33,7 +33,7 @@ public interface LogEntry {
   static LogEntry create(String baseUri, String defaultGraph, RdfCreator creator) {
     return ImmutableLogEntry.builder()
       .baseUri(baseUri)
-      .defaultGraph(defaultGraph)
+      .defaultGraph(Optional.ofNullable(defaultGraph))
       .logToken(Optional.empty())
       .rdfCreator(creator)
       .importStatus(new EntryImportStatus())
@@ -46,5 +46,4 @@ public interface LogEntry {
       .withRdfCreator(Optional.empty())
       .withLogToken(token);
   }
-
 }

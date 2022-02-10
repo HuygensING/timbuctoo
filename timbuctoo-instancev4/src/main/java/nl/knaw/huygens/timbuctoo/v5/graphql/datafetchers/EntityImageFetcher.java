@@ -4,6 +4,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectGraphReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
@@ -23,8 +24,8 @@ public class EntityImageFetcher implements DataFetcher<TypedValue> {
 
   @Override
   public TypedValue get(DataFetchingEnvironment env) {
-    if (env.getSource() instanceof SubjectReference) {
-      SubjectReference source = env.getSource();
+    if (env.getSource() instanceof SubjectGraphReference) {
+      SubjectGraphReference source = env.getSource();
       DataSet dataSet = source.getDataSet();
 
       if (env.getParentType() instanceof GraphQLObjectType) {

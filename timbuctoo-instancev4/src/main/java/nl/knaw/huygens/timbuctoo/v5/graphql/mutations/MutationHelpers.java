@@ -15,7 +15,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class MutationHelpers {
-
   public static User getUser(DataFetchingEnvironment env) {
     ContextData contextData = env.getContext();
 
@@ -50,18 +49,14 @@ public class MutationHelpers {
     throws LogStorageFailedException, ExecutionException, InterruptedException {
 
     final String baseUri = dataSet.getMetadata().getBaseUri();
-    final String graph = dataSet.getMetadata().getGraph();
-    dataSet.getImportManager().generateLog(baseUri, graph, new PredicateMutationRdfPatcher(mutation))
-      .get();
+    dataSet.getImportManager().generateLog(baseUri, null, new PredicateMutationRdfPatcher(mutation)).get();
   }
 
   public static void addMutations(DataSet dataSet, PredicateMutation... mutations)
       throws LogStorageFailedException, ExecutionException, InterruptedException {
 
     final String baseUri = dataSet.getMetadata().getBaseUri();
-    final String graph = dataSet.getMetadata().getGraph();
-    dataSet.getImportManager().generateLog(baseUri, graph, new PredicateMutationRdfPatcher(mutations))
-           .get();
+    dataSet.getImportManager().generateLog(baseUri, null, new PredicateMutationRdfPatcher(mutations)).get();
   }
 
   public interface DataSetFetcher {

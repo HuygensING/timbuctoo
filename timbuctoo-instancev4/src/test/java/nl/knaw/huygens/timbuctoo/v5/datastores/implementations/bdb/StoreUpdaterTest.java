@@ -25,7 +25,7 @@ public class StoreUpdaterTest {
     instance.start(0);
 
     verify(importStatus).addProgressItem(BdbTruePatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
-    verify(importStatus).addProgressItem(BdbTripleStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    verify(importStatus).addProgressItem(BdbQuadStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(OldSubjectTypesStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
@@ -53,7 +53,7 @@ public class StoreUpdaterTest {
     instance.onQuad(true, "", "", "", "", "", "");
 
     verify(importStatus).updateProgressItem(BdbTruePatchStore.class.getSimpleName(), 2);
-    verify(importStatus).updateProgressItem(BdbTripleStore.class.getSimpleName(), 2);
+    verify(importStatus).updateProgressItem(BdbQuadStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(BdbTypeNameStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(UpdatedPerPatchStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(OldSubjectTypesStore.class.getSimpleName(), 2);
@@ -68,7 +68,7 @@ public class StoreUpdaterTest {
     instance.commit();
 
     verify(importStatus).finishProgressItem(BdbTruePatchStore.class.getSimpleName());
-    verify(importStatus).finishProgressItem(BdbTripleStore.class.getSimpleName());
+    verify(importStatus).finishProgressItem(BdbQuadStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(BdbTypeNameStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(OldSubjectTypesStore.class.getSimpleName());
@@ -90,18 +90,20 @@ public class StoreUpdaterTest {
 
   private StoreUpdater createInstance(ImportStatus importStatus, List<OptimizedPatchListener> listeners) {
     BdbTypeNameStore bdbTypeNameStore = mock(BdbTypeNameStore.class);
-    BdbTripleStore bdbTripleStore = mock(BdbTripleStore.class);
+    BdbQuadStore bdbQuadStore = mock(BdbQuadStore.class);
     BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
+    GraphStore graphStore = mock(GraphStore.class);
     OldSubjectTypesStore oldSubjectTypesStore = mock(OldSubjectTypesStore.class);
 
     return new StoreUpdater(
-      bdbTripleStore,
+      bdbQuadStore,
       bdbTypeNameStore,
       bdbTruePatchStore,
       updatedPerPatchStore,
       oldSubjectTypesStore,
       listeners,
+      graphStore,
       importStatus
     );
   }

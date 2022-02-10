@@ -66,9 +66,7 @@ public class BitlyService extends RedirectionService {
     String persistentUrl = retrieveBitlyUri(uri.toString());
 
     EntityLookup entityLookup = params.getEntityLookup();
-
     String dataSetId = entityLookup.getDataSetId().get();
-
     Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(dataSetId);
 
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(
@@ -81,13 +79,11 @@ public class BitlyService extends RedirectionService {
     }
 
     DataSet dataSet = maybeDataSet.get();
-
     final ImportManager importManager = dataSet.getImportManager();
 
     try {
       importManager.generateLog(
-          dataSet.getMetadata().getBaseUri(),
-        dataSet.getMetadata().getGraph(),
+        dataSet.getMetadata().getBaseUri(), null,
         new AddTriplePatchRdfCreator(
           entityLookup.getUri().get(),
           PERSISTENT_ID,
@@ -97,12 +93,10 @@ public class BitlyService extends RedirectionService {
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RedirectionServiceException(e);
     }
-
   }
 
   public String retrieveBitlyUri(String uri) {
     Response<ShortenResponse> call = bitlyClient.shorten().setLongUrl(uri).call();
-
     if (call.status_code != 200) {
       return null;
     }

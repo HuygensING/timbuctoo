@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -25,6 +26,9 @@ public class CreateMutationChangeLog extends ChangeLog {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @JsonProperty
+  private final Graph graph;
+
+  @JsonProperty
   private final String subject;
 
   @JsonProperty
@@ -33,7 +37,9 @@ public class CreateMutationChangeLog extends ChangeLog {
   @JsonProperty
   private final RawCreateChangeLog changeLog;
 
-  public CreateMutationChangeLog(String subject, String typeUri, Map entity) throws JsonProcessingException {
+  public CreateMutationChangeLog(Graph graph, String subject, String typeUri, Map entity)
+      throws JsonProcessingException {
+    this.graph = graph;
     this.subject = subject;
     this.typeUri = typeUri;
 
@@ -41,28 +47,30 @@ public class CreateMutationChangeLog extends ChangeLog {
     this.changeLog = OBJECT_MAPPER.treeToValue(jsonNode, RawCreateChangeLog.class);
   }
 
-  private CreateMutationChangeLog(String subject, String typeUri, RawCreateChangeLog changeLog) {
+  private CreateMutationChangeLog(Graph graph, String subject, String typeUri, RawCreateChangeLog changeLog) {
+    this.graph = graph;
     this.subject = subject;
     this.typeUri = typeUri;
     this.changeLog = changeLog;
   }
 
   @JsonCreator
-  public static CreateMutationChangeLog fromJson(@JsonProperty("subject") String subject,
+  public static CreateMutationChangeLog fromJson(@JsonProperty("graph") Graph graph,
+                                                 @JsonProperty("subject") String subject,
                                                  @JsonProperty("typeUri") String typeUri,
                                                  @JsonProperty("changeLog") RawCreateChangeLog changeLog) {
-    return new CreateMutationChangeLog(subject, typeUri, changeLog);
+    return new CreateMutationChangeLog(graph, subject, typeUri, changeLog);
   }
 
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
-    return getProvenanceChanges(dataSet, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
   }
 
   @Override
   public Stream<Change> getAdditions(DataSet dataSet) {
     Change typeAddition =
-      new Change(subject, RDF_TYPE, Collections.singletonList(new Value(typeUri, null)), Stream.empty());
+      new Change(graph, subject, RDF_TYPE, Collections.singletonList(new Value(typeUri, null)), Stream.empty());
 
     Stream<Change> additions = changeLog.getCreations().entrySet().stream()
                                         .filter(entry -> !entry.getValue().isNull() &&
@@ -86,7 +94,7 @@ public class CreateMutationChangeLog extends ChangeLog {
     String pred = getPredicate(dataSet, graphQlpred);
     List<Value> values = getValues(dataSet, val);
 
-    return new Change(subject, pred, values, Stream.empty());
+    return new Change(graph, subject, pred, values, Stream.empty());
   }
 
   public static class RawCreateChangeLog {

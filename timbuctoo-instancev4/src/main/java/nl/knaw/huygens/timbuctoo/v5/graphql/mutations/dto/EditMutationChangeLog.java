@@ -15,10 +15,12 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @JsonTypeName("EditMutationChangeLog")
@@ -26,32 +28,38 @@ public class EditMutationChangeLog extends ChangeLog {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @JsonProperty
+  private final Graph graph;
+
+  @JsonProperty
   private final String subject;
 
   @JsonProperty
   private final RawEditChangeLog changeLog;
 
-  public EditMutationChangeLog(String subject, Map entity) throws JsonProcessingException {
+  public EditMutationChangeLog(Graph graph, String subject, Map entity) throws JsonProcessingException {
+    this.graph = graph;
     this.subject = subject;
 
     TreeNode jsonNode = OBJECT_MAPPER.valueToTree(entity);
     this.changeLog = OBJECT_MAPPER.treeToValue(jsonNode, RawEditChangeLog.class);
   }
 
-  private EditMutationChangeLog(String subject, RawEditChangeLog changeLog) {
+  private EditMutationChangeLog(Graph graph, String subject, RawEditChangeLog changeLog) {
+    this.graph = graph;
     this.subject = subject;
     this.changeLog = changeLog;
   }
 
   @JsonCreator
-  public static EditMutationChangeLog fromJson(@JsonProperty("subject") String subject,
+  public static EditMutationChangeLog fromJson(@JsonProperty("graph") Graph graph,
+                                               @JsonProperty("subject") String subject,
                                                @JsonProperty("changeLog") RawEditChangeLog changeLog) {
-    return new EditMutationChangeLog(subject, changeLog);
+    return new EditMutationChangeLog(graph, subject, changeLog);
   }
 
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
-    return getProvenanceChanges(dataSet, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
   }
 
   @Override
@@ -96,11 +104,12 @@ public class EditMutationChangeLog extends ChangeLog {
   }
 
   private boolean hasOldValues(DataSet dataSet, Map.Entry<String, JsonNode> entry) {
-    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(
+    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuadsInGraph(
       subject,
       dataSet.getTypeNameStore().makeUriForPredicate(entry.getKey()).get().getLeft(),
       Direction.OUT,
-      ""
+      "",
+      Optional.of(graph)
     )) {
       return quads.findAny().isPresent();
     }
@@ -110,25 +119,25 @@ public class EditMutationChangeLog extends ChangeLog {
     String pred = getPredicate(dataSet, graphQlpred);
     List<Value> values = getValues(dataSet, val);
 
-    return new Change(subject, pred, values, Stream.empty());
+    return new Change(graph, subject, pred, values, Stream.empty());
   }
 
   private Change createDeletionsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
     List<Value> values = getValues(dataSet, val);
 
     String pred = getPredicate(dataSet, graphQlpred);
-    Stream<Value> oldValues = getOldValues(dataSet, subject, pred)
+    Stream<Value> oldValues = getOldValues(dataSet, graph, subject, pred)
                                        .filter(value -> values.isEmpty() || values.contains(value));
 
-    return new Change(subject, pred, Lists.newArrayList(), oldValues);
+    return new Change(graph, subject, pred, Lists.newArrayList(), oldValues);
   }
 
   private Change createReplacementsChange(DataSet dataSet, String graphQlpred, JsonNode val) {
     String pred = getPredicate(dataSet, graphQlpred);
-    Stream<Value> oldValues = getOldValues(dataSet, subject, pred);
+    Stream<Value> oldValues = getOldValues(dataSet, graph, subject, pred);
     List<Value> values = getValues(dataSet, val);
 
-    return new Change(subject, pred, values, oldValues);
+    return new Change(graph, subject, pred, values, oldValues);
   }
 
   public static class RawEditChangeLog {

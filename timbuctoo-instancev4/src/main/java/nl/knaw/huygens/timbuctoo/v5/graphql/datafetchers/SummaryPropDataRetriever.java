@@ -6,10 +6,12 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectGraphReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.DirectionalStep;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +32,17 @@ public class SummaryPropDataRetriever {
     this.summaryPropConfigPredicate = summaryPropConfigPredicate;
   }
 
-
-  public Optional<TypedValue> createSummaryProperty(SubjectReference source, DataSet dataSet, String typeUri) {
+  public Optional<TypedValue> createSummaryProperty(SubjectGraphReference source, DataSet dataSet, String typeUri) {
     QuadStore quadStore = dataSet.getQuadStore();
 
     final Optional<TypedValue> localConfiguredSummaryProp =
-      getType(quadStore, source.getSubjectUri(), typeUri)
-        .flatMap(collection -> getDataQuad(quadStore, collection.getObject(), summaryPropConfigPredicate))
+      getType(quadStore, source.getSubjectUri(), source.getGraph(), typeUri)
+        .flatMap(collection -> getDataQuad(
+            quadStore, source.getGraph(), collection.getObject(), summaryPropConfigPredicate))
         .flatMap(userConfigured -> {
           try {
             SummaryProp summaryProp = OBJECT_MAPPER.readValue(userConfigured.getObject(), SummaryProp.class);
-            return getDataQuad(summaryProp.getPath(), source.getSubjectUri(), quadStore)
+            return getDataQuad(summaryProp.getPath(), source.getSubjectUri(), source.getGraph(), quadStore)
               .map(quad -> createTypedValue(quad, dataSet));
           } catch (IOException e) {
             LOG.error("Cannot parse SummaryProp: '{}'", userConfigured.getObject());
@@ -53,7 +55,7 @@ public class SummaryPropDataRetriever {
     } else {
       // fallback to default summary props
       for (SummaryProp prop : defaultProperties) {
-        Optional<CursorQuad> quad = getDataQuad(prop.getPath(), source.getSubjectUri(), quadStore);
+        Optional<CursorQuad> quad = getDataQuad(prop.getPath(), source.getSubjectUri(), source.getGraph(), quadStore);
         if (quad.isPresent()) {
           return Optional.of(createTypedValue(quad.get(), dataSet));
         }
@@ -63,29 +65,33 @@ public class SummaryPropDataRetriever {
     }
   }
 
-  private Optional<CursorQuad> getType(QuadStore quadStore, String source, String typeUri) {
-    try (Stream<CursorQuad> possibleCollections = quadStore.getQuads(
+  private Optional<CursorQuad> getType(QuadStore quadStore, String source, Optional<Graph> graph, String typeUri) {
+    try (Stream<CursorQuad> possibleCollections = quadStore.getQuadsInGraph(
       source,
       RdfConstants.RDF_TYPE,
       Direction.OUT,
-      ""
+      "",
+      graph
     )) {
       return possibleCollections.filter(quad -> quad.getObject().equals(typeUri)).findFirst();
     }
   }
 
-  private Optional<CursorQuad> getDataQuad(QuadStore quadStore, String source, String predicate) {
-    try (Stream<CursorQuad> possibleCollections = quadStore.getQuads(
+  private Optional<CursorQuad> getDataQuad(QuadStore quadStore, Optional<Graph> graph,
+                                           String source, String predicate) {
+    try (Stream<CursorQuad> possibleCollections = quadStore.getQuadsInGraph(
       source,
       predicate,
       Direction.OUT,
-      ""
+      "",
+      graph
     )) {
       return possibleCollections.findFirst();
     }
   }
 
-  private Optional<CursorQuad> getDataQuad(List<DirectionalStep> path, String uri, QuadStore quadStore) {
+  private Optional<CursorQuad> getDataQuad(List<DirectionalStep> path, String uri,
+                                           Optional<Graph> graph, QuadStore quadStore) {
     /*
      * A collect of the data might look a bit nicer, but that will cause all the data to be loaded from the database.
      * This way only the data needed is retrieved.
@@ -93,7 +99,8 @@ public class SummaryPropDataRetriever {
      */
     Optional<CursorQuad> foundQuad;
     DirectionalStep firstStep = path.get(0);
-    try (Stream<CursorQuad> quads = quadStore.getQuads(uri, firstStep.getStep(), firstStep.getDirection(), "")) {
+    try (Stream<CursorQuad> quads =
+             quadStore.getQuadsInGraph(uri, firstStep.getStep(), firstStep.getDirection(), "", graph)) {
       foundQuad = quads.map(quad -> {
         if (path.size() > 1) {
           /*
@@ -103,7 +110,7 @@ public class SummaryPropDataRetriever {
           if (quad.getValuetype().isPresent()) {
             return Optional.<CursorQuad>empty();
           }
-          return getDataQuad(path.subList(1, path.size()), quad.getObject(), quadStore);
+          return getDataQuad(path.subList(1, path.size()), quad.getObject(), graph, quadStore);
         } else {
           return Optional.of(quad);
         }
@@ -113,7 +120,6 @@ public class SummaryPropDataRetriever {
   }
 
   private TypedValue createTypedValue(CursorQuad cursorQuad, DataSet dataSet) {
-
     /*
      * URI's do not have a value type.
      * So we expect each object without a value type to be a URI.

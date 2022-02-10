@@ -23,7 +23,7 @@ public class ChangeFetcherImplTest {
     when(updatedPerPatchStore.getVersions()).thenReturn(IntStream.of(0, 1).boxed());
 
     final BdbNonPersistentEnvironmentCreator databaseCreator = new BdbNonPersistentEnvironmentCreator();
-    final BdbTripleStore bdbTripleStore = new BdbTripleStore(databaseCreator.getDatabase(
+    final BdbQuadStore bdbQuadStore = new BdbQuadStore(databaseCreator.getDatabase(
       "a",
       "b",
       "rdfData",
@@ -42,10 +42,10 @@ public class ChangeFetcherImplTest {
       new StringStringIsCleanHandler()
     ), updatedPerPatchStore);
 
-    bdbTripleStore.putQuad("subj", "pred", OUT, "obj", null, null);
-    truePatchStore.put("subj", 0, "pred", OUT, true, "obj", null, null);
+    bdbQuadStore.putQuad("subj", "pred", OUT, "obj", null, null, null);
+    truePatchStore.put("subj", 0, "pred", OUT, true, "obj", null, null, null);
 
-    ChangeFetcherImpl changeFetcher = new ChangeFetcherImpl(truePatchStore, bdbTripleStore, 0);
+    ChangeFetcherImpl changeFetcher = new ChangeFetcherImpl(truePatchStore, bdbQuadStore, 0);
 
     try (Stream<CursorQuad> predicates = changeFetcher.getPredicates("subj", "pred", OUT, false, false, true)) {
       assertThat(predicates.count(), is(1L));
@@ -57,9 +57,9 @@ public class ChangeFetcherImplTest {
       assertThat(predicates.count(), is(1L));
     }
 
-    bdbTripleStore.putQuad("subj", "pred", OUT, "obj2", null, null);
-    truePatchStore.put("subj", 1, "pred", OUT, true, "obj2", null, null);
-    changeFetcher = new ChangeFetcherImpl(truePatchStore, bdbTripleStore, 1);
+    bdbQuadStore.putQuad("subj", "pred", OUT, "obj2", null, null, null);
+    truePatchStore.put("subj", 1, "pred", OUT, true, "obj2", null, null, null);
+    changeFetcher = new ChangeFetcherImpl(truePatchStore, bdbQuadStore, 1);
 
     try (Stream<CursorQuad> predicates = changeFetcher.getPredicates("subj", "pred", OUT, false, false, true)) {
       assertThat(predicates.count(), is(1L));

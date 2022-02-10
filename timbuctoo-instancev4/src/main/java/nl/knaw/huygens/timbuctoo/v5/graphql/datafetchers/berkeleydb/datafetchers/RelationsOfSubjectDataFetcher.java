@@ -16,7 +16,6 @@ import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dataf
   .getPaginatedList;
 
 public class RelationsOfSubjectDataFetcher implements CollectionFetcher {
-
   private final String source;
   private final String predicate;
   private final Direction direction;
@@ -33,17 +32,10 @@ public class RelationsOfSubjectDataFetcher implements CollectionFetcher {
     try (Stream<CursorQuad> q = dataSet.getQuadStore().getQuads(source, predicate, direction, cursor)) {
       return getPaginatedList(
         q,
-        cursorSubject -> {
-          final LazyTypeSubjectReference lazyTypeSubjectReference = new LazyTypeSubjectReference(
-            cursorSubject.getSubject(),
-            dataSet
-          );
-          return lazyTypeSubjectReference;
-        },
+        cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getSubject(), Optional.empty(), dataSet),
         arguments,
         Optional.empty()
       );
     }
-
   }
 }

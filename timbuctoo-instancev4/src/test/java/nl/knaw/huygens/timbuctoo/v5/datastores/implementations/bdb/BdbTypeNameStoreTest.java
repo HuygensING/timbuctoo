@@ -112,5 +112,4 @@ public class BdbTypeNameStoreTest {
     assertThat(predicate, is("foo_testList"));
     assertThat(Optional.of(Tuple.tuple(originalUri, Direction.OUT)), is(store.makeUriForPredicate(predicate)));
   }
-
 }

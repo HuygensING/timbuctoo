@@ -26,7 +26,7 @@ public class ChangeListBuilderTest {
 
   @Test
   public void retrieveChangeFilesNamesReturnsCorrectNamesBasedOnSuppliedVersions() {
-    ChangeListBuilder changeListBuilder = new ChangeListBuilder("graph");
+    ChangeListBuilder changeListBuilder = new ChangeListBuilder();
 
     Supplier<List<Integer>> versionsSupplier = () -> Lists.newArrayList(1, 2);
 
@@ -52,25 +52,25 @@ public class ChangeListBuilderTest {
     ), updatedPerPatchStore);
 
     int version = 1;
-    bdbTruePatchStore.put("s1", version, "p1", Direction.OUT, true, "o1", null, null);
-    bdbTruePatchStore.put("s2", version, "p2", Direction.OUT, false, "o2", null, null);
-    bdbTruePatchStore.put("s3", version, "p3", Direction.OUT, true, "o3", RdfConstants.STRING, null);
-    bdbTruePatchStore.put("s4", version, "p4", Direction.OUT, false, "o4", RdfConstants.STRING, null);
-    bdbTruePatchStore.put("s5", version, "p5", Direction.OUT, true, "o5", RdfConstants.LANGSTRING, "en");
-    bdbTruePatchStore.put("s6", version, "p6", Direction.OUT, false, "o6", RdfConstants.LANGSTRING, "en");
+    bdbTruePatchStore.put("s1", version, "p1", Direction.OUT, true, "o1", null, null, null);
+    bdbTruePatchStore.put("s2", version, "p2", Direction.OUT, false, "o2", null, null, null);
+    bdbTruePatchStore.put("s3", version, "p3", Direction.OUT, true, "o3", RdfConstants.STRING, null, null);
+    bdbTruePatchStore.put("s4", version, "p4", Direction.OUT, false, "o4", RdfConstants.STRING, null, null);
+    bdbTruePatchStore.put("s5", version, "p5", Direction.OUT, true, "o5", RdfConstants.LANGSTRING, "en", null);
+    bdbTruePatchStore.put("s6", version, "p6", Direction.OUT, false, "o6", RdfConstants.LANGSTRING, "en", null);
 
-    ChangeListBuilder changeListBuilder = new ChangeListBuilder("graph");
+    ChangeListBuilder changeListBuilder = new ChangeListBuilder();
     ChangesRetriever changesRetriever = new ChangesRetriever(bdbTruePatchStore, null);
 
     List<String> changes = changeListBuilder.retrieveChanges(changesRetriever, version).collect(Collectors.toList());
 
     assertThat(changes, containsInAnyOrder(
-      "+<s1> <p1> <o1> <graph> .\n",
-      "-<s2> <p2> <o2> <graph> .\n",
-      "+<s3> <p3> \"o3\"^^<http://www.w3.org/2001/XMLSchema#string> <graph> .\n",
-      "-<s4> <p4> \"o4\"^^<http://www.w3.org/2001/XMLSchema#string> <graph> .\n",
-      "+<s5> <p5> \"o5\"@en <graph> .\n",
-      "-<s6> <p6> \"o6\"@en <graph> .\n"
+      "+<s1> <p1> <o1> .\n",
+      "-<s2> <p2> <o2> .\n",
+      "+<s3> <p3> \"o3\"^^<http://www.w3.org/2001/XMLSchema#string> .\n",
+      "-<s4> <p4> \"o4\"^^<http://www.w3.org/2001/XMLSchema#string> .\n",
+      "+<s5> <p5> \"o5\"@en .\n",
+      "-<s6> <p6> \"o6\"@en .\n"
     ));
   }
 }

@@ -7,8 +7,9 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyType
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 
-public class UnionDataFetcher extends WalkTriplesDataFetcher<DatabaseResult> {
+import java.util.Optional;
 
+public class UnionDataFetcher extends WalkTriplesDataFetcher<DatabaseResult> {
   public UnionDataFetcher(String predicate, Direction direction) {
     super(predicate, direction);
   }
@@ -18,7 +19,7 @@ public class UnionDataFetcher extends WalkTriplesDataFetcher<DatabaseResult> {
     if (quad.getValuetype().isPresent()) {
       return TypedValue.create(quad.getObject(), quad.getValuetype().get(), dataSet);
     } else {
-      return new LazyTypeSubjectReference(quad.getObject(), dataSet);
+      return new LazyTypeSubjectReference(quad.getObject(), Optional.empty(), dataSet);
     }
   }
 }

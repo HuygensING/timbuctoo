@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextDat
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +43,7 @@ public class EditMutation extends Mutation {
 
   @Override
   public Object executeAction(DataFetchingEnvironment environment) {
+    final Graph graph = new Graph(environment.getArgument("graph"));
     final String uri = environment.getArgument("uri");
     final Map entity = environment.getArgument("entity");
     ImmutableContextData contextData = environment.getContext();
@@ -61,22 +63,26 @@ public class EditMutation extends Mutation {
       throw new RuntimeException("User should have permissions to edit entities of the data set.");
     }
 
-    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(uri)) {
-      if (!quads.findAny().isPresent()) {
-        throw new RuntimeException("Subject with uri '" + uri + "' does not exist");
+    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuadsInGraph(uri, Optional.of(graph))) {
+      if (quads.findAny().isEmpty()) {
+        if (graph.isDefaultGraph()) {
+          throw new RuntimeException("Subject with uri '" + uri + "' already exists in the default graph");
+        } else {
+          throw new RuntimeException("Subject with uri '" + uri + "' already exists in graph '" + graph + "'");
+        }
       }
     }
 
     try {
       dataSet.getImportManager().generateLog(
-        dataSet.getMetadata().getBaseUri(),
-        dataSet.getMetadata().getGraph(),
-        new GraphQlToRdfPatch(uri, userUriCreator.create(user), new EditMutationChangeLog(uri, entity))
+        dataSet.getMetadata().getBaseUri(), null,
+        new GraphQlToRdfPatch(graph.getUri(), uri, userUriCreator.create(user),
+            new EditMutationChangeLog(graph, uri, entity))
       ).get(); // Wait until the data is processed
     } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }
 
-    return subjectFetcher.getItem(uri, dataSet);
+    return subjectFetcher.getItemInGraph(uri, Optional.of(graph), dataSet);
   }
 }

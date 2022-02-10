@@ -81,7 +81,7 @@ public class ImportManagerTest {
 
     LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getBaseUri(), is(baseUri));
-    assertThat(logEntry.getDefaultGraph(), is(defaultGraph));
+    assertThat(logEntry.getDefaultGraph().orElse(null), is(defaultGraph));
     //The first character is an @. if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(64));
   }
@@ -94,7 +94,6 @@ public class ImportManagerTest {
     String baseUri = "http://example.com/baseUri";
     CountingProcessor processor = new CountingProcessor();
     importManager.subscribeToRdf(processor);
-
 
     Future<ImportStatus> promise = importManager.addLog(
       baseUri,
@@ -127,7 +126,7 @@ public class ImportManagerTest {
     assertThat(processor.getCounter(), is(3));
     LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getBaseUri(), is(baseUri));
-    assertThat(logEntry.getDefaultGraph(), is(defaultGraph));
+    assertThat(logEntry.getDefaultGraph().orElse(null), is(defaultGraph));
     //The first character is an < (start of a uri in nquads) if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(60));
   }
@@ -177,10 +176,7 @@ public class ImportManagerTest {
       });
       return this;
     }
-
-
   }
-
 
   private static class CountingProcessor implements RdfProcessor {
     private final AtomicInteger counter;
@@ -193,7 +189,6 @@ public class ImportManagerTest {
     private int getCounter() {
       return counter.get();
     }
-
 
     @Override
     public void setPrefix(String prefix, String iri) throws RdfProcessingFailedException {
@@ -214,8 +209,7 @@ public class ImportManagerTest {
 
     @Override
     public void addLanguageTaggedString(String subject, String predicate, String value,
-                                        String language,
-                                        String graph) throws RdfProcessingFailedException {
+                                        String language, String graph) {
       counter.incrementAndGet();
     }
 
@@ -226,16 +220,14 @@ public class ImportManagerTest {
     }
 
     @Override
-    public void delValue(String subject, String predicate, String value, String valueType,
-                         String graph)
+    public void delValue(String subject, String predicate, String value, String valueType, String graph)
       throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
     public void delLanguageTaggedString(String subject, String predicate, String value,
-                                        String language,
-                                        String graph) throws RdfProcessingFailedException {
+                                        String language, String graph) throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
@@ -255,5 +247,4 @@ public class ImportManagerTest {
       counter.incrementAndGet();
     }
   }
-
 }

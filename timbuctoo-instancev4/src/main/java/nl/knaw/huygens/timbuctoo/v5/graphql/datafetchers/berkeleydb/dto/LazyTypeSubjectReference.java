@@ -3,21 +3,25 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectGraphReference;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
-public class LazyTypeSubjectReference implements SubjectReference {
+public class LazyTypeSubjectReference implements SubjectGraphReference {
   private final String subjectUri;
+  private final Optional<Graph> graph;
   private final DataSet dataSet;
   private Set<String> types;
 
-  public LazyTypeSubjectReference(String subjectUri, DataSet dataSet) {
+  public LazyTypeSubjectReference(String subjectUri, Optional<Graph> graph, DataSet dataSet) {
     this.subjectUri = subjectUri;
+    this.graph = graph;
     this.dataSet = dataSet;
   }
 
@@ -27,9 +31,15 @@ public class LazyTypeSubjectReference implements SubjectReference {
   }
 
   @Override
+  public Optional<Graph> getGraph() {
+    return graph;
+  }
+
+  @Override
   public Set<String> getTypes() {
     if (types == null) {
-      try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(subjectUri, RDF_TYPE, Direction.OUT, "")) {
+      try (Stream<CursorQuad> quads = dataSet
+          .getQuadStore().getQuadsInGraph(subjectUri, RDF_TYPE, Direction.OUT, "", graph)) {
         types = quads
           .map(CursorQuad::getObject)
           .collect(toSet());

@@ -36,7 +36,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 public class SchemaGenerationTest {
-
   private static final String USER = "user";
   private static final String DATA_SET = "dataSet";
   private static final StringStringIsCleanHandler STRING_IS_CLEAN_HANDLER = new StringStringIsCleanHandler();
@@ -60,13 +59,12 @@ public class SchemaGenerationTest {
   private static final String GRAPH = "http://example.org";
   private static final String VALUE_TYPE = "http://example.org/valuetype";
 
-
   @Test
   public void everyTypeOfTheSubjectsIsAddedToTheSchema() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, null, "")
     );
     assertThat(schema, allOf(
       hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1))),
@@ -80,10 +78,10 @@ public class SchemaGenerationTest {
   @Test
   public void predicateOfASubjectIsAddedToEachType() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_II, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_II, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     );
 
     assertThat(schema, allOf(
@@ -104,9 +102,9 @@ public class SchemaGenerationTest {
   @Test
   public void eachPredicateThatLinksToAnotherSubjectWillBeAddedToTheOtherSubjectAsAnIncoming() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, null, "")
 
     );
 
@@ -143,11 +141,11 @@ public class SchemaGenerationTest {
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
     storeUpdater.start(0);
-    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, GRAPH);
-    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, null);
+    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, null);
     storeUpdater.commit();
     storeUpdater.start(1);
-    storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_3, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_3, null, null, null);
     storeUpdater.commit();
 
     assertThat(schema.getStableTypes(), allOf(
@@ -166,8 +164,8 @@ public class SchemaGenerationTest {
   @Test
   public void ifTheReferencedSubjectHasNoTypeThePredicateWillBeAddedToTimUnknown() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     );
 
     assertThat(schema, allOf(
@@ -187,8 +185,8 @@ public class SchemaGenerationTest {
   @Test
   public void theValueTypeIsAddedToThePredicate() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, null, "")
     );
     assertThat(schema, hasEntry(is(TYPE_2), hasProperty("predicates",
       hasItem(predicate().withName(PROP_I).withValueType(VALUE_TYPE))
@@ -201,9 +199,9 @@ public class SchemaGenerationTest {
   @Test
   public void thePredicateWillBecomeAListWhenASubjectHasMultipleInstances() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value2", VALUE_TYPE, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value2", VALUE_TYPE, null, null, "")
     );
     assertThat(schema, hasEntry(is(TYPE_2), hasProperty("predicates",
       hasItem(predicate().withName(PROP_I).withIsList(true).withValueTypeCount(2))
@@ -218,10 +216,10 @@ public class SchemaGenerationTest {
   @Test
   public void predicateIsAlsoAListWhenItHasDifferentTypes() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", VALUE_TYPE, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, null, "")
     );
 
     assertThat(schema, hasEntry(is(TYPE_2), hasProperty("predicates", hasItem(
@@ -239,9 +237,9 @@ public class SchemaGenerationTest {
   @Test
   public void inversePredicatesAreNotAlwaysLists() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, null, "")
     );
 
     assertThat(schema, allOf(
@@ -258,12 +256,12 @@ public class SchemaGenerationTest {
   @Test // TODO figure out how to test in permutation test
   public void doubleAssertionOfATripleDoesNotChangeTheSchema() throws Exception {
     Map<String, Type> singleAssertion = runTest(
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     );
 
     Map<String, Type> doubleAssertion = runTest(
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     );
 
     assertThat(doubleAssertion, is(singleAssertion));
@@ -272,8 +270,8 @@ public class SchemaGenerationTest {
   @Test
   public void doubleAssertionOfATripleDoesNotIncreaseTheReferenceCounts() throws Exception {
     Map<String, Type> schema = runTest(
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     );
 
     assertThat(schema, hasEntry(is(UNKNOWN), hasProperty("predicates", allOf(
@@ -285,9 +283,9 @@ public class SchemaGenerationTest {
   @Test
   public void retractingATripleLeavesTheTypesInTheSchema() throws Exception {
     Map<String, Type> assertRetract = runTest(
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, null, "")
     );
 
     assertThat(assertRetract, hasEntry(is(TYPE_1), hasProperty("predicates",
@@ -314,11 +312,11 @@ public class SchemaGenerationTest {
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
     storeUpdater.start(0);
-    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH);
-    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, null);
+    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, null);
     storeUpdater.commit();
     storeUpdater.start(1);
-    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, null);
     storeUpdater.commit();
 
     assertThat(schema.getStableTypes(), hasEntry(is(TYPE_1), hasProperty("predicates",
@@ -333,13 +331,13 @@ public class SchemaGenerationTest {
   @Test
   public void assertRetractAssertShouldShowNoDifferencesAfterTheFirstAndSecondAssert() throws Exception {
     Map<String, Type> singleAssertion = runTest(
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     );
 
     Map<String, Type> ara = runTest(
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     );
 
     assertThat(ara, is(singleAssertion));
@@ -349,7 +347,7 @@ public class SchemaGenerationTest {
   public void onlyRetractingATripleShouldHaveNoInfluenceOnTheSchema() throws Exception {
     Map<String, Type> noChanges = runTest();
     Map<String, Type> retractionOnly = runTest(
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, null, "")
     );
 
     assertThat(retractionOnly, is(noChanges));
@@ -377,11 +375,11 @@ public class SchemaGenerationTest {
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
     storeUpdater.start(0);
-    storeUpdater.onQuad(true, SUBJECT_A, PROP_III, SUBJECT_C, null, null, GRAPH);
-    storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_A, PROP_III, SUBJECT_C, null, null, null);
+    storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, null);
     storeUpdater.commit();
     storeUpdater.start(1);
-    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, null);
     storeUpdater.commit();
 
     assertThat(schema.getStableTypes(), hasEntry(is(TYPE_2), hasProperty("predicates",
@@ -414,11 +412,11 @@ public class SchemaGenerationTest {
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
     storeUpdater.start(0);
-    storeUpdater.onQuad(true, SUBJECT_A, PROP_III, SUBJECT_C, null, null, GRAPH);
-    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_A, PROP_III, SUBJECT_C, null, null, null);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, null);
     storeUpdater.commit();
     storeUpdater.start(1);
-    storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH);
+    storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, null);
     storeUpdater.commit();
 
     assertThat(schema.getStableTypes(), hasEntry(is(TYPE_1), hasProperty("predicates",
@@ -453,7 +451,7 @@ public class SchemaGenerationTest {
         quad.getObject(),
         quad.getValuetype().orElse(null),
         quad.getLanguage().orElse(null),
-        GRAPH
+        quad.getGraph().orElse(null)
       );
     }
     storeUpdater.commit();
@@ -465,7 +463,7 @@ public class SchemaGenerationTest {
     throws DataStoreCreationException, nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException,
     IOException {
 
-    final BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
+    final BdbQuadStore quadStore = new BdbQuadStore(dataStoreFactory.getDatabase(
       USER,
       DATA_SET,
       "rdfData",
@@ -534,6 +532,17 @@ public class SchemaGenerationTest {
         STRING_BINDING,
         STRING_IS_CLEAN_HANDLER
     ));
+    final GraphStore graphStore = new GraphStore(
+        dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "graphStore",
+            true,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        )
+    );
 
     return new StoreUpdater(
       quadStore,
@@ -542,6 +551,7 @@ public class SchemaGenerationTest {
       updatedPerPatchStore,
       oldSubjectTypesStore,
       Lists.newArrayList(schema, rmlDataSourceStore),
+      graphStore,
       mock(ImportStatus.class)
     );
   }

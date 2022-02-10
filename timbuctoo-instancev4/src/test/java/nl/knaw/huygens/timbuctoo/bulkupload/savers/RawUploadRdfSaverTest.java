@@ -64,7 +64,6 @@ public class RawUploadRdfSaverTest {
         "userid",
         "dataset",
         "http://timbuctoo.huygens.knaw.nl/v5/datasets/userid/dataset",
-        "http://timbuctoo.huygens.knaw.nl/v5/datasets/userid/dataset",
         "http://example.org/prefix/", false, false
     );
     instance = instanceWithRdfSerializer(rdfSerializer, dataSetMetadata);
@@ -102,7 +101,7 @@ public class RawUploadRdfSaverTest {
     String collection = instance.addCollection(COLLECTION);
     String entity = instance.addEntity(collection, Maps.newHashMap());
 
-    verify(rdfSerializer).onRelation(collection, TIM_HAS_ROW, entity, dataSetMetadata.getGraph());
+    verify(rdfSerializer).onRelation(collection, TIM_HAS_ROW, entity, null);
   }
 
   @Test
@@ -118,14 +117,14 @@ public class RawUploadRdfSaverTest {
         argThat(containsString("prop1")),
         eq("value1"),
         eq(STRING),
-        eq(dataSetMetadata.getGraph())
+        eq(null)
     );
     verify(rdfSerializer).onValue(
         eq(entity),
         argThat(containsString("prop2")),
         eq("2"),
         eq(STRING),
-        eq(dataSetMetadata.getGraph())
+        eq(null)
     );
   }
 
@@ -148,7 +147,7 @@ public class RawUploadRdfSaverTest {
   public void addCollectionAddsALabelWithTheCollectionName() throws Exception {
     String collection = instance.addCollection(COLLECTION);
 
-    verify(rdfSerializer).onValue(collection, RDFS_LABEL, COLLECTION, STRING, dataSetMetadata.getGraph());
+    verify(rdfSerializer).onValue(collection, RDFS_LABEL, COLLECTION, STRING, null);
   }
 
   @Test
@@ -156,7 +155,7 @@ public class RawUploadRdfSaverTest {
     String collection = instance.addCollection(COLLECTION);
 
     verify(rdfSerializer)
-        .onRelation(any(String.class), eq(TIMBUCTOO_NEXT), eq(collection), eq(dataSetMetadata.getGraph()));
+        .onRelation(any(String.class), eq(TIMBUCTOO_NEXT), eq(collection), eq(null));
   }
 
   @Test
@@ -171,27 +170,27 @@ public class RawUploadRdfSaverTest {
         argThat(containsString("propName")),
         eq(RDF_TYPE),
         eq(TIM_PROP_DESC),
-        eq(dataSetMetadata.getGraph())
+        eq(null)
     );
     verify(rdfSerializer).onValue(
         argThat(containsString("propName")),
         eq(TIM_PROP_ID),
         eq("1"),
         eq(INTEGER),
-        eq(dataSetMetadata.getGraph())
+        eq(null)
     );
     verify(rdfSerializer).onRelation(
         argThat(containsString("tim_id")),
         eq(TIMBUCTOO_NEXT),
         argThat(containsString("propName")),
-        eq(dataSetMetadata.getGraph())
+        eq(null)
     );
     verify(rdfSerializer).onValue(
         argThat(containsString("propName")),
         eq(RDFS_LABEL),
         eq("propName"),
         eq(STRING),
-        eq(dataSetMetadata.getGraph())
+        eq(null)
     );
   }
 
@@ -208,13 +207,13 @@ public class RawUploadRdfSaverTest {
         eq(collection),
         eq(TIM_HAS_PROPERTY),
         argThat(containsString("propName1")),
-        eq(dataSetMetadata.getGraph())
+        eq(null)
     );
     verify(rdfSerializer).onRelation(
         eq(collection),
         eq(TIM_HAS_PROPERTY),
         argThat(containsString("propName2")),
-        eq(dataSetMetadata.getGraph())
+        eq(null)
     );
   }
 
@@ -240,74 +239,74 @@ public class RawUploadRdfSaverTest {
 
     String generatedRdf = rdfSerializer.toString();
     // Use assertEquals because the failing Hamcrest output is hard to compare
-    String graphName = dataSetMetadata.getGraph();
+    String baseUri = dataSetMetadata.getBaseUri();
     String fileUri = dataSetMetadata.getUriPrefix() + "rawData/fileName/";
     String prop = fileUri + "props/";
     String rowData = fileUri + "entities/";
     assertEquals(
-        fileUri + " " + RDF_TYPE + " " + TIM_TABULAR_FILE + " " + graphName + "\n" +
-            graphName + " " + PROV_DERIVED_FROM + " " + fileUri + " " + graphName + "\n" +
-            fileUri + " " + TIM_MIMETYPE + " " + "application/octet-stream" + "^^" + STRING + " " + graphName + "\n" +
-            fileUri + " " + RDFS_LABEL + " " + FILE_NAME + "^^" + STRING + " " + graphName + "\n" +
-            fileUri + " " + PROV_ATTIME + " " + DATE + "^^" + XSD_DATETIMESTAMP + " " + graphName + "\n" +
-            collection1 + " " + RDF_TYPE + " " + collection1 + "type " + graphName + "\n" +
-            collection1 + " " + RDF_TYPE + " " + TIM_TABULAR_COLLECTION + " " + graphName + "\n" +
-            collection1 + " " + RDFS_LABEL + " collection1" + "^^" + STRING + " " + graphName + "\n" +
-            fileUri + " " + TIM_HASCOLLECTION + " " + collection1 + " " + graphName + "\n" +
-            fileUri + " " + TIMBUCTOO_NEXT + " " + collection1 + " " + graphName + "\n" +
-            prop + "tim_id " + RDF_TYPE + " " + TIM_PROP_DESC + " " + graphName + "\n" +
-            collection1 + " " + TIM_HAS_PROPERTY + " " + prop + "tim_id " + graphName + "\n" +
-            prop + "tim_id " + TIM_PROP_ID + " -1" + "^^" + INTEGER + " " + graphName + "\n" +
-            prop + "tim_id " + RDFS_LABEL + " tim_id" + "^^" + STRING + " " + graphName + "\n" +
-            prop + "propName1 " + RDF_TYPE + " " + TIM_PROP_DESC + " " + graphName + "\n" +
-            collection1 + " " + TIM_HAS_PROPERTY + " " + prop + "propName1 " + graphName + "\n" +
-            prop + "propName1 " + TIM_PROP_ID + " 1" + "^^" + INTEGER + " " + graphName + "\n" +
-            prop + "propName1 " + RDFS_LABEL + " propName1" + "^^" + STRING + " " + graphName + "\n" +
-            prop + "tim_id " + TIMBUCTOO_NEXT + " " + prop + "propName1 " + graphName + "\n" +
-            prop + "propName2 " + RDF_TYPE + " " + TIM_PROP_DESC + " " + graphName + "\n" +
-            collection1 + " " + TIM_HAS_PROPERTY + " " + prop + "propName2 " + graphName + "\n" +
-            prop + "propName2 " + TIM_PROP_ID + " 2" + "^^" + INTEGER + " " + graphName + "\n" +
-            prop + "propName2 " + RDFS_LABEL + " propName2" + "^^" + STRING + " " + graphName + "\n" +
-            prop + "propName1 " + TIMBUCTOO_NEXT + " " + prop + "propName2 " + graphName + "\n" +
-            rowData + "1 " + RDF_TYPE + " " + collection1 + " " + graphName + "\n" +
-            collection1 + " " + TIM_HAS_ROW + " " + rowData + "1 " + graphName + "\n" +
-            rowData + "1 " + prop + "propName1" + " value1" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "1 " + prop + "propName2" + " val2" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "1 " + prop + "tim_id" + " {UUID}" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "2 " + RDF_TYPE + " " + collection1 + " " + graphName + "\n" +
-            collection1 + " " + TIM_HAS_ROW + " " + rowData + "2 " + graphName + "\n" +
-            rowData + "2 " + prop + "propName1" + " entVal1" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "2 " + prop + "propName2" + " entVal2" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "2 " + prop + "tim_id" + " {UUID}" + "^^" + STRING + " " + graphName + "\n" +
-            collection2 + " " + RDF_TYPE + " " + collection2 + "type " + graphName + "\n" +
-            collection2 + " " + RDF_TYPE + " " + TIM_TABULAR_COLLECTION + " " + graphName + "\n" +
-            collection2 + " " + RDFS_LABEL + " collection2" + "^^" + STRING + " " + graphName + "\n" +
-            fileUri + " " + TIM_HASCOLLECTION + " " + collection2 + " " + graphName + "\n" +
-            collection1 + " " + TIMBUCTOO_NEXT + " " + collection2 + " " + graphName + "\n" +
-            prop + "tim_id " + RDF_TYPE + " " + TIM_PROP_DESC + " " + graphName + "\n" +
-            collection2 + " " + TIM_HAS_PROPERTY + " " + prop + "tim_id " + graphName + "\n" +
-            prop + "tim_id " + TIM_PROP_ID + " -1" + "^^" + INTEGER + " " + graphName + "\n" +
-            prop + "tim_id " + RDFS_LABEL + " tim_id" + "^^" + STRING + " " + graphName + "\n" +
-            prop + "prop3 " + RDF_TYPE + " " + TIM_PROP_DESC + " " + graphName + "\n" +
-            collection2 + " " + TIM_HAS_PROPERTY + " " + prop + "prop3 " + graphName + "\n" +
-            prop + "prop3 " + TIM_PROP_ID + " 1" + "^^" + INTEGER + " " + graphName + "\n" +
-            prop + "prop3 " + RDFS_LABEL + " prop3" + "^^" + STRING + " " + graphName + "\n" +
-            prop + "tim_id " + TIMBUCTOO_NEXT + " " + prop + "prop3 " + graphName + "\n" +
-            prop + "prop4 " + RDF_TYPE + " " + TIM_PROP_DESC + " " + graphName + "\n" +
-            collection2 + " " + TIM_HAS_PROPERTY + " " + prop + "prop4 " + graphName + "\n" +
-            prop + "prop4 " + TIM_PROP_ID + " 2" + "^^" + INTEGER + " " + graphName + "\n" +
-            prop + "prop4 " + RDFS_LABEL + " prop4" + "^^" + STRING + " " + graphName + "\n" +
-            prop + "prop3 " + TIMBUCTOO_NEXT + " " + prop + "prop4 " + graphName + "\n" +
-            rowData + "3 " + RDF_TYPE + " " + collection2 + " " + graphName + "\n" +
-            collection2 + " " + TIM_HAS_ROW + " " + rowData + "3 " + graphName + "\n" +
-            rowData + "3 " + prop + "prop3" + " value1" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "3 " + prop + "prop4" + " val2" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "3 " + prop + "tim_id" + " {UUID}" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "4 " + RDF_TYPE + " " + collection2 + " " + graphName + "\n" +
-            collection2 + " " + TIM_HAS_ROW + " " + rowData + "4 " + graphName + "\n" +
-            rowData + "4 " + prop + "prop3" + " entVal1" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "4 " + prop + "prop4" + " entVal2" + "^^" + STRING + " " + graphName + "\n" +
-            rowData + "4 " + prop + "tim_id" + " {UUID}" + "^^" + STRING + " " + graphName + "\n",
+        fileUri + " " + RDF_TYPE + " " + TIM_TABULAR_FILE + "\n" +
+            baseUri + " " + PROV_DERIVED_FROM + " " + fileUri + "\n" +
+            fileUri + " " + TIM_MIMETYPE + " " + "application/octet-stream" + "^^" + STRING + "\n" +
+            fileUri + " " + RDFS_LABEL + " " + FILE_NAME + "^^" + STRING + "\n" +
+            fileUri + " " + PROV_ATTIME + " " + DATE + "^^" + XSD_DATETIMESTAMP + "\n" +
+            collection1 + " " + RDF_TYPE + " " + collection1 + "type\n" +
+            collection1 + " " + RDF_TYPE + " " + TIM_TABULAR_COLLECTION + "\n" +
+            collection1 + " " + RDFS_LABEL + " collection1" + "^^" + STRING + "\n" +
+            fileUri + " " + TIM_HASCOLLECTION + " " + collection1 + "\n" +
+            fileUri + " " + TIMBUCTOO_NEXT + " " + collection1 + "\n" +
+            prop + "tim_id " + RDF_TYPE + " " + TIM_PROP_DESC + "\n" +
+            collection1 + " " + TIM_HAS_PROPERTY + " " + prop + "tim_id\n" +
+            prop + "tim_id " + TIM_PROP_ID + " -1" + "^^" + INTEGER + "\n" +
+            prop + "tim_id " + RDFS_LABEL + " tim_id" + "^^" + STRING + "\n" +
+            prop + "propName1 " + RDF_TYPE + " " + TIM_PROP_DESC + "\n" +
+            collection1 + " " + TIM_HAS_PROPERTY + " " + prop + "propName1\n" +
+            prop + "propName1 " + TIM_PROP_ID + " 1" + "^^" + INTEGER + "\n" +
+            prop + "propName1 " + RDFS_LABEL + " propName1" + "^^" + STRING + "\n" +
+            prop + "tim_id " + TIMBUCTOO_NEXT + " " + prop + "propName1\n" +
+            prop + "propName2 " + RDF_TYPE + " " + TIM_PROP_DESC + "\n" +
+            collection1 + " " + TIM_HAS_PROPERTY + " " + prop + "propName2\n" +
+            prop + "propName2 " + TIM_PROP_ID + " 2" + "^^" + INTEGER + "\n" +
+            prop + "propName2 " + RDFS_LABEL + " propName2" + "^^" + STRING + "\n" +
+            prop + "propName1 " + TIMBUCTOO_NEXT + " " + prop + "propName2\n" +
+            rowData + "1 " + RDF_TYPE + " " + collection1 + "\n" +
+            collection1 + " " + TIM_HAS_ROW + " " + rowData + "1\n" +
+            rowData + "1 " + prop + "propName1" + " value1" + "^^" + STRING + "\n" +
+            rowData + "1 " + prop + "propName2" + " val2" + "^^" + STRING + "\n" +
+            rowData + "1 " + prop + "tim_id" + " {UUID}" + "^^" + STRING + "\n" +
+            rowData + "2 " + RDF_TYPE + " " + collection1 + "\n" +
+            collection1 + " " + TIM_HAS_ROW + " " + rowData + "2\n" +
+            rowData + "2 " + prop + "propName1" + " entVal1" + "^^" + STRING + "\n" +
+            rowData + "2 " + prop + "propName2" + " entVal2" + "^^" + STRING + "\n" +
+            rowData + "2 " + prop + "tim_id" + " {UUID}" + "^^" + STRING + "\n" +
+            collection2 + " " + RDF_TYPE + " " + collection2 + "type\n" +
+            collection2 + " " + RDF_TYPE + " " + TIM_TABULAR_COLLECTION + "\n" +
+            collection2 + " " + RDFS_LABEL + " collection2" + "^^" + STRING + "\n" +
+            fileUri + " " + TIM_HASCOLLECTION + " " + collection2 + "\n" +
+            collection1 + " " + TIMBUCTOO_NEXT + " " + collection2 + "\n" +
+            prop + "tim_id " + RDF_TYPE + " " + TIM_PROP_DESC + "\n" +
+            collection2 + " " + TIM_HAS_PROPERTY + " " + prop + "tim_id\n" +
+            prop + "tim_id " + TIM_PROP_ID + " -1" + "^^" + INTEGER + "\n" +
+            prop + "tim_id " + RDFS_LABEL + " tim_id" + "^^" + STRING + "\n" +
+            prop + "prop3 " + RDF_TYPE + " " + TIM_PROP_DESC + "\n" +
+            collection2 + " " + TIM_HAS_PROPERTY + " " + prop + "prop3\n" +
+            prop + "prop3 " + TIM_PROP_ID + " 1" + "^^" + INTEGER + "\n" +
+            prop + "prop3 " + RDFS_LABEL + " prop3" + "^^" + STRING + "\n" +
+            prop + "tim_id " + TIMBUCTOO_NEXT + " " + prop + "prop3\n" +
+            prop + "prop4 " + RDF_TYPE + " " + TIM_PROP_DESC + "\n" +
+            collection2 + " " + TIM_HAS_PROPERTY + " " + prop + "prop4\n" +
+            prop + "prop4 " + TIM_PROP_ID + " 2" + "^^" + INTEGER + "\n" +
+            prop + "prop4 " + RDFS_LABEL + " prop4" + "^^" + STRING + "\n" +
+            prop + "prop3 " + TIMBUCTOO_NEXT + " " + prop + "prop4\n" +
+            rowData + "3 " + RDF_TYPE + " " + collection2 + "\n" +
+            collection2 + " " + TIM_HAS_ROW + " " + rowData + "3\n" +
+            rowData + "3 " + prop + "prop3" + " value1" + "^^" + STRING + "\n" +
+            rowData + "3 " + prop + "prop4" + " val2" + "^^" + STRING + "\n" +
+            rowData + "3 " + prop + "tim_id" + " {UUID}" + "^^" + STRING + "\n" +
+            rowData + "4 " + RDF_TYPE + " " + collection2 + "\n" +
+            collection2 + " " + TIM_HAS_ROW + " " + rowData + "4\n" +
+            rowData + "4 " + prop + "prop3" + " entVal1" + "^^" + STRING + "\n" +
+            rowData + "4 " + prop + "prop4" + " entVal2" + "^^" + STRING + "\n" +
+            rowData + "4 " + prop + "tim_id" + " {UUID}" + "^^" + STRING + "\n",
         generatedRdf.replaceAll("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "{UUID}")
     );
   }
@@ -338,14 +337,13 @@ public class RawUploadRdfSaverTest {
     @Override
     public void onRelation(String subject, String predicate, String object, String graph)
         throws LogStorageFailedException {
-      stringBuilder.append(String.format("%s %s %s %s%s", subject, predicate, object, graph,
-          System.lineSeparator()));
+      stringBuilder.append(String.format("%s %s %s%s", subject, predicate, object, System.lineSeparator()));
     }
 
     @Override
     public void onValue(String subject, String predicate, String value, String valueType, String graph)
         throws LogStorageFailedException {
-      stringBuilder.append(String.format("%s %s %s^^%s %s%s", subject, predicate, value, valueType, graph,
+      stringBuilder.append(String.format("%s %s %s^^%s%s", subject, predicate, value, valueType,
           System.lineSeparator()));
     }
 

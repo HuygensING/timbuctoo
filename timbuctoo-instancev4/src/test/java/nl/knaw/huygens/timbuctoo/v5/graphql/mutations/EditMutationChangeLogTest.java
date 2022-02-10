@@ -9,9 +9,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.util.List;
@@ -32,6 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class EditMutationChangeLogTest {
+  private static final String GRAPH = "http://example.org/graph";
   private static final String SUBJECT = "http://example.org/subject";
   private static final String NAMES_FIELD = "schema_name";
   private static final String NAMES_PRED = "http://schema.org/name";
@@ -58,7 +59,7 @@ public class EditMutationChangeLogTest {
     additions.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("additions", additions);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
@@ -78,7 +79,7 @@ public class EditMutationChangeLogTest {
     additions.put(NAMES_FIELD, newArrayList(createPropertyInput(existingValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("additions", additions);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     valuesInQuadStore(NAMES_PRED, existingValue);
 
@@ -98,7 +99,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, createPropertyInput(addedValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
@@ -117,7 +118,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
@@ -136,7 +137,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, createPropertyInput(addedValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     valuesInQuadStore(NAMES_PRED, oldValue);
 
@@ -154,7 +155,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
     Stream<Change> adds = instance.getAdditions(dataSet);
@@ -168,7 +169,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, null);
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     Stream<Change> adds = instance.getAdditions(dataSet);
 
@@ -181,7 +182,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList());
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     Stream<Change> adds = instance.getAdditions(dataSet);
 
@@ -195,7 +196,7 @@ public class EditMutationChangeLogTest {
     deletions.put(NAMES_FIELD, newArrayList(createPropertyInput(deletedValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("deletions", deletions);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, deletedValue);
 
     List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
@@ -215,7 +216,7 @@ public class EditMutationChangeLogTest {
     deletions.put(NAMES_FIELD, newArrayList(createPropertyInput(existingValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("deletions", deletions);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, existingValue1, existingValue2);
 
     List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
@@ -234,7 +235,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, null);
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, existingValue);
 
     List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
@@ -254,7 +255,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList());
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, existingValue1, existingValue2);
 
     List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
@@ -273,7 +274,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, createPropertyInput(addedValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, addedValue);
 
     Stream<Change> deletes = instance.getDeletions(dataSet);
@@ -288,7 +289,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, addedValue);
 
     Stream<Change> deletes = instance.getDeletions(dataSet);
@@ -302,7 +303,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, null);
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     Stream<Change> deletes = instance.getDeletions(dataSet);
 
@@ -318,7 +319,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
     List<Change> reps = instance.getReplacements(dataSet).collect(toList());
@@ -338,7 +339,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, createPropertyInput(addedValue1));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
     List<Change> reps = instance.getReplacements(dataSet).collect(toList());
@@ -358,7 +359,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
     Stream<Change> reps = instance.getReplacements(dataSet);
 
@@ -372,7 +373,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, null);
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
     Stream<Change> reps = instance.getReplacements(dataSet);
@@ -388,7 +389,7 @@ public class EditMutationChangeLogTest {
     replacements.put(NAMES_FIELD, addedValue1);
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(SUBJECT, entity);
+    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
     instance.getReplacements(dataSet).collect(Collectors.toList()); // collect to trigger right exception
@@ -402,15 +403,13 @@ public class EditMutationChangeLogTest {
   }
 
   private void valuesInQuadStore(String pred, String... oldValues) {
-    when(quadStore.getQuads(SUBJECT, pred, Direction.OUT, "")).thenAnswer(new Answer<Stream<CursorQuad>>() {
-      @Override
-      public Stream<CursorQuad> answer(InvocationOnMock invocation) {
-        List<CursorQuad> quads = newArrayList();
-        for (String oldValue : oldValues) {
-          quads.add(CursorQuad.create(SUBJECT, pred, Direction.OUT, oldValue, STRING, null, ""));
-        }
-        return quads.stream();
-      }
-    });
+    when(quadStore.getQuadsInGraph(SUBJECT, pred, Direction.OUT, "", Optional.of(new Graph(GRAPH))))
+        .thenAnswer((Answer<Stream<CursorQuad>>) invocation -> {
+          List<CursorQuad> quads = newArrayList();
+          for (String oldValue : oldValues) {
+            quads.add(CursorQuad.create(SUBJECT, pred, Direction.OUT, oldValue, STRING, null, GRAPH, ""));
+          }
+          return quads.stream();
+        });
   }
 }

@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.GraphStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.OldSubjectTypesStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -31,12 +32,14 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.dataloader.DataLoader;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -46,7 +49,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesAbsoluteUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-        sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
+        sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
 
     sut.get(new MockEnv("http://example.com/2"));
 
@@ -57,7 +60,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesRelativeUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-        sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
+        sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
     sut.get(new MockEnv("/2"));
 
     assertThat(lookupFetcherMock.uri, is("http://example.org/2"));
@@ -67,7 +70,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesEmptyUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-        sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
+        sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
 
     sut.get(new MockEnv(""));
 
@@ -78,7 +81,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void doesntDoTooMuchNormalization() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-        sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
+        sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
 
     sut.get(new MockEnv("."));
 
@@ -87,10 +90,19 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
   private class LookUpSubjectByUriFetcherMock implements LookUpSubjectByUriFetcher {
     private String uri;
+    private Optional<Graph> graph;
 
     @Override
     public SubjectReference getItem(String uri, DataSet dataSet) {
       this.uri = uri;
+      this.graph = Optional.empty();
+      return null;
+    }
+
+    @Override
+    public SubjectReference getItemInGraph(String uri, Optional<Graph> graph, DataSet dataSet) {
+      this.uri = uri;
+      this.graph = graph;
       return null;
     }
   }
@@ -131,6 +143,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
         }
 
         @Override
+            public QuadStore getQuadStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
         public ImportManager getImportManager() {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
@@ -141,7 +158,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
         }
 
         @Override
-        public QuadStore getQuadStore() {
+        public GraphStore getGraphStore() {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
 
@@ -151,7 +168,6 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             return new BasicDataSetMetaData(
                 "ownerid",
                 "datasetid",
-                "http://example.org",
                 "http://example.org",
                 "http://example.org/prefix/", false, false
             );

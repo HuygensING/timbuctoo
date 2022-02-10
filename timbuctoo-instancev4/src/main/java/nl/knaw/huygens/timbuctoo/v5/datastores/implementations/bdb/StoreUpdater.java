@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.slf4j.Logger;
 
@@ -25,7 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class StoreUpdater implements RdfProcessor {
   private static final Logger LOG = getLogger(StoreUpdater.class);
 
-  private final BdbTripleStore tripleStore;
+  private final BdbQuadStore quadStore;
   private final BdbTypeNameStore typeNameStore;
   private final BdbTruePatchStore truePatchStore;
   private final UpdatedPerPatchStore updatedPerPatchStore;
@@ -34,6 +35,7 @@ public class StoreUpdater implements RdfProcessor {
   private final List<OptimizedPatchListener> listeners;
   private final ImportStatus importStatus;
 
+  private final GraphStore graphStore;
   private int version = -1;
   private Stopwatch stopwatch;
   private long count;
@@ -41,16 +43,17 @@ public class StoreUpdater implements RdfProcessor {
   private long prevTime;
   private String logString;
 
-  public StoreUpdater(BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore, BdbTruePatchStore truePatchStore,
-                      UpdatedPerPatchStore updatedPerPatchStore, OldSubjectTypesStore oldSubjectTypesStore,
-                      List<OptimizedPatchListener> listeners, ImportStatus importStatus) {
-    this.tripleStore = tripleStore;
+  public StoreUpdater(BdbQuadStore quadStore, BdbTypeNameStore typeNameStore, BdbTruePatchStore truePatchStore,
+                      UpdatedPerPatchStore updatedPerPatchStore, List<OptimizedPatchListener> listeners,
+                      VersionStore versionStore, GraphStore graphStore, ImportStatus importStatus) {
+    this.quadStore = quadStore;
     this.typeNameStore = typeNameStore;
     this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
     this.oldSubjectTypesStore = oldSubjectTypesStore;
     this.listeners = listeners;
     this.importStatus = importStatus;
+    this.graphStore = graphStore;
   }
 
   private void updateListeners() throws RdfProcessingFailedException {
@@ -65,7 +68,7 @@ public class StoreUpdater implements RdfProcessor {
     prevCount = 0;
     prevTime = stopwatch.elapsed(TimeUnit.SECONDS);
     try (Stream<String> subjects = updatedPerPatchStore.ofVersion(version)) {
-      final ChangeFetcher getQuads = new ChangeFetcherImpl(truePatchStore, tripleStore, version);
+      final ChangeFetcher getQuads = new ChangeFetcherImpl(truePatchStore, quadStore, version);
       final Iterator<String> iterator = subjects.iterator();
       while (iterator.hasNext()) {
         final boolean needUpdate = notifyUpdate();
@@ -93,9 +96,9 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void putQuad(String subject, String predicate, Direction direction, String object, String valueType,
-                       String language) throws RdfProcessingFailedException {
+                       String language, String graph) throws RdfProcessingFailedException {
     try {
-      final boolean wasChanged = tripleStore.putQuad(subject, predicate, direction, object, valueType, language);
+      final boolean wasChanged = quadStore.putQuad(subject, predicate, direction, object, valueType, language, graph);
       if (wasChanged) {
         truePatchStore.put(subject, version, predicate, direction, true, object, valueType, language);
         updatedPerPatchStore.put(version, subject);
@@ -104,6 +107,11 @@ public class StoreUpdater implements RdfProcessor {
             oldSubjectTypesStore.delete(subject, object, v);
           }
         }
+
+        truePatchStore.put(subject, currentversion, predicate, direction,
+            true, object, valueType, language, graph);
+        updatedPerPatchStore.put(currentversion, subject);
+        graphStore.put(graph, subject);
       }
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
@@ -111,14 +119,24 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void deleteQuad(String subject, String predicate, Direction direction, String object, String valueType,
-                          String language) throws RdfProcessingFailedException {
+                          String language, String graph) throws RdfProcessingFailedException {
     try {
-      final boolean wasChanged = tripleStore.deleteQuad(subject, predicate, direction, object, valueType, language);
+      final boolean wasChanged =
+          quadStore.deleteQuad(subject, predicate, direction, object, valueType, language, graph);
       if (wasChanged) {
         truePatchStore.put(subject, version, predicate, direction, false, object, valueType, language);
         updatedPerPatchStore.put(version, subject);
         if (predicate.equals(RDF_TYPE)) {
           oldSubjectTypesStore.put(subject, object, version);
+        }
+        truePatchStore.put(subject, currentversion, predicate, direction,
+            false, object, valueType, language, graph);
+        updatedPerPatchStore.put(currentversion, subject);
+
+        try (Stream<CursorQuad> quadStream = quadStore.getQuads(subject)) {
+          if (quadStream.noneMatch(quad -> quad.getGraph().isPresent() && quad.getGraph().get().equals(graph))) {
+            graphStore.delete(graph, subject);
+          }
         }
       }
     } catch (DatabaseWriteException e) {
@@ -130,44 +148,44 @@ public class StoreUpdater implements RdfProcessor {
   public void addRelation(String subject, String predicate, String object, String graph)
     throws RdfProcessingFailedException {
     notifyUpdate();
-    putQuad(subject, predicate, OUT, object, null, null);
-    putQuad(object, predicate, Direction.IN, subject, null, null);
+    putQuad(subject, predicate, OUT, object, null, null, graph);
+    putQuad(object, predicate, Direction.IN, subject, null, null, graph);
   }
 
   @Override
   public void addValue(String subject, String predicate, String value, String dataType, String graph)
     throws RdfProcessingFailedException {
     notifyUpdate();
-    putQuad(subject, predicate, OUT, value, dataType, null);
+    putQuad(subject, predicate, OUT, value, dataType, null, graph);
   }
 
   @Override
   public void addLanguageTaggedString(String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
     notifyUpdate();
-    putQuad(subject, predicate, OUT, value, LANGSTRING, language);
+    putQuad(subject, predicate, OUT, value, LANGSTRING, language, graph);
   }
 
   @Override
   public void delRelation(String subject, String predicate, String object, String graph)
     throws RdfProcessingFailedException {
     notifyUpdate();
-    deleteQuad(subject, predicate, OUT, object, null, null);
-    deleteQuad(object, predicate, Direction.IN, subject, null, null);
+    deleteQuad(subject, predicate, OUT, object, null, null, graph);
+    deleteQuad(object, predicate, Direction.IN, subject, null, null, graph);
   }
 
   @Override
   public void delValue(String subject, String predicate, String value, String dataType, String graph)
     throws RdfProcessingFailedException {
     notifyUpdate();
-    deleteQuad(subject, predicate, OUT, value, dataType, null);
+    deleteQuad(subject, predicate, OUT, value, dataType, null, graph);
   }
 
   @Override
   public void delLanguageTaggedString(String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
     notifyUpdate();
-    deleteQuad(subject, predicate, OUT, value, LANGSTRING, language);
+    deleteQuad(subject, predicate, OUT, value, LANGSTRING, language, graph);
   }
 
 
@@ -181,6 +199,10 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void startTransactions() {
+    versionStore.start();
+    importStatus.addProgressItem(VersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    quadStore.start();
+    importStatus.addProgressItem(BdbQuadStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     tripleStore.start();
     importStatus.addProgressItem(BdbTripleStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     truePatchStore.start();
@@ -189,6 +211,8 @@ public class StoreUpdater implements RdfProcessor {
     importStatus.addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     updatedPerPatchStore.start();
     importStatus.addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    graphStore.start();
+    importStatus.addProgressItem(GraphStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     oldSubjectTypesStore.start();
     importStatus.addProgressItem(OldSubjectTypesStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
 
@@ -214,10 +238,11 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void updateStoreProgress() {
-    importStatus.updateProgressItem(BdbTripleStore.class.getSimpleName(), count);
+    importStatus.updateProgressItem(BdbQuadStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(BdbTruePatchStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(BdbTypeNameStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(UpdatedPerPatchStore.class.getSimpleName(), count);
+    importStatus.updateProgressItem(GraphStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(OldSubjectTypesStore.class.getSimpleName(), count);
   }
 
@@ -252,12 +277,14 @@ public class StoreUpdater implements RdfProcessor {
   private void commitChanges() throws JsonProcessingException, DatabaseWriteException {
     typeNameStore.commit();
     importStatus.finishProgressItem(BdbTypeNameStore.class.getSimpleName());
-    tripleStore.commit();
-    importStatus.finishProgressItem(BdbTripleStore.class.getSimpleName());
+    quadStore.commit();
+    importStatus.finishProgressItem(BdbQuadStore.class.getSimpleName());
     truePatchStore.commit();
     importStatus.finishProgressItem(BdbTruePatchStore.class.getSimpleName());
     updatedPerPatchStore.commit();
     importStatus.finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
+    graphStore.commit();
+    importStatus.finishProgressItem(GraphStore.class.getSimpleName());
     oldSubjectTypesStore.commit();
     importStatus.finishProgressItem(OldSubjectTypesStore.class.getSimpleName());
   }

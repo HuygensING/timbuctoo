@@ -34,7 +34,7 @@ public class DynamicRelationDataFetcher implements DataFetcher<PaginatedDynamicL
     if (triple.getValuetype().isPresent()) {
       return TypedValue.create(triple.getObject(), triple.getValuetype().get(), dataSet);
     } else {
-      return new LazyTypeSubjectReference(triple.getObject(), dataSet);
+      return new LazyTypeSubjectReference(triple.getObject(), Optional.empty(), dataSet);
     }
   }
 
@@ -48,8 +48,8 @@ public class DynamicRelationDataFetcher implements DataFetcher<PaginatedDynamicL
       String predicate = environment.getArgument("uri");
       Direction direction = environment.getArgument("outgoing") ? OUT : IN;
 
-      try (Stream<CursorQuad> q = dataSet.getQuadStore()
-        .getQuads(source.getSubjectUri(), predicate, direction, cursor)) {
+      try (Stream<CursorQuad> q =
+               dataSet.getQuadStore().getQuads(source.getSubjectUri(), predicate, direction, cursor)) {
         final PaginatedList<DatabaseResult> paginatedList = getPaginatedList(
           q,
           qd -> this.makeItem(qd, dataSet),

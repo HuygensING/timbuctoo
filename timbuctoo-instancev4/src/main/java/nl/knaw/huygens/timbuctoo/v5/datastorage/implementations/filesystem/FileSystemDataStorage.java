@@ -70,11 +70,6 @@ public class FileSystemDataStorage implements DataStorage {
                 new TypeReference<>() {
                 });
 
-            BasicDataSetMetaData updated = metaDataFromFile.getData().update();
-            if (updated != null) {
-              metaDataFromFile.updateData(data -> updated);
-            }
-
             tempMetaDataSet.add(metaDataFromFile.getData());
           }
         }

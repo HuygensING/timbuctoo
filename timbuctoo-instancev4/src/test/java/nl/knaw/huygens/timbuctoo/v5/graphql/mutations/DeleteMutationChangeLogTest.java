@@ -8,9 +8,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.DeleteMutationChangeLog;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.util.List;
@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class DeleteMutationChangeLogTest {
+  private static final String GRAPH = "http://example.org/graph";
   private static final String SUBJECT = "http://example.org/subject";
   private static final String NAMES_FIELD = "schema_name";
   private static final String NAMES_PRED = "http://schema.org/name";
@@ -50,7 +51,7 @@ public class DeleteMutationChangeLogTest {
 
   @Test
   public void getAdditionsReturnsNothing() throws Exception {
-    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT, null);
+    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(new Graph(GRAPH), SUBJECT, null);
 
     Stream<Change> additions = instance.getAdditions(dataSet);
 
@@ -61,7 +62,7 @@ public class DeleteMutationChangeLogTest {
   public void getDeletionsReturnsDeletions() throws Exception {
     String existingValue1 = "existingValue1";
     String existingValue2 = "existingValue2";
-    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT, null);
+    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(new Graph(GRAPH), SUBJECT, null);
     valuesInQuadStore(NAMES_PRED, existingValue1, existingValue2);
 
     List<Change> deletions = instance.getDeletions(dataSet).collect(toList());
@@ -75,7 +76,7 @@ public class DeleteMutationChangeLogTest {
 
   @Test
   public void getReplacementsReturnsNothing() throws Exception {
-    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(SUBJECT, null);
+    DeleteMutationChangeLog instance = new DeleteMutationChangeLog(new Graph(GRAPH), SUBJECT, null);
 
     Stream<Change> replacements = instance.getReplacements(dataSet);
 
@@ -83,15 +84,13 @@ public class DeleteMutationChangeLogTest {
   }
 
   private void valuesInQuadStore(String pred, String... oldValues) {
-    when(quadStore.getQuads(SUBJECT)).thenAnswer(new Answer<Stream<CursorQuad>>() {
-      @Override
-      public Stream<CursorQuad> answer(InvocationOnMock invocation) {
-        List<CursorQuad> quads = newArrayList();
-        for (String oldValue : oldValues) {
-          quads.add(CursorQuad.create(SUBJECT, pred, Direction.OUT, oldValue, STRING, null, ""));
-        }
-        return quads.stream();
-      }
-    });
+    when(quadStore.getQuadsInGraph(SUBJECT, Optional.of(new Graph(GRAPH))))
+        .thenAnswer((Answer<Stream<CursorQuad>>) invocation -> {
+          List<CursorQuad> quads = newArrayList();
+          for (String oldValue : oldValues) {
+            quads.add(CursorQuad.create(SUBJECT, pred, Direction.OUT, oldValue, STRING, null, GRAPH, ""));
+          }
+          return quads.stream();
+        });
   }
 }

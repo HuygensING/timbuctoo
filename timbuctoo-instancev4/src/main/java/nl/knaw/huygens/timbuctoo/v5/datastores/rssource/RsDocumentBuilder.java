@@ -24,7 +24,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -33,7 +32,6 @@ import java.util.stream.Stream;
  * @see <a href="http://www.openarchives.org/rs/toc">http://www.openarchives.org/rs/toc</a>
  */
 public class RsDocumentBuilder {
-
   public static final String SOURCE_DESCRIPTION_PATH = "sourceDescription.xml";
   private static final String REL_DESCRIBED_BY = "describedby";
   private static final String REL_UP = "up";
@@ -163,8 +161,7 @@ public class RsDocumentBuilder {
       changeList = new Urlset(rsMd)
         .addLink(new RsLn(REL_UP, rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CAPABILITYLIST)));
 
-      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getGraph());
-
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder();
       ChangesRetriever changesRetriever = maybeDataSet.get().getChangesRetriever();
 
       List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(
@@ -191,16 +188,11 @@ public class RsDocumentBuilder {
   }
 
   public Optional<Stream<String>> getChanges(@Nullable User user, String ownerId, String dataSetId, String fileId) {
-
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(user, ownerId, dataSetId);
     if (maybeDataSet.isPresent()) {
       DataSet dataSet = maybeDataSet.get();
-      DataSetMetaData dataSetMetaData = dataSet.getMetadata();
-
-      ChangeListBuilder changeListBuilder = new ChangeListBuilder(dataSetMetaData.getGraph());
-
+      ChangeListBuilder changeListBuilder = new ChangeListBuilder();
       Integer version = getVersionFromFileId(fileId);
-
       if (dataSet.getChangesRetriever().versionExists(version)) {
         return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version));
       }
@@ -210,15 +202,10 @@ public class RsDocumentBuilder {
   }
 
   public Optional<Stream<String>> getResourceData(@Nullable User user, String ownerId, String dataSetId) {
-
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(user, ownerId, dataSetId);
     if (maybeDataSet.isPresent()) {
-      DataSet dataSet = maybeDataSet.get();
-      DataSetMetaData dataSetMetaData = dataSet.getMetadata();
-
-      ResourceFileBuilder resourceFileBuilder = new ResourceFileBuilder(dataSetMetaData.getGraph());
-
-      CurrentStateRetriever currentStateRetriever = dataSet.getCurrentStateRetriever();
+      ResourceFileBuilder resourceFileBuilder = new ResourceFileBuilder();
+      CurrentStateRetriever currentStateRetriever = maybeDataSet.get().getCurrentStateRetriever();
 
       return Optional.of(resourceFileBuilder.retrieveData(currentStateRetriever));
     }
@@ -267,6 +254,4 @@ public class RsDocumentBuilder {
   public Optional<File> getDataSetDescription(@Nullable User user, String ownerId, String dataSetId) {
     return dataSetRepository.getDataSet(user, ownerId, dataSetId).map(DataSet::getResourceSyncDescription);
   }
-
-
 }

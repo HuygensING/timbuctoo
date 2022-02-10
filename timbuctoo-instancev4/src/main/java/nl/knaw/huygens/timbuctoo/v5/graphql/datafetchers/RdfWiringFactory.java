@@ -4,12 +4,10 @@ import com.google.common.collect.Maps;
 import graphql.TypeResolutionEnvironment;
 import graphql.language.BooleanValue;
 import graphql.language.Directive;
-import graphql.language.EnumValue;
 import graphql.language.Field;
 import graphql.language.InlineFragment;
 import graphql.language.Selection;
 import graphql.language.StringValue;
-import graphql.language.Value;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -43,8 +41,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.PersistEntityMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SetCustomProvenanceMutation;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +50,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
 
 public class RdfWiringFactory implements WiringFactory {
   private final UriFetcher uriFetcher;
+  private final GraphsFetcher graphsFetcher;
   private final LookUpSubjectByUriFetcherWrapper lookupFetcher;
   private final ObjectTypeResolver objectTypeResolver;
   private final DataSetRepository dataSetRepository;
@@ -74,8 +71,7 @@ public class RdfWiringFactory implements WiringFactory {
 
   public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper,
                           DefaultSummaryProps defaultSummaryProps, UriHelper uriHelper,
-                          RedirectionService redirectionService,
-                          Runnable schemaUpdater) {
+                          RedirectionService redirectionService, Runnable schemaUpdater) {
     this.dataSetRepository = dataSetRepository;
     this.argumentsHelper = argumentsHelper;
     this.uriHelper = uriHelper;
@@ -83,8 +79,9 @@ public class RdfWiringFactory implements WiringFactory {
     this.schemaUpdater = schemaUpdater;
     objectTypeResolver = new ObjectTypeResolver();
     uriFetcher = new UriFetcher();
+    graphsFetcher = new GraphsFetcher();
     subjectFetcher = new QuadStoreLookUpSubjectByUriFetcher();
-    lookupFetcher = new LookUpSubjectByUriFetcherWrapper("uri", subjectFetcher);
+    lookupFetcher = new LookUpSubjectByUriFetcherWrapper(subjectFetcher);
     entityTitleFetcher = new EntityTitleFetcher(defaultSummaryProps.getDefaultTitles());
     entityDescriptionFetcher = new EntityDescriptionFetcher(defaultSummaryProps.getDefaultDescriptions());
     entityImageFetcher = new EntityImageFetcher(defaultSummaryProps.getDefaultImages());
@@ -119,6 +116,7 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("lookupUri") != null ||
       environment.getFieldDefinition().getDirective("rdf") != null ||
       environment.getFieldDefinition().getDirective("uri") != null ||
+      environment.getFieldDefinition().getDirective("graphs") != null ||
       environment.getFieldDefinition().getDirective("passThrough") != null ||
       environment.getFieldDefinition().getDirective("related") != null ||
       environment.getFieldDefinition().getDirective("dataSet") != null ||
@@ -174,6 +172,8 @@ public class RdfWiringFactory implements WiringFactory {
       }
     } else if (environment.getFieldDefinition().getDirective("uri") != null) {
       return uriFetcher;
+    } else if (environment.getFieldDefinition().getDirective("graphs") != null) {
+      return graphsFetcher;
     } else if (environment.getFieldDefinition().getDirective("dataSet") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("dataSet");
       String userId = ((StringValue) directive.getArgument("userId").getValue()).getValue();
@@ -213,16 +213,16 @@ public class RdfWiringFactory implements WiringFactory {
 
       String dataSetName = dataSet.getValue();
 
-      return editMutationMap.computeIfAbsent(dataSetName, s ->
-          new EditMutation(schemaUpdater, dataSetRepository, uriHelper, subjectFetcher, dataSetName));
+      return editMutationMap.computeIfAbsent(dataSetName,
+        s -> new EditMutation(schemaUpdater, dataSetRepository, uriHelper, subjectFetcher, dataSetName));
     } else if (environment.getFieldDefinition().getDirective("deleteMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("deleteMutation");
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
 
       String dataSetName = dataSet.getValue();
 
-      return deleteMutationMap.computeIfAbsent(dataSetName, s ->
-          new DeleteMutation(schemaUpdater, dataSetRepository, uriHelper, dataSetName));
+      return deleteMutationMap.computeIfAbsent(dataSetName,
+        s -> new DeleteMutation(schemaUpdater, dataSetRepository, uriHelper, dataSetName));
     } else if (environment.getFieldDefinition().getDirective("persistEntityMutation") != null) {
       Directive directive = environment.getFieldDefinition().getDirective("persistEntityMutation");
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();

@@ -36,18 +36,19 @@ public class PersistEntityMutation extends Mutation {
   @Override
   public Object executeAction(DataFetchingEnvironment env) {
     User user = MutationHelpers.getUser(env);
+    String graph = env.getArgument("graph");
     String entityUri = env.getArgument("entityUri");
     URI uri;
     try {
-      uri = GetEntity.makeUrl(ownerId, dataSetName, entityUri);
+      uri = GetEntity.makeUrl(ownerId, dataSetName, graph, entityUri);
     } catch (UnsupportedEncodingException e) {
-      return ImmutableMap.of("message", "Request for presistent Uri failed.");
+      return ImmutableMap.of("message", "Request for persistent Uri failed.");
     }
     URI fullUri = uriHelper.fromResourceUri(uri);
 
     EntityLookup entityLookup = ImmutableEntityLookup.builder().dataSetId(dataSetId).uri(entityUri).user(user).build();
     redirectionService.add(fullUri, entityLookup);
 
-    return ImmutableMap.of("message", "Request for presistent Uri accepted");
+    return ImmutableMap.of("message", "Request for persistent Uri accepted");
   }
 }

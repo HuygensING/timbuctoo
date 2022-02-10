@@ -47,13 +47,14 @@ public class BdbTruePatchStore {
   }
 
   public void put(String subject, int currentversion, String predicate, Direction direction, boolean isAssertion,
-                  String object, String valueType, String language) throws DatabaseWriteException {
+                  String object, String valueType, String language, String graph) throws DatabaseWriteException {
     //if we assert something and then retract it in the same patch, it's as if it never happened at all
     //so we delete the inversion
     final String value = predicate + "\n" +
         (direction == OUT ? "1" : "0") + "\n" +
         (valueType == null ? "" : valueType) + "\n" +
         (language == null ? "" : language) + "\n" +
+        (graph == null ? "" : graph) + "\n" +
         object;
 
     try {
@@ -115,7 +116,7 @@ public class BdbTruePatchStore {
   }
 
   public CursorQuad makeCursorQuad(String subject, boolean assertions, String value) {
-    String[] parts = value.split("\n", 5);
+    String[] parts = value.split("\n", 6);
     Direction direction = parts[1].charAt(0) == '1' ? OUT : IN;
     ChangeType changeType = assertions ? ChangeType.ASSERTED :  ChangeType.RETRACTED;
     return CursorQuad.create(
@@ -123,9 +124,10 @@ public class BdbTruePatchStore {
       parts[0],
       direction,
       changeType,
-      parts[4],
+      parts[5],
       parts[2].isEmpty() ? null : parts[2],
       parts[3].isEmpty() ? null : parts[3],
+      parts[4].isEmpty() ? null : parts[4],
       ""
     );
   }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class TimbuctooRdfIdHelper {
   private final String baseUri;
@@ -15,12 +16,7 @@ public class TimbuctooRdfIdHelper {
   }
 
   private static String encode(String input) {
-    try {
-      return URLEncoder.encode(input, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      //will never happen
-      throw new RuntimeException(e);
-    }
+    return URLEncoder.encode(input, StandardCharsets.UTF_8);
   }
 
   public String dataSetBaseUri(String ownerId, String dataSetId) {

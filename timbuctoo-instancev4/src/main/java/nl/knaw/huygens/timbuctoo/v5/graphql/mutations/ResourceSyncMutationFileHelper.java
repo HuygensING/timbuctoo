@@ -39,7 +39,7 @@ public class ResourceSyncMutationFileHelper implements ResourceSyncImport.WithFi
     if (importManager.isRdfTypeSupported(parsedMediatype)) {
       resourceSyncReport.importedFiles.add(url);
       return importManager.addLog(
-          dataSet.getMetadata().getBaseUri(), dataSet.getMetadata().getGraph(),
+          dataSet.getMetadata().getBaseUri(), null,
           url.substring(url.lastIndexOf('/') + 1),
           inputStream,
           Optional.of(StandardCharsets.UTF_8),

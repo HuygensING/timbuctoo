@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -27,8 +28,10 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataMetaDataListFetcher
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataSetImportStatusFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DiscoverResourceSyncDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.ImportStatusFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.SummaryPropertiesDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.GraphsDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
@@ -81,9 +84,7 @@ import static com.google.common.io.Resources.getResource;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class RootQuery implements Supplier<GraphQLSchema> {
-
   private static final Logger LOG = LoggerFactory.getLogger(RootQuery.class);
-
 
   private final DataSetRepository dataSetRepository;
   private final SupportedExportFormats supportedFormats;
@@ -212,32 +213,25 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     wiring.type("DataSetMetadata", builder -> builder
       .dataFetcher("dataSetImportStatus", new DataSetImportStatusFetcher(dataSetRepository))
       .dataFetcher("importStatus", new ImportStatusFetcher(dataSetRepository))
-      .dataFetcher("prefixMappings", env -> {
-        DataSetMetaData input = env.getSource();
-        ContextData context = env.getContext();
-        final User user = context.getUser().orElse(null);
-        final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
-        final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
-        return typeNameStore.getMappings().entrySet().stream().map(mappingEntry ->
-                ImmutablePrefixMapping
-                        .builder()
-                        .prefix(mappingEntry.getKey())
-                        .uri(mappingEntry.getValue())
-                        .build()
-        ).collect(Collectors.toList());
-      })
+      .dataFetcher("prefixMappings", env ->
+          getDataSet(env).getTypeNameStore().getMappings().entrySet().stream().map(mappingEntry ->
+              ImmutablePrefixMapping
+                  .builder()
+                  .prefix(mappingEntry.getKey())
+                  .uri(mappingEntry.getValue())
+                  .build()
+          ).collect(Collectors.toList()))
+      .dataFetcher("graphs", new GraphsDataFetcher(dataSetRepository))
       .dataFetcher("collectionList", env -> getCollections(env.getSource(), ((ContextData) env.getContext()).getUser()))
       .dataFetcher("collection", env -> {
         String collectionId = (String) env.getArguments().get("collectionId");
         if (collectionId != null && collectionId.endsWith("List")) {
           collectionId = collectionId.substring(0, collectionId.length() - "List".length());
         }
-        DataSetMetaData input = env.getSource();
-        ContextData context = env.getContext();
-        final User user = context.getUser().orElse(null);
 
-        final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
+        final DataSet dataSet = getDataSet(env);
         final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
+
         String collectionUri = typeNameStore.makeUri(collectionId);
         if (dataSet.getSchemaStore().getStableTypes() == null ||
           dataSet.getSchemaStore().getStableTypes().get(collectionUri) == null) {
@@ -327,13 +321,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       final DataSetMetaData dataSetMetaData = dataSet.getMetadata();
       final String name = dataSetMetaData.getCombinedId();
 
-
       Map<String, Type> types = dataSet.getSchemaStore().getStableTypes();
-
       Map<String, List<ExplicitField>> customSchema = dataSet.getCustomSchema();
 
       final Map<String, Type> customTypes = new HashMap<>();
-
       for (Map.Entry<String, List<ExplicitField>> entry : customSchema.entrySet()) {
         ExplicitType explicitType = new ExplicitType(entry.getKey(), entry.getValue());
         customTypes.put(entry.getKey(), explicitType.convertToType());
@@ -346,9 +337,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
       types = mergedTypes;
 
-
       if (types != null) {
-
         // Add to rootQuery
         dataSetAvailable[0] = true;
         rootQuery.append("  ")
@@ -409,9 +398,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     final List<CollectionMetadata> colls = dataSet
       .getSchemaStore()
       .getStableTypes().values().stream()
-      .map(x -> {
-        return getCollection(dataSet, typeNameStore, x);
-      })
+      .map(x -> getCollection(dataSet, typeNameStore, x))
       .collect(Collectors.toList());
     return ImmutableCollectionMetadataList.builder()
       .nextCursor(Optional.empty())
@@ -436,27 +423,31 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .properties(ImmutablePropertyList.builder()
         .prevCursor(Optional.empty())
         .nextCursor(Optional.empty())
-        .items(() -> collectionType.getPredicates().stream().map(pred -> {
-            return (Property) ImmutableProperty.builder()
+        .items(() -> collectionType.getPredicates().stream().map(
+          pred -> (Property) ImmutableProperty
+              .builder()
               .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
               .isList(pred.isList())
               .uri(pred.getName())
               .shortenedUri(typeNameStore.shorten(pred.getName()))
               .isInverse(pred.getDirection() == Direction.IN)
               .name(typeNameStore.makeGraphQlnameForPredicate(
-                pred.getName(), pred.getDirection(), pred.isList())
-              )
-              .referencedCollections(ImmutableStringList.builder()
-                .prevCursor(Optional.empty())
-                .nextCursor(Optional.empty())
-                .items(() -> pred.getUsedReferenceTypes().stream()
-                  .map(typeNameStore::makeGraphQlname)
-                  .iterator())
-                .build()
+                  pred.getName(),
+                  pred.getDirection(),
+                  pred.isList()))
+              .referencedCollections(
+                  ImmutableStringList
+                      .builder()
+                      .prevCursor(Optional.empty())
+                      .nextCursor(Optional.empty())
+                      .items(() -> pred.getUsedReferenceTypes()
+                                       .stream()
+                                       .map(typeNameStore::makeGraphQlname)
+                                       .iterator())
+                      .build()
               )
               .isValueType(!pred.getValueTypes().isEmpty())
-              .build();
-          }
+              .build()
         ).iterator())
         .build())
       .build();
@@ -478,6 +469,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     if (graphQlSchema == null) {
       this.scheduleRebuild();
     }
+
     try {
       return schemaAccessQueue.submit(() -> graphQlSchema).get();
     } catch (InterruptedException | ExecutionException e) {
@@ -486,4 +478,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     }
   }
 
+  private DataSet getDataSet(DataFetchingEnvironment env) {
+    DataSetMetaData input = env.getSource();
+    ContextData context = env.getContext();
+    final User user = context.getUser().orElse(null);
+    return dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
+  }
 }

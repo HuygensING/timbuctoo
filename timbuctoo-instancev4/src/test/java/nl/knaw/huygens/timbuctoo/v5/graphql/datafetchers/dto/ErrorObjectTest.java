@@ -73,5 +73,4 @@ public class ErrorObjectTest {
         "  25:     </rdf:Description>\n" +
         "  26: </rdf:RDF>"));
   }
-
 }

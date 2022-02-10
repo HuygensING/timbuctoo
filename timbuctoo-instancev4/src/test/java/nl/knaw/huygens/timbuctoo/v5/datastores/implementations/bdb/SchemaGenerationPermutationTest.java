@@ -83,9 +83,9 @@ public class SchemaGenerationPermutationTest {
         hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1))),
         hasEntry(is(TYPE_3), hasProperty("name", is(TYPE_3)))
       ),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, null, "")
     ));
     // predicateOfASubjectIsAddedToEachType
     testCases.addAll(createPermutationsOfTestCase(
@@ -99,10 +99,10 @@ public class SchemaGenerationPermutationTest {
           hasItem(predicate().withName(PROP_II))
         )))
       ),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_II, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_II, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     ));
     // eachPredicateThatLinksToAnotherSubjectWillBeAddedToTheOtherSubjectAsAnIncoming
     testCases.addAll(createPermutationsOfTestCase(allOf(
@@ -113,9 +113,9 @@ public class SchemaGenerationPermutationTest {
         hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceType(TYPE_2))
       )))
       ),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, null, "")
     ));
     testCases.addAll(createPermutationsOfTestCase(allOf(
       hasEntry(is(TYPE_2), hasProperty("predicates",allOf(
@@ -125,9 +125,9 @@ public class SchemaGenerationPermutationTest {
         hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceType(TYPE_2))
       )))
     ),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, null, "")
     ));
     // ifTheReferencedSubjectHasNoTypeThePredicateWillBeAddedToTimUnknown
     testCases.addAll(createPermutationsOfTestCase(allOf(
@@ -138,25 +138,25 @@ public class SchemaGenerationPermutationTest {
         hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceType(TYPE_2))
       )))
       ),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     ));
     // theValueTypeIsAddedToThePredicate
     testCases.addAll(createPermutationsOfTestCase(allOf(
       hasEntry(is(TYPE_2), hasProperty("predicates",
         hasItem(predicate().withName(PROP_I).withValueType("http://example.org/valuetype"))
       ))),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, null, "")
     ));
     // thePredicateWillBecomeAListWhenASubjectHasMultipleInstances
     testCases.addAll(createPermutationsOfTestCase(allOf(
       hasEntry(is(TYPE_2), hasProperty("predicates",
         hasItem(predicate().withName(PROP_I).withIsList(true).withValueTypeCount(2))
       ))),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value2", "http://example.org/valuetype", null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value2", "http://example.org/valuetype", null, null, "")
     ));
     // predicateIsAlsoAListWhenItHasDifferentTypes
     testCases.addAll(createPermutationsOfTestCase(
@@ -164,10 +164,10 @@ public class SchemaGenerationPermutationTest {
         predicate().withName(PROP_I).withReferenceType(TYPE_3)
                    .withValueType("http://example.org/valuetype").withIsList(true)
       )))),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, ""),
-      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, "value", "http://example.org/valuetype", null, null, ""),
+      CursorQuad.create(SUBJECT_B, RDF_TYPE, OUT, ASSERTED, TYPE_3, null, null, null, "")
     ));
     // inversePredicatesAreNotAlwaysLists
     testCases.addAll(createPermutationsOfTestCase(allOf(
@@ -177,9 +177,9 @@ public class SchemaGenerationPermutationTest {
       hasEntry(is(UNKNOWN), hasProperty("predicates",
         hasItem(predicate().withName(PROP_I).withDirection(IN).withIsList(false))
       ))),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_C, null, null, null, "")
     ));
     // aDoubleAssertionOfATripleDoesNotIncreaseTheReferenceCounts
     testCases.addAll(createPermutationsOfTestCase(
@@ -187,8 +187,8 @@ public class SchemaGenerationPermutationTest {
         hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceTypeCount(1)),
         hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceTypeCount(1))
       )))),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
     ));
     // retractingATripleLeavesTheTypesInTheSchema
     // TODO fix tests? Schema ignores predicates that are asserted and retracted in one session
@@ -196,9 +196,9 @@ public class SchemaGenerationPermutationTest {
       allOf(
         hasEntry(is(TYPE_1), hasProperty("name", is(TYPE_1)))
       ),
-      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, ""),
-      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, "")
+      CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_1, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
+      CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, null, "")
     ));
     return testCases;
   }
@@ -259,7 +259,7 @@ public class SchemaGenerationPermutationTest {
             quad.getObject(),
             quad.getValuetype().orElse(null),
             quad.getLanguage().orElse(null),
-            GRAPH
+            quad.getGraph().orElse(null)
           );
         }
         storeUpdater.commit();
@@ -274,7 +274,7 @@ public class SchemaGenerationPermutationTest {
   private StoreUpdater createInstance(BdbNonPersistentEnvironmentCreator dataStoreFactory, BdbSchemaStore schema)
     throws DataStoreCreationException, nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException,
     IOException {
-    final BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
+    final BdbQuadStore quadStore = new BdbQuadStore(dataStoreFactory.getDatabase(
       USER,
       DATA_SET,
       "rdfData",
@@ -343,6 +343,17 @@ public class SchemaGenerationPermutationTest {
         STRING_BINDING,
         STRING_IS_CLEAN_HANDLER
     ));
+    final GraphStore graphStore = new GraphStore(
+        dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "graphStore",
+            true,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        )
+    );
 
     return new StoreUpdater(
       quadStore,
@@ -351,6 +362,7 @@ public class SchemaGenerationPermutationTest {
       updatedPerPatchStore,
       oldSubjectTypesStore,
       Lists.newArrayList(schema, rmlDataSourceStore),
+      graphStore,
       mock(ImportStatus.class)
     );
   }

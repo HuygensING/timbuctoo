@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ProvenanceChangeLog;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;

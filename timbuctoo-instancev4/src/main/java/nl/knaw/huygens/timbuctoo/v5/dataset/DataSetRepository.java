@@ -254,13 +254,10 @@ public class DataSetRepository {
       uriPrefix = baseUri;
     }
 
-    String graph = baseUri.endsWith("/") ? baseUri.substring(0, baseUri.length() - 1) : baseUri;
-
     final DataSetMetaData dataSet = new BasicDataSetMetaData(
       ownerPrefix,
       dataSetId,
       baseUri,
-      graph,
       uriPrefix,
       false,
       publicByDefault,

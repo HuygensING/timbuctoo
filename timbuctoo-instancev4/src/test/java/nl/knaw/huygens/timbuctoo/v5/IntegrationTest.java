@@ -632,12 +632,10 @@ public class IntegrationTest {
 
     String changes = getChangesCall.readEntity(String.class);
 
-    String graph = "http://example.org/datasets/" + PREFIX + "/" + dataSetName;
-
     assertThat(changes, is("+<http://one.example/subject1> <http://one.example/predicate1>" +
-      " <http://one.example/object1> " + "<" + graph + ">" + " .\n" +
+      " <http://one.example/object1> " + "<http://one.example/graph1>" + " .\n" +
       "+<http://one.example/subject2> <http://one.example/predicate2>" +
-      " <http://one.example/object2> " + "<" + graph + ">" + " .\n"));
+      " <http://one.example/object2> " + "<http://one.example/graph1>" + " .\n"));
   }
 
   @Test
@@ -658,7 +656,7 @@ public class IntegrationTest {
 
     final String dataSet = getDataSet.readEntity(String.class);
 
-    String graph = "<http://example.org/datasets/" + PREFIX + "/" + dataSetName + ">";
+    String graph = "<http://one.example/graph1>";
     String subject1 = "<http://one.example/subject1>";
     String subject2 = "<http://one.example/subject2>";
     String object1 = "<http://one.example/object1>";

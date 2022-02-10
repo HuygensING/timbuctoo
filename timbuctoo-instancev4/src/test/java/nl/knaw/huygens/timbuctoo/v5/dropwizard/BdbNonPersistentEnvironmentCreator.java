@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator {
-
   protected final EnvironmentConfig configuration;
   protected final File dbHome;
   private final Map<String, Database> databases;

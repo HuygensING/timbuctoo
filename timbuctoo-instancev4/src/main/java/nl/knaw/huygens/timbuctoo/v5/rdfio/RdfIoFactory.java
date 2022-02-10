@@ -12,7 +12,7 @@ public interface RdfIoFactory {
 
   RdfSerializer makeRdfSerializer(OutputStream output);
 
-  RdfPatchSerializer makeRdfPatchSerializer(OutputStream output, String baseUri);
+  RdfPatchSerializer makeRdfPatchSerializer(OutputStream output);
 
   boolean isRdfTypeSupported(MediaType mediaType);
 }

@@ -6,9 +6,11 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ConfiguredFilter;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
 import java.time.ZonedDateTime;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,20 +20,28 @@ public class PaginationArgumentsHelper {
   private final Map<String, CollectionFilter> collectionFilters;
   private static final Base64.Decoder DECODER = Base64.getDecoder();
 
+  public PaginationArgumentsHelper() {
+    this.collectionFilters = new HashMap<>();
+  }
+
   public PaginationArgumentsHelper(Map<String, CollectionFilter> collectionFilters) {
     this.collectionFilters = collectionFilters;
   }
 
   public PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
     String cursor = "";
-    int count = DEFAULT_COUNT;
-
     if (environment.containsArgument("cursor") && (environment.getArgument("cursor") instanceof String)) {
       cursor = new String(DECODER.decode((String) environment.getArgument("cursor")), Charsets.UTF_8);
     }
 
+    int count = DEFAULT_COUNT;
     if (environment.containsArgument("count")) {
       count = environment.getArgument("count");
+    }
+
+    Optional<Graph> graph = Optional.empty();
+    if (environment.containsArgument("graph")) {
+      graph = Optional.of(new Graph(environment.getArgument("graph")));
     }
 
     ConfiguredFilter filter = null;
@@ -55,7 +65,7 @@ public class PaginationArgumentsHelper {
       timeSince = ZonedDateTime.parse(environment.getArgument("deletedSince"));
     }
 
-    return PaginationArguments.create(count, cursor, Optional.ofNullable(filter), Optional.ofNullable(timeSince));
+    return PaginationArguments.create(graph, count, cursor, Optional.ofNullable(filter), Optional.ofNullable(timeSince));
   }
 
   public String makeListName(String outputTypeName) {
@@ -87,17 +97,14 @@ public class PaginationArgumentsHelper {
   }
 
   public String makeCollectionListField(String fieldName, String outputTypeName) {
-    String customFilters = String.join(
-      ", ",
-      collectionFilters.keySet().stream().map(k -> k + ": String").collect(Collectors.toList())
-    );
+    String customFilters = collectionFilters.keySet().stream()
+                                            .map(k -> k + ": String").collect(Collectors.joining(", "));
     if (!customFilters.isEmpty()) {
       customFilters = ", " + customFilters;
     }
-    return fieldName + "(cursor: ID, count: Int" + customFilters + ", updatedSince: String): " +
+    return fieldName + "(graph: String, cursor: ID, count: Int" + customFilters + ", updatedSince: String): " +
         makeCollectionListName(outputTypeName);
   }
-
 
   public String makeCollectionListDefinition(String outputType) {
     return "type " + makeCollectionListName(outputType) + " {\n" +
@@ -108,5 +115,4 @@ public class PaginationArgumentsHelper {
       "  items: [" + outputType + "!]!\n" +
       "}\n\n";
   }
-
 }

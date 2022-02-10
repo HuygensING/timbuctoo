@@ -60,7 +60,7 @@ public class PredicateMutation {
 
   public static MutationOperation replace(String predicateUri, Value... values) {
     return (subject, mutation) -> {
-      mutation.fullRetractions.add(create(subject, predicateUri, Direction.OUT, "", null, null, ""));
+      mutation.fullRetractions.add(create(subject, predicateUri, Direction.OUT, "", null, null, null, ""));
       for (Value value : values) {
         if (value.value != null) {
           mutation.additions.add(create(
@@ -70,6 +70,7 @@ public class PredicateMutation {
             value.value,
             value.type,
             value.language,
+            value.graph,
             ""
           ));
         }
@@ -81,7 +82,8 @@ public class PredicateMutation {
     return (subject, mutation) -> {
       UUID id = UUID.randomUUID();
       mutation.subjectFinders.put(id, new FollowPredicateFinder(subject, predicateUri, defaultUri));
-      mutation.additions.add(CursorQuad.create(subject, predicateUri, Direction.OUT, id.toString(), null, null, ""));
+      mutation.additions.add(CursorQuad.create(subject, predicateUri, Direction.OUT, id.toString(),
+          null, null, null, ""));
       for (MutationOperation operation : operations) {
         if (operation != null) {
           operation.apply(id.toString(), mutation);
@@ -91,19 +93,19 @@ public class PredicateMutation {
   }
 
   public static Value subject(String uri) {
-    return new Value(uri, null, null);
+    return new Value(uri, null, null, null);
   }
 
   public static Value value(String value) {
-    return new Value(value, RdfConstants.STRING, null);
+    return new Value(value, RdfConstants.STRING, null, null);
   }
 
   public static Value value(String value, String type) {
-    return new Value(value, type, null);
+    return new Value(value, type, null, null);
   }
 
   public static Value languageString(String value, String language) {
-    return new Value(value, RdfConstants.LANGSTRING, language);
+    return new Value(value, RdfConstants.LANGSTRING, language, null);
   }
 
   public interface MutationOperation {
@@ -114,11 +116,13 @@ public class PredicateMutation {
     final String value;
     final String type;
     final String language;
+    final String graph;
 
-    public Value(String value, String type, String language) {
+    public Value(String value, String type, String language, String graph) {
       this.value = value;
       this.type = type;
       this.language = language;
+      this.graph = graph;
     }
   }
 

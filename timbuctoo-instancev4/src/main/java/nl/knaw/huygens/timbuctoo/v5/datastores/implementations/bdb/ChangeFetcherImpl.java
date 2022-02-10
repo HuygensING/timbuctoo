@@ -9,14 +9,13 @@ import java.util.stream.Stream;
 import static com.google.common.collect.Streams.stream;
 
 class ChangeFetcherImpl implements ChangeFetcher {
-
   private final BdbTruePatchStore truePatchStore;
-  private final BdbTripleStore tripleStore;
+  private final BdbQuadStore quadStore;
   private final int currentversion;
 
-  public ChangeFetcherImpl(BdbTruePatchStore truePatchStore, BdbTripleStore tripleStore, int currentversion) {
+  public ChangeFetcherImpl(BdbTruePatchStore truePatchStore, BdbQuadStore quadStore, int currentversion) {
     this.truePatchStore = truePatchStore;
-    this.tripleStore = tripleStore;
+    this.quadStore = quadStore;
     this.currentversion = currentversion;
   }
 
@@ -35,10 +34,10 @@ class ChangeFetcherImpl implements ChangeFetcher {
       final Stream<CursorQuad> currentState;
       if (predicate != null) {
         assertions = truePatchStore.getChanges(subject, predicate, direction, currentversion, true);
-        currentState = tripleStore.getQuads(subject, predicate, direction, "");
+        currentState = quadStore.getQuads(subject, predicate, direction, "");
       } else {
         assertions = truePatchStore.getChanges(subject, currentversion, true);
-        currentState = tripleStore.getQuads(subject);
+        currentState = quadStore.getQuads(subject);
       }
       //if (!assertions.findAny().isPresent()) {
       //  result = currentState;
@@ -66,7 +65,7 @@ class ChangeFetcherImpl implements ChangeFetcher {
       } else {
         retractions = truePatchStore.getChanges(subject, currentversion, false);
       }
-      return stream(new RetractionMerger(result, retractions, tripleStore, currentversion)).onClose(() -> {
+      return stream(new RetractionMerger(result, retractions, quadStore, currentversion)).onClose(() -> {
         result.close();
         retractions.close();
       });

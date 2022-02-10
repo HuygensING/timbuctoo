@@ -51,7 +51,7 @@ public class RmlRdfCreator implements PlainRdfCreator {
       );
     }
     //FIXME: trigger onprefix for all rml prefixes
-    //FIXME: store rml and retrieve it from tripleStore when mapping
+    //FIXME: store rml and retrieve it from quadStore when mapping
 
     Stream<Quad> triples = rmlMappingDocument.execute(new ReportingErrorHandler(status));
     Iterator<Quad> iterator = triples.iterator();

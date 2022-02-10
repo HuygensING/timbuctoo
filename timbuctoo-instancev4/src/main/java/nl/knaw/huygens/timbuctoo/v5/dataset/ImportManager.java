@@ -74,8 +74,7 @@ public class ImportManager implements DataProvider {
   }
 
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
-                                                   InputStream rdfInputStream,
-                                                   Optional<Charset> charset, MediaType mediaType)
+                                     InputStream rdfInputStream, Optional<Charset> charset, MediaType mediaType)
     throws LogStorageFailedException {
 
     importStatus.start(this.getClass().getSimpleName() + ".addLog", baseUri);
@@ -120,7 +119,7 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  public Future<ImportStatus> generateLog(String baseUri, String defaultGraph, RdfCreator creator)
+  public Future<ImportStatus> generateLog(String baseUri, String graph, RdfCreator creator)
     throws LogStorageFailedException {
 
     importStatus.start(this.getClass().getSimpleName() + ".generateLog", baseUri);
@@ -128,7 +127,7 @@ public class ImportManager implements DataProvider {
       //add to the log structure
       int[] index = new int[1];
       logListStore.updateData(logList -> {
-        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, creator));
+        index[0] = logList.addEntry(LogEntry.create(baseUri, graph, creator));
         return logList;
       });
       //schedule processing
@@ -184,7 +183,7 @@ public class ImportManager implements DataProvider {
                 break;
               }
             } else {
-              try (RdfPatchSerializer srlzr = serializerFactory.makeRdfPatchSerializer(stream, entry.getBaseUri())) {
+              try (RdfPatchSerializer srlzr = serializerFactory.makeRdfPatchSerializer(stream)) {
                 mediaType = srlzr.getMediaType();
                 charset = Optional.of(srlzr.getCharset());
                 ((PatchRdfCreator) creator).sendQuads(srlzr, importStatus::setStatus, dataSet);
@@ -234,7 +233,7 @@ public class ImportManager implements DataProvider {
             importStatus.setEntryName(log.getName());
             RdfParser rdfParser = serializerFactory.makeRdfParser(log);
             processor.start(index);
-            rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
+            rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph().orElse(null), processor);
             processor.commit();
           }
         }

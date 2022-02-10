@@ -80,5 +80,4 @@ public class SummaryPropSerializationTest {
 
     assertThat(deserialized, is(input));
   }
-
 }

@@ -46,10 +46,12 @@ public class Rdf4jWriter implements RdfSerializer {
   }
 
   private Resource makeResource(String input) {
-    if (input.startsWith("_:")) {
+    if (input != null && input.startsWith("_:")) {
       return valueFactory.createBNode(input.substring(2));
-    } else {
+    } else if (input != null) {
       return valueFactory.createIRI(input);
+    } else {
+      return null;
     }
   }
 

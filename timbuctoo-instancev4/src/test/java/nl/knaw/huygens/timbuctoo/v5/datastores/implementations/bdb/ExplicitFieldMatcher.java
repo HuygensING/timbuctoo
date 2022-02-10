@@ -15,7 +15,6 @@ public class ExplicitFieldMatcher extends CompositeMatcher<ExplicitField> {
     return new ExplicitFieldMatcher();
   }
 
-
   public ExplicitFieldMatcher withUri(String uri) {
     this.addMatcher(new PropertyEqualityMatcher<ExplicitField, String>("uri", uri) {
       @Override

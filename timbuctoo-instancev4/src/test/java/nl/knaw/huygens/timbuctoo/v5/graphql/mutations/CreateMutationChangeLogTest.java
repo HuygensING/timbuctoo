@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CreateMutationChangeLog;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,7 +21,6 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ChangeMatcher.likeChange;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 public class CreateMutationChangeLogTest {
   private static final String TYPE_URI = "http://schema.org/Person";
+  private static final String GRAPH = "http://example.org/graph";
   private static final String SUBJECT = "http://example.org/subject";
   private static final String NAMES_FIELD = "schema_name";
   private static final String NAMES_PRED = "http://schema.org/name";
@@ -51,7 +52,7 @@ public class CreateMutationChangeLogTest {
     creations.put(NAMES_FIELD, createPropertyInput(addedValue));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("creations", creations);
-    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, TYPE_URI, entity);
+    CreateMutationChangeLog instance = new CreateMutationChangeLog(new Graph(GRAPH), SUBJECT, TYPE_URI, entity);
 
     List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
@@ -74,7 +75,7 @@ public class CreateMutationChangeLogTest {
     creations.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("creations", creations);
-    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, TYPE_URI, entity);
+    CreateMutationChangeLog instance = new CreateMutationChangeLog(new Graph(GRAPH), SUBJECT, TYPE_URI, entity);
 
     List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
@@ -97,7 +98,7 @@ public class CreateMutationChangeLogTest {
     creations.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("creations", creations);
-    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, TYPE_URI, entity);
+    CreateMutationChangeLog instance = new CreateMutationChangeLog(new Graph(GRAPH), SUBJECT, TYPE_URI, entity);
 
     Stream<Change> deletes = instance.getDeletions(dataSet);
 
@@ -112,7 +113,7 @@ public class CreateMutationChangeLogTest {
     creations.put(NAMES_FIELD, newArrayList(createPropertyInput(addedValue1), createPropertyInput(addedValue2)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("creations", creations);
-    CreateMutationChangeLog instance = new CreateMutationChangeLog(SUBJECT, TYPE_URI, entity);
+    CreateMutationChangeLog instance = new CreateMutationChangeLog(new Graph(GRAPH), SUBJECT, TYPE_URI, entity);
 
     Stream<Change> replacements = instance.getReplacements(dataSet);
 

@@ -89,7 +89,8 @@ public class BdbWrapper<KeyT, ValueT> {
       keyBinder,
       valueBinder,
       database,
-      cursors);
+      cursors
+    );
   }
 
   public boolean isClean() {

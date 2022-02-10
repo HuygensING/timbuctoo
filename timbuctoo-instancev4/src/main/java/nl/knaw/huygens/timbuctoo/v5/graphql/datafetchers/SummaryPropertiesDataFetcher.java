@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectGraphReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -31,8 +32,8 @@ public class SummaryPropertiesDataFetcher implements DataFetcher<Map<String, Sum
   @Override
   public Map<String, SummaryProp> get(DataFetchingEnvironment env) {
     HashMap<String, SummaryProp> summaryPropsMap = new HashMap<>();
-    if (env.getSource() instanceof SubjectReference) {
-      SubjectReference source = env.getSource();
+    if (env.getSource() instanceof SubjectGraphReference) {
+      SubjectGraphReference source = env.getSource();
       DataSet dataSet = source.getDataSet();
       QuadStore quadStore = dataSet.getQuadStore();
       summaryPropsMap.put("title", getData(source, quadStore, RdfConstants.TIM_SUMMARYTITLEPREDICATE));
@@ -43,12 +44,14 @@ public class SummaryPropertiesDataFetcher implements DataFetcher<Map<String, Sum
     return summaryPropsMap;
   }
 
-  private SummaryProp getData(SubjectReference source, QuadStore quadStore, String predicate) {
-    try (Stream<CursorQuad> dataQuads = quadStore.getQuads(source.getSubjectUri(), predicate, Direction.OUT, "")) {
-      Optional<String> data = dataQuads.findFirst().map(quad -> quad.getObject());
-      if (!data.isPresent()) {
+  private SummaryProp getData(SubjectGraphReference source, QuadStore quadStore, String predicate) {
+    try (Stream<CursorQuad> dataQuads = quadStore.getQuadsInGraph(
+        source.getSubjectUri(), predicate, Direction.OUT, "", source.getGraph())) {
+      Optional<String> data = dataQuads.findFirst().map(CursorQuad::getObject);
+      if (data.isEmpty()) {
         return null;
       }
+
       try {
         return objectMapper.readValue(data.get(), SummaryProp.class);
       } catch (IOException e) {
@@ -57,6 +60,4 @@ public class SummaryPropertiesDataFetcher implements DataFetcher<Map<String, Sum
       }
     }
   }
-
-
 }

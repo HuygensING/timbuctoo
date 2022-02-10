@@ -119,25 +119,28 @@ class DerivedInputTypeSchemaGenerator {
     schema.append("type ").append(name).append("Mutations").append(" {\n");
 
     if (!creations.isEmpty()) {
-      schema.append("  create(").append("uri: String! ").append("entity: ").append(name).append("CreateInput!): ")
-            .append(name).append(" @createMutation(dataSet: \"").append(rootType).append("\"")
+      schema.append("  create(").append("graph: String ").append("uri: String! ").append("entity: ").append(name)
+            .append("CreateInput!): ").append(name)
+            .append(" @createMutation(dataSet: \"").append(rootType).append("\"")
             .append(" typeUri: \"").append(typeUri).append("\")").append("\n");
     }
 
     if (!additions.isEmpty() || !deletions.isEmpty() || !replacements.isEmpty()) {
-      schema.append("  edit(").append("uri: String! ").append("entity: ").append(name).append("EditInput!): ")
-            .append(name).append(" @editMutation(dataSet: \"").append(rootType).append("\")").append("\n");
+      schema.append("  edit(").append("graph: String ").append("uri: String! ").append("entity: ").append(name)
+            .append("EditInput!): ").append(name)
+            .append(" @editMutation(dataSet: \"").append(rootType).append("\")").append("\n");
     }
 
     if (!deletions.isEmpty() && !hasCustomProvenance) {
-      schema.append("  delete(").append("uri: String!): RemovedEntity! ")
+      schema.append("  delete(").append("graph: String ").append("uri: String!): RemovedEntity! ")
             .append("@deleteMutation(dataSet: \"").append(rootType).append("\")").append("\n");
     } else if (!deletions.isEmpty()) {
-      schema.append("  delete(").append("uri: String! ").append("entity: ").append(name).append("DeleteInput): ")
-            .append("RemovedEntity! @deleteMutation(dataSet: \"").append(rootType).append("\")").append("\n");
+      schema.append("  delete(").append("graph: String ").append("uri: String! ").append("entity: ").append(name)
+            .append("DeleteInput): ").append("RemovedEntity!")
+            .append(" @deleteMutation(dataSet: \"").append(rootType).append("\")").append("\n");
     }
 
-    schema.append("  persistEntity(").append("entityUri: String!): ").append("Message")
+    schema.append("  persistEntity(").append("graph: String ").append("entityUri: String!): ").append("Message")
           .append(" @persistEntityMutation(dataSet: \"").append(rootType).append("\")").append("}\n");
 
     return schema;

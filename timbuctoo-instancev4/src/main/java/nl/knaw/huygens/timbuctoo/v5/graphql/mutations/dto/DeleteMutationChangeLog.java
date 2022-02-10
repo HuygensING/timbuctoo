@@ -13,9 +13,11 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -27,12 +29,16 @@ public class DeleteMutationChangeLog extends ChangeLog {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @JsonProperty
+  private final Graph graph;
+
+  @JsonProperty
   private final String subject;
 
   @JsonProperty
   private final DeleteMutationChangeLog.RawDeleteChangeLog changeLog;
 
-  public DeleteMutationChangeLog(String subject, Map entity) throws JsonProcessingException {
+  public DeleteMutationChangeLog(Graph graph, String subject, Map entity) throws JsonProcessingException {
+    this.graph = graph;
     this.subject = subject;
 
     if (entity != null) {
@@ -43,20 +49,22 @@ public class DeleteMutationChangeLog extends ChangeLog {
     }
   }
 
-  private DeleteMutationChangeLog(String subject, RawDeleteChangeLog changeLog) {
+  private DeleteMutationChangeLog(Graph graph, String subject, RawDeleteChangeLog changeLog) {
+    this.graph = graph;
     this.subject = subject;
     this.changeLog = (changeLog != null) ? changeLog : new RawDeleteChangeLog(null);
   }
 
   @JsonCreator
-  public static DeleteMutationChangeLog fromJson(@JsonProperty("subject") String subject,
+  public static DeleteMutationChangeLog fromJson(@JsonProperty("graph") Graph graph,
+                                                 @JsonProperty("subject") String subject,
                                                  @JsonProperty("changeLog") RawDeleteChangeLog changeLog) {
-    return new DeleteMutationChangeLog(subject, changeLog);
+    return new DeleteMutationChangeLog(graph, subject, changeLog);
   }
 
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
-    return getProvenanceChanges(dataSet, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
   }
 
   @Override
@@ -66,7 +74,7 @@ public class DeleteMutationChangeLog extends ChangeLog {
 
   @Override
   public Stream<Change> getDeletions(DataSet dataSet) {
-    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuads(subject)) {
+    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuadsInGraph(subject, Optional.of(graph))) {
       return quads
         .map(quad -> new Tuple<>(
           quad.getPredicate(),
@@ -75,7 +83,7 @@ public class DeleteMutationChangeLog extends ChangeLog {
         .collect(groupingBy(Tuple::getLeft, mapping(Tuple::getRight, toList())))
         .entrySet().stream()
         .map(predValues ->
-          new Change(subject, predValues.getKey(), Lists.newArrayList(), predValues.getValue().stream()));
+          new Change(graph, subject, predValues.getKey(), Lists.newArrayList(), predValues.getValue().stream()));
     }
   }
 
@@ -85,7 +93,7 @@ public class DeleteMutationChangeLog extends ChangeLog {
   }
 
   public static class RawDeleteChangeLog {
-    private LinkedHashMap<String, JsonNode> provenance;
+    private final LinkedHashMap<String, JsonNode> provenance;
 
     @JsonCreator
     public RawDeleteChangeLog(@JsonProperty("provenance") LinkedHashMap<String, JsonNode> provenance) {

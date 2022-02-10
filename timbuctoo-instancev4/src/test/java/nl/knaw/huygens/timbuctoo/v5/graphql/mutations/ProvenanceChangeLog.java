@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto;
+package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
 import java.util.LinkedHashMap;
@@ -27,7 +27,7 @@ public class ProvenanceChangeLog extends ChangeLog {
 
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
-    return getProvenanceChanges(dataSet, new Graph(null), subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+    return getProvenanceChanges(dataSet, new Graph(""), subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
   }
 
   @Override

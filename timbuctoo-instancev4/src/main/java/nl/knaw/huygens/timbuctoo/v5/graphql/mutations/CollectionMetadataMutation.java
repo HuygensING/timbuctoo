@@ -40,7 +40,7 @@ public class CollectionMetadataMutation extends Mutation {
       );
 
       MutationHelpers.addMutation(dataSet, mutation);
-      return new LazyTypeSubjectReference(collectionUri, dataSet);
+      return new LazyTypeSubjectReference(collectionUri, Optional.empty(), dataSet);
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }

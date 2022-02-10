@@ -39,7 +39,6 @@ import static org.mockito.Mockito.when;
 
 
 public class RsDocumentBuilderTest {
-
   private static RsBuilder rsBuilder;
 
   private DataSetRepository dataSetRepository;
@@ -62,11 +61,9 @@ public class RsDocumentBuilderTest {
     when(dataSetMetaData1.getOwnerId()).thenReturn("u1");
     when(dataSetMetaData1.getDataSetId()).thenReturn("ds1");
     when(dataSetMetaData1.getBaseUri()).thenReturn("http://example.com/u1/ds1/");
-    when(dataSetMetaData1.getGraph()).thenReturn("http://example.com/u1/ds1");
     when(dataSetMetaData2.getOwnerId()).thenReturn("u2");
     when(dataSetMetaData2.getDataSetId()).thenReturn("ds2");
     when(dataSetMetaData2.getBaseUri()).thenReturn("http://example.com/u2/ds2/");
-    when(dataSetMetaData2.getGraph()).thenReturn("http://example.com/u2/ds2");
     when(dataSet.getMetadata()).thenReturn(dataSetMetaData1).thenReturn(dataSetMetaData2);
   }
 
@@ -159,7 +156,6 @@ public class RsDocumentBuilderTest {
 
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     given(dataSetMetaData.getBaseUri()).willReturn("http://example.com/u1/ds1/");
-    given(dataSetMetaData.getGraph()).willReturn("http://example.com/u1/ds1");
     given(dataSetMetaData.getOwnerId()).willReturn("u1");
     given(dataSetMetaData.getDataSetId()).willReturn("ds1");
 
@@ -211,7 +207,6 @@ public class RsDocumentBuilderTest {
 
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     given(dataSetMetaData.getBaseUri()).willReturn("uri");
-    given(dataSetMetaData.getGraph()).willReturn("graph");
     given(dataSetMetaData.getOwnerId()).willReturn("u1");
     given(dataSetMetaData.getDataSetId()).willReturn("ds1");
 
@@ -222,14 +217,12 @@ public class RsDocumentBuilderTest {
     given(dataSet.getChangesRetriever()).willReturn(changesRetriever);
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
 
-
     Optional<Stream<String>> changes = rsDocumentBuilder.getChanges(null, "u1", "ds1", "changes1.nqud");
 
     assertThat(changes.isPresent(), is(true));
     assertThat(changes.get().collect(Collectors.toList()), Matchers.contains(
-      "+<s1> <p1> <o1> <graph> .\n",
-      "-<s2> <p2> <o2> <graph> .\n"
+      "+<s1> <p1> <o1> .\n",
+      "-<s2> <p2> <o2> .\n"
     ));
   }
-
 }

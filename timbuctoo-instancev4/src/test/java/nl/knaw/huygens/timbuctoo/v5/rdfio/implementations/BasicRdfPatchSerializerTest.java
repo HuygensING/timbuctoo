@@ -8,8 +8,7 @@ import static org.junit.Assert.assertThat;
 
 public class BasicRdfPatchSerializerTest {
   private String result;
-  BasicRdfPatchSerializer basicRdfPatchSerializer = new TestBasicRdfPatchSerializer(this::stringWriter,
-    "http://example.org/graph");
+  BasicRdfPatchSerializer basicRdfPatchSerializer = new TestBasicRdfPatchSerializer(this::stringWriter);
 
   public void stringWriter(String string) {
     result = string;
@@ -22,7 +21,7 @@ public class BasicRdfPatchSerializerTest {
       "http://www.w3.org/2001/XMLSchema#string", null);
 
     assertThat(result, is("+<http://example.org/show/218> <http://www.w3.org/2000/01/rdf-schema#label>" +
-      " \"That Seventies Show\"^^<http://www.w3.org/2001/XMLSchema#string> <http://example.org/graph> .\n"));
+      " \"That Seventies Show\"^^<http://www.w3.org/2001/XMLSchema#string> .\n"));
 
     basicRdfPatchSerializer.onValue("http://en.wikipedia.org/wiki/Helium","http://example.org/elements/specificGravity",
       "1.663E-4","http://www.w3.org/2001/XMLSchema#double","http://example.org/testgraph");
@@ -34,7 +33,7 @@ public class BasicRdfPatchSerializerTest {
       "This is a multi-line\nliteral with many quotes (\"\"\"\"\")\nand two apostrophes ('').", "http://www.w3.org/2001/XMLSchema#string",null);
 
     assertThat(result, is("+<http://example.org/#spiderman> <http://example.org/text> \"This is " +
-      "a multi-line\\nliteral with many quotes (\\\"\\\"\\\"\\\"\\\")\\nand two apostrophes ('').\"^^<http://www.w3.org/2001/XMLSchema#string> <http://example.org/graph> .\n"));
+      "a multi-line\\nliteral with many quotes (\\\"\\\"\\\"\\\"\\\")\\nand two apostrophes ('').\"^^<http://www.w3.org/2001/XMLSchema#string> .\n"));
   }
 
   @Test
@@ -43,7 +42,7 @@ public class BasicRdfPatchSerializerTest {
       "http://example.org/show/localName", "That Seventies Show", "en", null);
 
     assertThat(result, is("+<http://example.org/show/218> <http://example.org/show/localName> " +
-      "\"That Seventies Show\"@en <http://example.org/graph> .\n"));
+      "\"That Seventies Show\"@en .\n"));
   }
 
   @Test
@@ -53,19 +52,19 @@ public class BasicRdfPatchSerializerTest {
       "http://www.w3.org/2001/XMLSchema#string", null);
 
     assertThat(result, is("-<http://example.org/show/218> <http://www.w3.org/2000/01/rdf-schema#label>" +
-      " \"That Seventies Show\"^^<http://www.w3.org/2001/XMLSchema#string> <http://example.org/graph> .\n"));
+      " \"That Seventies Show\"^^<http://www.w3.org/2001/XMLSchema#string> .\n"));
 
     basicRdfPatchSerializer.delValue("http://en.wikipedia.org/wiki/Helium","http://example.org/elements/specificGravity",
       "1.663E-4","http://www.w3.org/2001/XMLSchema#double",null);
 
     assertThat(result, is("-<http://en.wikipedia.org/wiki/Helium> <http://example.org/elements/specificGravity>" +
-      " \"1.663E-4\"^^<http://www.w3.org/2001/XMLSchema#double> <http://example.org/graph> .\n"));
+      " \"1.663E-4\"^^<http://www.w3.org/2001/XMLSchema#double> .\n"));
 
     basicRdfPatchSerializer.delValue("http://example.org/#spiderman","http://example.org/text",
       "This is a multi-line\nliteral with many quotes (\"\"\"\"\")\nand two apostrophes ('').", "http://www.w3.org/2001/XMLSchema#string",null);
 
     assertThat(result, is("-<http://example.org/#spiderman> <http://example.org/text> \"This is " +
-      "a multi-line\\nliteral with many quotes (\\\"\\\"\\\"\\\"\\\")\\nand two apostrophes ('').\"^^<http://www.w3.org/2001/XMLSchema#string> <http://example.org/graph> .\n"));
+      "a multi-line\\nliteral with many quotes (\\\"\\\"\\\"\\\"\\\")\\nand two apostrophes ('').\"^^<http://www.w3.org/2001/XMLSchema#string> .\n"));
   }
 
   @Test
@@ -74,6 +73,6 @@ public class BasicRdfPatchSerializerTest {
       "http://example.org/show/localName", "That Seventies Show", "en", null);
 
     assertThat(result, is("-<http://example.org/show/218> <http://example.org/show/localName> " +
-      "\"That Seventies Show\"@en <http://example.org/graph> .\n"));
+      "\"That Seventies Show\"@en .\n"));
   }
 }

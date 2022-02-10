@@ -83,8 +83,7 @@ public class DummyRedirectionService extends RedirectionService {
 
     try {
       importManager.generateLog(
-          dataSet.getMetadata().getBaseUri(),
-          dataSet.getMetadata().getGraph(),
+          dataSet.getMetadata().getBaseUri(), null,
           new AddTriplePatchRdfCreator(
               entityLookup.getUri().get(),
               PERSISTENT_ID,

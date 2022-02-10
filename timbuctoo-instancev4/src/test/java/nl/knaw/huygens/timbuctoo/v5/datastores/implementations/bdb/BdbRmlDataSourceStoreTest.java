@@ -54,7 +54,6 @@ public class BdbRmlDataSourceStoreTest {
         "userid",
         "datasetid",
         "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",
-        "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",
         "http://example.org/prefix/", false, false
     );
 
@@ -151,25 +150,24 @@ public class BdbRmlDataSourceStoreTest {
     public void onRelation(String subject, String predicate, String object, String graph)
         throws LogStorageFailedException {
       triples.computeIfAbsent(subject, s -> ArrayListMultimap.create())
-             .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, object, null, null, ""));
+             .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, object, null, null, null, ""));
       triples.computeIfAbsent(object, s -> ArrayListMultimap.create())
-             .put(predicate + "\n" + IN, create(object, predicate, IN, ASSERTED, subject, null, null, ""));
+             .put(predicate + "\n" + IN, create(object, predicate, IN, ASSERTED, subject, null, null, null, ""));
     }
 
     @Override
     public void onValue(String subject, String predicate, String value, String valueType, String graph)
         throws LogStorageFailedException {
       triples.computeIfAbsent(subject, s -> ArrayListMultimap.create())
-             .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, value, valueType, null, ""));
+             .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, value, valueType, null, null, ""));
     }
 
     @Override
-    public void onLanguageTaggedString(String subject, String predicate, String value, String language,
-                                       String graph)
+    public void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
         throws LogStorageFailedException {
       triples.computeIfAbsent(subject, s -> ArrayListMultimap.create()).put(
           predicate + "\n" + OUT,
-          create(subject, predicate, OUT, ASSERTED, value, LANGSTRING, language, "")
+          create(subject, predicate, OUT, ASSERTED, value, LANGSTRING, language, null, "")
       );
     }
 
@@ -191,8 +189,7 @@ public class BdbRmlDataSourceStoreTest {
 
             @Override
             public Stream<CursorQuad> getPredicates(String subject, String predicate, Direction direction,
-                                                    boolean getRetracted,
-                                                    boolean getUnchanged, boolean getAsserted) {
+                                                    boolean getRetracted, boolean getUnchanged, boolean getAsserted) {
               if (triples.containsKey(subject) && getAsserted) {
                 return triples.get(subject).get(predicate + "\n" + direction.name()).stream();
               } else {

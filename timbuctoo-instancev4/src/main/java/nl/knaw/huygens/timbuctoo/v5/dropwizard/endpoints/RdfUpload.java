@@ -96,16 +96,14 @@ public class RdfUpload {
           return Response.status(400).entity("filename cannot be empty.").build();
         }
 
-
-
-        Future<ImportStatus> promise = null;
+        Future<ImportStatus> promise;
         try {
           if (replaceData) {
             deleteCurrentData(dataSet, importManager);
           }
           promise = importManager.addLog(
             baseUri == null ? dataSet.getMetadata().getBaseUri() : baseUri.toString(),
-            defaultGraph == null ? dataSet.getMetadata().getGraph() : defaultGraph.toString(),
+            defaultGraph != null ? defaultGraph.toString() : null,
             body.getContentDisposition().getFileName(),
             rdfInputStream,
             Optional.of(Charset.forName(encoding)),
@@ -128,44 +126,42 @@ public class RdfUpload {
 
   private void deleteCurrentData(DataSet dataSet, ImportManager importManager) throws LogStorageFailedException {
     final String dataSetBaseUri = dataSet.getMetadata().getBaseUri();
-    final String graph = dataSet.getMetadata().getGraph();
-    final ChangesQuadGenerator nqUdGenerator = new ChangesQuadGenerator(graph);
+    final ChangesQuadGenerator nqUdGenerator = new ChangesQuadGenerator();
     try (Stream<CursorQuad> quads = dataSet.getQuadStore().getAllQuads()) {
-      Stream<byte[]> deleteCurrentData = quads.filter(quad -> quad.getDirection() == Direction.OUT)
-                                              .map(quad -> {
-                                                if (quad.getValuetype().isPresent()) {
-                                                  final String valueType = quad.getValuetype().get();
-                                                  if (quad.getLanguage().isPresent() &&
-                                                      valueType.equals(RdfConstants.LANGSTRING)) {
-                                                    return nqUdGenerator.delLanguageTaggedString(
-                                                        quad.getSubject(),
-                                                        quad.getPredicate(),
-                                                        quad.getObject(),
-                                                        quad.getLanguage().get(),
-                                                        graph
-                                                    );
-                                                  } else {
-                                                    return nqUdGenerator.delValue(
-                                                        quad.getSubject(),
-                                                        quad.getPredicate(),
-                                                        quad.getObject(),
-                                                        valueType,
-                                                        graph
-                                                    );
-                                                  }
-                                                } else {
-                                                  return nqUdGenerator.delRelation(
-                                                      quad.getSubject(),
-                                                      quad.getPredicate(),
-                                                      quad.getObject(),
-                                                      graph
-                                                  );
-                                                }
-                                              }).map(String::getBytes);
+      Stream<byte[]> deleteCurrentData =
+          quads.filter(quad -> quad.getDirection() == Direction.OUT).map(quad -> {
+            if (quad.getValuetype().isPresent()) {
+              final String valueType = quad.getValuetype().get();
+              if (quad.getLanguage().isPresent() && valueType.equals(RdfConstants.LANGSTRING)) {
+                return nqUdGenerator.delLanguageTaggedString(
+                    quad.getSubject(),
+                    quad.getPredicate(),
+                    quad.getObject(),
+                    quad.getLanguage().get(),
+                    quad.getGraph().orElse(null)
+                );
+              } else {
+                return nqUdGenerator.delValue(
+                    quad.getSubject(),
+                    quad.getPredicate(),
+                    quad.getObject(),
+                    valueType,
+                    quad.getGraph().orElse(null)
+                );
+              }
+            } else {
+              return nqUdGenerator.delRelation(
+                  quad.getSubject(),
+                  quad.getPredicate(),
+                  quad.getObject(),
+                  quad.getGraph().orElse(null)
+              );
+            }
+          }).map(String::getBytes);
 
       final Future<ImportStatus> deletePromise = importManager.addLog(
           dataSetBaseUri,
-          graph,
+          null,
           "deleteCurrentData.nqud",
           new ByteArrayStreamInputStream(deleteCurrentData),
           Optional.of(StandardCharsets.UTF_8),

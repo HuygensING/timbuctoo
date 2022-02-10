@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.immutables.value.Value;
 
 import java.time.ZonedDateTime;
@@ -8,6 +9,8 @@ import java.util.Optional;
 
 @Value.Immutable
 public interface PaginationArguments {
+
+  Optional<Graph> getGraph();
 
   /**
    * Cursor is either
@@ -35,9 +38,11 @@ public interface PaginationArguments {
    */
   Optional<ZonedDateTime> getTimeSince();
 
-  static PaginationArguments create(int count, String cursor,
+  static PaginationArguments create(Optional<Graph> graph, int count,
+                                    String cursor,
                                     Optional<ConfiguredFilter> filter, Optional<ZonedDateTime> timeSince) {
     return ImmutablePaginationArguments.builder()
+      .graph(graph)
       .count(count)
       .filter(filter)
       .timeSince(timeSince)

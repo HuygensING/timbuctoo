@@ -18,7 +18,7 @@ import static org.eclipse.rdf4j.rio.Rio.getWriterFormatForMIMEType;
 
 public class Rdf4jIoFactory implements RdfIoFactory {
   public static final Set<RDFFormat> RDF_FORMATS = RDFParserRegistry.getInstance().getKeys();
-  private static RdfParser rdfParser = new Rdf4jRdfParser();
+  private static final RdfParser rdfParser = new Rdf4jRdfParser();
 
   private String rdfFormat = "application/n-quads"; // format for serializer
 
@@ -41,8 +41,8 @@ public class Rdf4jIoFactory implements RdfIoFactory {
   }
 
   @Override
-  public RdfPatchSerializer makeRdfPatchSerializer(OutputStream output, String baseUri) {
-    return new BasicRdfPatchSerializer(output, baseUri);
+  public RdfPatchSerializer makeRdfPatchSerializer(OutputStream output) {
+    return new BasicRdfPatchSerializer(output);
   }
 
   @Override

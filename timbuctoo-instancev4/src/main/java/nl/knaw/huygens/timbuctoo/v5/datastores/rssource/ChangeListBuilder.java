@@ -13,13 +13,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ChangeListBuilder {
-  private String graph; //pass in graph from the dataset for now as the QuadStore does not currently contain it.
-  private ChangesQuadGenerator changesQuadGenerator;
+  private final ChangesQuadGenerator changesQuadGenerator;
 
-
-  public ChangeListBuilder(String graph) {
-    this.graph = graph;
-    this.changesQuadGenerator = new ChangesQuadGenerator(graph);
+  public ChangeListBuilder() {
+    this.changesQuadGenerator = new ChangesQuadGenerator();
   }
 
   public List<String> retrieveChangeFileNames(Supplier<List<Integer>> versions) {
@@ -33,17 +30,17 @@ public class ChangeListBuilder {
     return changeFileNames;
   }
 
-
-  public Stream<String> retrieveChanges(ChangesRetriever changesRetriever,
-                                        Integer version) {
+  public Stream<String> retrieveChanges(ChangesRetriever changesRetriever, Integer version) {
     Stream<CursorQuad> quads = changesRetriever.retrieveChanges(version);
     return quads.map(quad -> {
       Optional<String> dataType = quad.getValuetype();
       if (dataType == null || !dataType.isPresent()) {
         if (quad.getChangeType() == ChangeType.ASSERTED) {
-          return changesQuadGenerator.onRelation(quad.getSubject(), quad.getPredicate(), quad.getObject(), graph);
+          return changesQuadGenerator.onRelation(quad.getSubject(), quad.getPredicate(),
+              quad.getObject(), quad.getGraph().orElse(null));
         } else if (quad.getChangeType() == ChangeType.RETRACTED) {
-          return changesQuadGenerator.delRelation(quad.getSubject(), quad.getPredicate(), quad.getObject(), graph);
+          return changesQuadGenerator.delRelation(quad.getSubject(), quad.getPredicate(),
+              quad.getObject(), quad.getGraph().orElse(null));
         }
       } else {
         Optional<String> language = quad.getLanguage();
@@ -54,7 +51,7 @@ public class ChangeListBuilder {
               quad.getPredicate(),
               quad.getObject(),
               language.get(),
-              graph
+              quad.getGraph().orElse(null)
             );
           } else if (quad.getChangeType() == ChangeType.RETRACTED) {
             return changesQuadGenerator.delLanguageTaggedString(
@@ -62,7 +59,7 @@ public class ChangeListBuilder {
               quad.getPredicate(),
               quad.getObject(),
               language.get(),
-              graph
+              quad.getGraph().orElse(null)
             );
           }
         } else {
@@ -72,7 +69,7 @@ public class ChangeListBuilder {
               quad.getPredicate(),
               quad.getObject(),
               dataType.get(),
-              graph
+              quad.getGraph().orElse(null)
             );
           } else if (quad.getChangeType() == ChangeType.RETRACTED) {
             return changesQuadGenerator.delValue(
@@ -80,7 +77,7 @@ public class ChangeListBuilder {
               quad.getPredicate(),
               quad.getObject(),
               dataType.get(),
-              graph
+              quad.getGraph().orElse(null)
             );
           }
         }

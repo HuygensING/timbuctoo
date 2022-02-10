@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,7 +43,6 @@ public class ChangeLogSerializationTest {
     when(dataSet.getTypeNameStore()).thenReturn(typeNameStore);
     when(typeNameStore.makeUriForPredicate(FIELD)).thenReturn(Optional.of(tuple(PRED, Direction.OUT)));
     when(typeNameStore.makeUri(GRAPH_QL_STRING)).thenReturn(STRING);
-
   }
 
   @Test
@@ -52,7 +52,8 @@ public class ChangeLogSerializationTest {
     additions.put(FIELD, newArrayList(createPropertyInput(addedValue)));
     Map<Object, Object> entity = Maps.newHashMap();
     entity.put("additions", additions);
-    EditMutationChangeLog preSerialization = new EditMutationChangeLog("http://example.org/subj", entity);
+    EditMutationChangeLog preSerialization =
+        new EditMutationChangeLog(new Graph("http://example.org/graph"), "http://example.org/subj", entity);
 
     String serialized = OBJECT_MAPPER.writeValueAsString(preSerialization);
 

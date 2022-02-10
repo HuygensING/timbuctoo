@@ -21,9 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
 public class PaginationHelperTest {
-
   private static final Base64.Decoder DECODER = Base64.getDecoder();
-
 
   public static final Function<CursorQuad, SubjectReference> MAKE_ITEM = c -> new SubjectReference() {
     @Override
@@ -50,6 +48,7 @@ public class PaginationHelperTest {
       "",
       null,
       null,
+      null,
       cursor
     );
   }
@@ -64,7 +63,7 @@ public class PaginationHelperTest {
         getObject("c4", "http://example.org/4")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, "", Optional.empty(), Optional.empty()),
+      PaginationArguments.create(Optional.empty(), 2, "", Optional.empty(), Optional.empty()),
       Optional.empty()
     );
 
@@ -84,7 +83,7 @@ public class PaginationHelperTest {
         getObject("c5", "http://example.org/4")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, "A\nc2", Optional.empty(), Optional.empty()),
+      PaginationArguments.create(Optional.empty(), 2, "A\nc2", Optional.empty(), Optional.empty()),
       Optional.empty()
     );
 
@@ -105,7 +104,7 @@ public class PaginationHelperTest {
         getObject("c1", "http://example.org/1")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, "LAST", Optional.empty(), Optional.empty()),
+      PaginationArguments.create(Optional.empty(), 2, "LAST", Optional.empty(), Optional.empty()),
       Optional.empty()
     );
 
@@ -126,7 +125,7 @@ public class PaginationHelperTest {
         getObject("c1", "http://example.org/1")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, "D\nc3", Optional.empty(), Optional.empty()),
+      PaginationArguments.create(Optional.empty(), 2, "D\nc3", Optional.empty(), Optional.empty()),
       Optional.empty()
     );
 
@@ -136,7 +135,6 @@ public class PaginationHelperTest {
     assertThat(paginatedList.getItems().get(0).getSubjectUri(), is("http://example.org/1"));
     assertThat(paginatedList.getItems().get(1).getSubjectUri(), is("http://example.org/2"));
   }
-
 
   private String decode(Optional<String> encoded) {
     return encoded.map(s -> new String(DECODER.decode(s.getBytes()))).orElse(null);

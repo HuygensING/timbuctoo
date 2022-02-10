@@ -16,10 +16,10 @@ public class IterationStateTest {
   public void prefersAssertionOverUnchanged() throws Exception {
     final IterationState iterationState = new IterationState(
       newArrayList(
-        CursorQuad.create("subj", "pred", Direction.OUT, ASSERTED, "obj", null, null, "")
+        CursorQuad.create("subj", "pred", Direction.OUT, ASSERTED, "obj", null, null, null, "")
       ).stream(),
       newArrayList(
-        CursorQuad.create("subj", "pred", Direction.OUT, UNCHANGED, "obj", null, null, "")
+        CursorQuad.create("subj", "pred", Direction.OUT, UNCHANGED, "obj", null, null, null, "")
       ).stream(),
       true
     );
@@ -31,10 +31,10 @@ public class IterationStateTest {
   public void ignoresAssertionsIfUnchanged() throws Exception {
     final IterationState iterationState = new IterationState(
       newArrayList(
-        CursorQuad.create("subj", "pred", Direction.OUT, ASSERTED, "obj", null, null, "")
+        CursorQuad.create("subj", "pred", Direction.OUT, ASSERTED, "obj", null, null, null, "")
       ).stream(),
       newArrayList(
-        CursorQuad.create("subj", "pred", Direction.OUT, UNCHANGED, "obj", null, null, "")
+        CursorQuad.create("subj", "pred", Direction.OUT, UNCHANGED, "obj", null, null, null, "")
       ).stream(),
       false
     );
@@ -42,22 +42,20 @@ public class IterationStateTest {
     assertThat(iterationState.hasNext(), is(false));
   }
 
-
   @Test
   public void ignoresAssertionsIfUnchangedInTheMiddle() throws Exception {
     final IterationState iterationState = new IterationState(
       newArrayList(
-        CursorQuad.create("subj", "pred1", Direction.OUT, ASSERTED, "obj", null, null, "")
+        CursorQuad.create("subj", "pred1", Direction.OUT, ASSERTED, "obj", null, null, null, "")
       ).stream(),
       newArrayList(
-        CursorQuad.create("subj", "pred0", Direction.OUT, UNCHANGED, "obj", null, null, ""),
-        CursorQuad.create("subj", "pred1", Direction.OUT, UNCHANGED, "obj", null, null, ""),
-        CursorQuad.create("subj", "pred2", Direction.OUT, UNCHANGED, "obj", null, null, "")
+        CursorQuad.create("subj", "pred0", Direction.OUT, UNCHANGED, "obj", null, null, null, ""),
+        CursorQuad.create("subj", "pred1", Direction.OUT, UNCHANGED, "obj", null, null, null, ""),
+        CursorQuad.create("subj", "pred2", Direction.OUT, UNCHANGED, "obj", null, null, null, "")
       ).stream(),
       false
     );
 
     assertThat(newArrayList(iterationState).size(), is(2));
   }
-
 }

@@ -48,7 +48,6 @@ public class ResourceSyncImportTest {
     given(importManager.isRdfTypeSupported(any(MediaType.class))).willReturn(true);
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     given(dataSetMetaData.getBaseUri()).willReturn(BASE_URL);
-    given(dataSetMetaData.getGraph()).willReturn(GRAPH);
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
     given(dataSet.getImportManager()).willReturn(importManager);
     instance = new ResourceSyncImport(resourceSyncFileLoader, true);

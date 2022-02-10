@@ -171,7 +171,7 @@ public class DerivedSchemaContainer {
   private void addRootType(StringBuilder total) {
     total.append("type ").append(rootType).append("{\n");
     total.append("  metadata: DataSetMetadata!\n");
-    total.append("  subject(uri: String!): Entity @lookupUri\n");
+    total.append("  subject(uri: String!, graph: String): Entity @lookupUri\n");
 
     for (DerivedObjectTypeSchemaGenerator schemaGenerator : topLevelTypes.values()) {
       schemaGenerator.addQueryToSchema(total);

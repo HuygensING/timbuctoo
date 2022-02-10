@@ -53,7 +53,7 @@ public class SummaryPropsMutation extends Mutation {
       );
 
       MutationHelpers.addMutation(dataSet, mutation);
-      return new LazyTypeSubjectReference(collectionUri, dataSet);
+      return new LazyTypeSubjectReference(collectionUri, Optional.empty(), dataSet);
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }
@@ -81,16 +81,12 @@ public class SummaryPropsMutation extends Mutation {
           throw new RuntimeException(valueName + " contains predicates unknown in the data set: " + unknownPredicates);
         }
 
-
         return of(valueAsString);
       } catch (JsonProcessingException e) {
         throw new RuntimeException(String.format("Could not process '%s' property", valueName));
-      } catch (IOException e) {
-        throw new RuntimeException(String.format("Could not parse summary prop '%s' for '%s'", value, valueName));
       }
     }
 
     return empty();
   }
-
 }

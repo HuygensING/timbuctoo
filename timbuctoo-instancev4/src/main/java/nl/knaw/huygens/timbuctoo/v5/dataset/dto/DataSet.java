@@ -18,10 +18,11 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSav
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbRmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbQuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.OldSubjectTypesStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.GraphStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -85,7 +86,7 @@ public abstract class DataSet {
       StringStringIsCleanHandler stringStringIsCleanHandler = new StringStringIsCleanHandler();
       StringIntegerIsCleanHandler stringIntIsCleanHandler = new StringIntegerIsCleanHandler();
 
-      final BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
+      final BdbQuadStore quadStore = new BdbQuadStore(dataStoreFactory.getDatabase(
         userId,
         dataSetId,
         "rdfData",
@@ -186,6 +187,17 @@ public abstract class DataSet {
         ),
         importManager.getImportStatus()
       );
+      final GraphStore graphStore = new GraphStore(
+          dataStoreFactory.getDatabase(
+              userId,
+              dataSetId,
+              "graphStore",
+              true,
+              stringBinding,
+              stringBinding,
+              stringStringIsCleanHandler
+          )
+      );
 
       final StoreUpdater storeUpdater = new StoreUpdater(
         quadStore,
@@ -194,6 +206,7 @@ public abstract class DataSet {
         updatedPerPatchStore,
         oldSubjectTypesStore,
         Lists.newArrayList(schema, rmlDataSourceStore),
+        graphStore,
         importManager.getImportStatus()
       );
       importManager.subscribeToRdf(storeUpdater);
@@ -213,6 +226,7 @@ public abstract class DataSet {
         .updatedPerPatchStore(updatedPerPatchStore)
         .truePatchStore(truePatchStore)
         .oldSubjectTypesStore(oldSubjectTypesStore)
+        .graphStore(graphStore)
         .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
         .schemaStore(schema)
         .importManager(importManager)
@@ -224,7 +238,8 @@ public abstract class DataSet {
       importManager.init(dataSet);
 
       if (!quadStore.isClean() || !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
-        !updatedPerPatchStore.isClean() || !oldSubjectTypesStore.isClean() || !rmlDataSourceStore.isClean()) {
+        !updatedPerPatchStore.isClean() || !oldSubjectTypesStore.isClean() ||
+        !rmlDataSourceStore.isClean() || !graphStore.isClean()) {
         LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
         quadStore.empty();
         typeNameStore.empty();
@@ -233,6 +248,7 @@ public abstract class DataSet {
         updatedPerPatchStore.empty();
         oldSubjectTypesStore.empty();
         rmlDataSourceStore.empty();
+        graphStore.empty();
 
         importManager.reprocessLogs();
       } else {
@@ -303,6 +319,8 @@ public abstract class DataSet {
   public abstract TypeNameStore getTypeNameStore();
 
   public abstract OldSubjectTypesStore getOldSubjectTypesStore();
+
+  public abstract GraphStore getGraphStore();
 
   public abstract ImportManager getImportManager();
 

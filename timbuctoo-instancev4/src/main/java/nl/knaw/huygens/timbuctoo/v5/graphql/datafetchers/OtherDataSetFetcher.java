@@ -10,11 +10,13 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectGraphReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -31,9 +33,9 @@ public class OtherDataSetFetcher implements DataFetcher<List<Map>> {
 
   @Override
   public List<Map> get(DataFetchingEnvironment env) {
-    if (env.getSource() instanceof SubjectReference) {
+    if (env.getSource() instanceof SubjectGraphReference) {
       final Set<String> dataSetIds = new HashSet<>();
-      SubjectReference source = env.getSource();
+      SubjectGraphReference source = env.getSource();
       ContextData contextData = env.getContext();
       Stream<DataSet> dataSets = contextData.getUser()
         .map(user -> repo.getDataSetsWithReadAccess(user).stream())
@@ -47,14 +49,14 @@ public class OtherDataSetFetcher implements DataFetcher<List<Map>> {
       return dataSets
         .filter(d -> !ownId.equals(d.getMetadata().getCombinedId()))
         .map(d -> {
-          try (Stream<CursorQuad> quads = d.getQuadStore().getQuads(source.getSubjectUri())) {
+          try (Stream<CursorQuad> quads = d.getQuadStore().getQuadsInGraph(source.getSubjectUri(), source.getGraph())) {
             return tuple(d, quads.findAny());
           }
         })
         .filter(i -> i.getRight().isPresent())
         .map(i -> ImmutableMap.of(
           "metadata", new DataSetWithDatabase(i.getLeft(), env.<ContextData>getContext().getUserPermissionCheck()),
-          "entity", new LazyTypeSubjectReference(i.getRight().get().getSubject(), i.getLeft())
+          "entity", new LazyTypeSubjectReference(i.getRight().get().getSubject(), source.getGraph(), i.getLeft())
         ))
         .collect(toList());
 

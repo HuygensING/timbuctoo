@@ -3,6 +3,7 @@ directive @fromCollection(uri:String! listAll:Boolean indexName: String) on FIEL
 directive @lookupUri on FIELD_DEFINITION
 directive @rdf(predicate:String! direction:String! isList: Boolean!, isObject: Boolean!, isValue: Boolean!) on FIELD_DEFINITION
 directive @uri on FIELD_DEFINITION
+directive @graphs on FIELD_DEFINITION
 directive @passThrough on FIELD_DEFINITION
 directive @related(source:String! predicate:String! direction:String!) on FIELD_DEFINITION
 directive @dataSet(userId:String! dataSetId:String!) on FIELD_DEFINITION
@@ -34,6 +35,7 @@ interface Value {
 
 interface Entity {
   uri: String!
+  graphs: [String]!
   title: Value
   description: Value
   image: Value
@@ -123,13 +125,19 @@ type DataSetMetadata {
   #archetypes: Archetypes! @passThrough (added by the RootQuery based on the config)
   collection(collectionId: ID!): CollectionMetadata
   collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
+  graphs(count: Int = 20, cursor: ID = ""): GraphList!
   #status of imports
   dataSetImportStatus: [ImportStatus!]!
   importStatus(id: String!): ImportStatus!
   lastUpdated: String!
   # the permissions of the current user
   userPermissions: [String!]
+}
 
+type GraphList {
+    prevCursor: ID
+    nextCursor: ID
+    items: [String!]!
 }
 
 type ResourceSyncReport {
@@ -497,6 +505,7 @@ type Mutation {
 }
 
 type RemovedEntity {
+  graph: String!
   uri: String!
 }
 

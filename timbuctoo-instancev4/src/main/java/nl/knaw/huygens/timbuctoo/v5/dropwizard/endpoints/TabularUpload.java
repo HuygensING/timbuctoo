@@ -111,8 +111,7 @@ public class TabularUpload {
             mediaType
           );
           Future<ImportStatus> promise = importManager.generateLog(
-            dataSet.getMetadata().getBaseUri(),
-            dataSet.getMetadata().getGraph(),
+            dataSet.getMetadata().getBaseUri(), null,
             new TabularRdfCreator(
               loader.get(),
               fileToken,

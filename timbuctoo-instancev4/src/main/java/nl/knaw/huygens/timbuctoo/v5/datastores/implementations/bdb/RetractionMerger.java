@@ -16,14 +16,14 @@ class RetractionMerger implements Iterator<CursorQuad> {
 
   private final PeekingIterator<CursorQuad> state;
   private final PeekingIterator<CursorQuad> retractions;
-  private final BdbTripleStore tripleStore;
+  private final BdbQuadStore quadStore;
   private final int version;
 
-  public RetractionMerger(Stream<CursorQuad> state, Stream<CursorQuad> retractions, BdbTripleStore tripleStore,
+  public RetractionMerger(Stream<CursorQuad> state, Stream<CursorQuad> retractions, BdbQuadStore quadStore,
                           int version) {
     this.state = Iterators.peekingIterator(state.iterator());
     this.retractions = Iterators.peekingIterator(retractions.iterator());
-    this.tripleStore = tripleStore;
+    this.quadStore = quadStore;
     this.version = version;
   }
 
@@ -61,7 +61,7 @@ class RetractionMerger implements Iterator<CursorQuad> {
     if (state.hasNext() && retractions.hasNext()) {
       CursorQuad leftQ = state.peek();
       CursorQuad rightQ = retractions.peek();
-      int compareResult = tripleStore.compare(leftQ, rightQ);
+      int compareResult = quadStore.compare(leftQ, rightQ);
       if (compareResult == 0) {
         //Huh? we have a retraction, but the thing is also part of the state?
         LOG.error("in {} {} was retracted, but it is still part of the store as {}", version, rightQ, leftQ);
