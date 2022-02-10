@@ -2515,7 +2515,7 @@ public class IntegrationTest {
           "query {\n" +
             "  dataSets {\n" +
             "    " + dataSetId + "{\n" +
-            "      tim_unknown(uri: \"http://example.org/person1\") {\n" +
+            "      rdfs_Resource(uri: \"http://example.org/person1\") {\n" +
             "        tim_pred_latestRevision {\n" +
             "          _inverse_prov_generated {\n" +
             "            prov_associatedWith {\n" +
@@ -2556,7 +2556,7 @@ public class IntegrationTest {
       .get("data")
       .get("dataSets")
       .get(dataSetId)
-      .get("tim_unknown")
+      .get("rdfs_Resource")
       .get("tim_pred_latestRevision")
       .get("_inverse_prov_generated")
       .get("prov_qualifiedAssociation")

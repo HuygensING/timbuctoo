@@ -27,6 +27,7 @@ public class StoreUpdater implements RdfProcessor {
   private static final Logger LOG = getLogger(StoreUpdater.class);
 
   private final BdbQuadStore quadStore;
+  private final GraphStore graphStore;
   private final BdbTypeNameStore typeNameStore;
   private final BdbTruePatchStore truePatchStore;
   private final UpdatedPerPatchStore updatedPerPatchStore;
@@ -35,7 +36,6 @@ public class StoreUpdater implements RdfProcessor {
   private final List<OptimizedPatchListener> listeners;
   private final ImportStatus importStatus;
 
-  private final GraphStore graphStore;
   private int version = -1;
   private Stopwatch stopwatch;
   private long count;
@@ -43,17 +43,18 @@ public class StoreUpdater implements RdfProcessor {
   private long prevTime;
   private String logString;
 
-  public StoreUpdater(BdbQuadStore quadStore, BdbTypeNameStore typeNameStore, BdbTruePatchStore truePatchStore,
+  public StoreUpdater(BdbQuadStore quadStore, GraphStore graphStore,
+                      BdbTypeNameStore typeNameStore, BdbTruePatchStore truePatchStore,
                       UpdatedPerPatchStore updatedPerPatchStore, List<OptimizedPatchListener> listeners,
-                      VersionStore versionStore, GraphStore graphStore, ImportStatus importStatus) {
+                      VersionStore versionStore, ImportStatus importStatus) {
     this.quadStore = quadStore;
+    this.graphStore = graphStore;
     this.typeNameStore = typeNameStore;
     this.truePatchStore = truePatchStore;
     this.updatedPerPatchStore = updatedPerPatchStore;
     this.oldSubjectTypesStore = oldSubjectTypesStore;
     this.listeners = listeners;
     this.importStatus = importStatus;
-    this.graphStore = graphStore;
   }
 
   private void updateListeners() throws RdfProcessingFailedException {
@@ -203,16 +204,14 @@ public class StoreUpdater implements RdfProcessor {
     importStatus.addProgressItem(VersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     quadStore.start();
     importStatus.addProgressItem(BdbQuadStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
-    tripleStore.start();
-    importStatus.addProgressItem(BdbTripleStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    graphStore.start();
+    importStatus.addProgressItem(GraphStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     truePatchStore.start();
     importStatus.addProgressItem(BdbTruePatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     typeNameStore.start();
     importStatus.addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     updatedPerPatchStore.start();
     importStatus.addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
-    graphStore.start();
-    importStatus.addProgressItem(GraphStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     oldSubjectTypesStore.start();
     importStatus.addProgressItem(OldSubjectTypesStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
 
@@ -239,10 +238,10 @@ public class StoreUpdater implements RdfProcessor {
 
   private void updateStoreProgress() {
     importStatus.updateProgressItem(BdbQuadStore.class.getSimpleName(), count);
+    importStatus.updateProgressItem(GraphStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(BdbTruePatchStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(BdbTypeNameStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(UpdatedPerPatchStore.class.getSimpleName(), count);
-    importStatus.updateProgressItem(GraphStore.class.getSimpleName(), count);
     importStatus.updateProgressItem(OldSubjectTypesStore.class.getSimpleName(), count);
   }
 
@@ -279,12 +278,12 @@ public class StoreUpdater implements RdfProcessor {
     importStatus.finishProgressItem(BdbTypeNameStore.class.getSimpleName());
     quadStore.commit();
     importStatus.finishProgressItem(BdbQuadStore.class.getSimpleName());
+    graphStore.commit();
+    importStatus.finishProgressItem(GraphStore.class.getSimpleName());
     truePatchStore.commit();
     importStatus.finishProgressItem(BdbTruePatchStore.class.getSimpleName());
     updatedPerPatchStore.commit();
     importStatus.finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
-    graphStore.commit();
-    importStatus.finishProgressItem(GraphStore.class.getSimpleName());
     oldSubjectTypesStore.commit();
     importStatus.finishProgressItem(OldSubjectTypesStore.class.getSimpleName());
   }

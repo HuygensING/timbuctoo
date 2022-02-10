@@ -91,19 +91,19 @@ public class StoreUpdaterTest {
   private StoreUpdater createInstance(ImportStatus importStatus, List<OptimizedPatchListener> listeners) {
     BdbTypeNameStore bdbTypeNameStore = mock(BdbTypeNameStore.class);
     BdbQuadStore bdbQuadStore = mock(BdbQuadStore.class);
+    GraphStore graphStore = mock(GraphStore.class);
     BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
-    GraphStore graphStore = mock(GraphStore.class);
     OldSubjectTypesStore oldSubjectTypesStore = mock(OldSubjectTypesStore.class);
 
     return new StoreUpdater(
       bdbQuadStore,
+      graphStore,
       bdbTypeNameStore,
       bdbTruePatchStore,
       updatedPerPatchStore,
       oldSubjectTypesStore,
       listeners,
-      graphStore,
       importStatus
     );
   }

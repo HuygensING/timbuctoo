@@ -51,8 +51,35 @@ public class BdbSchemaStoreTest {
     schemaStore.finish();
 
     assertThat(dataStore.getResult(), is("{\n" +
-      "  \"http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#unknown\" : {\n" +
-      "    \"name\" : \"http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#unknown\",\n" +
+      "  \"type\" : {\n" +
+      "    \"name\" : \"type\",\n" +
+      "    \"predicates\" : [ {\n" +
+      "      \"name\" : \"http://www.w3.org/1999/02/22-rdf-syntax-ns#type\",\n" +
+      "      \"direction\" : \"OUT\",\n" +
+      "      \"valueTypes\" : { },\n" +
+      "      \"referenceTypes\" : {\n" +
+      "        \"http://www.w3.org/2000/01/rdf-schema#Resource\" : 1\n" +
+      "      },\n" +
+      "      \"subjectsWithThisPredicate\" : 1,\n" +
+      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
+      "      \"hasBeenList\" : false,\n" +
+      "      \"hasBeenSingular\" : true\n" +
+      "    }, {\n" +
+      "      \"name\" : \"pred\",\n" +
+      "      \"direction\" : \"OUT\",\n" +
+      "      \"valueTypes\" : { },\n" +
+      "      \"referenceTypes\" : {\n" +
+      "        \"http://www.w3.org/2000/01/rdf-schema#Resource\" : 1\n" +
+      "      },\n" +
+      "      \"subjectsWithThisPredicate\" : 1,\n" +
+      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
+      "      \"hasBeenList\" : false,\n" +
+      "      \"hasBeenSingular\" : true\n" +
+      "    } ],\n" +
+      "    \"subjectsWithThisType\" : 1\n" +
+      "  },\n" +
+      "  \"http://www.w3.org/2000/01/rdf-schema#Resource\" : {\n" +
+      "    \"name\" : \"http://www.w3.org/2000/01/rdf-schema#Resource\",\n" +
       "    \"predicates\" : [ {\n" +
       "      \"name\" : \"pred\",\n" +
       "      \"direction\" : \"IN\",\n" +
@@ -72,33 +99,6 @@ public class BdbSchemaStoreTest {
       "        \"type\" : 1\n" +
       "      },\n" +
       "      \"subjectsWithThisPredicate\" : 0,\n" +
-      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"hasBeenList\" : false,\n" +
-      "      \"hasBeenSingular\" : false\n" +
-      "    } ],\n" +
-      "    \"subjectsWithThisType\" : 1\n" +
-      "  },\n" +
-      "  \"type\" : {\n" +
-      "    \"name\" : \"type\",\n" +
-      "    \"predicates\" : [ {\n" +
-      "      \"name\" : \"http://www.w3.org/1999/02/22-rdf-syntax-ns#type\",\n" +
-      "      \"direction\" : \"OUT\",\n" +
-      "      \"valueTypes\" : { },\n" +
-      "      \"referenceTypes\" : {\n" +
-      "        \"http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#unknown\" : 1\n" +
-      "      },\n" +
-      "      \"subjectsWithThisPredicate\" : 1,\n" +
-      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"hasBeenList\" : false,\n" +
-      "      \"hasBeenSingular\" : true\n" +
-      "    }, {\n" +
-      "      \"name\" : \"pred\",\n" +
-      "      \"direction\" : \"OUT\",\n" +
-      "      \"valueTypes\" : { },\n" +
-      "      \"referenceTypes\" : {\n" +
-      "        \"http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#unknown\" : 1\n" +
-      "      },\n" +
-      "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"hasBeenList\" : false,\n" +
       "      \"hasBeenSingular\" : true\n" +
@@ -151,7 +151,7 @@ public class BdbSchemaStoreTest {
     )));
 
     assertThat(schema, hasEntry(
-      is("http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#unknown"),
+      is("http://www.w3.org/2000/01/rdf-schema#Resource"),
       hasProperty("predicates", not(hasItem(predicate().withName("pred2"))))
     ));
   }

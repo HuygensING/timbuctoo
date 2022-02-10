@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_RESOURCE;
 
 public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   private static final Logger LOG = LoggerFactory.getLogger(BdbSchemaStore.class);
@@ -112,7 +112,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
           try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
             boolean subjectIsNew = !predicates.findAny().isPresent();
             if (!subjectIsNew) {
-              final Type unknown = types.computeIfAbsent(UNKNOWN, TYPE_MAKER);
+              final Type unknown = types.computeIfAbsent(RDFS_RESOURCE, TYPE_MAKER);
               removedTypes.add(unknown);
               unknown.registerSubject(-1);
             }
@@ -128,16 +128,16 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
           boolean subjectIsNew = !predicates.findAny().isPresent();
           if (subjectIsNew) {
-            final Type unknown = types.computeIfAbsent(UNKNOWN, TYPE_MAKER);
+            final Type unknown = types.computeIfAbsent(RDFS_RESOURCE, TYPE_MAKER);
             addedTypes.add(unknown);
             unknown.registerSubject(1);
           } else {
-            unchangedTypes.add(types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
+            unchangedTypes.add(types.computeIfAbsent(RDFS_RESOURCE, TYPE_MAKER));
           }
         }
       } else {
         //subject has become unknown
-        final Type unknown = types.computeIfAbsent(UNKNOWN, TYPE_MAKER);
+        final Type unknown = types.computeIfAbsent(RDFS_RESOURCE, TYPE_MAKER);
         addedTypes.add(unknown);
         unknown.registerSubject(1);
       }
@@ -292,7 +292,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
           predicateOpt.ifPresent(predicate -> predicate.incReferenceType(typeQ.getObject(), add ? 1 : -1));
         });
         if (!hadType[0]) {
-          predicateOpt.ifPresent( predicate -> predicate.incReferenceType(UNKNOWN, add ? 1 : -1));
+          predicateOpt.ifPresent( predicate -> predicate.incReferenceType(RDFS_RESOURCE, add ? 1 : -1));
         }
       }
     }

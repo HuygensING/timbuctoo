@@ -96,13 +96,14 @@ public class PaginationArgumentsHelper {
     return outputTypeName + "_CollectionList";
   }
 
-  public String makeCollectionListField(String fieldName, String outputTypeName) {
+  public String makeCollectionListField(String fieldName, String outputTypeName, boolean graphFilterAllowed) {
+    String withGraphs = graphFilterAllowed ? "graph: String, " : "";
     String customFilters = collectionFilters.keySet().stream()
                                             .map(k -> k + ": String").collect(Collectors.joining(", "));
     if (!customFilters.isEmpty()) {
       customFilters = ", " + customFilters;
     }
-    return fieldName + "(graph: String, cursor: ID, count: Int" + customFilters + ", updatedSince: String): " +
+    return fieldName + "(" + withGraphs + "cursor: ID, count: Int" + customFilters + ", updatedSince: String): " +
         makeCollectionListName(outputTypeName);
   }
 

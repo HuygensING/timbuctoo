@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStor
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbQuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.DefaultResourcesStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.OldSubjectTypesStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.GraphStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.StoreUpdater;
@@ -50,7 +51,6 @@ import java.util.stream.Stream;
 @Value.Immutable
 public abstract class DataSet {
   private static final Logger LOG = LoggerFactory.getLogger(DataSet.class);
-
 
   public static DataSet dataSet(DataSetMetaData metadata, ExecutorService executorService,
                                 String rdfPrefix, BdbEnvironmentCreator dataStoreFactory,
@@ -95,6 +95,29 @@ public abstract class DataSet {
         stringBinding,
         stringStringIsCleanHandler
       ));
+
+      final GraphStore graphStore = new GraphStore(dataStoreFactory.getDatabase(
+          userId,
+          dataSetId,
+          "graphStore",
+          true,
+          stringBinding,
+          stringBinding,
+          stringStringIsCleanHandler
+      ));
+
+      final DefaultResourcesStore defaultResourcesStore = new DefaultResourcesStore(
+          dataStoreFactory.getDatabase(
+              userId,
+              dataSetId,
+              "defaultResourcesStore",
+              true,
+              stringBinding,
+              stringBinding,
+              stringStringIsCleanHandler
+          ),
+          importManager.getImportStatus()
+      );
 
       final BdbTypeNameStore typeNameStore = new BdbTypeNameStore(
         new BdbBackedData(dataStoreFactory.getDatabase(
@@ -187,6 +210,7 @@ public abstract class DataSet {
         ),
         importManager.getImportStatus()
       );
+
       final GraphStore graphStore = new GraphStore(
           dataStoreFactory.getDatabase(
               userId,
@@ -201,12 +225,12 @@ public abstract class DataSet {
 
       final StoreUpdater storeUpdater = new StoreUpdater(
         quadStore,
+        graphStore,
         typeNameStore,
         truePatchStore,
         updatedPerPatchStore,
         oldSubjectTypesStore,
-        Lists.newArrayList(schema, rmlDataSourceStore),
-        graphStore,
+        Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
         importManager.getImportStatus()
       );
       importManager.subscribeToRdf(storeUpdater);
@@ -221,14 +245,14 @@ public abstract class DataSet {
         .bdbEnvironmentCreator(dataStoreFactory)
         .metadata(metadata)
         .quadStore(quadStore)
+        .graphStore(graphStore)
+        .defaultResourcesStore(defaultResourcesStore)
         .typeNameStore(typeNameStore)
         .schemaStore(schema)
         .updatedPerPatchStore(updatedPerPatchStore)
         .truePatchStore(truePatchStore)
         .oldSubjectTypesStore(oldSubjectTypesStore)
-        .graphStore(graphStore)
         .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
-        .schemaStore(schema)
         .importManager(importManager)
         .dataSetStorage(dataSetStorage)
         .changesRetriever(changesRetriever)
@@ -237,11 +261,13 @@ public abstract class DataSet {
         .build();
       importManager.init(dataSet);
 
-      if (!quadStore.isClean() || !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
-        !updatedPerPatchStore.isClean() || !oldSubjectTypesStore.isClean() ||
-        !rmlDataSourceStore.isClean() || !graphStore.isClean()) {
+      if (!quadStore.isClean() || !graphStore.isClean() || !defaultResourcesStore.isClean() ||
+        !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
+        !updatedPerPatchStore.isClean() || !oldSubjectTypesStore.isClean() || !rmlDataSourceStore.isClean()) {
         LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
         quadStore.empty();
+        graphStore.empty();
+        defaultResourcesStore.empty();
         typeNameStore.empty();
         schema.empty();
         truePatchStore.empty();
@@ -320,13 +346,15 @@ public abstract class DataSet {
 
   public abstract OldSubjectTypesStore getOldSubjectTypesStore();
 
-  public abstract GraphStore getGraphStore();
+  public abstract DefaultResourcesStore getDefaultResourcesStore();
 
   public abstract ImportManager getImportManager();
 
   public abstract RdfDataSourceFactory getDataSource();
 
   public abstract QuadStore getQuadStore();
+
+  public abstract GraphStore getGraphStore();
 
   public abstract DataSetMetaData getMetadata();
 

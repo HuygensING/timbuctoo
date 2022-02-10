@@ -98,7 +98,7 @@ public class DataSetRepository {
       @Override
       public boolean isReadonlyType(String typeUri) {
         return RdfConstants.isProvenance(typeUri) ||
-            RdfConstants.UNKNOWN.equals(typeUri) ||
+            RdfConstants.RDFS_RESOURCE.equals(typeUri) ||
             RdfConstants.timType("Additions").equals(typeUri) ||
             RdfConstants.timType("Addition").equals(typeUri) ||
             RdfConstants.timType("Deletions").equals(typeUri) ||

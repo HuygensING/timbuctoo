@@ -31,7 +31,7 @@ import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.PredicateMatcher.predicate;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_RESOURCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasEntry;
@@ -132,9 +132,9 @@ public class SchemaGenerationPermutationTest {
     // ifTheReferencedSubjectHasNoTypeThePredicateWillBeAddedToTimUnknown
     testCases.addAll(createPermutationsOfTestCase(allOf(
       hasEntry(is(TYPE_2), hasProperty("predicates", allOf(
-        hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(UNKNOWN))
+        hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceType(RDFS_RESOURCE))
       ))),
-      hasEntry(is(UNKNOWN), hasProperty("predicates", allOf(
+      hasEntry(is(RDFS_RESOURCE), hasProperty("predicates", allOf(
         hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceType(TYPE_2))
       )))
       ),
@@ -174,7 +174,7 @@ public class SchemaGenerationPermutationTest {
       hasEntry(is(TYPE_2), hasProperty("predicates",
         hasItem(predicate().withName(PROP_I).withDirection(OUT).withIsList(true))
       )),
-      hasEntry(is(UNKNOWN), hasProperty("predicates",
+      hasEntry(is(RDFS_RESOURCE), hasProperty("predicates",
         hasItem(predicate().withName(PROP_I).withDirection(IN).withIsList(false))
       ))),
       CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
@@ -183,7 +183,7 @@ public class SchemaGenerationPermutationTest {
     ));
     // aDoubleAssertionOfATripleDoesNotIncreaseTheReferenceCounts
     testCases.addAll(createPermutationsOfTestCase(
-      allOf(hasEntry(is(UNKNOWN), hasProperty("predicates", allOf(
+      allOf(hasEntry(is(RDFS_RESOURCE), hasProperty("predicates", allOf(
         hasItem(predicate().withName(PROP_I).withDirection(IN).withReferenceTypeCount(1)),
         hasItem(predicate().withName(PROP_I).withDirection(OUT).withReferenceTypeCount(1))
       )))),
@@ -284,6 +284,31 @@ public class SchemaGenerationPermutationTest {
       STRING_IS_CLEAN_HANDLER
     ));
 
+    final GraphStore graphStore = new GraphStore(
+        dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "graphStore",
+            true,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        )
+    );
+
+    final DefaultResourcesStore defaultResourcesStore = new DefaultResourcesStore(
+        dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "defaultResourcesStore",
+            true,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        ),
+        mock(ImportStatus.class)
+    );
+
     final BdbTypeNameStore typeNameStore = new BdbTypeNameStore(
       new BdbBackedData(dataStoreFactory.getDatabase(
         USER,
@@ -343,26 +368,15 @@ public class SchemaGenerationPermutationTest {
         STRING_BINDING,
         STRING_IS_CLEAN_HANDLER
     ));
-    final GraphStore graphStore = new GraphStore(
-        dataStoreFactory.getDatabase(
-            USER,
-            DATA_SET,
-            "graphStore",
-            true,
-            STRING_BINDING,
-            STRING_BINDING,
-            STRING_IS_CLEAN_HANDLER
-        )
-    );
 
     return new StoreUpdater(
       quadStore,
+      graphStore,
       typeNameStore,
       truePatchStore,
       updatedPerPatchStore,
+      Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
       oldSubjectTypesStore,
-      Lists.newArrayList(schema, rmlDataSourceStore),
-      graphStore,
       mock(ImportStatus.class)
     );
   }

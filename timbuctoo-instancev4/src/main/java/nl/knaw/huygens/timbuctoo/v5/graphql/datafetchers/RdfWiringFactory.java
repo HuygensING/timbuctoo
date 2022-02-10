@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.valueOf;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_RESOURCE;
 
 public class RdfWiringFactory implements WiringFactory {
   private final UriFetcher uriFetcher;
@@ -271,7 +271,7 @@ public class RdfWiringFactory implements WiringFactory {
         Set<String> typeUris = subjectReference.getTypes();
         final TypeNameStore typeNameStore = subjectReference.getDataSet().getTypeNameStore();
         if (typeUris.isEmpty()) {
-          typeName = prefix + "_" + typeNameStore.makeGraphQlname(UNKNOWN);
+          typeName = prefix + "_" + typeNameStore.makeGraphQlname(RDFS_RESOURCE);
         } else {
           typeName = null;
           for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
@@ -298,7 +298,7 @@ public class RdfWiringFactory implements WiringFactory {
           if (typeName == null) {
             //there's no overlap. Just pick one (object will be excluded from the result)
             typeName = prefix + "_" + typeNameStore.makeGraphQlname(
-              typeUris.isEmpty() ? UNKNOWN : typeUris.iterator().next()
+              typeUris.isEmpty() ? RDFS_RESOURCE : typeUris.iterator().next()
             );
           }
         }

@@ -77,7 +77,7 @@ public class DerivedSchemaContainer {
 
       types.put(listTypeName, derivedCollectionTypeSchemaGenerator);
     }
-    return argumentsHelper.makeCollectionListField(fieldName + "List", typeName);
+    return argumentsHelper.makeCollectionListField(fieldName + "List", typeName, !fieldName.equals("rdfs_Resource"));
   }
 
 

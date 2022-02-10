@@ -78,8 +78,8 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
           if (firstType.isPresent()) {
             type = firstType.get();
           } else {
-            LOG.error("No type present on " + uri + ". Expected at least TIM_UNKNOWN");
-            type = RdfConstants.UNKNOWN;
+            LOG.error("No type present on " + uri + ". Expected at least RDFS_RESOURCE");
+            type = RdfConstants.RDFS_RESOURCE;
           }
         }
 

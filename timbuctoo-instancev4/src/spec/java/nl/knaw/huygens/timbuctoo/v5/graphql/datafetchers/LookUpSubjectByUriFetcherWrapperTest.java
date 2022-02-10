@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.DefaultResourcesStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.GraphStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.OldSubjectTypesStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
@@ -142,23 +143,28 @@ public class LookUpSubjectByUriFetcherWrapperTest {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
 
+            @Override
+            public DefaultResourcesStore getDefaultResourcesStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
         @Override
             public QuadStore getQuadStore() {
               throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
             }
 
             @Override
+        public GraphStore getGraphStore() {
+          throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+        }
+
+        @Override
         public ImportManager getImportManager() {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
 
         @Override
         public RdfDataSourceFactory getDataSource() {
-          throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-        }
-
-        @Override
-        public GraphStore getGraphStore() {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
 

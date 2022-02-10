@@ -8,12 +8,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.stream.Stream;
 
+import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.BACKWARDS;
+import static nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter.Iterate.FORWARDS;
+
 public class GraphStore {
   private static final Logger LOG = LoggerFactory.getLogger(GraphStore.class);
   private final BdbWrapper<String, String> bdbWrapper;
 
   public GraphStore(BdbWrapper<String, String> bdbWrapper)
-    throws DataStoreCreationException {
+      throws DataStoreCreationException {
     this.bdbWrapper = bdbWrapper;
   }
 
@@ -33,18 +36,20 @@ public class GraphStore {
     return bdbWrapper.databaseGetter().key(graph).dontSkip().forwards().getValues(bdbWrapper.valueRetriever());
   }
 
-  public Stream<String> getGraphs(String cursor) {
+  public Stream<CursorUri> getGraphs(String cursor) {
     if (cursor.isEmpty()) {
-      return bdbWrapper.databaseGetter().getAll().getKeys(bdbWrapper.keyRetriever()).distinct();
+      return bdbWrapper.databaseGetter().getAll().getKeys(bdbWrapper.keyRetriever())
+                       .distinct().map(graph -> CursorUri.create(graph, graph));
     }
 
     return bdbWrapper.databaseGetter()
-                     .skipToKey(cursor)
+                     .skipToKey(cursor.substring(2))
                      .skipToEnd()
                      .skipOne() //we start after the cursor
-                     .forwards()
+                     .direction(cursor.startsWith("A\n") ? FORWARDS : BACKWARDS)
                      .getKeys(bdbWrapper.keyRetriever())
-                     .distinct();
+                     .distinct()
+                     .map(graph -> CursorUri.create(graph, graph));
   }
 
   public void close() {
