@@ -118,17 +118,17 @@ public class BdbTruePatchStore {
   public CursorQuad makeCursorQuad(String subject, boolean assertions, String value) {
     String[] parts = value.split("\n", 6);
     Direction direction = parts[1].charAt(0) == '1' ? OUT : IN;
-    ChangeType changeType = assertions ? ChangeType.ASSERTED :  ChangeType.RETRACTED;
+    ChangeType changeType = assertions ? ChangeType.ASSERTED : ChangeType.RETRACTED;
     return CursorQuad.create(
-      subject,
-      parts[0],
-      direction,
-      changeType,
-      parts[5],
-      parts[2].isEmpty() ? null : parts[2],
-      parts[3].isEmpty() ? null : parts[3],
-      parts[4].isEmpty() ? null : parts[4],
-      ""
+        subject,
+        parts[0],
+        direction,
+        changeType,
+        parts[5],
+        parts[2].isEmpty() ? null : parts[2],
+        parts[3].isEmpty() ? null : parts[3],
+        parts[4].isEmpty() ? null : parts[4],
+        ""
     );
   }
 

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import org.immutables.value.Value;
@@ -11,6 +12,7 @@ import java.util.List;
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.createCombinedId;
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData.isValidId;
 
+@JsonIgnoreProperties("graph")
 public class BasicDataSetMetaData implements DataSetMetaData {
   private final String dataSetId;
   private final String ownerId;

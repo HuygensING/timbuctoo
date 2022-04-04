@@ -159,7 +159,6 @@ public abstract class DataSet {
                                                             .getKeys(updatedPerPatchStoreWrapper.keyRetriever())) {
         keys.findFirst();
       } catch (IllegalArgumentException e) {
-        updatedPerPatchStoreWrapper.close();
         dataStoreFactory.closeDatabase(userId, dataSetId, "updatedPerPatch");
         dataStoreFactory.renameDatabase(userId, dataSetId, "updatedPerPatch", "updatedPerPatchOld");
 
@@ -240,6 +239,7 @@ public abstract class DataSet {
         .updatedPerPatchStore(updatedPerPatchStore)
         .truePatchStore(truePatchStore)
         .oldSubjectTypesStore(oldSubjectTypesStore)
+        .rmlDataSourceStore(rmlDataSourceStore)
         .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
         .importManager(importManager)
         .dataSetStorage(dataSetStorage)
@@ -342,6 +342,8 @@ public abstract class DataSet {
   public abstract QuadStore getQuadStore();
 
   public abstract GraphStore getGraphStore();
+
+  public abstract BdbRmlDataSourceStore getRmlDataSourceStore();
 
   public abstract DataSetMetaData getMetadata();
 

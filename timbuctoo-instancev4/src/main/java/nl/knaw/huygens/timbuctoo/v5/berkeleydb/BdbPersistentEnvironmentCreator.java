@@ -177,6 +177,7 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
     final String databaseKey = databaseKey(environmentKey(ownerId, dataSetId), dataStore);
     if (databases.containsKey(databaseKey)) {
       databases.get(databaseKey).close();
+      databases.remove(databaseKey);
     }
   }
 
