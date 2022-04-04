@@ -375,8 +375,8 @@ public class SchemaGenerationPermutationTest {
       typeNameStore,
       truePatchStore,
       updatedPerPatchStore,
-      Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
       oldSubjectTypesStore,
+      Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
       mock(ImportStatus.class)
     );
   }

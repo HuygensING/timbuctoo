@@ -45,8 +45,8 @@ public class StoreUpdater implements RdfProcessor {
 
   public StoreUpdater(BdbQuadStore quadStore, GraphStore graphStore,
                       BdbTypeNameStore typeNameStore, BdbTruePatchStore truePatchStore,
-                      UpdatedPerPatchStore updatedPerPatchStore, List<OptimizedPatchListener> listeners,
-                      VersionStore versionStore, ImportStatus importStatus) {
+                      UpdatedPerPatchStore updatedPerPatchStore, OldSubjectTypesStore oldSubjectTypesStore,
+                      List<OptimizedPatchListener> listeners, ImportStatus importStatus) {
     this.quadStore = quadStore;
     this.graphStore = graphStore;
     this.typeNameStore = typeNameStore;
@@ -101,18 +101,15 @@ public class StoreUpdater implements RdfProcessor {
     try {
       final boolean wasChanged = quadStore.putQuad(subject, predicate, direction, object, valueType, language, graph);
       if (wasChanged) {
-        truePatchStore.put(subject, version, predicate, direction, true, object, valueType, language);
+        truePatchStore.put(subject, version, predicate, direction, true, object, valueType, language, graph);
         updatedPerPatchStore.put(version, subject);
+        graphStore.put(graph, subject);
+
         if (predicate.equals(RDF_TYPE)) {
           for (int v = 0; v < version; v++) {
             oldSubjectTypesStore.delete(subject, object, v);
           }
         }
-
-        truePatchStore.put(subject, currentversion, predicate, direction,
-            true, object, valueType, language, graph);
-        updatedPerPatchStore.put(currentversion, subject);
-        graphStore.put(graph, subject);
       }
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
@@ -125,14 +122,12 @@ public class StoreUpdater implements RdfProcessor {
       final boolean wasChanged =
           quadStore.deleteQuad(subject, predicate, direction, object, valueType, language, graph);
       if (wasChanged) {
-        truePatchStore.put(subject, version, predicate, direction, false, object, valueType, language);
+        truePatchStore.put(subject, version, predicate, direction, false, object, valueType, language, graph);
         updatedPerPatchStore.put(version, subject);
+
         if (predicate.equals(RDF_TYPE)) {
           oldSubjectTypesStore.put(subject, object, version);
         }
-        truePatchStore.put(subject, currentversion, predicate, direction,
-            false, object, valueType, language, graph);
-        updatedPerPatchStore.put(currentversion, subject);
 
         try (Stream<CursorQuad> quadStream = quadStore.getQuads(subject)) {
           if (quadStream.noneMatch(quad -> quad.getGraph().isPresent() && quad.getGraph().get().equals(graph))) {
@@ -200,8 +195,6 @@ public class StoreUpdater implements RdfProcessor {
   }
 
   private void startTransactions() {
-    versionStore.start();
-    importStatus.addProgressItem(VersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     quadStore.start();
     importStatus.addProgressItem(BdbQuadStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     graphStore.start();

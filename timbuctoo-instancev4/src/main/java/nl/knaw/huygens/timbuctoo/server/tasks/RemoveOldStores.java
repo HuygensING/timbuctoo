@@ -8,6 +8,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class RemoveOldStores extends Task {
@@ -21,7 +23,7 @@ public class RemoveOldStores extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     for (DataSet dataSet : dataSetRepository.getDataSets()) {
       output.println("Remove old stores from dataset: " + dataSet.getMetadata().getCombinedId());
       output.flush();

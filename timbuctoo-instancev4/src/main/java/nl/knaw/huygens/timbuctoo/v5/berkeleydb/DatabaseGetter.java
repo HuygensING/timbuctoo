@@ -183,7 +183,6 @@ public class DatabaseGetter<KeyT, ValueT> {
     private BiFunction<ValueT, ValueT, Boolean> valueCheck = null;
 
     private boolean startAtEnd = false;
-    private boolean isStartKey = false;
     private int skipCount = 0;
 
     public DatabaseGetterBuilderImpl(EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder, Database database,

@@ -84,13 +84,6 @@ public class PaginationHelper<S extends CursorValue, U> {
         total);
   }
 
-  static <U> PaginatedList<U> getPaginatedList(
-      Stream<CursorQuad> subjectStream, Function<CursorQuad, U> makeItem,
-      PaginationArguments arguments, Optional<Long> total) {
-    return new PaginationHelper<CursorQuad, U>(
-        subjectStream, makeItem, arguments.getCount(), total, arguments.getCursor()).getPaginatedList();
-  }
-
   static <U> PaginatedList<U> getUpdatedPaginatedList(
       Stream<SubjectCursor> subjectStream, Function<SubjectCursor, U> makeItem, PaginationArguments arguments) {
     return new PaginationHelper<SubjectCursor, U>(

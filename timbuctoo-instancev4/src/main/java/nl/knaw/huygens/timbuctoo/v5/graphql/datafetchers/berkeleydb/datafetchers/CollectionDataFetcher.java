@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyType
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
-import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -37,77 +36,37 @@ public class CollectionDataFetcher implements CollectionFetcher {
   public PaginatedList<SubjectReference> getList(PaginationArguments arguments, DataSet dataSet) {
     try {
       if (arguments.getFilter().isPresent()) {
-        return getFilteredPaginatedList(arguments.getFilter().get().query(), dataSet);
+        return getFilteredPaginatedList(arguments.getFilter().get().query(), arguments, dataSet);
       }
 
       if (arguments.getTimeSince().isPresent()) {
         return getUpdatedPaginatedList(arguments.getTimeSince().get(), arguments, dataSet);
       }
 
-      return getDefaultPaginatedList(arguments, dataSet);
+      Optional<Long> total = Optional.empty();
+      if (arguments.getGraph().isEmpty() &&
+          dataSet.getSchemaStore().getStableTypes() != null &&
+          dataSet.getSchemaStore().getStableTypes().get(collectionUri) != null) {
+        total = Optional.of(dataSet.getSchemaStore().getStableTypes().get(collectionUri).getSubjectsWithThisType());
+      }
+
+      if (collectionUri.equals(RDFS_RESOURCE)) {
+        return getRdfResourcePaginatedList(total, arguments, dataSet);
+      }
+
+      return getDefaultPaginatedList(total, arguments, dataSet);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  @Override
-  public PaginatedList<SubjectReference> getList(PaginationArguments arguments, DataSet dataSet) {
-    String cursor = arguments.getCursor();
-    Optional<Graph> graph = arguments.getGraph();
-
-    if (arguments.getFilter().isPresent()) {
-      try {
-        final FilterResult result = arguments.getFilter().get().query();
-        return PaginatedList.create(
-            result.getPrevToken(),
-            result.getNextToken(),
-            result.getUriList().stream()
-                  .map(x -> new LazyTypeSubjectReference(x, graph, dataSet)).collect(Collectors.toList()),
-            Optional.of((long) result.getTotal()),
-            result.getFacets()
-        );
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      Optional<Long> total = Optional.empty();
-      if (graph.isEmpty() &&
-          dataSet.getSchemaStore().getStableTypes() != null &&
-            dataSet.getSchemaStore().getStableTypes().get(collectionUri) != null) {
-        total = Optional.of(
-              dataSet.getSchemaStore().getStableTypes().get(collectionUri).getSubjectsWithThisType()
-        );
-      }
-
-      if (collectionUri.equals(RDFS_RESOURCE)) {
-        try (Stream<CursorUri> uriStream = dataSet.getDefaultResourcesStore().getDefaultResources(cursor)) {
-          return getPaginatedList(
-              uriStream,
-              cursorUri -> new LazyTypeSubjectReference(cursorUri.getUri(), arguments.getGraph(), dataSet),
-              arguments,
-              total
-          );
-        }
-      } else {
-        try (Stream<CursorQuad> subjectStream =
-                 dataSet.getQuadStore().getQuadsInGraph(collectionUri, RDF_TYPE, IN, cursor, arguments.getGraph())) {
-          return getPaginatedList(
-              subjectStream,
-              cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), arguments.getGraph(), dataSet),
-              arguments,
-              total
-          );
-        }
-      }
-    }
-  }
-
-  private PaginatedList<SubjectReference> getFilteredPaginatedList(FilterResult result, DataSet dataSet) {
+  private PaginatedList<SubjectReference> getFilteredPaginatedList(FilterResult result,
+                                                                   PaginationArguments arguments, DataSet dataSet) {
     return PaginatedList.create(
         result.getPrevToken(),
         result.getNextToken(),
         result.getUriList().stream()
-              .map(x -> new LazyTypeSubjectReference(x, dataSet))
+              .map(x -> new LazyTypeSubjectReference(x, arguments.getGraph(), dataSet))
               .collect(Collectors.toList()),
         Optional.of((long) result.getTotal()),
         result.getFacets()
@@ -124,26 +83,36 @@ public class CollectionDataFetcher implements CollectionFetcher {
     try (Stream<SubjectCursor> subjectStream =
              dataSet.getUpdatedPerPatchStore().fromVersion(version, arguments.getCursor())) {
       return PaginationHelper.getUpdatedPaginatedList(
-        subjectStream.filter(subjectCursor -> this.isSubjectInCollection(dataSet, subjectCursor.getSubject())),
-        subjectCursor -> new LazyTypeSubjectReference(subjectCursor.getSubject(), dataSet),
-        arguments);
+          subjectStream.filter(subjectCursor -> this.isSubjectInCollection(dataSet, subjectCursor.getSubject())),
+          subjectCursor -> new LazyTypeSubjectReference(subjectCursor.getSubject(), arguments.getGraph(), dataSet),
+          arguments);
     }
   }
 
-  private PaginatedList<SubjectReference> getDefaultPaginatedList(PaginationArguments arguments, DataSet dataSet) {
-    try (Stream<CursorQuad> subjectStream =
-             dataSet.getQuadStore().getQuads(collectionUri, RDF_TYPE, IN, arguments.getCursor())) {
-      Optional<Long> total = Optional.empty();
-      if (dataSet.getSchemaStore().getStableTypes() != null &&
-          dataSet.getSchemaStore().getStableTypes().get(collectionUri) != null) {
-        total = Optional.of(dataSet.getSchemaStore().getStableTypes().get(collectionUri).getSubjectsWithThisType());
-      }
 
+  private PaginatedList<SubjectReference> getRdfResourcePaginatedList(Optional<Long> total,
+                                                                      PaginationArguments arguments, DataSet dataSet) {
+    try (Stream<CursorUri> uriStream = dataSet.getDefaultResourcesStore().getDefaultResources(arguments.getCursor())) {
+      return getPaginatedList(
+          uriStream,
+          cursorUri -> new LazyTypeSubjectReference(cursorUri.getUri(), arguments.getGraph(), dataSet),
+          arguments,
+          total
+      );
+    }
+  }
+
+  private PaginatedList<SubjectReference> getDefaultPaginatedList(Optional<Long> total,
+                                                                  PaginationArguments arguments, DataSet dataSet) {
+    try (Stream<CursorQuad> subjectStream =
+             dataSet.getQuadStore()
+                    .getQuadsInGraph(collectionUri, RDF_TYPE, IN, arguments.getCursor(), arguments.getGraph())) {
       return PaginationHelper.getPaginatedList(
-        subjectStream,
-        cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), arguments.getGraph(), dataSet),
-        arguments,
-        total);
+          subjectStream,
+          cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), arguments.getGraph(), dataSet),
+          arguments,
+          total
+      );
     }
   }
 

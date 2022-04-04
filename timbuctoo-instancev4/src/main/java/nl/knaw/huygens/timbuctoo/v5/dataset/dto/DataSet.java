@@ -211,18 +211,6 @@ public abstract class DataSet {
         importManager.getImportStatus()
       );
 
-      final GraphStore graphStore = new GraphStore(
-          dataStoreFactory.getDatabase(
-              userId,
-              dataSetId,
-              "graphStore",
-              true,
-              stringBinding,
-              stringBinding,
-              stringStringIsCleanHandler
-          )
-      );
-
       final StoreUpdater storeUpdater = new StoreUpdater(
         quadStore,
         graphStore,
@@ -274,7 +262,6 @@ public abstract class DataSet {
         updatedPerPatchStore.empty();
         oldSubjectTypesStore.empty();
         rmlDataSourceStore.empty();
-        graphStore.empty();
 
         importManager.reprocessLogs();
       } else {

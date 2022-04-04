@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +26,7 @@ public class CreateOldSubjectTypesStoresTask extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     for (DataSet dataSet : dataSetRepository.getDataSets()) {
       output.println("Create for dataset: " + dataSet.getMetadata().getCombinedId());
       output.flush();

@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -39,7 +40,8 @@ public class DummyRedirectionService extends RedirectionService {
     URI uri = params.getUrlToRedirectTo();
     LOG.info(String.format("Retrieving persistent url for '%s'", uri));
     String persistentId = uri.toString();
-    URI persistentUrl = new URI("http://example.org/persistentid#" + URLEncoder.encode(persistentId));
+    URI persistentUrl = new URI("http://example.org/persistentid#" +
+        URLEncoder.encode(persistentId, StandardCharsets.UTF_8));
 
     transactionEnforcer.execute(timbuctooActions -> {
         try {
@@ -60,7 +62,8 @@ public class DummyRedirectionService extends RedirectionService {
     URI uri = params.getUrlToRedirectTo();
     LOG.info(String.format("Retrieving persistent url for '%s'", uri));
     String persistentId = uri.toString();
-    URI persistentUrl = new URI("http://example.org/persistentid#" + URLEncoder.encode(persistentId));
+    URI persistentUrl = new URI("http://example.org/persistentid#" +
+        URLEncoder.encode(persistentId, StandardCharsets.UTF_8));
 
     EntityLookup entityLookup = params.getEntityLookup();
 

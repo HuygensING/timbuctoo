@@ -13,6 +13,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class MigrateUpdatedPerPatchStoresTask extends Task {
@@ -26,7 +28,7 @@ public class MigrateUpdatedPerPatchStoresTask extends Task {
   }
 
   @Override
-  public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+  public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     for (DataSet dataSet : dataSetRepository.getDataSets()) {
       output.println("Migrate dataset: " + dataSet.getMetadata().getCombinedId());
       output.flush();
