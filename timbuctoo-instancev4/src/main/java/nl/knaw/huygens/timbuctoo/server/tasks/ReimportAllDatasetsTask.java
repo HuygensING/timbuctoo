@@ -42,8 +42,7 @@ public class ReimportAllDatasetsTask extends Task {
       output.flush();
 
       Future<ImportStatus> importStatusFuture = dataSet.getImportManager().reprocessLogs();
-      while (!importStatusFuture.isDone())
-        Thread.sleep(1000);
+      importStatusFuture.get();
 
       output.println("Finished reimport of dataset: " + dataSet.getMetadata().getCombinedId());
       output.flush();

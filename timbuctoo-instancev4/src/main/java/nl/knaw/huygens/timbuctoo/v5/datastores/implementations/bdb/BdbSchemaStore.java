@@ -38,17 +38,17 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   private static final Logger LOG = LoggerFactory.getLogger(BdbSchemaStore.class);
   private static final Function<String, Type> TYPE_MAKER = Type::new;
 
-  private static ObjectMapper objectMapper = new ObjectMapper()
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .enable(SerializationFeature.INDENT_OUTPUT)
     .registerModule(new Jdk8Module())
     .registerModule(new GuavaModule())
     .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);
   private final DataStorage dataStore;
+  private final ImportStatus importStatus;
 
   private Map<String, Type> types = new HashMap<>();
   private Map<String, Type> stableTypes = new HashMap<>();
-  private ImportStatus importStatus;
 
   public BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
 
@@ -62,7 +62,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   }
 
   public Map<String, Type> readTypes(String storedValue) throws IOException {
-    return objectMapper.readValue(storedValue, new TypeReference<Map<String, Type>>() {});
+    return OBJECT_MAPPER.readValue(storedValue, new TypeReference<>() {});
   }
 
   @Override
@@ -339,7 +339,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     }
     try {
       try {
-        String serializedValue = objectMapper.writeValueAsString(types);
+        String serializedValue = OBJECT_MAPPER.writeValueAsString(types);
         dataStore.setValue(serializedValue);
         dataStore.commit();
         stableTypes = readTypes(serializedValue);

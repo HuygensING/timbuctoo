@@ -467,8 +467,8 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, containsString("}\n\ntype TypeMutations {\n" +
-      "  create(graph: String uri: String! entity: TypeCreateInput!): Type @createMutation(dataSet: \"rootType\" typeUri: \"" +
-      TYPE_URI + "\")\n" +
+      "  create(graph: String uri: String! entity: TypeCreateInput!): " +
+      "Type @createMutation(dataSet: \"rootType\" typeUri: \"" + TYPE_URI + "\")\n" +
       "  edit(graph: String uri: String! entity: TypeEditInput!): Type @editMutation(dataSet: \"rootType\")\n" +
       "  delete(graph: String uri: String!): RemovedEntity! @deleteMutation(dataSet: \"rootType\")\n"));
   }
@@ -485,9 +485,10 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceProv.getSchema().toString();
 
     assertThat(schema, containsString("}\n\ntype TypeMutations {\n" +
-      "  create(graph: String uri: String! entity: TypeCreateInput!): Type @createMutation(dataSet: \"rootType\" typeUri: \"" +
-      TYPE_URI + "\")\n" +
+      "  create(graph: String uri: String! entity: TypeCreateInput!): " +
+      "Type @createMutation(dataSet: \"rootType\" typeUri: \"" + TYPE_URI + "\")\n" +
       "  edit(graph: String uri: String! entity: TypeEditInput!): Type @editMutation(dataSet: \"rootType\")\n" +
-      "  delete(graph: String uri: String! entity: TypeDeleteInput): RemovedEntity! @deleteMutation(dataSet: \"rootType\")\n"));
+      "  delete(graph: String uri: String! entity: TypeDeleteInput): " +
+      "RemovedEntity! @deleteMutation(dataSet: \"rootType\")\n"));
   }
 }

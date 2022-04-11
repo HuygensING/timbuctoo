@@ -32,36 +32,36 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
 
   @Override
   public void delRelation(String subject, String predicate, String object, String graph)
-    throws LogStorageFailedException {
-    printer.accept("-" + "<" + subject + "> <" + predicate + "> <" + object + "> "
-        + (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n");
+      throws LogStorageFailedException {
+    printer.accept("-" + "<" + subject + "> <" + predicate + "> <" + object + "> " +
+        (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n");
   }
 
   @Override
   public void delValue(String subject, String predicate, String value, String valueType, String graph)
-    throws LogStorageFailedException {
+      throws LogStorageFailedException {
     value = escapeCharacters(value);
     printer.accept(
-      "-" + "<" + subject + "> <" + predicate + "> \"" + value + "\"^^<" + valueType + "> "
-          + (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n"
+        "-" + "<" + subject + "> <" + predicate + "> \"" + value + "\"^^<" + valueType + "> " +
+            (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n"
     );
   }
 
   private String escapeCharacters(String value) {
     return value
-      .replace("\\", "\\\\")
-      .replace("\n", "\\n")
-      .replace("\r", "\\r")
-      .replace("\"", "\\\"");
+        .replace("\\", "\\\\")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\"", "\\\"");
   }
 
   @Override
   public void delLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
-    throws LogStorageFailedException {
+      throws LogStorageFailedException {
     value = escapeCharacters(value);
     printer.accept(
-      "-" + "<" + subject + "> <" + predicate + "> \"" + value + "\"@" + language + " "
-          + (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n"
+        "-" + "<" + subject + "> <" + predicate + "> \"" + value + "\"@" + language + " " +
+            (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n"
     );
   }
 
@@ -82,28 +82,28 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
 
   @Override
   public void onRelation(String subject, String predicate, String object, String graph)
-    throws LogStorageFailedException {
-    printer.accept("+" + "<" + subject + "> <" + predicate + "> <" + object + "> "
-        + (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n");
+      throws LogStorageFailedException {
+    printer.accept("+" + "<" + subject + "> <" + predicate + "> <" + object + "> " +
+        (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n");
   }
 
   @Override
   public void onValue(String subject, String predicate, String value, String valueType, String graph)
-    throws LogStorageFailedException {
+      throws LogStorageFailedException {
     value = escapeCharacters(value);
     printer.accept(
-      "+" + "<" + subject + "> <" + predicate + "> \"" + value + "\"^^<" + valueType + "> "
-          + (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n"
+        "+" + "<" + subject + "> <" + predicate + "> \"" + value + "\"^^<" + valueType + "> " +
+            (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n"
     );
   }
 
   @Override
   public void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
-    throws LogStorageFailedException {
+      throws LogStorageFailedException {
     value = escapeCharacters(value);
     printer.accept(
-      "+" + "<" + subject + "> <" + predicate + "> \"" + value + "\"@" + language + " "
-          + (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n"
+        "+" + "<" + subject + "> <" + predicate + "> \"" + value + "\"@" + language + " " +
+            (graph != null && !graph.isBlank() ? "<" + graph + "> " : "") + ".\n"
     );
   }
 

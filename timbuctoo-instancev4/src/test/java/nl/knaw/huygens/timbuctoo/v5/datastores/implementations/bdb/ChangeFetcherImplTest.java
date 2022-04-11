@@ -57,8 +57,8 @@ public class ChangeFetcherImplTest {
       assertThat(predicates.count(), is(1L));
     }
 
-    bdbQuadStore.putQuad("subj", "pred", OUT, "obj2", null, null, null);
-    truePatchStore.put("subj", 1, "pred", OUT, true, "obj2", null, null, null);
+    bdbQuadStore.putQuad("subj", "pred", OUT, "obj2", null, null, "graph");
+    truePatchStore.put("subj", 1, "pred", OUT, true, "obj2", null, null, "graph");
     changeFetcher = new ChangeFetcherImpl(truePatchStore, bdbQuadStore, 1);
 
     try (Stream<CursorQuad> predicates = changeFetcher.getPredicates("subj", "pred", OUT, false, false, true)) {

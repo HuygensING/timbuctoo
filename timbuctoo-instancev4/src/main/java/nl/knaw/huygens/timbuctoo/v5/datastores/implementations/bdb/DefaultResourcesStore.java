@@ -25,7 +25,8 @@ public class DefaultResourcesStore implements OptimizedPatchListener {
   private final BdbWrapper<String, String> bdbWrapper;
   private final ImportStatus importStatus;
 
-  public DefaultResourcesStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus) throws DataStoreCreationException {
+  public DefaultResourcesStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus)
+      throws DataStoreCreationException {
     this.bdbWrapper = bdbWrapper;
     this.importStatus = importStatus;
   }

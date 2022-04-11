@@ -28,7 +28,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   private static final Logger LOG = LoggerFactory.getLogger(BdbRmlDataSourceStore.class);
   protected final BdbWrapper<String, String> bdbWrapper;
   private final Map<String, Map<String, Property>> collectionProperties = new HashMap<>();
-  private ImportStatus importStatus;
+  private final ImportStatus importStatus;
 
   public BdbRmlDataSourceStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus)
     throws DataStoreCreationException {
@@ -175,7 +175,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
     bdbWrapper.empty();
   }
 
-  private class Property {
+  private static class Property {
     String oldName;
     String newName;
   }

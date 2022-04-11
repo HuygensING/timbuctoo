@@ -20,8 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class BdbTypeNameStore implements TypeNameStore {
-
-  private static ObjectMapper objectMapper = new ObjectMapper()
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .registerModule(new Jdk8Module())
     .registerModule(new GuavaModule())
     .registerModule(new TimbuctooCustomSerializers())
@@ -40,7 +39,7 @@ public class BdbTypeNameStore implements TypeNameStore {
       data = new TypeNames();
       addStandardPrefixes();
     } else {
-      data = objectMapper.readValue(storedValue, new TypeReference<TypeNames>() {});
+      data = OBJECT_MAPPER.readValue(storedValue, new TypeReference<>() {});
     }
     prefixMapping.setNsPrefixes(data.prefixes);
     this.dataStore = dataStore;
@@ -128,7 +127,7 @@ public class BdbTypeNameStore implements TypeNameStore {
   }
 
   public void commit() throws JsonProcessingException, DatabaseWriteException {
-    dataStore.setValue(objectMapper.writeValueAsString(data));
+    dataStore.setValue(OBJECT_MAPPER.writeValueAsString(data));
     dataStore.commit();
   }
 

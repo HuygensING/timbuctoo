@@ -6,11 +6,13 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbQuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -52,17 +54,66 @@ public class BdbQuadStoreTest {
   @Test
   public void returnsTheData() throws Exception {
     quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null, null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null, EX + "graph");
     quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null, null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "13", "http://number", null, EX + "graph");
     quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en", null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Hello", LANGSTRING, "EN-en", EX + "graph");
     quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Gauthier", LANGSTRING, "FR-fr", null);
 
     try (Stream<CursorQuad> quads = quadStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "")) {
       List<CursorQuad> resultList = quads.collect(toList());
       assertThat(resultList, contains(
         create(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null, null, ""),
+        create(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null, EX + "graph", ""),
         create(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null, null, ""),
+        create(EX + "subject1", "http://pred", Direction.OUT, "13", "http://number", null, EX + "graph", ""),
         create(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en", null, ""),
+        create(EX + "subject1", "http://pred", Direction.OUT, "Hello", LANGSTRING, "EN-en", EX + "graph", ""),
         create(EX + "subject1", "http://pred", Direction.OUT, "Gauthier", LANGSTRING, "FR-fr", null, "")
+      ));
+    }
+  }
+
+  @Test
+  public void returnsTheDataInGraph() throws Exception {
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null, null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null, null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en", null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Gauthier", LANGSTRING, "FR-fr", null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null, EX + "graph");
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "13", "http://number", null, EX + "graph");
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Hello", LANGSTRING, "EN-en", EX + "graph");
+
+    try (Stream<CursorQuad> quads = quadStore.getQuadsInGraph(EX + "subject1", "http://pred", Direction.OUT, "",
+        Optional.of(new Graph(EX + "graph")))) {
+      List<CursorQuad> resultList = quads.collect(toList());
+      assertThat(resultList, contains(
+          create(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null, EX + "graph", ""),
+          create(EX + "subject1", "http://pred", Direction.OUT, "13", "http://number", null, EX + "graph", ""),
+          create(EX + "subject1", "http://pred", Direction.OUT, "Hello", LANGSTRING, "EN-en", EX + "graph", "")
+      ));
+    }
+  }
+
+  @Test
+  public void returnsTheDataInDefaultGraph() throws Exception {
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null, null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null, null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en", null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Gauthier", LANGSTRING, "FR-fr", null);
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null, EX + "graph");
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "13", "http://number", null, EX + "graph");
+    quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Hello", LANGSTRING, "EN-en", EX + "graph");
+
+    try (Stream<CursorQuad> quads = quadStore.getQuadsInGraph(EX + "subject1", "http://pred", Direction.OUT, "",
+        Optional.of(new Graph(null)))) {
+      List<CursorQuad> resultList = quads.collect(toList());
+      assertThat(resultList, contains(
+          create(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null, null, ""),
+          create(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null, null, ""),
+          create(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en", null, ""),
+          create(EX + "subject1", "http://pred", Direction.OUT, "Gauthier", LANGSTRING, "FR-fr", null, "")
       ));
     }
   }
@@ -126,7 +177,6 @@ public class BdbQuadStoreTest {
     }
   }
 
-
   @Test
   public void canIterateBackwardFromCursor() throws Exception {
     quadStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null, null);
@@ -161,8 +211,6 @@ public class BdbQuadStoreTest {
     )));
     quads.close();
   }
-
-
 
   @Test
   public void relationQuadRetractionRemovesTheReverseRelationQuadFromTheStore() throws Exception {

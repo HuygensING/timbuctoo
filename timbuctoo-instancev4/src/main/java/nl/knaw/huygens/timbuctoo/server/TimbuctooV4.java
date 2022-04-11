@@ -88,6 +88,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntity;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntityInGraph;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
@@ -378,6 +379,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     GetEntity getEntity = new GetEntity(dataSetRepository, securityConfig.getUserValidator());
     register(environment, getEntity);
+
+    GetEntityInGraph getEntityInGraph = new GetEntityInGraph(dataSetRepository, securityConfig.getUserValidator());
+    register(environment, getEntityInGraph);
 
     // Admin resources
     environment.admin().addTask(new ReloadDataSet(dataSetRepository));

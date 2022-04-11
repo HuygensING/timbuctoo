@@ -50,8 +50,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   @Test
   public void handlesAbsoluteUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
-    LookUpSubjectByUriFetcherWrapper
-        sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
+    LookUpSubjectByUriFetcherWrapper sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
 
     sut.get(new MockEnv("http://example.com/2"));
 
@@ -61,8 +60,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   @Test
   public void handlesRelativeUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
-    LookUpSubjectByUriFetcherWrapper
-        sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
+    LookUpSubjectByUriFetcherWrapper sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
     sut.get(new MockEnv("/2"));
 
     assertThat(lookupFetcherMock.uri, is("http://example.org/2"));
@@ -71,8 +69,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   @Test
   public void handlesEmptyUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
-    LookUpSubjectByUriFetcherWrapper
-        sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
+    LookUpSubjectByUriFetcherWrapper sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
 
     sut.get(new MockEnv(""));
 
@@ -82,15 +79,14 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   @Test
   public void doesntDoTooMuchNormalization() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
-    LookUpSubjectByUriFetcherWrapper
-        sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
+    LookUpSubjectByUriFetcherWrapper sut = new LookUpSubjectByUriFetcherWrapper(lookupFetcherMock);
 
     sut.get(new MockEnv("."));
 
     assertThat(lookupFetcherMock.uri, is("http://example.org/"));
   }
 
-  private class LookUpSubjectByUriFetcherMock implements LookUpSubjectByUriFetcher {
+  private static class LookUpSubjectByUriFetcherMock implements LookUpSubjectByUriFetcher {
     private String uri;
     private Optional<Graph> graph;
 
@@ -109,7 +105,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     }
   }
 
-  private class MockEnv implements DataFetchingEnvironment {
+  private static class MockEnv implements DataFetchingEnvironment {
     Map<String, Object> arguments = new HashMap<>();
 
     public MockEnv(String uri) {

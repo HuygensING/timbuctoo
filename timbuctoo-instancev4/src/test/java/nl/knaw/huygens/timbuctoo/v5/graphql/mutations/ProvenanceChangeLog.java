@@ -27,7 +27,8 @@ public class ProvenanceChangeLog extends ChangeLog {
 
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
-    return getProvenanceChanges(dataSet, new Graph(""), subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+    return getProvenanceChanges(dataSet, new Graph(""), subjects,
+        dataSet.getCustomProvenance(), changeLog.getProvenance());
   }
 
   @Override

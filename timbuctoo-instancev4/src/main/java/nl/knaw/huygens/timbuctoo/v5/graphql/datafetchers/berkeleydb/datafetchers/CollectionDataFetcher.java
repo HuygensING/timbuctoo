@@ -83,9 +83,9 @@ public class CollectionDataFetcher implements CollectionFetcher {
     try (Stream<SubjectCursor> subjectStream =
              dataSet.getUpdatedPerPatchStore().fromVersion(version, arguments.getCursor())) {
       return PaginationHelper.getUpdatedPaginatedList(
-          subjectStream.filter(subjectCursor -> this.isSubjectInCollection(dataSet, subjectCursor.getSubject())),
-          subjectCursor -> new LazyTypeSubjectReference(subjectCursor.getSubject(), arguments.getGraph(), dataSet),
-          arguments);
+        subjectStream.filter(subjectCursor -> this.isSubjectInCollection(dataSet, subjectCursor.getSubject())),
+        subjectCursor -> new LazyTypeSubjectReference(subjectCursor.getSubject(), arguments.getGraph(), dataSet),
+        arguments);
     }
   }
 
@@ -94,10 +94,10 @@ public class CollectionDataFetcher implements CollectionFetcher {
                                                                       PaginationArguments arguments, DataSet dataSet) {
     try (Stream<CursorUri> uriStream = dataSet.getDefaultResourcesStore().getDefaultResources(arguments.getCursor())) {
       return getPaginatedList(
-          uriStream,
-          cursorUri -> new LazyTypeSubjectReference(cursorUri.getUri(), arguments.getGraph(), dataSet),
-          arguments,
-          total
+        uriStream,
+        cursorUri -> new LazyTypeSubjectReference(cursorUri.getUri(), arguments.getGraph(), dataSet),
+        arguments,
+        total
       );
     }
   }
@@ -108,10 +108,10 @@ public class CollectionDataFetcher implements CollectionFetcher {
              dataSet.getQuadStore()
                     .getQuadsInGraph(collectionUri, RDF_TYPE, IN, arguments.getCursor(), arguments.getGraph())) {
       return PaginationHelper.getPaginatedList(
-          subjectStream,
-          cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), arguments.getGraph(), dataSet),
-          arguments,
-          total
+        subjectStream,
+        cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), arguments.getGraph(), dataSet),
+        arguments,
+        total
       );
     }
   }

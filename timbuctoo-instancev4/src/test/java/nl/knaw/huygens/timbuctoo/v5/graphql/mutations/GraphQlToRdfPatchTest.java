@@ -914,8 +914,8 @@ public class GraphQlToRdfPatchTest {
   private void addProvenanceToChangeLog(Provenance... provenances) {
     when(changeLog.getProvenance(any(DataSet.class), any(String.class))).thenAnswer(
         (Answer<Stream<Change>>) invocation -> newArrayList(provenances).stream().flatMap(
-            provenance -> Arrays.stream(invocation.getArguments()).skip(1)
-                                .map(arg -> provenance.toChange(arg.toString()))));
+          provenance -> Arrays.stream(invocation.getArguments()).skip(1)
+                              .map(arg -> provenance.toChange(arg.toString()))));
   }
 
   private static class Provenance {

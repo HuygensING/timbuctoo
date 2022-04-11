@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 class DerivedInputTypeSchemaGenerator {
-
-
   private final String typeUri;
   private final String rootType;
   private final GraphQlNameGenerator graphQlNameGenerator;
@@ -20,8 +18,8 @@ class DerivedInputTypeSchemaGenerator {
   private final List<GraphQlPredicate> replacements;
   private final boolean isReadOnly;
   private final boolean hasCustomProvenance;
-  private List<GraphQlPredicate> additions;
-  private List<GraphQlPredicate> deletions;
+  private final List<GraphQlPredicate> additions;
+  private final List<GraphQlPredicate> deletions;
 
   public DerivedInputTypeSchemaGenerator(String typeUri, String rootType, GraphQlNameGenerator graphQlNameGenerator,
                                          DerivedSchemaContainer derivedSchemaContainer,
@@ -164,7 +162,7 @@ class DerivedInputTypeSchemaGenerator {
 
   private class GraphQlPredicate {
     private final Predicate predicate;
-    private String typeName;
+    private final String typeName;
 
     private GraphQlPredicate(Predicate predicate) {
       this.predicate = predicate;
@@ -212,5 +210,4 @@ class DerivedInputTypeSchemaGenerator {
       return asList ? "[" + typeName + "!]" : typeName;
     }
   }
-
 }

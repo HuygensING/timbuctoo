@@ -11,12 +11,12 @@ import static com.google.common.collect.Streams.stream;
 class ChangeFetcherImpl implements ChangeFetcher {
   private final BdbTruePatchStore truePatchStore;
   private final BdbQuadStore quadStore;
-  private final int currentversion;
+  private final int version;
 
-  public ChangeFetcherImpl(BdbTruePatchStore truePatchStore, BdbQuadStore quadStore, int currentversion) {
+  public ChangeFetcherImpl(BdbTruePatchStore truePatchStore, BdbQuadStore quadStore, int version) {
     this.truePatchStore = truePatchStore;
     this.quadStore = quadStore;
-    this.currentversion = currentversion;
+    this.version = version;
   }
 
   @Override
@@ -33,10 +33,10 @@ class ChangeFetcherImpl implements ChangeFetcher {
       final Stream<CursorQuad> assertions;
       final Stream<CursorQuad> currentState;
       if (predicate != null) {
-        assertions = truePatchStore.getChanges(subject, predicate, direction, currentversion, true);
+        assertions = truePatchStore.getChanges(subject, predicate, direction, version, true);
         currentState = quadStore.getQuads(subject, predicate, direction, "");
       } else {
-        assertions = truePatchStore.getChanges(subject, currentversion, true);
+        assertions = truePatchStore.getChanges(subject, version, true);
         currentState = quadStore.getQuads(subject);
       }
       //if (!assertions.findAny().isPresent()) {
@@ -50,9 +50,9 @@ class ChangeFetcherImpl implements ChangeFetcher {
     } else {
       if (getAsserted) {
         if (predicate == null) {
-          result = truePatchStore.getChanges(subject, currentversion, true);
+          result = truePatchStore.getChanges(subject, version, true);
         } else {
-          result = truePatchStore.getChanges(subject, predicate, direction, currentversion, true);
+          result = truePatchStore.getChanges(subject, predicate, direction, version, true);
         }
       } else {
         result = Stream.empty();
@@ -61,11 +61,11 @@ class ChangeFetcherImpl implements ChangeFetcher {
     if (getRetracted) {
       final Stream<CursorQuad> retractions;
       if (predicate != null) {
-        retractions = truePatchStore.getChanges(subject, predicate, direction, currentversion, false);
+        retractions = truePatchStore.getChanges(subject, predicate, direction, version, false);
       } else {
-        retractions = truePatchStore.getChanges(subject, currentversion, false);
+        retractions = truePatchStore.getChanges(subject, version, false);
       }
-      return stream(new RetractionMerger(result, retractions, quadStore, currentversion)).onClose(() -> {
+      return stream(new RetractionMerger(result, retractions, quadStore, version)).onClose(() -> {
         result.close();
         retractions.close();
       });

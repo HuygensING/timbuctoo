@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntity;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntityInGraph;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -15,7 +16,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
 public class PersistEntityMutation extends Mutation {
-
   private final RedirectionService redirectionService;
   private final String dataSetId;
   private final String dataSetName;
@@ -40,7 +40,11 @@ public class PersistEntityMutation extends Mutation {
     String entityUri = env.getArgument("entityUri");
     URI uri;
     try {
-      uri = GetEntity.makeUrl(ownerId, dataSetName, graph, entityUri);
+      if (graph != null) {
+        uri = GetEntityInGraph.makeUrl(ownerId, dataSetName, graph, entityUri);
+      } else {
+        uri = GetEntity.makeUrl(ownerId, dataSetName, entityUri);
+      }
     } catch (UnsupportedEncodingException e) {
       return ImmutableMap.of("message", "Request for persistent Uri failed.");
     }

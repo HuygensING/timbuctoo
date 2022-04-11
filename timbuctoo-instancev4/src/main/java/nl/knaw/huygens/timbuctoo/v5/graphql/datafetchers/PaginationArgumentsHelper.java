@@ -65,7 +65,8 @@ public class PaginationArgumentsHelper {
       timeSince = ZonedDateTime.parse(environment.getArgument("deletedSince"));
     }
 
-    return PaginationArguments.create(graph, count, cursor, Optional.ofNullable(filter), Optional.ofNullable(timeSince));
+    return PaginationArguments.create(graph, count, cursor,
+        Optional.ofNullable(filter), Optional.ofNullable(timeSince));
   }
 
   public String makeListName(String outputTypeName) {

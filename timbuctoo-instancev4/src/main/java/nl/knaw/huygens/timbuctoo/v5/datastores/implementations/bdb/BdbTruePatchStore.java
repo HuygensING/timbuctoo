@@ -46,7 +46,7 @@ public class BdbTruePatchStore {
     return bdbWrapper;
   }
 
-  public void put(String subject, int currentversion, String predicate, Direction direction, boolean isAssertion,
+  public void put(String subject, int version, String predicate, Direction direction, boolean isAssertion,
                   String object, String valueType, String language, String graph) throws DatabaseWriteException {
     //if we assert something and then retract it in the same patch, it's as if it never happened at all
     //so we delete the inversion
@@ -58,11 +58,11 @@ public class BdbTruePatchStore {
         object;
 
     try {
-      getOrCreateBdbWrapper(currentversion).delete(
-        subject + "\n" + currentversion + "\n" + (!isAssertion ? 1 : 0), value);
+      getOrCreateBdbWrapper(version).delete(
+        subject + "\n" + version + "\n" + (!isAssertion ? 1 : 0), value);
 
-      getOrCreateBdbWrapper(currentversion).put(
-          subject + "\n" + currentversion + "\n" + (isAssertion ? 1 : 0), value);
+      getOrCreateBdbWrapper(version).put(
+          subject + "\n" + version + "\n" + (isAssertion ? 1 : 0), value);
     } catch (BdbDbCreationException e) {
       throw new DatabaseWriteException(e);
     }
