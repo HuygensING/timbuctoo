@@ -6,7 +6,6 @@ import org.immutables.value.Value;
 import java.util.Base64;
 import java.util.Optional;
 
-@Value.Immutable
 public interface CursorList {
   Base64.Encoder ENCODER = Base64.getEncoder();
 

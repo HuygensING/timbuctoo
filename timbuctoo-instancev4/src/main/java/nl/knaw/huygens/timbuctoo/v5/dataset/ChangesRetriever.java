@@ -11,9 +11,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ChangesRetriever {
-
-  private BdbTruePatchStore bdbTruePatchStore;
-  private UpdatedPerPatchStore updatedPerPatchStore;
+  private final BdbTruePatchStore bdbTruePatchStore;
+  private final UpdatedPerPatchStore updatedPerPatchStore;
 
   public ChangesRetriever(BdbTruePatchStore bdbTruePatchStore, UpdatedPerPatchStore updatedPerPatchStore) {
     this.bdbTruePatchStore = bdbTruePatchStore;

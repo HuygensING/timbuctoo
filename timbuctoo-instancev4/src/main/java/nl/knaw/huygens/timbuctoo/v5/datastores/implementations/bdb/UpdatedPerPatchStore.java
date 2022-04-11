@@ -16,6 +16,8 @@ import java.util.stream.Stream;
 
 public class UpdatedPerPatchStore {
   private static final Logger LOG = LoggerFactory.getLogger(UpdatedPerPatchStore.class);
+  private static final String ALL_VERSIONS_KEY = "allVersions";
+
   private final BdbWrapper<String, Integer> bdbWrapper;
 
   public UpdatedPerPatchStore(BdbWrapper<String, Integer> bdbWrapper) throws DataStoreCreationException {
@@ -24,11 +26,13 @@ public class UpdatedPerPatchStore {
 
   public void put(int version, String subject) throws DatabaseWriteException {
     bdbWrapper.put(subject, version);
+    bdbWrapper.put(ALL_VERSIONS_KEY, version);
   }
 
   public Stream<String> ofVersion(int version) {
     return bdbWrapper.databaseGetter().getAll()
                      .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
+                     .filter(tuple -> !tuple.getLeft().equals(ALL_VERSIONS_KEY))
                      .filter(tuple -> tuple.getRight() == version)
                      .map(Tuple::getLeft);
   }
@@ -42,10 +46,12 @@ public class UpdatedPerPatchStore {
                          .skipToEnd()
                          .skipOne()
                          .forwards()
-                         .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new));
+                         .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
+                         .filter(tuple -> !tuple.getLeft().equals(ALL_VERSIONS_KEY));
     } else {
       stream = bdbWrapper.databaseGetter().getAll()
-                         .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new));
+                         .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
+                         .filter(tuple -> !tuple.getLeft().equals(ALL_VERSIONS_KEY));
     }
 
     return Streams.combine(stream, (scA, scB) -> scA.getLeft().equals(scB.getLeft()))
@@ -54,9 +60,11 @@ public class UpdatedPerPatchStore {
   }
 
   public Stream<Integer> getVersions() {
-    return bdbWrapper.databaseGetter().getAll()
-                     .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
-                     .map(Tuple::getRight).distinct();
+    return bdbWrapper.databaseGetter()
+                     .key(ALL_VERSIONS_KEY)
+                     .dontSkip()
+                     .forwards()
+                     .getValues(bdbWrapper.valueRetriever());
   }
 
   public void close() {
