@@ -142,7 +142,6 @@ public class RsEndpoint {
     return Response.ok(streamingData).build();
   }
 
-
   @GET
   @Path("{ownerId}/{dataSetName}/files/{fileId}")
   public Response getFile(@HeaderParam("authorization") String authHeader,

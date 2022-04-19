@@ -37,6 +37,8 @@ public class BdbSchemaStoreTest {
     ChangeFetcher changeFetcher = new DummyChangeFetcher(
       CursorQuad.create("subj", "pred", Direction.OUT, ChangeType.ASSERTED,
           "obj", null, null, null, ""),
+      CursorQuad.create("subj", "langPred", Direction.OUT, ChangeType.ASSERTED,
+          "value", RdfConstants.LANGSTRING, "en", null, ""),
       CursorQuad.create("subj", RdfConstants.RDF_TYPE, Direction.OUT, ChangeType.ASSERTED,
           "type", null, null, null, ""),
       CursorQuad.create("obj", "pred", Direction.IN, ChangeType.ASSERTED,
@@ -54,12 +56,25 @@ public class BdbSchemaStoreTest {
       "  \"type\" : {\n" +
       "    \"name\" : \"type\",\n" +
       "    \"predicates\" : [ {\n" +
+      "      \"name\" : \"langPred\",\n" +
+      "      \"direction\" : \"OUT\",\n" +
+      "      \"valueTypes\" : {\n" +
+      "        \"http://www.w3.org/1999/02/22-rdf-syntax-ns#langString\" : 1\n" +
+      "      },\n" +
+      "      \"referenceTypes\" : { },\n" +
+      "      \"languages\" : [ \"en\" ],\n" +
+      "      \"subjectsWithThisPredicate\" : 1,\n" +
+      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
+      "      \"hasBeenList\" : false,\n" +
+      "      \"hasBeenSingular\" : true\n" +
+      "    }, {\n" +
       "      \"name\" : \"http://www.w3.org/1999/02/22-rdf-syntax-ns#type\",\n" +
       "      \"direction\" : \"OUT\",\n" +
       "      \"valueTypes\" : { },\n" +
       "      \"referenceTypes\" : {\n" +
       "        \"http://www.w3.org/2000/01/rdf-schema#Resource\" : 1\n" +
       "      },\n" +
+      "      \"languages\" : [ ],\n" +
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"hasBeenList\" : false,\n" +
@@ -71,6 +86,7 @@ public class BdbSchemaStoreTest {
       "      \"referenceTypes\" : {\n" +
       "        \"http://www.w3.org/2000/01/rdf-schema#Resource\" : 1\n" +
       "      },\n" +
+      "      \"languages\" : [ ],\n" +
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"hasBeenList\" : false,\n" +
@@ -87,6 +103,7 @@ public class BdbSchemaStoreTest {
       "      \"referenceTypes\" : {\n" +
       "        \"type\" : 1\n" +
       "      },\n" +
+      "      \"languages\" : [ ],\n" +
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"hasBeenList\" : false,\n" +
@@ -98,6 +115,7 @@ public class BdbSchemaStoreTest {
       "      \"referenceTypes\" : {\n" +
       "        \"type\" : 1\n" +
       "      },\n" +
+      "      \"languages\" : [ ],\n" +
       "      \"subjectsWithThisPredicate\" : 0,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"hasBeenList\" : false,\n" +

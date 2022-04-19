@@ -71,7 +71,6 @@ class DerivedQueryObjectTypeSchemaGenerator {
     predicates.append("\n");
   }
 
-
   private void makeField(String description, Predicate predicate, String targetType, boolean isValue,
                          boolean isObject, boolean asList) {
     String fieldName = graphQlNameGenerator.createFieldName(predicate.getName(), predicate.getDirection(), asList);
@@ -100,7 +99,6 @@ class DerivedQueryObjectTypeSchemaGenerator {
            .append(asList)
            .append(")");
   }
-
 
   public StringBuilder getSchema() {
     String name = graphQlNameGenerator.createObjectTypeName(rootType, typeUri);

@@ -11,16 +11,18 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 @JsonIgnoreProperties(value = {"optional"}, allowGetters = true)
 public class Predicate {
   private final Direction direction;
-  private String name;
+  private final String name;
   private Type owner;
-  private Map<String, Long> valueTypes = new HashMap<>(10);
-  private Map<String, Long> referenceTypes = new HashMap<>(10);
+  private final Map<String, Long> valueTypes = new HashMap<>(10);
+  private final Map<String, Long> referenceTypes = new HashMap<>(10);
+  private final Set<String> languages = new HashSet<>(10);
   private long subjectsWithThisPredicate = 0;
   private long subjectsWithThisPredicateAsList = 0;
 
@@ -133,6 +135,14 @@ public class Predicate {
     this.isList = isList;
   }
 
+  public Set<String> getLanguages() {
+    return languages;
+  }
+
+  public void addLanguage(String language) {
+    this.languages.add(language);
+  }
+
   @Override
   public String toString() {
     return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -197,26 +207,19 @@ public class Predicate {
       predicate2.getSubjectsWithThisPredicateAsList());
 
     //Handle References
-    Map<String, Long> mergedReferences = new HashMap<>();
-    for (Map.Entry<String, Long> entry : getReferenceTypes().entrySet()) {
-      mergedReferences.put(entry.getKey(), entry.getValue());
-    }
+    Map<String, Long> mergedReferences = new HashMap<>(getReferenceTypes());
     mergedPredicate.setReferenceTypes(mergedReferences);
     for (Map.Entry<String, Long> entry : predicate2.getReferenceTypes().entrySet()) {
       mergedPredicate.incReferenceType(entry.getKey(), entry.getValue());
     }
 
     //Handle Values
-    Map<String, Long> mergedValues = new HashMap<>();
-    for (Map.Entry<String, Long> entry : getValueTypes().entrySet()) {
-      mergedValues.put(entry.getKey(), entry.getValue());
-    }
+    Map<String, Long> mergedValues = new HashMap<>(getValueTypes());
     mergedPredicate.setValueTypes(mergedValues);
     for (Map.Entry<String, Long> entry : predicate2.getValueTypes().entrySet()) {
       mergedPredicate.incValueType(entry.getKey(), entry.getValue());
     }
 
     return mergedPredicate;
-
   }
 }

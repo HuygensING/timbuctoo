@@ -16,15 +16,13 @@ public class BdbBackedData implements DataStorage {
   private final BdbWrapper<String, String> bdbWrapper;
   private String value;
 
-  public BdbBackedData(BdbWrapper<String, String> bdbWrapper)
-    throws DataStoreCreationException {
+  public BdbBackedData(BdbWrapper<String, String> bdbWrapper) {
     this.bdbWrapper = bdbWrapper;
 
     try (Stream<String> stream = this.bdbWrapper.databaseGetter().getAll().getValues(bdbWrapper.valueRetriever())) {
       final Optional<String> storedSchema = stream.filter(value -> !Objects.equals(value, "isClean")).findAny();
       storedSchema.ifPresent(s -> value = s);
     }
-
   }
 
   @Override

@@ -6,7 +6,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 
 public class FileSystemCachedFile implements CachedFile {
-
   private final MediaType mimeType;
   private final String name;
   private final File file;

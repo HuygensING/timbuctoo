@@ -40,9 +40,7 @@ import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHel
 
 @Path("/v5/{userId}/{dataSet}/upload/rdf")
 public class RdfUpload {
-
   private final AuthCheck authCheck;
-
 
   public RdfUpload(AuthCheck authCheck) {
     this.authCheck = authCheck;
@@ -69,9 +67,7 @@ public class RdfUpload {
       .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.getLeft(), userAndDs.getRight()))
       .map((Tuple<User, DataSet> userDataSetTuple) -> {
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
-
         final DataSet dataSet = userDataSetTuple.getRight();
-
         ImportManager importManager = dataSet.getImportManager();
 
         if (mediaType == null || !importManager.isRdfTypeSupported(mediaType)) {
@@ -101,6 +97,7 @@ public class RdfUpload {
           if (replaceData) {
             deleteCurrentData(dataSet, importManager);
           }
+
           promise = importManager.addLog(
             baseUri == null ? dataSet.getMetadata().getBaseUri() : baseUri.toString(),
             defaultGraph != null ? defaultGraph.toString() : null,

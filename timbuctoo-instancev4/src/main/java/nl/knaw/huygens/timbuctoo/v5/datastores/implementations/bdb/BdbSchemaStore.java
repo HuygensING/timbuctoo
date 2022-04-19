@@ -51,7 +51,6 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   private Map<String, Type> stableTypes = new HashMap<>();
 
   public BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
-
     this.dataStore = dataStore;
     final String storedValue = this.dataStore.getValue();
     if (storedValue != null) {
@@ -149,12 +148,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     //all removed types need to get a dec for the previous state's predicates (unchanged + retracted)
 
     //we stream the subjects, so we need to flip that around
-    //it it was retracted -> remove it from the unchanged types and the removed types
+    //if it was retracted -> remove it from the unchanged types and the removed types
     //if it was unchanged -> remove it from the removed types and add it to the added types
-    //it it was asserted -> add it to the unchanged types and to the added types
+    //if it was asserted -> add it to the unchanged types and to the added types
     try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, true)) {
       String prevPred = "";
-      Direction[] prevDir = new Direction[] { null };
+      Direction[] prevDir = new Direction[]{null};
       int retractedCount = 0;
       int assertedCount = 0;
       int unchangedCount = 0;
@@ -283,16 +282,19 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     final Optional<Predicate> predicateOpt = getPredicateForType(type, add, quad.getPredicate(), quad.getDirection());
 
     if (quad.getValuetype().isPresent()) {
-      predicateOpt.ifPresent(predicate -> predicate.incValueType(quad.getValuetype().get(), add ? 1 : -1));
+      predicateOpt.ifPresent(predicate -> {
+        predicate.incValueType(quad.getValuetype().get(), add ? 1 : -1);
+        quad.getLanguage().ifPresent(predicate::addLanguage);
+      });
     } else {
       try (Stream<CursorQuad> typeQs = changeFetcher.getPredicates(quad.getObject(), RDF_TYPE, OUT, !add, true, add)) {
-        boolean[] hadType = new boolean[] { false };
+        boolean[] hadType = new boolean[]{false};
         typeQs.forEach(typeQ -> {
           hadType[0] = true;
           predicateOpt.ifPresent(predicate -> predicate.incReferenceType(typeQ.getObject(), add ? 1 : -1));
         });
         if (!hadType[0]) {
-          predicateOpt.ifPresent( predicate -> predicate.incReferenceType(RDFS_RESOURCE, add ? 1 : -1));
+          predicateOpt.ifPresent(predicate -> predicate.incReferenceType(RDFS_RESOURCE, add ? 1 : -1));
         }
       }
     }
@@ -330,7 +332,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         predicate.getReferenceTypes().keySet().forEach(key -> {
             Type refType = types.get(key);
             Predicate inversePred = refType.getOrCreatePredicate(predicate.getName(), getOppositeDirection(predicate));
-            if (!inversePred.getReferenceTypes().keySet().contains(type.getName())) {
+            if (!inversePred.getReferenceTypes().containsKey(type.getName())) {
               inversePred.incReferenceType(type.getName(), 1);
             }
           }

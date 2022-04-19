@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedDynamicLis
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedLanguageValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 
 import java.util.Optional;
@@ -30,11 +31,16 @@ public class DynamicRelationDataFetcher implements DataFetcher<PaginatedDynamicL
     this.argumentsHelper = argumentsHelper;
   }
 
-  private DatabaseResult makeItem(CursorQuad triple, DataSet dataSet) {
-    if (triple.getValuetype().isPresent()) {
-      return TypedValue.create(triple.getObject(), triple.getValuetype().get(), dataSet);
+  private DatabaseResult makeItem(CursorQuad quad, DataSet dataSet) {
+    if (quad.getValuetype().isPresent()) {
+      if (quad.getLanguage().isPresent()) {
+        return TypedLanguageValue.create(quad.getObject(), quad.getValuetype().get(),
+            quad.getLanguage().get(), dataSet);
+      } else {
+        return TypedValue.create(quad.getObject(), quad.getValuetype().get(), dataSet);
+      }
     } else {
-      return new LazyTypeSubjectReference(triple.getObject(), Optional.empty(), dataSet);
+      return new LazyTypeSubjectReference(quad.getObject(), Optional.empty(), dataSet);
     }
   }
 

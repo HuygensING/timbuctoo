@@ -14,7 +14,7 @@ import java.util.List;
  * Specific Loader implementations know how to parse a file format and call the
  * required Importer methods.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 public interface Loader {
   /**
    * Loads data from a list of files.

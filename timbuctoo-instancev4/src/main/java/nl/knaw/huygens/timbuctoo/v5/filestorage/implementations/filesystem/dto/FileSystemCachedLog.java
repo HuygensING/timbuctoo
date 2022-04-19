@@ -26,7 +26,7 @@ public class FileSystemCachedLog implements CachedLog {
   private final Charset charset;
   private final String name;
   private final File file;
-  private List<Closeable> toClose = new ArrayList<>();
+  private final List<Closeable> toClose = new ArrayList<>();
 
   public FileSystemCachedLog(MediaType mimeType, Optional<Charset> charset, String name, File file) {
     this.mimeType = mimeType;

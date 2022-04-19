@@ -13,12 +13,16 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.dto.F
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PushbackInputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class FileSystemFileStorage implements FileStorage, LogStorage {
   private final File dir;
@@ -32,7 +36,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     fileInfo = JsonFileBackedData.getOrCreate(
       fileList,
       FileInfoList::create,
-      new TypeReference<FileInfoList>() {}
+      new TypeReference<>() {}
     );
   }
 
@@ -46,7 +50,22 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     String random = UUID.randomUUID().toString();
     String mnemonic = fileName.replaceAll("[^a-zA-Z0-9]", "_");
     String token = random + "-" + mnemonic;
-    Files.copy(stream, new File(dir, token).toPath());
+
+    if (charset.isPresent()) {
+      stream = new PushbackInputStream(stream, 2);
+    }
+
+    OutputStream out = new FileOutputStream(new File(dir, token));
+    if (charset.isPresent() && !isGzipCompressed((PushbackInputStream) stream)) {
+      out = new GZIPOutputStream(out);
+    }
+
+    try {
+      stream.transferTo(out);
+    } finally {
+      out.close();
+    }
+
     fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, mediaType, charset)));
 
     return token;
@@ -82,5 +101,23 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
       fileInfo.getName(),
       new File(dir, token)
     );
+  }
+
+  private static boolean isGzipCompressed(PushbackInputStream pb) throws IOException {
+    int header = pb.read();
+    if (header == -1) {
+      return false;
+    }
+
+    int byteRead = pb.read();
+    if (byteRead == -1) {
+      pb.unread(header);
+      return false;
+    }
+
+    pb.unread(new byte[]{(byte) header, (byte) byteRead});
+    header = (byteRead << 8) | header;
+
+    return header == GZIPInputStream.GZIP_MAGIC;
   }
 }

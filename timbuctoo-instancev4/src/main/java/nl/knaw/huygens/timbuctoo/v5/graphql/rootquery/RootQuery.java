@@ -426,15 +426,17 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .items(() -> collectionType.getPredicates().stream().map(
           pred -> (Property) ImmutableProperty
               .builder()
-              .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
-              .isList(pred.isList())
-              .uri(pred.getName())
-              .shortenedUri(typeNameStore.shorten(pred.getName()))
-              .isInverse(pred.getDirection() == Direction.IN)
               .name(typeNameStore.makeGraphQlnameForPredicate(
                   pred.getName(),
                   pred.getDirection(),
                   pred.isList()))
+              .uri(pred.getName())
+              .shortenedUri(typeNameStore.shorten(pred.getName()))
+              .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
+              .isValueType(!pred.getValueTypes().isEmpty())
+              .isInverse(pred.getDirection() == Direction.IN)
+              .isList(pred.isList())
+              .languages(pred.getLanguages())
               .referencedCollections(
                   ImmutableStringList
                       .builder()
@@ -446,7 +448,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
                                        .iterator())
                       .build()
               )
-              .isValueType(!pred.getValueTypes().isEmpty())
               .build()
         ).iterator())
         .build())

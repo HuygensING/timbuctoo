@@ -41,16 +41,12 @@ import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHel
 
 @Path("/v5/{userId}/{dataSetId}/upload/table")
 public class TabularUpload {
-
   private static final Logger LOG = LoggerFactory.getLogger(TabularUpload.class);
   private final AuthCheck authCheck;
-  private final DataSetRepository dataSetRepository;
   private final ErrorResponseHelper errorResponseHelper;
 
-  public TabularUpload(AuthCheck authCheck, DataSetRepository dataSetRepository,
-                       ErrorResponseHelper errorResponseHelper) {
+  public TabularUpload(AuthCheck authCheck, ErrorResponseHelper errorResponseHelper) {
     this.authCheck = authCheck;
-    this.dataSetRepository = dataSetRepository;
     this.errorResponseHelper = errorResponseHelper;
   }
 
@@ -68,7 +64,6 @@ public class TabularUpload {
                          @QueryParam("forceCreation") boolean forceCreation)
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
-
     final Either<Response, Response> result = authCheck.getOrCreate(authHeader, ownerId, dataSetId, forceCreation)
       .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.getLeft(), userAndDs.getRight()))
       .map(userAndDs -> {

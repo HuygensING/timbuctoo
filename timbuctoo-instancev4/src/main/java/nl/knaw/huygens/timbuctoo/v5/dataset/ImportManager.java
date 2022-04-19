@@ -35,7 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -162,7 +161,7 @@ public class ImportManager implements DataProvider {
       int index = unprocessed.nextIndex();
       LogEntry entry = unprocessed.next();
       importStatus.startEntry(entry);
-      if (!entry.getLogToken().isPresent()) { // no logToken, because the data is generated from a tabular file
+      if (entry.getLogToken().isEmpty()) { // no logToken, because the data is generated from a tabular file
         RdfCreator creator = entry.getRdfCreator().get();
         String token = "";
         MediaType mediaType;
@@ -195,7 +194,7 @@ public class ImportManager implements DataProvider {
             }
           }
 
-          try (InputStream inputStream = new GZIPInputStream(new FileInputStream(tempFile))) {
+          try (InputStream inputStream = new FileInputStream(tempFile)) {
             token = logStorage.saveLog(
               inputStream,
               "log_generated_by_" + creator.getClass().getSimpleName(),

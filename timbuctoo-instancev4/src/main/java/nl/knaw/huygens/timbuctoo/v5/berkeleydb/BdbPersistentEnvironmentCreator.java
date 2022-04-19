@@ -158,7 +158,7 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   @Override
   public List<String> getUnavailableDatabases(String ownerId, String dataSetName) {
     final String environmentKey = environmentKey(ownerId, dataSetName);
-    return databases.keySet().stream().filter(key -> key.startsWith(environmentKey)).map(key -> databases.get(key))
+    return databases.keySet().stream().filter(key -> key.startsWith(environmentKey)).map(databases::get)
                     .filter(db -> {
                       try {
                         db.getConfig();

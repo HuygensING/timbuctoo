@@ -30,8 +30,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   private final Map<String, Map<String, Property>> collectionProperties = new HashMap<>();
   private final ImportStatus importStatus;
 
-  public BdbRmlDataSourceStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus)
-    throws DataStoreCreationException {
+  public BdbRmlDataSourceStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus) {
     this.bdbWrapper = bdbWrapper;
     this.importStatus = importStatus;
   }

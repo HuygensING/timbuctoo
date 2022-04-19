@@ -33,9 +33,8 @@ import java.util.concurrent.TimeUnit;
  * The last status and all error messages will be persisted via {@link LogList} and {@link LogEntry} respectively.
  * </p>
  */
-@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.NAME)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 public class ImportStatus {
-
   private static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
 
   private final LogList logList;
@@ -86,11 +85,11 @@ public class ImportStatus {
      */
     StringBuilder errorMessage = new StringBuilder("[" + Instant.now().toString() + "] ");
     if (currentEntryName != null) {
-      errorMessage.append("; file: " + currentEntryName);
+      errorMessage.append("; file: ").append(currentEntryName);
     }
-    errorMessage.append("; method: " + methodName);
-    errorMessage.append("; message: " + message);
-    errorMessage.append("; error: " + error.getMessage());
+    errorMessage.append("; method: ").append(methodName);
+    errorMessage.append("; message: ").append(message);
+    errorMessage.append("; error: ").append(error.getMessage());
     String errorString = errorMessage.toString();
     if (currentLogEntry != null) {
       currentLogEntry.getImportStatus().addError(errorString);

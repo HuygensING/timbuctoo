@@ -144,7 +144,6 @@ public class RsDocumentBuilder {
     return Optional.ofNullable(resourceList);
   }
 
-
   public Optional<Urlset> getChangeList(@Nullable User user, String ownerId, String dataSetId) throws IOException {
     Urlset changeList = null;
 

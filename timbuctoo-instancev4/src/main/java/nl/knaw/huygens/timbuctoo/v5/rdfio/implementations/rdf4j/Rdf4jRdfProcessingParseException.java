@@ -4,14 +4,12 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingParseExcepti
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import org.eclipse.rdf4j.rio.RDFParseException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
 public class Rdf4jRdfProcessingParseException extends RdfProcessingParseException {
-
   public Rdf4jRdfProcessingParseException(RDFParseException exception, CachedLog log) {
     super(createMessage(exception, log));
   }
@@ -22,10 +20,11 @@ public class Rdf4jRdfProcessingParseException extends RdfProcessingParseExceptio
     long firstLineOfMessage = Math.max(lineNumber - 4, 0);
     // get three lines before after the error
     long lastLineOfMessage = lineNumber + 3;
-    Path file = log.getFile().toPath();
+
     StringBuilder message = new StringBuilder(exception.getMessage());
     message.append("\n");
-    try (Stream<String> lines = Files.lines(file)) {
+    try (BufferedReader reader = new BufferedReader(log.getReader());
+         Stream<String> lines = reader.lines()) {
       Iterator<String> lineIterator = lines.skip(firstLineOfMessage).iterator();
 
       for (long line = firstLineOfMessage; line < lastLineOfMessage && lineIterator.hasNext(); line++) {

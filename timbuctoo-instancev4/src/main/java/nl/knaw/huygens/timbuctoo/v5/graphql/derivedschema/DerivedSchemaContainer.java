@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
+
 public class DerivedSchemaContainer {
   private final Map<String, DerivedTypeSchemaGenerator> types;
   private final Map<String, DerivedObjectTypeSchemaGenerator> topLevelTypes;
@@ -97,13 +99,9 @@ public class DerivedSchemaContainer {
   String valueType(String typeUri) {
     final String name = nameGenerator.createValueTypeName(rootType, typeUri);
     if (!types.containsKey(name)) {
-
-      DerivedTypeSchemaGenerator derivedValueTypeSchemaGenerator = new DerivedValueTypeSchemaGenerator(name);
-
-
+      DerivedTypeSchemaGenerator derivedValueTypeSchemaGenerator =
+          new DerivedValueTypeSchemaGenerator(name, typeUri.equals(LANGSTRING));
       types.put(name, derivedValueTypeSchemaGenerator);
-
-
     }
     return name;
   }

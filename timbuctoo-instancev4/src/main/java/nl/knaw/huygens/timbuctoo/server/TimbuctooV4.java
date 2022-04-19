@@ -284,7 +284,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new TabularUpload(
       authCheck,
-      dataSetRepository,
       errorResponseHelper
     ));
 

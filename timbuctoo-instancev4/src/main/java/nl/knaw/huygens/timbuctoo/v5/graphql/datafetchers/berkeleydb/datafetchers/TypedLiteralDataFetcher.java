@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetcher
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedLanguageValue;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 
 public class TypedLiteralDataFetcher extends WalkTriplesDataFetcher<TypedValue> {
@@ -12,11 +13,16 @@ public class TypedLiteralDataFetcher extends WalkTriplesDataFetcher<TypedValue> 
   }
 
   @Override
-  protected TypedValue makeItem(CursorQuad triple, DataSet dataSet) {
-    if (triple.getValuetype().isPresent()) {
-      return TypedValue.create(triple.getObject(), triple.getValuetype().get(), dataSet);
+  protected TypedValue makeItem(CursorQuad quad, DataSet dataSet) {
+    if (quad.getValuetype().isPresent()) {
+      if (quad.getLanguage().isPresent()) {
+        return TypedLanguageValue.create(quad.getObject(), quad.getValuetype().get(),
+            quad.getLanguage().get(), dataSet);
+      } else {
+        return TypedValue.create(quad.getObject(), quad.getValuetype().get(), dataSet);
+      }
     } else {
-      throw new IllegalStateException("Source is not a triple referencing a value");
+      throw new IllegalStateException("Source is not a quad referencing a value");
     }
   }
 }
