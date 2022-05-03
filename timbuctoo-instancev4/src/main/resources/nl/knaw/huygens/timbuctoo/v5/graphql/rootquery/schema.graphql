@@ -33,6 +33,10 @@ interface Value {
   type: String!
 }
 
+interface Language {
+  language: String!
+}
+
 interface Entity {
   uri: String!
   graphs: [String]!

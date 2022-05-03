@@ -40,8 +40,7 @@ public class LocalfileAccessFactory implements AccessFactory {
   public LocalfileAccessFactory(@JsonProperty("authorizationsPath") String authorizationsPath,
                                 @JsonProperty("permissionConfig") String permissionConfig,
                                 @JsonProperty("loginsFilePath") String loginsFilePath,
-                                @JsonProperty("usersFilePath") String usersFilePath
-  ) {
+                                @JsonProperty("usersFilePath") String usersFilePath) {
     this.authorizationsPath = authorizationsPath;
     this.permissionConfig = permissionConfig;
     this.loginsFilePath = loginsFilePath;
@@ -75,35 +74,47 @@ public class LocalfileAccessFactory implements AccessFactory {
   }
 
   @Override
-  public LoginAccess getLoginAccess() throws AccessNotPossibleException {
-    Path loginFile = Paths.get(loginsFilePath);
-    if (!loginFile.toFile().isFile()) {
-      LOG.error("File " + loginFile.toAbsolutePath() + " does not exist");
-      throw new AccessNotPossibleException("File does not exist");
-    }
-    return new LocalFileLoginAccess(loginFile);
-  }
-
-  @Override
-  public UserAccess getUserAccess() throws AccessNotPossibleException {
-    Path userPath = Paths.get(usersFilePath);
-    if (!userPath.toFile().isFile()) {
-      LOG.error("File " + userPath.toAbsolutePath() + " does not exist");
-      throw new AccessNotPossibleException("File does not exist");
-    }
-    return new LocalFileUserAccess(userPath);
-  }
-
-  @Override
-  public VreAuthorizationAccess getVreAuthorizationAccess() throws AccessNotPossibleException {
-    Path authorizationsFolder = Paths.get(authorizationsPath);
-    if (!authorizationsFolder.toFile().isDirectory()) {
-      if (!authorizationsFolder.toFile().mkdirs()) {
-        LOG.error("Directory " + authorizationsFolder.toAbsolutePath() + " does not exist and cannot be created");
-        throw new AccessNotPossibleException("Direcory does not exist");
+  public LoginAccess getLoginAccess() {
+    try {
+      Path loginPath = Paths.get(loginsFilePath);
+      if (!Files.isDirectory(loginPath.getParent())) {
+        Files.createDirectories(loginPath.getParent());
       }
+      if (!Files.exists(loginPath)) {
+        Files.write(loginPath, "[]".getBytes());
+      }
+      return new LocalFileLoginAccess(loginPath);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    return new LocalFileVreAuthorizationAccess(authorizationsFolder);
   }
 
+  @Override
+  public UserAccess getUserAccess() {
+    try {
+      Path userPath = Paths.get(usersFilePath);
+      if (!Files.isDirectory(userPath.getParent())) {
+        Files.createDirectories(userPath.getParent());
+      }
+      if (!Files.exists(userPath)) {
+        Files.write(userPath, "[]".getBytes());
+      }
+      return new LocalFileUserAccess(userPath);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public VreAuthorizationAccess getVreAuthorizationAccess() {
+    try {
+      Path authorizationsFolder = Paths.get(authorizationsPath);
+      if (!Files.isDirectory(authorizationsFolder)) {
+        Files.createDirectories(authorizationsFolder);
+      }
+      return new LocalFileVreAuthorizationAccess(authorizationsFolder);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
