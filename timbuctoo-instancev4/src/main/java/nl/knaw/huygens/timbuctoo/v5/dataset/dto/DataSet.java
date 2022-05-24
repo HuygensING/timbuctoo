@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringIntegerIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
@@ -46,7 +45,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.stream.Stream;
 
 @Value.Immutable
 public abstract class DataSet {
@@ -145,7 +143,7 @@ public abstract class DataSet {
         importManager.getImportStatus()
       );
 
-      BdbWrapper<String, Integer> updatedPerPatchStoreWrapper = dataStoreFactory.getDatabase(
+      final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(dataStoreFactory.getDatabase(
           userId,
           dataSetId,
           "updatedPerPatch",
@@ -153,27 +151,7 @@ public abstract class DataSet {
           stringBinding,
           integerBinding,
           stringIntIsCleanHandler
-      );
-
-      try (Stream<String> keys = updatedPerPatchStoreWrapper.databaseGetter().getAll()
-                                                            .getKeys(updatedPerPatchStoreWrapper.keyRetriever())) {
-        keys.findFirst();
-      } catch (IllegalArgumentException e) {
-        dataStoreFactory.closeDatabase(userId, dataSetId, "updatedPerPatch");
-        dataStoreFactory.renameDatabase(userId, dataSetId, "updatedPerPatch", "updatedPerPatchOld");
-
-        updatedPerPatchStoreWrapper = dataStoreFactory.getDatabase(
-            userId,
-            dataSetId,
-            "updatedPerPatch",
-            true,
-            stringBinding,
-            integerBinding,
-            stringIntIsCleanHandler
-        );
-      }
-
-      final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(updatedPerPatchStoreWrapper);
+      ));
 
       final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
           dataStoreFactory.getDatabase(

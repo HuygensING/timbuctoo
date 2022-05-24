@@ -28,7 +28,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataMetaDataListFetcher
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataSetImportStatusFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DiscoverResourceSyncDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.ImportStatusFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.SummaryPropertiesDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.GraphsDataFetcher;
