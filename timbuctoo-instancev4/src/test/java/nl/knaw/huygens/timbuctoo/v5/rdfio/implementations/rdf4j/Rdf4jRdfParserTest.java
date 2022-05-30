@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.Charset;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -114,6 +115,11 @@ public class Rdf4jRdfParserTest {
       @Override
       public MediaType getMimeType() {
         return new MediaType("application", "vnd.timbuctoo-rdf.nquads_unified_diff");
+      }
+
+      @Override
+      public Charset getCharset() {
+        return Charset.defaultCharset();
       }
     };
   }

@@ -104,6 +104,11 @@ public class FileSystemCachedLog implements CachedLog {
   }
 
   @Override
+  public Charset getCharset() {
+    return charset;
+  }
+
+  @Override
   public void close() throws Exception {
     final ListIterator<Closeable> closeableListIterator = toClose.listIterator();
     while (closeableListIterator.hasNext()) {

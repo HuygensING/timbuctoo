@@ -68,6 +68,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.AddPidsToWomenWritersEntities;
 import nl.knaw.huygens.timbuctoo.server.tasks.AddTypeToNeo4JVertexTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BackupTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
+import nl.knaw.huygens.timbuctoo.server.tasks.CompressFilesTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MoveEdgesTask;
@@ -421,6 +422,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         uriToRedirectToFromPersistentUrls)
     );
     environment.admin().addTask(new ReimportDatasetsTask(dataSetRepository));
+    environment.admin().addTask(new CompressFilesTask(dataSetRepository));
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance

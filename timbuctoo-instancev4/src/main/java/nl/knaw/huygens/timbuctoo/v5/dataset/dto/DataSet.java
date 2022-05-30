@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
@@ -267,6 +268,10 @@ public abstract class DataSet {
 
   public FileStorage getFileStorage() throws IOException {
     return getDataSetStorage().getFileStorage();
+  }
+
+  public LogStorage getLogStorage() throws IOException {
+    return getDataSetStorage().getLogStorage();
   }
 
   public Map<String, List<ExplicitField>> getCustomSchema() {
