@@ -21,6 +21,11 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
     this.printer = printWriter::write;
   }
 
+  public BasicRdfPatchSerializer(PrintWriter printWriter) {
+    this.printWriter = printWriter;
+    this.printer = printWriter::write;
+  }
+
   protected BasicRdfPatchSerializer(Consumer<String> printWriter) {
     this.printer = printWriter;
     this.printWriter = null;
