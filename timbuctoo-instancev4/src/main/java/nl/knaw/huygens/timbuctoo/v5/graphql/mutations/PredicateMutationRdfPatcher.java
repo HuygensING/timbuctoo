@@ -52,7 +52,7 @@ public class PredicateMutationRdfPatcher implements PatchRdfCreator {
                 oldValue.getObject(),
                 oldValue.getValuetype().orElse(null),
                 oldValue.getLanguage().orElse(null),
-                null
+                oldValue.getGraph().orElse(null)
             );
           }
         }
@@ -65,7 +65,7 @@ public class PredicateMutationRdfPatcher implements PatchRdfCreator {
             foundSubjects.getOrDefault(oldValue.getObject(), oldValue.getObject()),
             oldValue.getValuetype().orElse(null),
             oldValue.getLanguage().orElse(null),
-            null
+            oldValue.getGraph().orElse(null)
         );
       }
 
@@ -77,7 +77,7 @@ public class PredicateMutationRdfPatcher implements PatchRdfCreator {
               foundSubjects.getOrDefault(newValue.getObject(), newValue.getObject()),
               newValue.getValuetype().orElse(null),
               newValue.getLanguage().orElse(null),
-              null
+              newValue.getGraph().orElse(null)
           );
         }
       }

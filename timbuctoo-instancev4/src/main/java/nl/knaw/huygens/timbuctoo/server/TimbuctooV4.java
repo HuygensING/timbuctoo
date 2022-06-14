@@ -71,6 +71,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.CompressFilesTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
+import nl.knaw.huygens.timbuctoo.server.tasks.MoveDefaultGraphsTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MoveEdgesTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.ReimportDatasetsTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
@@ -414,6 +415,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     environment.admin().addTask(new StopBdbDataStore(configuration.getDatabases()));
     environment.admin().addTask(new BackupTask(dataSetRepository));
+    environment.admin().addTask(new MoveDefaultGraphsTask(dataSetRepository));
     environment.admin().addTask(new AddTypeToNeo4JVertexTask(transactionEnforcer, crudServiceFactory));
     environment.admin().addTask(new MoveEdgesTask(transactionEnforcer, crudServiceFactory));
     environment.admin().addTask(new AddPidsToWomenWritersEntities(
