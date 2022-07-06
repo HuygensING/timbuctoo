@@ -55,7 +55,16 @@ public class TimRdfHandler extends AbstractRDFHandler {
         rdfProcessor.commit();
         throw new RDFHandlerException("Interrupted");
       }
+
       String graph = st.getContext() == null ? defaultGraph : st.getContext().stringValue();
+
+      // Make sure old default graphs (based on the base URI) also end up in the configured default graph
+      String baseUriGraphV1 = baseUri.endsWith("/") ? baseUri : baseUri + "/";
+      String baseUriGraphV2 = !baseUri.endsWith("/") ? baseUri : baseUri.substring(0, baseUri.length() - 1);
+      if (graph != null && (graph.equals(baseUriGraphV1) || graph.equals(baseUriGraphV2))) {
+        graph = defaultGraph;
+      }
+
       rdfProcessor.onQuad(
         isAssertion(),
         handleNode(st.getSubject()),
