@@ -5,11 +5,10 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,9 +77,9 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
         }
       );
       if (!wasCollection[0]) {
-        try (Stream<CursorQuad> quads =
+        try (Stream<QuadGraphs> quads =
                changeFetcher.getPredicates(subject, TIM_HAS_ROW, Direction.IN, true, true, true)) {
-          Optional<CursorQuad> isRawRow = quads.findFirst();
+          Optional<QuadGraphs> isRawRow = quads.findFirst();
           if (isRawRow.isPresent()) {
             final String collectionUri = isRawRow.get().getObject();
             Map<String, Property> predicatesToStore = collectionProperties.computeIfAbsent(

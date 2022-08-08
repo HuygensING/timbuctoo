@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import org.junit.Test;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -15,12 +16,12 @@ public class IterationStateTest {
   @Test
   public void prefersAssertionOverUnchanged() throws Exception {
     final IterationState iterationState = new IterationState(
-      newArrayList(
+      QuadGraphs.mapToQuadGraphs(newArrayList(
         CursorQuad.create("subj", "pred", Direction.OUT, ASSERTED, "obj", null, null, null, "")
-      ).stream(),
-      newArrayList(
+      ).stream()),
+      QuadGraphs.mapToQuadGraphs(newArrayList(
         CursorQuad.create("subj", "pred", Direction.OUT, UNCHANGED, "obj", null, null, null, "")
-      ).stream(),
+      ).stream()),
       true
     );
 
@@ -30,12 +31,12 @@ public class IterationStateTest {
   @Test
   public void ignoresAssertionsIfUnchanged() throws Exception {
     final IterationState iterationState = new IterationState(
-      newArrayList(
+      QuadGraphs.mapToQuadGraphs(newArrayList(
         CursorQuad.create("subj", "pred", Direction.OUT, ASSERTED, "obj", null, null, null, "")
-      ).stream(),
-      newArrayList(
+      ).stream()),
+        QuadGraphs.mapToQuadGraphs(newArrayList(
         CursorQuad.create("subj", "pred", Direction.OUT, UNCHANGED, "obj", null, null, null, "")
-      ).stream(),
+      ).stream()),
       false
     );
 
@@ -45,14 +46,14 @@ public class IterationStateTest {
   @Test
   public void ignoresAssertionsIfUnchangedInTheMiddle() throws Exception {
     final IterationState iterationState = new IterationState(
-      newArrayList(
+      QuadGraphs.mapToQuadGraphs(newArrayList(
         CursorQuad.create("subj", "pred1", Direction.OUT, ASSERTED, "obj", null, null, null, "")
-      ).stream(),
-      newArrayList(
+      ).stream()),
+      QuadGraphs.mapToQuadGraphs(newArrayList(
         CursorQuad.create("subj", "pred0", Direction.OUT, UNCHANGED, "obj", null, null, null, ""),
         CursorQuad.create("subj", "pred1", Direction.OUT, UNCHANGED, "obj", null, null, null, ""),
         CursorQuad.create("subj", "pred2", Direction.OUT, UNCHANGED, "obj", null, null, null, "")
-      ).stream(),
+      ).stream()),
       false
     );
 

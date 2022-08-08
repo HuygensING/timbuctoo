@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
@@ -10,27 +10,48 @@ import java.util.stream.Stream;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-class RetractionMerger implements Iterator<CursorQuad> {
-
+class RetractionMerger implements Iterator<QuadGraphs> {
   private static final Logger LOG = getLogger(RetractionMerger.class);
 
-  private final PeekingIterator<CursorQuad> state;
-  private final PeekingIterator<CursorQuad> retractions;
-  private final BdbQuadStore quadStore;
+  private final PeekingIterator<QuadGraphs> state;
+  private final PeekingIterator<QuadGraphs> retractions;
   private final int version;
 
-  public RetractionMerger(Stream<CursorQuad> state, Stream<CursorQuad> retractions, BdbQuadStore quadStore,
-                          int version) {
+  public RetractionMerger(Stream<QuadGraphs> state, Stream<QuadGraphs> retractions, int version) {
     this.state = Iterators.peekingIterator(state.iterator());
     this.retractions = Iterators.peekingIterator(retractions.iterator());
-    this.quadStore = quadStore;
     this.version = version;
   }
 
   @Override
   public boolean hasNext() {
-    final boolean stateHasNext = state.hasNext();
-    final boolean retractionsHasNext = retractions.hasNext();
+    boolean allChecked = false;
+    boolean stateHasNext = false;
+    boolean retractionsHasNext = false;
+
+    // Get retractions out of the way which only removed some graphs
+    while (!allChecked) {
+      stateHasNext = state.hasNext();
+      retractionsHasNext = retractions.hasNext();
+
+      if (stateHasNext && retractionsHasNext) {
+        QuadGraphs leftQ = state.peek();
+        QuadGraphs rightQ = retractions.peek();
+        int compareResult = BdbQuadStore.compare(leftQ, rightQ);
+
+        // The current state and retraction do not match or they match exactly (including graphs)
+        // If not, (the quads match, but some graphs are missing from the current state) we just move to the next
+        if (compareResult != 0 || leftQ.getGraphs().equals(rightQ.getGraphs())) {
+          allChecked = true;
+        } else {
+          state.next();
+          retractions.next();
+        }
+      } else {
+        allChecked = true;
+      }
+    }
+
     return stateHasNext || retractionsHasNext;
   }
 
@@ -57,11 +78,12 @@ class RetractionMerger implements Iterator<CursorQuad> {
   forward as well though that should never happen.
   */
   @Override
-  public CursorQuad next() {
+  public QuadGraphs next() {
     if (state.hasNext() && retractions.hasNext()) {
-      CursorQuad leftQ = state.peek();
-      CursorQuad rightQ = retractions.peek();
-      int compareResult = quadStore.compare(leftQ, rightQ);
+      QuadGraphs leftQ = state.peek();
+      QuadGraphs rightQ = retractions.peek();
+      int compareResult = BdbQuadStore.compare(leftQ, rightQ);
+
       if (compareResult == 0) {
         //Huh? we have a retraction, but the thing is also part of the state?
         LOG.error("in {} {} was retracted, but it is still part of the store as {}", version, rightQ, leftQ);

@@ -39,7 +39,7 @@ public class GraphStore {
   public Stream<CursorUri> getGraphs(String cursor) {
     if (cursor.isEmpty()) {
       return bdbWrapper.databaseGetter().getAll().getKeys(bdbWrapper.keyRetriever())
-                       .distinct().map(graph -> CursorUri.create(graph, graph));
+                       .distinct().map(CursorUri::create);
     }
 
     return bdbWrapper.databaseGetter()
@@ -49,7 +49,7 @@ public class GraphStore {
                      .direction(cursor.startsWith("A\n") ? FORWARDS : BACKWARDS)
                      .getKeys(bdbWrapper.keyRetriever())
                      .distinct()
-                     .map(graph -> CursorUri.create(graph, graph));
+                     .map(CursorUri::create);
   }
 
   public void close() {

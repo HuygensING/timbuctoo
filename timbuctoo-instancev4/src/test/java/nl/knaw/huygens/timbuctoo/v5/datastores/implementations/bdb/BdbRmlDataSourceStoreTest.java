@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -178,20 +179,21 @@ public class BdbRmlDataSourceStoreTest {
         for (Map.Entry<String, Multimap<String, CursorQuad>> subject : triples.entrySet()) {
           processor.onChangedSubject(subject.getKey(), new ChangeFetcher() {
             @Override
-            public Stream<CursorQuad> getPredicates(String subject, boolean getRetracted, boolean getUnchanged,
+            public Stream<QuadGraphs> getPredicates(String subject, boolean getRetracted, boolean getUnchanged,
                                                     boolean getAsserted) {
               if (triples.containsKey(subject) && (getUnchanged || getAsserted)) {
-                return triples.get(subject).values().stream();
+                return QuadGraphs.mapToQuadGraphs(triples.get(subject).values().stream());
               } else {
                 return Stream.empty();
               }
             }
 
             @Override
-            public Stream<CursorQuad> getPredicates(String subject, String predicate, Direction direction,
+            public Stream<QuadGraphs> getPredicates(String subject, String predicate, Direction direction,
                                                     boolean getRetracted, boolean getUnchanged, boolean getAsserted) {
               if (triples.containsKey(subject) && getAsserted) {
-                return triples.get(subject).get(predicate + "\n" + direction.name()).stream();
+                return QuadGraphs.mapToQuadGraphs(
+                    triples.get(subject).get(predicate + "\n" + direction.name()).stream());
               } else {
                 return Stream.empty();
               }

@@ -10,6 +10,10 @@ public interface CursorUri extends CursorValue {
   @Value.Auxiliary
   String getCursor();
 
+  static CursorUri create(String uri) {
+    return create(uri, uri);
+  }
+
   static CursorUri create(String uri, String cursor) {
     return ImmutableCursorUri.builder()
                              .uri(uri)

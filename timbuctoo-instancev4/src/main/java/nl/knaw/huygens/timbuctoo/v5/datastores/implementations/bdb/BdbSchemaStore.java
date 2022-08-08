@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaUpdateException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
@@ -60,7 +61,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     this.importStatus = importStatus;
   }
 
-  public Map<String, Type> readTypes(String storedValue) throws IOException {
+  private Map<String, Type> readTypes(String storedValue) throws IOException {
     return OBJECT_MAPPER.readValue(storedValue, new TypeReference<>() {});
   }
 
@@ -92,10 +93,11 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     List<Type> addedTypes = new ArrayList<>();
     List<Type> removedTypes = new ArrayList<>();
     List<Type> unchangedTypes = new ArrayList<>();
-    try (Stream<CursorQuad> subjTypes = changeFetcher.getPredicates(subject, RDF_TYPE, OUT, true, true, true)) {
-      subjTypes.forEach(type -> {
+    try (Stream<QuadGraphs> subjTypes = changeFetcher.getPredicates(subject, RDF_TYPE, OUT, true, true, true)) {
+      for (QuadGraphs type : (Iterable<QuadGraphs>) subjTypes::iterator) {
         boolean hadTypesBefore = false;
         final Type typeOfSubject = types.computeIfAbsent(type.getObject(), TYPE_MAKER);
+
         if (type.getChangeType() == ChangeType.ASSERTED) {
           typeOfSubject.registerSubject(1);
           addedTypes.add(typeOfSubject);
@@ -107,8 +109,9 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
           hadTypesBefore = true;
           unchangedTypes.add(typeOfSubject);
         }
+
         if (!hadTypesBefore) {
-          try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
+          try (Stream<QuadGraphs> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
             boolean subjectIsNew = !predicates.findAny().isPresent();
             if (!subjectIsNew) {
               final Type unknown = types.computeIfAbsent(RDFS_RESOURCE, TYPE_MAKER);
@@ -117,14 +120,14 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
             }
           }
         }
-      });
+      }
     }
 
     if (addedTypes.isEmpty() && unchangedTypes.isEmpty()) {
       //subject currently has no types
       if (removedTypes.isEmpty()) {
         //subject had no types either
-        try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
+        try (Stream<QuadGraphs> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
           boolean subjectIsNew = !predicates.findAny().isPresent();
           if (subjectIsNew) {
             final Type unknown = types.computeIfAbsent(RDFS_RESOURCE, TYPE_MAKER);
@@ -151,7 +154,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     //if it was retracted -> remove it from the unchanged types and the removed types
     //if it was unchanged -> remove it from the removed types and add it to the added types
     //if it was asserted -> add it to the unchanged types and to the added types
-    try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, true)) {
+    try (Stream<QuadGraphs> predicates = changeFetcher.getPredicates(subject, true, true, true)) {
       String prevPred = "";
       Direction[] prevDir = new Direction[]{null};
       int retractedCount = 0;
@@ -166,7 +169,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
 
       //when we see the first predicate the prevPredicate is still empty so we ignore it in that case (happens inside
       //updatePredicateOccurrence)
-      for (CursorQuad quad : (Iterable<CursorQuad>) predicates::iterator) {
+      for (QuadGraphs quad : (Iterable<QuadGraphs>) predicates::iterator) {
         boolean predicateSameAsPrev = prevPred.equals(quad.getPredicate()) && prevDir[0] == quad.getDirection();
         if (!predicateSameAsPrev) {
           updatePredicateOccurrence(
@@ -240,7 +243,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     importStatus.setStatus("types-size is: " + totalPredicateCount);
   }
 
-  public void updatePredicateOccurrence(List<Type> addedTypes, List<Type> removedTypes, List<Type> unchangedTypes,
+  private void updatePredicateOccurrence(List<Type> addedTypes, List<Type> removedTypes, List<Type> unchangedTypes,
                                         int retractedCount, int unchangedCount, int assertedCount, String predicate,
                                         Direction direction) {
     if (!predicate.isEmpty()) {
@@ -278,7 +281,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     }
   }
 
-  public void updatePredicateType(Type type, CursorQuad quad, boolean add, ChangeFetcher changeFetcher) {
+  private void updatePredicateType(Type type, QuadGraphs quad, boolean add, ChangeFetcher changeFetcher) {
     final Optional<Predicate> predicateOpt = getPredicateForType(type, add, quad.getPredicate(), quad.getDirection());
 
     if (quad.getValuetype().isPresent()) {
@@ -287,7 +290,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         quad.getLanguage().ifPresent(predicate::addLanguage);
       });
     } else {
-      try (Stream<CursorQuad> typeQs = changeFetcher.getPredicates(quad.getObject(), RDF_TYPE, OUT, !add, true, add)) {
+      try (Stream<QuadGraphs> typeQs = changeFetcher.getPredicates(quad.getObject(), RDF_TYPE, OUT, !add, true, add)) {
         boolean[] hadType = new boolean[]{false};
         typeQs.forEach(typeQ -> {
           hadType[0] = true;
@@ -308,7 +311,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     }
   }
 
-  public void setPredicateOccurrence(Type type, String predicateUri, Direction direction, int listMutation,
+  private void setPredicateOccurrence(Type type, String predicateUri, Direction direction, int listMutation,
                                      int subjectMutation) {
     boolean isAssertion = listMutation > 0 || subjectMutation > 0;
     final Optional<Predicate> predicateOpt = getPredicateForType(type, isAssertion, predicateUri, direction);
@@ -323,6 +326,10 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   public void finish() {
     LOG.info("Finished processing entities");
     importStatus.setStatus("Finished processing entities");
+    writeUpdate();
+  }
+
+  private void writeUpdate() {
     for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
       Type type = typeEntry.getValue();
 
@@ -330,15 +337,15 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       for (Predicate predicate : type.getPredicates()) {
         predicate.finish();
         predicate.getReferenceTypes().keySet().forEach(key -> {
-            Type refType = types.get(key);
-            Predicate inversePred = refType.getOrCreatePredicate(predicate.getName(), getOppositeDirection(predicate));
-            if (!inversePred.getReferenceTypes().containsKey(type.getName())) {
-              inversePred.incReferenceType(type.getName(), 1);
-            }
+          Type refType = types.get(key);
+          Predicate inversePred = refType.getOrCreatePredicate(predicate.getName(), getOppositeDirection(predicate));
+          if (!inversePred.getReferenceTypes().containsKey(type.getName())) {
+            inversePred.incReferenceType(type.getName(), 1);
           }
-        );
+        });
       }
     }
+
     try {
       try {
         String serializedValue = OBJECT_MAPPER.writeValueAsString(types);
@@ -351,6 +358,21 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     } catch (SchemaUpdateException e) {
       e.printStackTrace();
     }
+  }
+
+  public void rebuildSchema(BdbQuadStore quadStore) {
+    types = new HashMap<>();
+    stableTypes = new HashMap<>();
+
+    final ChangeFetcher getQuads = new ChangeFetcherImpl(quadStore);
+    try (Stream<String> subjects = quadStore.getAllQuads().map(CursorQuad::getSubject).distinct()) {
+      for (String subject : (Iterable<String>) subjects::iterator) {
+        onChangedSubject(subject, getQuads);
+      }
+    }
+
+    dataStore.beginTransaction();
+    writeUpdate();
   }
 
   private Direction getOppositeDirection(Predicate predicate) {

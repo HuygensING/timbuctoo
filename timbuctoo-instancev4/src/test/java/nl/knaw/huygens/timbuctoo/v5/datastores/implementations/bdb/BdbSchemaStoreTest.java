@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.junit.Test;
@@ -225,21 +226,21 @@ public class BdbSchemaStoreTest {
     }
 
     @Override
-    public Stream<CursorQuad> getPredicates(
+    public Stream<QuadGraphs> getPredicates(
       String subject,
       boolean getRetracted,
       boolean getUnchanged,
       boolean getAsserted
     ) {
-      return triples.stream()
+      return QuadGraphs.mapToQuadGraphs(triples.stream()
                     .filter(t -> (t.getChangeType() == ChangeType.RETRACTED) == getRetracted ||
                       (t.getChangeType() == ChangeType.UNCHANGED) == getUnchanged ||
                       (t.getChangeType() == ChangeType.ASSERTED) == getAsserted)
-                    .filter(t -> (t.getSubject().equals(subject)));
+                    .filter(t -> (t.getSubject().equals(subject))));
     }
 
     @Override
-    public Stream<CursorQuad> getPredicates(
+    public Stream<QuadGraphs> getPredicates(
       String subject,
       String predicate,
       Direction direction,
@@ -247,13 +248,13 @@ public class BdbSchemaStoreTest {
       boolean getUnchanged,
       boolean getAsserted
     ) {
-      return triples.stream()
+      return QuadGraphs.mapToQuadGraphs(triples.stream()
                     .filter(t -> (t.getChangeType() == ChangeType.RETRACTED) == getRetracted ||
                       (t.getChangeType() == ChangeType.UNCHANGED) == getUnchanged ||
                       (t.getChangeType() == ChangeType.ASSERTED) == getAsserted)
                     .filter(t -> (t.getSubject().equals(subject)))
                     .filter(t -> (t.getPredicate().equals(predicate)))
-                    .filter(t -> (t.getDirection() == direction));
+                    .filter(t -> (t.getDirection() == direction)));
     }
   }
 }

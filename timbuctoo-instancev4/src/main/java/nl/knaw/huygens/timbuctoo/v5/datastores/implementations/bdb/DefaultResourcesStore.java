@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class DefaultResourcesStore implements OptimizedPatchListener {
                          .direction(cursor.startsWith("A\n") ? FORWARDS : BACKWARDS);
     }
 
-    return getter.getValues(bdbWrapper.valueRetriever()).map(value -> CursorUri.create(value, value));
+    return getter.getValues(bdbWrapper.valueRetriever()).map(CursorUri::create);
   }
 
   public void close() {
@@ -86,9 +86,9 @@ public class DefaultResourcesStore implements OptimizedPatchListener {
 
   @Override
   public void onChangedSubject(String subject, ChangeFetcher changeFetcher) throws RdfProcessingFailedException {
-    try (Stream<CursorQuad> subjectQuads = changeFetcher.getPredicates(subject, false, true, true)) {
+    try (Stream<QuadGraphs> subjectQuads = changeFetcher.getPredicates(subject, false, true, true)) {
       if (subjectQuads.findAny().isPresent()) {
-        try (Stream<CursorQuad> rdfTypeQuads =
+        try (Stream<QuadGraphs> rdfTypeQuads =
                  changeFetcher.getPredicates(subject, RDF_TYPE, OUT, false, true, true)) {
           if (rdfTypeQuads.findFirst().isEmpty()) {
             putIri(subject);

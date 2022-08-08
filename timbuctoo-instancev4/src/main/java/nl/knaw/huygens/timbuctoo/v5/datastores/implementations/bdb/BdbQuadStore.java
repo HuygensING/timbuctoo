@@ -7,7 +7,9 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +81,42 @@ public class BdbQuadStore implements QuadStore {
   }
 
   @Override
+  public Stream<CursorUri> getSubjectsInCollection(String collectionUri, String cursor) {
+    return getSubjectsInCollectionInGraph(collectionUri, cursor, Optional.empty());
+  }
+
+  @Override
+  public Stream<CursorUri> getSubjectsInCollectionInGraph(String collectionUri, String cursor, Optional<Graph> graph) {
+    DatabaseGetter.Iterate direction = cursor.isEmpty() || cursor.startsWith("A\n") ? FORWARDS : BACKWARDS;
+
+    final DatabaseGetter.PrimedBuilder<String, String> getter;
+    if (cursor.equals("LAST")) {
+      getter = bdbWrapper.databaseGetter()
+                         .key((formatKey(collectionUri, RdfConstants.RDF_TYPE, Direction.IN)))
+                         .skipToEnd();
+    } else {
+      getter = bdbWrapper.databaseGetter()
+                         .key((formatKey(collectionUri, RdfConstants.RDF_TYPE, Direction.IN)))
+                         .dontSkip();
+    }
+
+    Stream<CursorUri> result = getter
+        .direction(direction)
+        .getKeysAndValues(bdbWrapper.keyValueConverter(this::formatResult))
+        .filter(quad -> quad.inGraph(graph))
+        .map(quad -> CursorUri.create(quad.getObject()))
+        .distinct();
+
+    if (cursor.isEmpty()) {
+      return result;
+    }
+
+    return result
+        .dropWhile(cursorUri -> !cursorUri.getUri().equals(cursor.substring(2)))
+        .skip(1); //we start after the cursor
+  }
+
+  @Override
   public Stream<CursorQuad> getAllQuads() {
     return getAllQuadsInGraph(Optional.empty());
   }
@@ -128,22 +166,36 @@ public class BdbQuadStore implements QuadStore {
     return bdbWrapper.delete(formatKey(subject, predicate, direction), value);
   }
 
-  public String formatKey(String subject, String predicate, Direction direction) {
+  public static String formatKey(String subject, String predicate, Direction direction) {
     return subject + "\n" + predicate + "\n" + (direction == null ? "" : direction.name());
   }
 
-  public String formatValue(String object, String dataType, String language, String graph) {
+  public static String formatValue(String object, String dataType, String language, String graph) {
     return (dataType == null ? "" : dataType) + "\n" + (language == null ? "" : language) + "\n" +
         (graph == null ? "" : graph) + "\n" + object;
   }
 
-  public int compare(CursorQuad leftQ, CursorQuad rightQ) {
-    final String leftStr = formatKey(leftQ.getSubject(), leftQ.getPredicate(), leftQ.getDirection()) + "\n" +
-      formatValue(leftQ.getObject(), leftQ.getValuetype().orElse(null),
-          leftQ.getLanguage().orElse(null), leftQ.getGraph().orElse(null));
-    final String rightStr = formatKey(rightQ.getSubject(), rightQ.getPredicate(), rightQ.getDirection()) + "\n" +
-      formatValue(rightQ.getObject(), rightQ.getValuetype().orElse(null),
-          rightQ.getLanguage().orElse(null), rightQ.getGraph().orElse(null));
+  public static String format(CursorQuad quad) {
+    return formatKey(quad.getSubject(), quad.getPredicate(), quad.getDirection()) + "\n" +
+        formatValue(quad.getObject(), quad.getValuetype().orElse(null),
+            quad.getLanguage().orElse(null), quad.getGraph().orElse(null));
+  }
+
+  public static String format(QuadGraphs quad) {
+    return formatKey(quad.getSubject(), quad.getPredicate(), quad.getDirection()) + "\n" +
+        formatValue(quad.getObject(), quad.getValuetype().orElse(null),
+            quad.getLanguage().orElse(null), null);
+  }
+
+  public static int compare(CursorQuad leftQ, CursorQuad rightQ) {
+    final String leftStr = format(leftQ);
+    final String rightStr = format(rightQ);
+    return leftStr.compareTo(rightStr);
+  }
+
+  public static int compare(QuadGraphs leftQ, QuadGraphs rightQ) {
+    final String leftStr = format(leftQ);
+    final String rightStr = format(rightQ);
     return leftStr.compareTo(rightStr);
   }
 

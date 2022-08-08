@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringIntegerIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
@@ -30,7 +29,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
@@ -56,7 +54,10 @@ public class SchemaGenerationTest {
   private static final String PROP_II = "http://example.org/pred2";
   private static final String PROP_III = "http://example.org/links";
 
-  private static final String GRAPH = "http://example.org";
+  private static final String GRAPH_1 = "http://example.org/graph1";
+  private static final String GRAPH_2 = "http://example.org/graph2";
+  private static final String GRAPH_3 = "http://example.org/graph3";
+
   private static final String VALUE_TYPE = "http://example.org/valuetype";
 
   @Test
@@ -162,7 +163,7 @@ public class SchemaGenerationTest {
    * PROP_I of SUBJECT_A should be added to UKNOWN as an incoming predicate with a reference type TYPE_2
    */
   @Test
-  public void ifTheReferencedSubjectHasNoTypeThePredicateWillBeAddedToTimUnknown() throws Exception {
+  public void ifTheReferencedSubjectHasNoTypeThePredicateWillBeAddedToRdfsResource() throws Exception {
     Map<String, Type> schema = runTest(
       CursorQuad.create(SUBJECT_A, RDF_TYPE, OUT, ASSERTED, TYPE_2, null, null, null, ""),
       CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, "")
@@ -424,6 +425,98 @@ public class SchemaGenerationTest {
     )));
   }
 
+  @Test
+  public void addingQuadsWithTheSameSubjectButAnotherGraphShouldCountAsOne() throws Exception {
+    BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
+    final BdbSchemaStore schema = new BdbSchemaStore(
+        new BdbBackedData(dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "schema",
+            false,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        )),
+        mock(ImportStatus.class)
+    );
+
+    final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
+
+    storeUpdater.start(0);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
+    storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
+    storeUpdater.commit();
+
+    assertThat(schema.getStableTypes(), hasEntry(is(TYPE_1), hasProperty("subjectsWithThisType", is(2L))));
+  }
+
+  @Test
+  public void addingQuadsWithTheSameSubjectButAnotherGraphShouldCountAsUnchanged() throws Exception {
+    BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
+    final BdbSchemaStore schema = new BdbSchemaStore(
+        new BdbBackedData(dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "schema",
+            false,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        )),
+        mock(ImportStatus.class)
+    );
+
+    final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
+
+    storeUpdater.start(0);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
+    storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
+    storeUpdater.commit();
+
+    storeUpdater.start(1);
+    storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
+    storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
+    storeUpdater.commit();
+
+    assertThat(schema.getStableTypes(), hasEntry(is(TYPE_1), hasProperty("subjectsWithThisType", is(3L))));
+  }
+
+  @Test
+  public void removingQuadsWithTheSameSubjectButAnotherGraphShouldCountAsUnchanged() throws Exception {
+    BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
+    final BdbSchemaStore schema = new BdbSchemaStore(
+        new BdbBackedData(dataStoreFactory.getDatabase(
+            USER,
+            DATA_SET,
+            "schema",
+            false,
+            STRING_BINDING,
+            STRING_BINDING,
+            STRING_IS_CLEAN_HANDLER
+        )),
+        mock(ImportStatus.class)
+    );
+
+    final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
+
+    storeUpdater.start(0);
+    storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
+    storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
+    storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
+    storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
+    storeUpdater.commit();
+
+    storeUpdater.start(1);
+    storeUpdater.onQuad(false, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
+    storeUpdater.onQuad(false, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
+    storeUpdater.commit();
+
+    assertThat(schema.getStableTypes(), hasEntry(is(TYPE_1), hasProperty("subjectsWithThisType", is(2L))));
+  }
+
   private Map<String, Type> runTest(CursorQuad... quads) throws Exception {
     BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
 
@@ -507,7 +600,7 @@ public class SchemaGenerationTest {
         STRING_BINDING,
         STRING_IS_CLEAN_HANDLER
       )),
-      GRAPH
+        GRAPH_1
     );
 
     final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
