@@ -7,13 +7,13 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.UrlItem;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -161,11 +161,12 @@ public class RsDocumentBuilder {
         .addLink(new RsLn(REL_UP, rsUriHelper.uriForRsDocument(dataSetMetaData, Capability.CAPABILITYLIST)));
 
       ChangeListBuilder changeListBuilder = new ChangeListBuilder();
-      ChangesRetriever changesRetriever = maybeDataSet.get().getChangesRetriever();
+      UpdatedPerPatchStore updatedPerPatchStore = maybeDataSet.get().getUpdatedPerPatchStore();
 
-      List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(
-        changesRetriever.getVersions()
-      );
+      List<String> changeFileNames;
+      try (Stream<Integer> versions = updatedPerPatchStore.getVersions()) {
+        changeFileNames = changeListBuilder.retrieveChangeFileNames(versions);
+      }
 
       boolean isFirst = true;
       for (String changeFileName : changeFileNames) {
@@ -186,14 +187,17 @@ public class RsDocumentBuilder {
     return Optional.ofNullable(changeList);
   }
 
-  public Optional<Stream<String>> getChanges(@Nullable User user, String ownerId, String dataSetId, String fileId) {
+  public Optional<File> getChanges(@Nullable User user, String ownerId, String dataSetId, String fileId) {
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(user, ownerId, dataSetId);
     if (maybeDataSet.isPresent()) {
       DataSet dataSet = maybeDataSet.get();
-      ChangeListBuilder changeListBuilder = new ChangeListBuilder();
       Integer version = getVersionFromFileId(fileId);
-      if (dataSet.getChangesRetriever().versionExists(version)) {
-        return Optional.of(changeListBuilder.retrieveChanges(dataSet.getChangesRetriever(), version));
+
+      UpdatedPerPatchStore updatedPerPatchStore = maybeDataSet.get().getUpdatedPerPatchStore();
+      try (Stream<String> stream = updatedPerPatchStore.ofVersion(version)) {
+        if (stream.findAny().isPresent()) {
+          return dataSet.getChangeLogStorage().getChangeLog(version);
+        }
       }
     }
 

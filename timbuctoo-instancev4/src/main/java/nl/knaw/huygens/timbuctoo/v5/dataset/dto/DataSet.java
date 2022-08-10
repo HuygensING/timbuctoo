@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringIntegerIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ReadOnlyChecker;
@@ -15,10 +14,10 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbPatchVersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbRmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbQuadStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.DefaultResourcesStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.OldSubjectTypesStore;
@@ -29,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.ChangeLogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
@@ -154,17 +154,15 @@ public abstract class DataSet {
           stringIntIsCleanHandler
       ));
 
-      final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
-          dataStoreFactory.getDatabase(
-              userId,
-              dataSetId,
-              "truePatch" + version,
-              true,
-              stringBinding,
-              stringBinding,
-              stringStringIsCleanHandler
-          ), updatedPerPatchStore
-      );
+      final BdbPatchVersionStore patchVersionStore = new BdbPatchVersionStore(dataStoreFactory.getDatabase(
+          userId,
+          dataSetId,
+          "patchVersion",
+          true,
+          stringBinding,
+          stringBinding,
+          stringStringIsCleanHandler
+      ));
 
       final OldSubjectTypesStore oldSubjectTypesStore = new OldSubjectTypesStore(dataStoreFactory.getDatabase(
           userId,
@@ -193,15 +191,14 @@ public abstract class DataSet {
         quadStore,
         graphStore,
         typeNameStore,
-        truePatchStore,
+        patchVersionStore,
         updatedPerPatchStore,
         oldSubjectTypesStore,
         Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
-        importManager.getImportStatus()
+        importManager.getImportStatus(),
+        dataSetStorage.getChangeLogStorage()
       );
       importManager.subscribeToRdf(storeUpdater);
-
-      final ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore, updatedPerPatchStore);
 
       final CurrentStateRetriever currentStateRetriever = new CurrentStateRetriever(quadStore);
 
@@ -216,20 +213,19 @@ public abstract class DataSet {
         .typeNameStore(typeNameStore)
         .schemaStore(schema)
         .updatedPerPatchStore(updatedPerPatchStore)
-        .truePatchStore(truePatchStore)
+        .patchVersionStore(patchVersionStore)
         .oldSubjectTypesStore(oldSubjectTypesStore)
         .rmlDataSourceStore(rmlDataSourceStore)
         .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
         .importManager(importManager)
         .dataSetStorage(dataSetStorage)
-        .changesRetriever(changesRetriever)
         .currentStateRetriever(currentStateRetriever)
         .readOnlyChecker(readOnlyChecker)
         .build();
       importManager.init(dataSet);
 
       if (!quadStore.isClean() || !graphStore.isClean() || !defaultResourcesStore.isClean() ||
-        !typeNameStore.isClean() || !schema.isClean() || !truePatchStore.isClean() ||
+        !typeNameStore.isClean() || !schema.isClean() || !patchVersionStore.isClean() ||
         !updatedPerPatchStore.isClean() || !oldSubjectTypesStore.isClean() || !rmlDataSourceStore.isClean()) {
         LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
         quadStore.empty();
@@ -237,7 +233,7 @@ public abstract class DataSet {
         defaultResourcesStore.empty();
         typeNameStore.empty();
         schema.empty();
-        truePatchStore.empty();
+        patchVersionStore.empty();
         updatedPerPatchStore.empty();
         oldSubjectTypesStore.empty();
         rmlDataSourceStore.empty();
@@ -272,6 +268,10 @@ public abstract class DataSet {
 
   public LogStorage getLogStorage() throws IOException {
     return getDataSetStorage().getLogStorage();
+  }
+
+  public ChangeLogStorage getChangeLogStorage() {
+    return getDataSetStorage().getChangeLogStorage();
   }
 
   public Map<String, List<ExplicitField>> getCustomSchema() {
@@ -310,7 +310,7 @@ public abstract class DataSet {
 
   public abstract UpdatedPerPatchStore getUpdatedPerPatchStore();
 
-  public abstract BdbTruePatchStore getTruePatchStore();
+  public abstract BdbPatchVersionStore getPatchVersionStore();
 
   public abstract TypeNameStore getTypeNameStore();
 
@@ -329,8 +329,6 @@ public abstract class DataSet {
   public abstract BdbRmlDataSourceStore getRmlDataSourceStore();
 
   public abstract DataSetMetaData getMetadata();
-
-  public abstract ChangesRetriever getChangesRetriever();
 
   public abstract CurrentStateRetriever getCurrentStateRetriever();
 

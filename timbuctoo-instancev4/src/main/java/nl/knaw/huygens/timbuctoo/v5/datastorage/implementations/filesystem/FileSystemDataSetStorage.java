@@ -5,14 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataSetStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.ChangeLogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemChangeLogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorage;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
@@ -73,6 +74,12 @@ class FileSystemDataSetStorage implements DataSetStorage {
   }
 
   @Override
+  public ChangeLogStorage getChangeLogStorage() {
+    File filePath = fileHelper.pathInDataSet(ownerPrefix, dataSetId, "changelogs");
+    return new FileSystemChangeLogStorage(filePath);
+  }
+
+  @Override
   public RdfIoFactory getRdfIo() {
     return rdfIo;
   }
@@ -94,7 +101,7 @@ class FileSystemDataSetStorage implements DataSetStorage {
 
   @Override
   public JsonDataStore<LogList> getLogList() throws IOException {
-    return JsonFileBackedData.getOrCreate(logFile, LogList::new, new TypeReference<LogList>(){});
+    return JsonFileBackedData.getOrCreate(logFile, LogList::new, new TypeReference<>(){});
   }
 
   @Override
@@ -103,7 +110,6 @@ class FileSystemDataSetStorage implements DataSetStorage {
     JsonFileBackedData.remove(metaDataFile);
     getFileStorage().clear();
     this.deleteDataSetData(fileHelper.dataSetPath(ownerPrefix, dataSetId), 5);
-
   }
 
   private void deleteDataSetData(File path, int retryCount) {

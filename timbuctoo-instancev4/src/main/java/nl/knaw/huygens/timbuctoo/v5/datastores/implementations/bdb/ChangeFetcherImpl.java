@@ -10,20 +10,17 @@ import java.util.stream.Stream;
 import static com.google.common.collect.Streams.stream;
 
 class ChangeFetcherImpl implements ChangeFetcher {
-  private final BdbTruePatchStore truePatchStore;
+  private final BdbPatchVersionStore patchVersionStore;
   private final BdbQuadStore quadStore;
-  private final int version;
 
-  public ChangeFetcherImpl(BdbTruePatchStore truePatchStore, BdbQuadStore quadStore, int version) {
-    this.truePatchStore = truePatchStore;
+  public ChangeFetcherImpl(BdbPatchVersionStore patchVersionStore, BdbQuadStore quadStore) {
+    this.patchVersionStore = patchVersionStore;
     this.quadStore = quadStore;
-    this.version = version;
   }
 
   public ChangeFetcherImpl(BdbQuadStore quadStore) {
-    this.truePatchStore = null;
+    this.patchVersionStore = null;
     this.quadStore = quadStore;
-    this.version = -1;
   }
 
   @Override
@@ -36,7 +33,7 @@ class ChangeFetcherImpl implements ChangeFetcher {
   public Stream<QuadGraphs> getPredicates(String subject, String predicate, Direction direction,
                                           boolean getRetracted, boolean getUnchanged, boolean getAsserted) {
     final Stream<QuadGraphs> result;
-    if (truePatchStore == null && getAsserted) {
+    if (patchVersionStore == null && getAsserted) {
       result = QuadGraphs.mapToQuadGraphs(predicate != null ?
           quadStore.getQuads(subject, predicate, direction, "") :
           quadStore.getQuads(subject)
@@ -44,12 +41,12 @@ class ChangeFetcherImpl implements ChangeFetcher {
           q.getSubject(), q.getPredicate(), q.getDirection(), q.getObject(),
           q.getValuetype(), q.getLanguage(), q.getGraphs(), ChangeType.ASSERTED
       ));
-    } else if (truePatchStore == null) {
+    } else if (patchVersionStore == null) {
       result = Stream.empty();
     } else if (getUnchanged) {
       final Stream<QuadGraphs> assertions = QuadGraphs.mapToQuadGraphs(predicate != null ?
-          truePatchStore.getChanges(subject, predicate, direction, version, true) :
-          truePatchStore.getChanges(subject, version, true)
+          patchVersionStore.getChanges(subject, predicate, direction, true) :
+          patchVersionStore.getChanges(subject, true)
       );
 
       final Stream<QuadGraphs> currentState = QuadGraphs.mapToQuadGraphs(predicate != null ?
@@ -63,20 +60,20 @@ class ChangeFetcherImpl implements ChangeFetcher {
       });
     } else if (getAsserted) {
       result = QuadGraphs.mapToQuadGraphs((predicate == null ?
-          truePatchStore.getChanges(subject, version, true) :
-          truePatchStore.getChanges(subject, predicate, direction, version, true)
+          patchVersionStore.getChanges(subject, true) :
+          patchVersionStore.getChanges(subject, predicate, direction, true)
       ));
     } else {
       result = Stream.empty();
     }
 
-    if (getRetracted && truePatchStore != null) {
+    if (getRetracted && patchVersionStore != null) {
       final Stream<QuadGraphs> retractions = QuadGraphs.mapToQuadGraphs(predicate != null ?
-          truePatchStore.getChanges(subject, predicate, direction, version, false) :
-          truePatchStore.getChanges(subject, version, false)
+          patchVersionStore.getChanges(subject, predicate, direction, false) :
+          patchVersionStore.getChanges(subject, false)
       );
 
-      return stream(new RetractionMerger(result, retractions, version)).onClose(() -> {
+      return stream(new RetractionMerger(result, retractions)).onClose(() -> {
         result.close();
         retractions.close();
       });

@@ -10,10 +10,12 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.ChangeLogStorage;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType.ASSERTED;
@@ -31,6 +33,8 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 public class SchemaGenerationTest {
@@ -615,16 +619,16 @@ public class SchemaGenerationTest {
       )
     );
 
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
+    final BdbPatchVersionStore patchVersionStore = new BdbPatchVersionStore(
         dataStoreFactory.getDatabase(
             USER,
             DATA_SET,
-            "truePatch" + version,
+            "patchVersion",
             true,
             STRING_BINDING,
             STRING_BINDING,
             STRING_IS_CLEAN_HANDLER
-        ), updatedPerPatchStore
+        )
     );
 
     final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
@@ -650,15 +654,19 @@ public class SchemaGenerationTest {
         STRING_IS_CLEAN_HANDLER
     ));
 
+    ChangeLogStorage changeLogStorage = mock(ChangeLogStorage.class);
+    given(changeLogStorage.getChangeLogOutputStream(anyInt())).will(invocation -> OutputStream.nullOutputStream());
+
     return new StoreUpdater(
       quadStore,
       graphStore,
       typeNameStore,
-      truePatchStore,
+      patchVersionStore,
       updatedPerPatchStore,
       oldSubjectTypesStore,
       Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
-      mock(ImportStatus.class)
+      mock(ImportStatus.class),
+      changeLogStorage
     );
   }
 }

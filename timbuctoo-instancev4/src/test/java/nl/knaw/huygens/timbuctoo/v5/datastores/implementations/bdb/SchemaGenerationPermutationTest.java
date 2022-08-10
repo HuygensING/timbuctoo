@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.ChangeLogStorage;
 import org.hamcrest.Matcher;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -334,16 +335,16 @@ public class SchemaGenerationPermutationTest {
       )
     );
 
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version ->
+    final BdbPatchVersionStore patchVersionStore = new BdbPatchVersionStore(
         dataStoreFactory.getDatabase(
             USER,
             DATA_SET,
-            "truePatch" + version,
+            "patchVersion",
             true,
             STRING_BINDING,
             STRING_BINDING,
             STRING_IS_CLEAN_HANDLER
-        ), updatedPerPatchStore
+        )
     );
 
     final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
@@ -373,11 +374,12 @@ public class SchemaGenerationPermutationTest {
       quadStore,
       graphStore,
       typeNameStore,
-      truePatchStore,
+      patchVersionStore,
       updatedPerPatchStore,
       oldSubjectTypesStore,
       Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
-      mock(ImportStatus.class)
+      mock(ImportStatus.class),
+      mock(ChangeLogStorage.class)
     );
   }
 

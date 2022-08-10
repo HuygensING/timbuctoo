@@ -1,10 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
-import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbPatchVersionStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
@@ -12,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -27,10 +24,7 @@ public class ChangeListBuilderTest {
   @Test
   public void retrieveChangeFilesNamesReturnsCorrectNamesBasedOnSuppliedVersions() {
     ChangeListBuilder changeListBuilder = new ChangeListBuilder();
-
-    Supplier<List<Integer>> versionsSupplier = () -> Lists.newArrayList(1, 2);
-
-    List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(versionsSupplier);
+    List<String> changeFileNames = changeListBuilder.retrieveChangeFileNames(IntStream.of(1, 2).boxed());
 
     assertThat(changeFileNames, contains("changes1.nqud", "changes2.nqud"));
   }
@@ -41,28 +35,27 @@ public class ChangeListBuilderTest {
     when(updatedPerPatchStore.getVersions()).thenReturn(IntStream.of(1).boxed());
 
     BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
-    BdbTruePatchStore bdbTruePatchStore = new BdbTruePatchStore(version -> dataStoreFactory.getDatabase(
-      "user",
-      "dataSet",
-      "schema" + version,
-      false,
-      TupleBinding.getPrimitiveBinding(String.class),
-      TupleBinding.getPrimitiveBinding(String.class),
-      new StringStringIsCleanHandler()
-    ), updatedPerPatchStore);
+    BdbPatchVersionStore bdbPatchVersionStore = new BdbPatchVersionStore(dataStoreFactory.getDatabase(
+        "user",
+        "dataSet",
+        "patchVersion",
+        false,
+        TupleBinding.getPrimitiveBinding(String.class),
+        TupleBinding.getPrimitiveBinding(String.class),
+        new StringStringIsCleanHandler()
+    ));
 
-    int version = 1;
-    bdbTruePatchStore.put("s1", version, "p1", Direction.OUT, true, "o1", null, null, null);
-    bdbTruePatchStore.put("s2", version, "p2", Direction.OUT, false, "o2", null, null, null);
-    bdbTruePatchStore.put("s3", version, "p3", Direction.OUT, true, "o3", RdfConstants.STRING, null, null);
-    bdbTruePatchStore.put("s4", version, "p4", Direction.OUT, false, "o4", RdfConstants.STRING, null, null);
-    bdbTruePatchStore.put("s5", version, "p5", Direction.OUT, true, "o5", RdfConstants.LANGSTRING, "en", null);
-    bdbTruePatchStore.put("s6", version, "p6", Direction.OUT, false, "o6", RdfConstants.LANGSTRING, "en", null);
+    bdbPatchVersionStore.put("s1", "p1", Direction.OUT, true, "o1", null, null, null);
+    bdbPatchVersionStore.put("s2", "p2", Direction.OUT, false, "o2", null, null, null);
+    bdbPatchVersionStore.put("s3", "p3", Direction.OUT, true, "o3", RdfConstants.STRING, null, null);
+    bdbPatchVersionStore.put("s4", "p4", Direction.OUT, false, "o4", RdfConstants.STRING, null, null);
+    bdbPatchVersionStore.put("s5", "p5", Direction.OUT, true, "o5", RdfConstants.LANGSTRING, "en", null);
+    bdbPatchVersionStore.put("s6", "p6", Direction.OUT, false, "o6", RdfConstants.LANGSTRING, "en", null);
 
     ChangeListBuilder changeListBuilder = new ChangeListBuilder();
-    ChangesRetriever changesRetriever = new ChangesRetriever(bdbTruePatchStore, null);
-
-    List<String> changes = changeListBuilder.retrieveChanges(changesRetriever, version).collect(Collectors.toList());
+    List<String> changes = changeListBuilder
+        .retrieveChanges(bdbPatchVersionStore.retrieveChanges())
+        .collect(Collectors.toList());
 
     assertThat(changes, containsInAnyOrder(
       "+<s1> <p1> <o1> .\n",

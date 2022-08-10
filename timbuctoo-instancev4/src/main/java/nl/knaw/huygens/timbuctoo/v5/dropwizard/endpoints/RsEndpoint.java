@@ -101,12 +101,12 @@ public class RsEndpoint {
   public Response getChanges(@HeaderParam("authorization") String authHeader,
                              @PathParam("ownerId") String owner,
                              @PathParam("dataSetName") String dataSetName,
-                             @PathParam("fileId") String fileId) throws IOException {
+                             @PathParam("fileId") String fileId) {
     User user = getUser(authHeader);
-    Optional<Stream<String>> changesStream = rsDocumentBuilder.getChanges(user, owner, dataSetName, fileId);
+    Optional<File> changesFile = rsDocumentBuilder.getChanges(user, owner, dataSetName, fileId);
 
-    if (changesStream.isPresent()) {
-      return streamToStreamingResponse(changesStream.get());
+    if (changesFile.isPresent()) {
+      return Response.ok(changesFile.get()).header("Content-Encoding", "gzip").build();
     }
 
     return Response.status(Response.Status.NOT_FOUND).build();

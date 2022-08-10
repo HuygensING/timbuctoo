@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.ChangeLogStorage;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class StoreUpdaterTest {
 
     instance.start(0);
 
-    verify(importStatus).addProgressItem(BdbTruePatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    verify(importStatus).addProgressItem(BdbPatchVersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(BdbQuadStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
@@ -52,7 +53,7 @@ public class StoreUpdaterTest {
     Thread.sleep(6000); // wait 6 seconds to let the second update trigger the notify
     instance.onQuad(true, "", "", "", "", "", "");
 
-    verify(importStatus).updateProgressItem(BdbTruePatchStore.class.getSimpleName(), 2);
+    verify(importStatus).updateProgressItem(BdbPatchVersionStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(BdbQuadStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(BdbTypeNameStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(UpdatedPerPatchStore.class.getSimpleName(), 2);
@@ -67,7 +68,7 @@ public class StoreUpdaterTest {
 
     instance.commit();
 
-    verify(importStatus).finishProgressItem(BdbTruePatchStore.class.getSimpleName());
+    verify(importStatus).finishProgressItem(BdbPatchVersionStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(BdbQuadStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(BdbTypeNameStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
@@ -92,19 +93,21 @@ public class StoreUpdaterTest {
     BdbTypeNameStore bdbTypeNameStore = mock(BdbTypeNameStore.class);
     BdbQuadStore bdbQuadStore = mock(BdbQuadStore.class);
     GraphStore graphStore = mock(GraphStore.class);
-    BdbTruePatchStore bdbTruePatchStore = mock(BdbTruePatchStore.class);
+    BdbPatchVersionStore patchVersionStore = mock(BdbPatchVersionStore.class);
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
     OldSubjectTypesStore oldSubjectTypesStore = mock(OldSubjectTypesStore.class);
+    ChangeLogStorage changeLogStorage = mock(ChangeLogStorage.class);
 
     return new StoreUpdater(
       bdbQuadStore,
       graphStore,
       bdbTypeNameStore,
-      bdbTruePatchStore,
+      patchVersionStore,
       updatedPerPatchStore,
       oldSubjectTypesStore,
       listeners,
-      importStatus
+      importStatus,
+      changeLogStorage
     );
   }
 

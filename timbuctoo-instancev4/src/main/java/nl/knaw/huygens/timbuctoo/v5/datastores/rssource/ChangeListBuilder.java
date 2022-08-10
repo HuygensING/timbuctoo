@@ -1,14 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.rssource;
 
-import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,19 +16,13 @@ public class ChangeListBuilder {
     this.changesQuadGenerator = new ChangesQuadGenerator();
   }
 
-  public List<String> retrieveChangeFileNames(Supplier<List<Integer>> versions) {
-    List<String> changeFileNames = new ArrayList<>();
-    //filter hack to ignore isClosed values. needs to be fixed in DataRetriever.
-    versions.get().stream().filter(x -> x != Integer.MAX_VALUE).collect(Collectors.toList())
-      .forEach(version -> {
-        changeFileNames.add("changes" + version.toString() + ".nqud");
-      });
-
-    return changeFileNames;
+  public List<String> retrieveChangeFileNames(Stream<Integer> versions) {
+    return versions.filter(x -> x != Integer.MAX_VALUE)
+                   .map(version -> "changes" + version + ".nqud")
+                   .collect(Collectors.toList());
   }
 
-  public Stream<String> retrieveChanges(ChangesRetriever changesRetriever, Integer version) {
-    Stream<CursorQuad> quads = changesRetriever.retrieveChanges(version);
+  public Stream<String> retrieveChanges(Stream<CursorQuad> quads) {
     return quads.map(quad -> {
       Optional<String> dataType = quad.getValuetype();
       if (dataType == null || !dataType.isPresent()) {

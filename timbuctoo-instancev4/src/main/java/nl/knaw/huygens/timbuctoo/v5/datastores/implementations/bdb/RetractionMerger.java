@@ -15,12 +15,10 @@ class RetractionMerger implements Iterator<QuadGraphs> {
 
   private final PeekingIterator<QuadGraphs> state;
   private final PeekingIterator<QuadGraphs> retractions;
-  private final int version;
 
-  public RetractionMerger(Stream<QuadGraphs> state, Stream<QuadGraphs> retractions, int version) {
+  public RetractionMerger(Stream<QuadGraphs> state, Stream<QuadGraphs> retractions) {
     this.state = Iterators.peekingIterator(state.iterator());
     this.retractions = Iterators.peekingIterator(retractions.iterator());
-    this.version = version;
   }
 
   @Override
@@ -86,7 +84,7 @@ class RetractionMerger implements Iterator<QuadGraphs> {
 
       if (compareResult == 0) {
         //Huh? we have a retraction, but the thing is also part of the state?
-        LOG.error("in {} {} was retracted, but it is still part of the store as {}", version, rightQ, leftQ);
+        LOG.error("{} was retracted, but it is still part of the store as {}", rightQ, leftQ);
         //oh well...
         state.next();
         //back to business

@@ -17,6 +17,7 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.glassfish.jersey.message.GZipEncoder;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -2880,6 +2881,7 @@ public class IntegrationTest {
     return client
       .target(server)
       .register(MultiPartFeature.class)
+      .register(GZipEncoder.class)
       // .register(new LoggingFilter(Logger.getLogger(LoggingFilter.class.getName()), true))
       .request()
       .header("Authorization", AUTH);

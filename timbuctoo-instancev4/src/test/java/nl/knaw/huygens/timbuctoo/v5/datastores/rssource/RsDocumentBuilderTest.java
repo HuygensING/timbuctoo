@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsBuilder;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ChangesRetriever;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -14,12 +13,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,7 +22,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -153,7 +146,6 @@ public class RsDocumentBuilderTest {
     logList.addEntry(logEntry1);
     logList.addEntry(logEntry2);
 
-
     DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
     given(dataSetMetaData.getBaseUri()).willReturn("http://example.com/u1/ds1/");
     given(dataSetMetaData.getOwnerId()).willReturn("u1");
@@ -162,7 +154,6 @@ public class RsDocumentBuilderTest {
     given(dataSet.getUpdatedPerPatchStore()).willReturn(updatedPerPatchStore);
     given(dataSet.getMetadata()).willReturn(dataSetMetaData);
     given(dataSet.getImportManager()).willReturn(importManager);
-    given(dataSet.getChangesRetriever()).willReturn(new ChangesRetriever(null, updatedPerPatchStore));
 
     Urlset changeList = rsDocumentBuilder.getChangeList(null, "u1", "ds1").get();
 
@@ -177,52 +168,5 @@ public class RsDocumentBuilderTest {
       is("http://example.com/v5/resourcesync/u1/ds1/changes/changes0.nqud"));
     assertThat(changeList.getItemList().get(1).getLink(ResourceSyncConstants.PATCH_LINK).get().getHref(),
       is("http://example.com/v5/resourcesync/u1/ds1/changes/changes1.nqud"));
-  }
-
-  @Test
-  public void getChangesGeneratesNqudForTheGivenChangeVersion() throws Exception {
-    when(dataSetRepository.getDataSet(null, "u1", "ds1")).thenReturn(Optional.of(dataSet));
-
-    UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
-    given(updatedPerPatchStore.getVersions()).willReturn(Stream.of(1));
-    given(updatedPerPatchStore.ofVersion(1)).willReturn(Stream.of("s1", "s2"));
-
-    BdbTruePatchStore truePatchStore = mock(BdbTruePatchStore.class);
-
-    CursorQuad cursorQuad1 = mock(CursorQuad.class);
-    given(cursorQuad1.getSubject()).willReturn("s1");
-    given(cursorQuad1.getPredicate()).willReturn("p1");
-    given(cursorQuad1.getChangeType()).willReturn(ChangeType.ASSERTED);
-    given(cursorQuad1.getObject()).willReturn("o1");
-    given(cursorQuad1.getDirection()).willReturn(Direction.OUT);
-
-    CursorQuad cursorQuad2 = mock(CursorQuad.class);
-    given(cursorQuad2.getSubject()).willReturn("s2");
-    given(cursorQuad2.getPredicate()).willReturn("p2");
-    given(cursorQuad2.getChangeType()).willReturn(ChangeType.RETRACTED);
-    given(cursorQuad2.getObject()).willReturn("o2");
-    given(cursorQuad2.getDirection()).willReturn(Direction.OUT);
-
-    given(truePatchStore.getChangesOfVersion(1, true)).willReturn(Stream.of(cursorQuad1, cursorQuad2));
-
-    DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
-    given(dataSetMetaData.getBaseUri()).willReturn("uri");
-    given(dataSetMetaData.getOwnerId()).willReturn("u1");
-    given(dataSetMetaData.getDataSetId()).willReturn("ds1");
-
-    ChangesRetriever changesRetriever = new ChangesRetriever(truePatchStore, updatedPerPatchStore);
-
-    given(dataSet.getUpdatedPerPatchStore()).willReturn(updatedPerPatchStore);
-    given(dataSet.getTruePatchStore()).willReturn(truePatchStore);
-    given(dataSet.getChangesRetriever()).willReturn(changesRetriever);
-    given(dataSet.getMetadata()).willReturn(dataSetMetaData);
-
-    Optional<Stream<String>> changes = rsDocumentBuilder.getChanges(null, "u1", "ds1", "changes1.nqud");
-
-    assertThat(changes.isPresent(), is(true));
-    assertThat(changes.get().collect(Collectors.toList()), Matchers.contains(
-      "+<s1> <p1> <o1> .\n",
-      "-<s2> <p2> <o2> .\n"
-    ));
   }
 }

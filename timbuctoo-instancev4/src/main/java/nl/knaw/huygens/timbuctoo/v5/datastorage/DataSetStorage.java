@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastorage;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.exceptions.DataStorageSaveException;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.ChangeLogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
@@ -17,6 +18,8 @@ public interface DataSetStorage {
   FileStorage getFileStorage() throws IOException;
 
   LogStorage getLogStorage() throws IOException;
+
+  ChangeLogStorage getChangeLogStorage();
 
   RdfIoFactory getRdfIo();
 

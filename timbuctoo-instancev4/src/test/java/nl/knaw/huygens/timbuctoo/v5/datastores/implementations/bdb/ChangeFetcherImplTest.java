@@ -32,20 +32,20 @@ public class ChangeFetcherImplTest {
       TupleBinding.getPrimitiveBinding(String.class),
       new StringStringIsCleanHandler()
     ));
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(version -> databaseCreator.getDatabase(
+    final BdbPatchVersionStore patchVersionStore = new BdbPatchVersionStore(databaseCreator.getDatabase(
       "a",
       "b",
-      "truePatch" + version,
+      "patchVersion",
       true,
       TupleBinding.getPrimitiveBinding(String.class),
       TupleBinding.getPrimitiveBinding(String.class),
       new StringStringIsCleanHandler()
-    ), updatedPerPatchStore);
+    ));
 
     bdbQuadStore.putQuad("subj", "pred", OUT, "obj", null, null, null);
-    truePatchStore.put("subj", 0, "pred", OUT, true, "obj", null, null, null);
+    patchVersionStore.put("subj", "pred", OUT, true, "obj", null, null, null);
 
-    ChangeFetcherImpl changeFetcher = new ChangeFetcherImpl(truePatchStore, bdbQuadStore, 0);
+    ChangeFetcherImpl changeFetcher = new ChangeFetcherImpl(patchVersionStore, bdbQuadStore);
 
     try (Stream<QuadGraphs> predicates = changeFetcher.getPredicates("subj", "pred", OUT, false, false, true)) {
       assertThat(predicates.count(), is(1L));
@@ -57,9 +57,10 @@ public class ChangeFetcherImplTest {
       assertThat(predicates.count(), is(1L));
     }
 
+    patchVersionStore.empty();
     bdbQuadStore.putQuad("subj", "pred", OUT, "obj2", null, null, "graph");
-    truePatchStore.put("subj", 1, "pred", OUT, true, "obj2", null, null, "graph");
-    changeFetcher = new ChangeFetcherImpl(truePatchStore, bdbQuadStore, 1);
+    patchVersionStore.put("subj", "pred", OUT, true, "obj2", null, null, "graph");
+    changeFetcher = new ChangeFetcherImpl(patchVersionStore, bdbQuadStore);
 
     try (Stream<QuadGraphs> predicates = changeFetcher.getPredicates("subj", "pred", OUT, false, false, true)) {
       assertThat(predicates.count(), is(1L));

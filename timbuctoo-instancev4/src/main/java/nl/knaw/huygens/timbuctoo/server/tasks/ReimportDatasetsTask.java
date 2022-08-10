@@ -49,7 +49,6 @@ public class ReimportDatasetsTask extends Task {
     dataSet.getDefaultResourcesStore().empty();
     ((BdbTypeNameStore) dataSet.getTypeNameStore()).empty();
     ((BdbSchemaStore) dataSet.getSchemaStore()).empty();
-    dataSet.getTruePatchStore().empty();
     dataSet.getUpdatedPerPatchStore().empty();
     dataSet.getOldSubjectTypesStore().empty();
     dataSet.getRmlDataSourceStore().empty();
