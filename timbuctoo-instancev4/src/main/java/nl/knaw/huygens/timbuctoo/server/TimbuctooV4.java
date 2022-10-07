@@ -212,8 +212,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
+
+    final int numThreads = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
     DataSetRepository dataSetRepository = configuration.getDataSetConfiguration().createRepository(
-      environment.lifecycle().executorService("dataSet").build(),
+      environment.lifecycle().executorService("dataSet").maxThreads(numThreads).build(),
       securityConfig.getPermissionFetcher(),
       configuration.getDatabases(),
       configuration.getRdfIdHelper(),
