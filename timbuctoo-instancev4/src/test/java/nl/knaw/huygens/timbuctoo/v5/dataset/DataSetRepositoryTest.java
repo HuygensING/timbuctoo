@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.Metadata;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.NotEnoughPermissionsException;
 import nl.knaw.huygens.timbuctoo.v5.datastorage.DataStorage;
@@ -20,6 +21,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.concurrent.Executors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,6 +52,7 @@ public class DataSetRepositoryTest {
       Executors.newSingleThreadExecutor(),
       permissionFetcher,
       new BdbNonPersistentEnvironmentCreator(),
+      Metadata.create(Optional.empty(), new TreeMap<>()),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
       combinedId -> {
       },

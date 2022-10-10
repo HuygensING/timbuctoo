@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.Metadata;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
@@ -37,6 +38,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaContainer;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.metadataprops.MetadataPropsSchema;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CollectionMetadataMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.CreateDataSetMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.DataSetMetadataMutation;
@@ -88,6 +90,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final DataSetRepository dataSetRepository;
   private final SupportedExportFormats supportedFormats;
   private final String archetypes;
+  private final Metadata metadata;
   private final RdfWiringFactory wiringFactory;
   private final DerivedSchemaGenerator typeGenerator;
   private final ObjectMapper objectMapper;
@@ -99,7 +102,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private GraphQLSchema graphQlSchema;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
-                   String archetypes, Function<Runnable, RdfWiringFactory> wiringFactory,
+                   String archetypes, Metadata metadata, Function<Runnable, RdfWiringFactory> wiringFactory,
                    DerivedSchemaGenerator typeGenerator, ObjectMapper objectMapper,
                    ResourceSyncFileLoader resourceSyncFileLoader, ResourceSyncService resourceSyncService,
                    ExecutorService schemaAccessQueue)
@@ -107,6 +110,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
     this.archetypes = archetypes;
+    this.metadata = metadata;
     this.wiringFactory = wiringFactory.apply(this::scheduleRebuild);
     this.typeGenerator = typeGenerator;
     this.objectMapper = objectMapper;
@@ -133,6 +137,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   private GraphQLSchema generateSchema() {
     final TypeDefinitionRegistry staticQuery = schemaParser.parse(this.staticQuery);
+
     if (archetypes != null && !archetypes.isEmpty()) {
       staticQuery.merge(schemaParser.parse(
         archetypes +
@@ -142,6 +147,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "\n")
       );
     }
+
+    MetadataPropsSchema metadataPropsSchema = new MetadataPropsSchema(schemaParser, metadata.getProps());
+    staticQuery.merge(metadataPropsSchema.getTypeDefinition());
+
     TypeDefinitionRegistry registry = new TypeDefinitionRegistry();
     registry.merge(staticQuery);
 
@@ -298,7 +307,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("publish", new MakePublicMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("extendSchema", new ExtendSchemaMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("setDataSetMetadata",
-        new DataSetMetadataMutation(this::scheduleRebuild, dataSetRepository))
+        new DataSetMetadataMutation(this::scheduleRebuild, dataSetRepository, metadata))
       .dataFetcher("setCollectionMetadata",
         new CollectionMetadataMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("resourceSyncImport",

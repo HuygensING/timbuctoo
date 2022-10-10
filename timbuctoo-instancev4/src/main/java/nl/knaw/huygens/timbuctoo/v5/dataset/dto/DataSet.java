@@ -51,13 +51,14 @@ import java.util.concurrent.ExecutorService;
 public abstract class DataSet {
   private static final Logger LOG = LoggerFactory.getLogger(DataSet.class);
 
-  public static DataSet dataSet(DataSetMetaData metadata, ExecutorService executorService,
+  public static DataSet dataSet(DataSetMetaData dataSetMetaData, ExecutorService executorService,
                                 String rdfPrefix, BdbEnvironmentCreator dataStoreFactory,
-                                Runnable onUpdated, DataSetStorage dataSetStorage, ReadOnlyChecker readOnlyChecker)
+                                Metadata metadata, Runnable onUpdated,
+                                DataSetStorage dataSetStorage, ReadOnlyChecker readOnlyChecker)
     throws IOException, DataStoreCreationException {
 
-    String userId = metadata.getOwnerId();
-    String dataSetId = metadata.getDataSetId();
+    String userId = dataSetMetaData.getOwnerId();
+    String dataSetId = dataSetMetaData.getDataSetId();
     File descriptionFile = dataSetStorage.getResourceSyncDescriptionFile();
     FileStorage fileStorage = dataSetStorage.getFileStorage();
 
@@ -72,8 +73,9 @@ public abstract class DataSet {
     );
 
     try {
-      importManager.subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri(),
-        importManager.getImportStatus()));
+      RdfDescriptionSaver descriptionSaver = new RdfDescriptionSaver(
+              metadata, descriptionFile, dataSetMetaData.getBaseUri(), importManager.getImportStatus());
+      importManager.subscribeToRdf(descriptionSaver);
     } catch (ParserConfigurationException | SAXException e) {
       LOG.error("Could not construct import manager of data set", e);
     }
@@ -206,7 +208,7 @@ public abstract class DataSet {
         .ownerId(userId)
         .dataSetName(dataSetId)
         .bdbEnvironmentCreator(dataStoreFactory)
-        .metadata(metadata)
+        .metadata(dataSetMetaData)
         .quadStore(quadStore)
         .graphStore(graphStore)
         .defaultResourcesStore(defaultResourcesStore)

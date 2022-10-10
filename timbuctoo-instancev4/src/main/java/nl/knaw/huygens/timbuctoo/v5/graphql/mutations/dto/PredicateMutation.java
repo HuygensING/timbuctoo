@@ -50,7 +50,20 @@ public class PredicateMutation {
     return this;
   }
 
+  public PredicateMutation entity(String subjectUri, List<MutationOperation> operations) {
+    entity(this, subjectUri, operations);
+    return this;
+  }
+
   private void entity(PredicateMutation start, String subjectUri, MutationOperation... operations) {
+    for (MutationOperation operation : operations) {
+      if (operation != null) {
+        operation.apply(subjectUri, start);
+      }
+    }
+  }
+
+  private void entity(PredicateMutation start, String subjectUri, List<MutationOperation> operations) {
     for (MutationOperation operation : operations) {
       if (operation != null) {
         operation.apply(subjectUri, start);
@@ -78,7 +91,8 @@ public class PredicateMutation {
     };
   }
 
-  public static MutationOperation getOrCreate(String predicateUri, String defaultUri, MutationOperation... operations) {
+  public static MutationOperation getOrCreate(String predicateUri, String defaultUri,
+                                              List<MutationOperation> operations) {
     return (subject, mutation) -> {
       UUID id = UUID.randomUUID();
       mutation.subjectFinders.put(id, new FollowPredicateFinder(subject, predicateUri, defaultUri));

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 public class AuthCheck {
   private static final Logger LOG = LoggerFactory.getLogger(AuthCheck.class);
@@ -41,12 +42,12 @@ public class AuthCheck {
     }
   }
 
-  private Either<Response, Tuple<User, DataSet>> handleForceCreate(String ownerId, String dataSetId,
-                                                                  boolean forceCreation, User user) {
+  private Either<Response, Tuple<User, DataSet>> handleForceCreate(
+      String ownerId, String dataSetId, Optional<String> baseUri, boolean forceCreation, User user) {
     if (forceCreation) {
       if (dataSetRepository.userMatchesPrefix(user, ownerId)) {
         try {
-          final DataSet dataSet = dataSetRepository.createDataSet(user, dataSetId);
+          final DataSet dataSet = dataSetRepository.createDataSet(user, dataSetId, baseUri, null);
           return Either.right(Tuple.tuple(user, dataSet));
         } catch (DataStoreCreationException | DataSetCreationException e) {
           LOG.error(e.getMessage());
@@ -61,11 +62,16 @@ public class AuthCheck {
 
   public Either<Response, Tuple<User, DataSet>> getOrCreate(String authHeader, String ownerId, String dataSetId,
                                                             boolean forceCreation) {
+    return getOrCreate(authHeader, ownerId, dataSetId, Optional.empty(), forceCreation);
+  }
+
+  public Either<Response, Tuple<User, DataSet>> getOrCreate(String authHeader, String ownerId, String dataSetId,
+                                                            Optional<String> baseUri, boolean forceCreation) {
     return getUser(authHeader, userValidator)
       .flatMap(user ->
         dataSetRepository.getDataSet(user, ownerId, dataSetId)
           .map(ds -> Either.<Response, Tuple<User, DataSet>>right(Tuple.tuple(user, ds)))
-          .orElseGet(() -> handleForceCreate(ownerId, dataSetId, forceCreation, user))
+          .orElseGet(() -> handleForceCreate(ownerId, dataSetId, baseUri, forceCreation, user))
       );
   }
 

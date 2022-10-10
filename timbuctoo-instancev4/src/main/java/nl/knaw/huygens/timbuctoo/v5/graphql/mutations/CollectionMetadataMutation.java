@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyType
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -28,15 +29,17 @@ public class CollectionMetadataMutation extends Mutation {
   @Override
   public Object executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
-    MutationHelpers.checkPermission(env, dataSet.getMetadata(),Permission.EDIT_COLLECTION_METADATA);
+    MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.EDIT_COLLECTION_METADATA);
     try {
       String collectionUri = env.getArgument("collectionUri");
       Map data = env.getArgument("metadata");
       final PredicateMutation mutation = new PredicateMutation();
       mutation.entity(
-        collectionUri,
-        getValue(data, "title").map(v -> replace(RDFS_LABEL, value(v))).orElse(null),
-        getValue(data, "archeType").map(v -> replace("http://www.w3.org/2000/01/rdf-schema#subClassOf", subject(v))).orElse(null)
+          collectionUri,
+          List.of(
+              getValue(data, "title").map(v -> replace(RDFS_LABEL, value(v))).orElse(null),
+              getValue(data, "archeType").map(v -> replace("http://www.w3.org/2000/01/rdf-schema#subClassOf", subject(v))).orElse(null)
+          )
       );
 
       MutationHelpers.addMutation(dataSet, mutation);

@@ -63,7 +63,8 @@ public class RdfUpload {
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
     final Either<Response, Response> result = authCheck
-      .getOrCreate( authHeader, userId, dataSetId, forceCreation)
+      .getOrCreate(authHeader, userId, dataSetId,
+          Optional.ofNullable(baseUri != null ? baseUri.toString() : null), forceCreation)
       .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.getLeft(), userAndDs.getRight()))
       .map((Tuple<User, DataSet> userDataSetTuple) -> {
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;

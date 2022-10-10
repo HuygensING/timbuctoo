@@ -218,6 +218,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       environment.lifecycle().executorService("dataSet").maxThreads(numThreads).build(),
       securityConfig.getPermissionFetcher(),
       configuration.getDatabases(),
+      configuration.getMetadata(),
       configuration.getRdfIdHelper(),
       (combinedId -> {
         try {
@@ -309,6 +310,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetRepository,
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
+        configuration.getMetadata(),
         (schemaUpdater) -> new RdfWiringFactory(
           dataSetRepository,
           argHelper,

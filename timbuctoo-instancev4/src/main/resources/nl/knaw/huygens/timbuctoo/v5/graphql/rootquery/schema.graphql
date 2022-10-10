@@ -118,13 +118,7 @@ type DataSetMetadata {
   ownerId: String!
   published: Boolean!
   promoted: Boolean!
-  title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
-  description: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
-  imageUrl: Value @rdf(predicate: "http://xmlns.com/foaf/0.1/depiction", direction: "OUT", isList: false, isObject: false, isValue: true)
-  owner: ContactInfo @rdf(predicate: "http://purl.org/dc/terms/rightsHolder", direction: "OUT", isList: false, isObject: true, isValue: false)
-  contact: ContactInfo @rdf(predicate: "http://schema.org/contactPoint", direction: "OUT", isList: false, isObject: true, isValue: false)
-  provenanceInfo: ProvenanceInfo @rdf(predicate: "http://purl.org/dc/terms/provenance", direction: "OUT", isList: false, isObject: true, isValue: false)
-  license: License @rdf(predicate: "http://purl.org/dc/terms/license", direction: "OUT", isList: false, isObject: true, isValue: false)
+  #metadata added by the RootQuery based on the config
   prefixMappings: [PrefixMapping!]!
   #archetypes: Archetypes! @passThrough (added by the RootQuery based on the config)
   collection(collectionId: ID!): CollectionMetadata
@@ -370,18 +364,8 @@ type CollectionIdList {
   items: [String!]!
 }
 
-type ContactInfo {
-  name: Value @rdf(predicate: "http://schema.org/name", direction: "OUT", isList: false, isObject: false, isValue: true)
-  email: Value @rdf(predicate: "http://schema.org/email", direction: "OUT", isList: false, isObject: false, isValue: true)
-}
-
-type License {
+type Uri {
   uri: String! @uri
-}
-
-type ProvenanceInfo {
-  title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
-  body: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
 
 # the components used to define a view page or an edit page in the front-end
@@ -433,28 +417,8 @@ type Message {
   message: String!
 }
 
-input DataSetMetadataInput {
-  title: String
-  description: String
-  imageUrl: String
-  owner: ContactInfoInput
-  contact: ContactInfoInput
-  provenanceInfo: ProvenanceInfoInput
-  license: LicenseInput
-}
-
-input ContactInfoInput {
-  name: String!
-  email: String!
-}
-
-input LicenseInput {
+input UriInput {
   uri: String!
-}
-
-input ProvenanceInfoInput {
-  title: String!
-  body: String!
 }
 
 input CollectionMetadataInput {
@@ -493,7 +457,7 @@ type Mutation {
   publish(dataSetId: String!): DataSetMetadata!
   extendSchema(dataSetId: String!, customSchema: [CustomSchemaTypeInput!]!): ExtendSchemaMessage!
   # Update the metadata for this dataset. To leave a property as-is you can omit it from the metadata. To delete it you can include it and set it's value to null.
-  setDataSetMetadata(dataSetId: String!, metadata: DataSetMetadataInput!): DataSetMetadata!
+  #setDataSetMetadata(dataSetId: String!, metadata: DataSetMetadataInput!): DataSetMetadata! (added by the RootQuery based on the config)
   # Set the title or archetype for this collection
   setCollectionMetadata(dataSetId: String!, collectionUri: String!, metadata: CollectionMetadataInput!): CollectionMetadata!
   #To trigger a resourcesync import. Inputs required: "dataSetName" is the name you want to call the imported dataset.

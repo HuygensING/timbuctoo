@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.Metadata;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -18,15 +18,13 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-public class RdfDescriptionSaver implements RdfProcessor {
-  private static final List<String> DESCRIPTION_PREDICATES = Lists.newArrayList(
-      "http://purl.org/dc/terms",
-      "http://schema.org"
-  );
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
+public class RdfDescriptionSaver implements RdfProcessor {
+  private final Metadata metadata;
   private final String baseUri;
   private final File descriptionFile;
   private final Model model;
@@ -35,8 +33,9 @@ public class RdfDescriptionSaver implements RdfProcessor {
 
   private int currentVersion;
 
-  public RdfDescriptionSaver(File descriptionFile, String baseUri, ImportStatus importStatus) throws IOException,
-    ParserConfigurationException, SAXException {
+  public RdfDescriptionSaver(Metadata metadata, File descriptionFile, String baseUri,
+                             ImportStatus importStatus) throws IOException, ParserConfigurationException, SAXException {
+    this.metadata = metadata;
     this.baseUri = baseUri;
     descriptionFile.createNewFile();
     this.descriptionFile = descriptionFile;
@@ -50,8 +49,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
   }
 
   private boolean isDescriptionPredicate(String predicate) {
-    String predicatePrefix = predicate.substring(0, predicate.lastIndexOf("/"));
-    return (DESCRIPTION_PREDICATES.contains(predicatePrefix));
+    return metadata.getProps().values().stream().anyMatch(prop -> prop.getPredicate().equals(predicate));
   }
 
   @Override
@@ -60,7 +58,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
 
   @Override
   public void addValue(String subject, String predicate, String value, String dataType, String graph)
-    throws RdfProcessingFailedException {
+      throws RdfProcessingFailedException {
     try {
       if (Objects.equals(subject, baseUri) && isDescriptionPredicate(predicate)) {
         ValueFactory vf = SimpleValueFactory.getInstance();
@@ -73,9 +71,12 @@ public class RdfDescriptionSaver implements RdfProcessor {
 
   @Override
   public void addRelation(String subject, String predicate, String object, String graph)
-    throws RdfProcessingFailedException {
+      throws RdfProcessingFailedException {
     try {
-      if (Objects.equals(subject, baseUri) && isDescriptionPredicate(predicate)) {
+      if (Objects.equals(subject, baseUri) &&
+          (isDescriptionPredicate(predicate) ||
+              (predicate.equals(RDF_TYPE) && metadata.getRdfType().isPresent() &&
+                  metadata.getRdfType().get().equals(object)))) {
         ValueFactory vf = SimpleValueFactory.getInstance();
         model.add(vf.createIRI(subject), vf.createIRI(predicate), vf.createIRI(object));
       }
@@ -91,7 +92,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
 
   @Override
   public void delRelation(String subject, String predicate, String object, String graph)
-    throws RdfProcessingFailedException {
+      throws RdfProcessingFailedException {
     try {
       if (Objects.equals(subject, baseUri)) {
         ValueFactory vf = SimpleValueFactory.getInstance();
@@ -104,7 +105,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
 
   @Override
   public void delValue(String subject, String predicate, String value, String dataType, String graph)
-    throws RdfProcessingFailedException {
+      throws RdfProcessingFailedException {
     try {
       if (Objects.equals(subject, baseUri)) {
         ValueFactory vf = SimpleValueFactory.getInstance();

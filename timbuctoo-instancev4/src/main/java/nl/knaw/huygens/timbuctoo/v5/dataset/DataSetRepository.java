@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportInfo;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.Metadata;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataSetPublishException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -52,6 +53,7 @@ public class DataSetRepository {
   private final ExecutorService executorService;
   private final PermissionFetcher permissionFetcher;
   private final BdbEnvironmentCreator dataStoreFactory;
+  private final Metadata metadata;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
@@ -62,12 +64,13 @@ public class DataSetRepository {
   private final DataStorage dataStorage;
 
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
-                           BdbEnvironmentCreator dataStoreFactory,
+                           BdbEnvironmentCreator dataStoreFactory, Metadata metadata,
                            TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated,
                            boolean publicByDefault, DataStorage dataStorage) {
     this.executorService = executorService;
     this.permissionFetcher = permissionFetcher;
     this.dataStoreFactory = dataStoreFactory;
+    this.metadata = metadata;
 
     this.rdfIdHelper = rdfIdHelper;
     this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
@@ -128,6 +131,7 @@ public class DataSetRepository {
               executorService,
               rdfBaseUri,
               dataStoreFactory,
+              metadata,
               () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
               dataStorage.getDataSetStorage(ownerId, dataSetName),
               readOnlyChecker
@@ -159,14 +163,15 @@ public class DataSetRepository {
       final String dataSetName = userDataSet.getRight();
       if (userSets.containsKey(dataSetName)) {
         final DataSet dataSet = userSets.remove(dataSetName);
-        final DataSetMetaData metadata = dataSet.getMetadata();
+        final DataSetMetaData dataSetMetaData = dataSet.getMetadata();
         dataSet.stop();
         final DataSet reloadedDataSet = dataSet(
-          metadata,
+            dataSetMetaData,
           executorService,
           rdfBaseUri,
           dataStoreFactory,
-          () -> onUpdated.accept(metadata.getCombinedId()),
+          metadata,
+          () -> onUpdated.accept(dataSetMetaData.getCombinedId()),
           dataStorage.getDataSetStorage(userId, dataSetName),
           readOnlyChecker
         );
@@ -218,8 +223,13 @@ public class DataSetRepository {
     return createDataSet(user, dataSetId, null);
   }
 
-
   public DataSet createDataSet(User user, String dataSetId,
+                               List<ImportInfo> importInfos) throws DataStoreCreationException,
+      IllegalDataSetNameException, DataSetCreationException {
+    return createDataSet(user, dataSetId, Optional.empty(), importInfos);
+  }
+
+  public DataSet createDataSet(User user, String dataSetId, Optional<String> optBaseUri,
                                List<ImportInfo> importInfos) throws DataStoreCreationException,
       IllegalDataSetNameException, DataSetCreationException {
     //The ownerId might not be valid (i.e. a safe string). We make it safe here:
@@ -228,7 +238,7 @@ public class DataSetRepository {
     if (dataStorage.dataSetExists(ownerPrefix, dataSetId)) {
       throw new DataSetCreationException("DataSet already exists on disk.");
     }
-    final String baseUri = rdfIdHelper.dataSetBaseUri(ownerPrefix, dataSetId);
+    final String baseUri = optBaseUri.orElse(rdfIdHelper.dataSetBaseUri(ownerPrefix, dataSetId));
     String uriPrefix;
     if (!baseUri.endsWith("/") && !baseUri.endsWith("#") && !baseUri.endsWith("?")) {
       //it might have some parts
@@ -281,6 +291,7 @@ public class DataSetRepository {
             executorService,
             rdfBaseUri,
             dataStoreFactory,
+            metadata,
             () -> onUpdated.accept(dataSet.getCombinedId()),
             dataStorage.getDataSetStorage(ownerPrefix, dataSetId), readOnlyChecker);
           userDataSets.put(

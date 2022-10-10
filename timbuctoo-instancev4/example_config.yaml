@@ -75,6 +75,59 @@ defaultSummaryProps:
     - http://schema.org/image
     type: SimplePath
 
+metadata:
+  props:
+    title:
+      type: SimpleMetadataProp
+      predicate: http://purl.org/dc/terms/title
+    description:
+      type: SimpleMetadataProp
+      predicate: http://purl.org/dc/terms/description
+      valueType: https://daringfireball.net/projects/markdown/syntax
+    imageUrl:
+      type: SimpleMetadataProp
+      predicate: http://xmlns.com/foaf/0.1/depiction
+    license:
+      type: UriMetadataProp
+      predicate: http://purl.org/dc/terms/license
+    owner:
+      type: EntityMetadataProp
+      predicate: http://purl.org/dc/terms/rightsHolder
+      useBaseUri: true
+      entityUri: rightsHolder
+      properties:
+        name:
+          type: SimpleMetadataProp
+          predicate: http://schema.org/name
+        email:
+          type: SimpleMetadataProp
+          predicate: http://schema.org/email
+    contact:
+      type: EntityMetadataProp
+      predicate: http://schema.org/ContactPoint
+      useBaseUri: true
+      entityUri: ContactPoint
+      properties:
+        name:
+          type: SimpleMetadataProp
+          predicate: http://schema.org/name
+        email:
+          type: SimpleMetadataProp
+          predicate: http://schema.org/email
+    provenanceInfo:
+      type: EntityMetadataProp
+      predicate: http://purl.org/dc/terms/provenance
+      useBaseUri: true
+      entityUri: Provenance
+      properties:
+        title:
+          type: SimpleMetadataProp
+          predicate: http://purl.org/dc/terms/title
+        body:
+          type: SimpleMetadataProp
+          predicate: http://purl.org/dc/terms/description
+          valueType: https://daringfireball.net/projects/markdown/syntax
+
 databases:
   databaseLocation: ${timbuctoo_dataPath}/datasets
 
