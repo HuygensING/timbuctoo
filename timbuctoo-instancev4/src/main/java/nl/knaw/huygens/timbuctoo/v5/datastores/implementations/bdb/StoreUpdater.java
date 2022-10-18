@@ -49,6 +49,7 @@ public class StoreUpdater implements RdfProcessor {
   private long prevCount;
   private long prevTime;
   private String logString;
+  private boolean hasOldSubjectTypes;
 
   public StoreUpdater(BdbQuadStore quadStore, GraphStore graphStore,
                       BdbTypeNameStore typeNameStore, BdbPatchVersionStore patchVersionStore,
@@ -135,7 +136,7 @@ public class StoreUpdater implements RdfProcessor {
         updatedPerPatchStore.put(version, subject);
         graphStore.put(graph, subject);
 
-        if (predicate.equals(RDF_TYPE)) {
+        if (hasOldSubjectTypes && predicate.equals(RDF_TYPE)) {
           for (int v = 0; v < version; v++) {
             oldSubjectTypesStore.delete(subject, object, v);
           }
@@ -222,6 +223,7 @@ public class StoreUpdater implements RdfProcessor {
     startTransactions();
     logString = "Processed {} triples ({} triples/s)";
     count = 0; // reset the count to make sure the right amount of imported triples are logged.
+    hasOldSubjectTypes = oldSubjectTypesStore.size() > 0;
   }
 
   private void startTransactions() {

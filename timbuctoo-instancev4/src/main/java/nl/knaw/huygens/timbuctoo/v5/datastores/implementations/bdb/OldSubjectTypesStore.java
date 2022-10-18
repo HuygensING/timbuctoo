@@ -19,6 +19,10 @@ public class OldSubjectTypesStore {
     this.bdbWrapper = bdbWrapper;
   }
 
+  public long size() {
+    return bdbWrapper.count();
+  }
+
   public void put(String subject, String type, int version) throws DatabaseWriteException {
     bdbWrapper.put(type, version + "\n" + subject);
   }

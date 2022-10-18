@@ -223,6 +223,10 @@ public class BdbWrapper<KeyT, ValueT> {
     }
   }
 
+  public long count() {
+    return database.count();
+  }
+
   public <U> KeyValueConverter<KeyT, ValueT, U> keyValueConverter(BiFunction<KeyT, ValueT, U> converter) {
     return new CleanFilteringKeyValueConverter<>(converter);
   }
