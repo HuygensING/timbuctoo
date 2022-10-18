@@ -65,7 +65,6 @@ public class LoggedInUsers {
             return Optional.of(nw);
           }
         } catch (UnauthorizedException e) {
-          LOG.warn("User is not retrievable", e);
           return Optional.empty();
         } catch (IOException | AuthenticationUnavailableException e) {
           LOG.error("An exception is thrown while retrieving the user information.", e);
