@@ -71,11 +71,11 @@ import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.CompressFilesTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
-import nl.knaw.huygens.timbuctoo.server.tasks.DumpChangelogsTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MoveDefaultGraphsTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MoveEdgesTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.RebuildSchemaTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.ReimportDatasetsTask;
+import nl.knaw.huygens.timbuctoo.server.tasks.RemoveOldStore;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
@@ -432,7 +432,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.admin().addTask(new ReimportDatasetsTask(dataSetRepository));
     environment.admin().addTask(new CompressFilesTask(dataSetRepository));
     environment.admin().addTask(new RebuildSchemaTask(dataSetRepository));
-    environment.admin().addTask(new DumpChangelogsTask(dataSetRepository, configuration.getDatabases()));
+    environment.admin().addTask(new RemoveOldStore(configuration.getDatabases(), dataSetRepository));
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance

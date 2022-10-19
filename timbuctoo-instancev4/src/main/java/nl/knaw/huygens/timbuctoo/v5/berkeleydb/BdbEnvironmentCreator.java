@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 
 import com.sleepycat.bind.EntryBinding;
+import com.sleepycat.je.Database;
+import com.sleepycat.je.Environment;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 

@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
-import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,13 @@ public class BdbQuadStore implements QuadStore {
 
   @Override
   public Stream<CursorQuad> getQuads(String subject, String predicate, Direction direction, String cursor) {
-    return getQuadsInGraph(subject, predicate, direction, cursor, Optional.empty());
+    return getQuadsInGraph(subject, predicate, direction, cursor, Optional.empty(), false);
+  }
+
+  @Override
+  public Stream<CursorQuad> getQuads(String subject, String predicate, Direction direction,
+                                     String cursor, boolean skipGraphs) {
+    return getQuadsInGraph(subject, predicate, direction, cursor, Optional.empty(), skipGraphs);
   }
 
   @Override
@@ -52,68 +57,41 @@ public class BdbQuadStore implements QuadStore {
   }
 
   @Override
-  public Stream<CursorQuad> getQuadsInGraph(String subject, String predicate,
-                                            Direction direction, String cursor, Optional<Graph> graph) {
+  public Stream<CursorQuad> getQuadsInGraph(String subject, String predicate, Direction direction,
+                                            String cursor, Optional<Graph> graph) {
+    return getQuadsInGraph(subject, predicate, direction, cursor, graph, false);
+  }
+
+  @Override
+  public Stream<CursorQuad> getQuadsInGraph(String subject, String predicate, Direction direction,
+                                            String cursor, Optional<Graph> graph, boolean skipGraphs) {
+    final CursorQuad start;
     final DatabaseGetter<String, String> getter;
     if (cursor.isEmpty()) {
+      start = null;
       getter = bdbWrapper.databaseGetter()
                          .key((formatKey(subject, predicate, direction)))
                          .dontSkip()
                          .forwards();
+    } else if (cursor.equals("LAST")) {
+      start = null;
+      getter = bdbWrapper.databaseGetter()
+                         .key((formatKey(subject, predicate, direction)))
+                         .skipToEnd()
+                         .backwards();
     } else {
-      if (cursor.equals("LAST")) {
-        getter = bdbWrapper.databaseGetter()
-                           .key((formatKey(subject, predicate, direction)))
-                           .skipToEnd()
-                           .backwards();
-      } else {
-        String[] fields = cursor.substring(2).split("\n\n", 2);
-        getter = bdbWrapper.databaseGetter()
-                           .key(fields[0])
-                           .skipToValue(fields[1])
-                           .skipOne() //we start after the cursor
-                           .direction(cursor.startsWith("A\n") ? FORWARDS : BACKWARDS);
-      }
+      final String[] fields = cursor.substring(2).split("\n\n", 2);
+      start = formatResult(fields[0], fields[1]);
+      getter = bdbWrapper.databaseGetter()
+                         .key(fields[0])
+                         .skipToValue(fields[1])
+                         .skipOne() //we start after the cursor
+                         .direction(cursor.startsWith("A\n") ? FORWARDS : BACKWARDS);
     }
 
     return getter.getKeysAndValues(bdbWrapper.keyValueConverter(this::formatResult))
+                 .dropWhile(quad -> skipGraphs && start != null && start.equalsExcludeGraph(quad))
                  .filter(quad -> quad.inGraph(graph));
-  }
-
-  @Override
-  public Stream<CursorUri> getSubjectsInCollection(String collectionUri, String cursor) {
-    return getSubjectsInCollectionInGraph(collectionUri, cursor, Optional.empty());
-  }
-
-  @Override
-  public Stream<CursorUri> getSubjectsInCollectionInGraph(String collectionUri, String cursor, Optional<Graph> graph) {
-    DatabaseGetter.Iterate direction = cursor.isEmpty() || cursor.startsWith("A\n") ? FORWARDS : BACKWARDS;
-
-    final DatabaseGetter.PrimedBuilder<String, String> getter;
-    if (cursor.equals("LAST")) {
-      getter = bdbWrapper.databaseGetter()
-                         .key((formatKey(collectionUri, RdfConstants.RDF_TYPE, Direction.IN)))
-                         .skipToEnd();
-    } else {
-      getter = bdbWrapper.databaseGetter()
-                         .key((formatKey(collectionUri, RdfConstants.RDF_TYPE, Direction.IN)))
-                         .dontSkip();
-    }
-
-    Stream<CursorUri> result = getter
-        .direction(direction)
-        .getKeysAndValues(bdbWrapper.keyValueConverter(this::formatResult))
-        .filter(quad -> quad.inGraph(graph))
-        .map(quad -> CursorUri.create(quad.getObject()))
-        .distinct();
-
-    if (cursor.isEmpty()) {
-      return result;
-    }
-
-    return result
-        .dropWhile(cursorUri -> !cursorUri.getUri().equals(cursor.substring(2)))
-        .skip(1); //we start after the cursor
   }
 
   @Override
@@ -141,15 +119,17 @@ public class BdbQuadStore implements QuadStore {
   private CursorQuad formatResult(String key, String value) {
     String cursor = key + "\n\n" + value;
     String[] keyFields = key.split("\n", 3);
-    String[] valueFields = value.split("\n", 4);
+    String[] valueFields = value.split("\n", 3);
+    int objectGraphIdx = valueFields[2].lastIndexOf('\n');
     return CursorQuad.create(
       keyFields[0],
       keyFields[1],
       Direction.valueOf(keyFields[2]),
-      valueFields[3],
+      valueFields[2].substring(0, objectGraphIdx),
       valueFields[0].isEmpty() ? null : valueFields[0],
       valueFields[1].isEmpty() ? null : valueFields[1],
-      valueFields[2].isEmpty() ? null : valueFields[2],
+      valueFields[2].substring(objectGraphIdx + 1).isEmpty() ?
+          null : valueFields[2].substring(objectGraphIdx + 1),
       cursor
     );
   }
@@ -166,22 +146,22 @@ public class BdbQuadStore implements QuadStore {
     return bdbWrapper.delete(formatKey(subject, predicate, direction), value);
   }
 
-  public static String formatKey(String subject, String predicate, Direction direction) {
+  private static String formatKey(String subject, String predicate, Direction direction) {
     return subject + "\n" + predicate + "\n" + (direction == null ? "" : direction.name());
   }
 
   public static String formatValue(String object, String dataType, String language, String graph) {
     return (dataType == null ? "" : dataType) + "\n" + (language == null ? "" : language) + "\n" +
-        (graph == null ? "" : graph) + "\n" + object;
+        object + "\n" + (graph == null ? "" : graph);
   }
 
-  public static String format(CursorQuad quad) {
+  private static String format(CursorQuad quad) {
     return formatKey(quad.getSubject(), quad.getPredicate(), quad.getDirection()) + "\n" +
         formatValue(quad.getObject(), quad.getValuetype().orElse(null),
             quad.getLanguage().orElse(null), quad.getGraph().orElse(null));
   }
 
-  public static String format(QuadGraphs quad) {
+  private static String format(QuadGraphs quad) {
     return formatKey(quad.getSubject(), quad.getPredicate(), quad.getDirection()) + "\n" +
         formatValue(quad.getObject(), quad.getValuetype().orElse(null),
             quad.getLanguage().orElse(null), null);

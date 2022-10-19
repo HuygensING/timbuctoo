@@ -68,8 +68,8 @@ public class BdbQuadStoreTest {
         create(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null, EX + "graph", ""),
         create(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null, null, ""),
         create(EX + "subject1", "http://pred", Direction.OUT, "13", "http://number", null, EX + "graph", ""),
-        create(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en", null, ""),
         create(EX + "subject1", "http://pred", Direction.OUT, "Hello", LANGSTRING, "EN-en", EX + "graph", ""),
+        create(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en", null, ""),
         create(EX + "subject1", "http://pred", Direction.OUT, "Gauthier", LANGSTRING, "FR-fr", null, "")
       ));
     }

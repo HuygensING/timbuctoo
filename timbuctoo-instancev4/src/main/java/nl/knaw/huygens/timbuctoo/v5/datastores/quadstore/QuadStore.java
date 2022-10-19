@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.quadstore;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.CursorUri;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
@@ -13,14 +12,15 @@ public interface QuadStore {
 
   Stream<CursorQuad> getQuads(String subject, String predicate, Direction direction, String cursor);
 
+  Stream<CursorQuad> getQuads(String subject, String predicate, Direction direction, String cursor, boolean skipGraphs);
+
   Stream<CursorQuad> getQuadsInGraph(String subject, Optional<Graph> graph);
 
-  Stream<CursorQuad> getQuadsInGraph(String subject, String predicate,
-                                     Direction direction, String cursor, Optional<Graph> graph);
+  Stream<CursorQuad> getQuadsInGraph(String subject, String predicate, Direction direction,
+                                     String cursor, Optional<Graph> graph);
 
-  Stream<CursorUri> getSubjectsInCollection(String collectionUri, String cursor);
-
-  Stream<CursorUri> getSubjectsInCollectionInGraph(String collectionUri, String cursor, Optional<Graph> graph);
+  Stream<CursorQuad> getQuadsInGraph(String subject, String predicate, Direction direction,
+                                     String cursor, Optional<Graph> graph, boolean skipGraphs);
 
   Stream<CursorQuad> getAllQuads();
 

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers;
 
-import nl.knaw.huygens.timbuctoo.util.Streams;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.CursorUri;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
@@ -20,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static nl.knaw.huygens.timbuctoo.util.Streams.distinctByKey;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper.getPaginatedList;
@@ -105,12 +105,13 @@ public class CollectionDataFetcher implements CollectionFetcher {
 
   private PaginatedList<SubjectReference> getDefaultPaginatedList(Optional<Long> total,
                                                                   PaginationArguments arguments, DataSet dataSet) {
-    try (Stream<CursorUri> subjectStream = dataSet
+    try (Stream<CursorQuad> quadStream = dataSet
         .getQuadStore()
-        .getSubjectsInCollectionInGraph(collectionUri, arguments.getCursor(), arguments.getGraph())) {
+        .getQuadsInGraph(collectionUri, RDF_TYPE, IN, arguments.getCursor(), arguments.getGraph(), true)
+        .filter(distinctByKey(CursorQuad::getObject))) {
       return PaginationHelper.getPaginatedList(
-        subjectStream,
-        cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getUri(), arguments.getGraph(), dataSet),
+        quadStream,
+        cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), arguments.getGraph(), dataSet),
         arguments,
         total
       );
