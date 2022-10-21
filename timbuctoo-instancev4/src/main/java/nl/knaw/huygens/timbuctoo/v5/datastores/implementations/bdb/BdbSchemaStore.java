@@ -334,7 +334,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       Type type = typeEntry.getValue();
 
       // finish the predicates register if it has been singular or list
-      for (Predicate predicate : type.getPredicates()) {
+      for (Predicate predicate : List.copyOf(type.getPredicates())) {
         predicate.finish();
         predicate.getReferenceTypes().keySet().forEach(key -> {
           Type refType = types.get(key);
