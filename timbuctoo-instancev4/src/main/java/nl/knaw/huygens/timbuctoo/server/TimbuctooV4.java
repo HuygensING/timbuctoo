@@ -215,7 +215,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final int numThreads = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
     DataSetRepository dataSetRepository = configuration.getDataSetConfiguration().createRepository(
-      environment.lifecycle().executorService("dataSet").maxThreads(numThreads).build(),
+      environment.lifecycle().executorService("dataSet").minThreads(numThreads).maxThreads(numThreads).build(),
       securityConfig.getPermissionFetcher(),
       configuration.getDatabases(),
       configuration.getMetadata(),

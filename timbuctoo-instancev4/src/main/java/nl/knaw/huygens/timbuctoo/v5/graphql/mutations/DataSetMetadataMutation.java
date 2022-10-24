@@ -75,10 +75,8 @@ public class DataSetMetadataMutation extends Mutation {
   private static MutationOperation withMetadataProp(String name, MetadataProp metadataProp,
                                                     String baseUri, Map<?, ?> md) {
     if (md.containsKey(name)) {
-      if (metadataProp instanceof UriMetadataProp && md.get(name) instanceof Map &&
-          ((Map<?, ?>) md.get(name)).containsKey("uri")) {
-        String uri = (String) ((Map<?, ?>) md.get(name)).get("uri");
-
+      if (metadataProp instanceof UriMetadataProp) {
+        String uri = (String) md.get(name);
         return replace(metadataProp.getPredicate(), subject(uri));
       } else if (metadataProp instanceof SimpleMetadataProp) {
         String value = (String) md.get(name);

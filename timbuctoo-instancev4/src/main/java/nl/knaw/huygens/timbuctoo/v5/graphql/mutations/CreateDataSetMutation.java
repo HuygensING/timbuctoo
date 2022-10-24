@@ -11,6 +11,8 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MutationHelpers.getUser;
 
 public class CreateDataSetMutation extends Mutation {
@@ -28,9 +30,11 @@ public class CreateDataSetMutation extends Mutation {
     User currentUser = getUser(env);
 
     String dataSetName = env.getArgument("dataSetName");
+    String baseUri = env.getArgument("baseUri");
+
     try {
       return new DataSetWithDatabase(
-        dataSetRepository.createDataSet(currentUser, dataSetName),
+        dataSetRepository.createDataSet(currentUser, dataSetName, Optional.ofNullable(baseUri)),
         env.<ContextData>getContext().getUserPermissionCheck()
       );
     } catch (DataStoreCreationException e) {

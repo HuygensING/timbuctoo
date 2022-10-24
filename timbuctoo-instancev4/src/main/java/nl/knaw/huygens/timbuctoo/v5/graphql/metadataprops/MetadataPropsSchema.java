@@ -85,7 +85,7 @@ public class MetadataPropsSchema {
 
   private static String createWriteProp(String name, MetadataProp metadataProp) {
     if (metadataProp instanceof UriMetadataProp) {
-      return name + ": UriInput\n";
+      return name + ": String\n";
     }
     if (metadataProp instanceof SimpleMetadataProp) {
       return name + ": String\n";

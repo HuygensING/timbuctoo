@@ -220,7 +220,12 @@ public class DataSetRepository {
 
   public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException,
       IllegalDataSetNameException, DataSetCreationException {
-    return createDataSet(user, dataSetId, null);
+    return createDataSet(user, dataSetId, Optional.empty());
+  }
+
+  public DataSet createDataSet(User user, String dataSetId, Optional<String> optBaseUri)
+      throws DataStoreCreationException, IllegalDataSetNameException, DataSetCreationException {
+    return createDataSet(user, dataSetId, optBaseUri, null);
   }
 
   public DataSet createDataSet(User user, String dataSetId,
