@@ -31,8 +31,8 @@ public class BdbPatchVersionStore {
         (direction == OUT ? "1" : "0") + "\n" +
         (valueType == null ? "" : valueType) + "\n" +
         (language == null ? "" : language) + "\n" +
-        (graph == null ? "" : graph) + "\n" +
-        object;
+        object + "\n" +
+        (graph == null ? "" : graph);
 
     bdbWrapper.delete(subject + "\n" + (!isAssertion ? 1 : 0), value);
     bdbWrapper.put(subject + "\n" + (isAssertion ? 1 : 0), value);
@@ -76,18 +76,20 @@ public class BdbPatchVersionStore {
   }
 
   public CursorQuad makeCursorQuad(String subject, boolean assertions, String value) {
-    String[] parts = value.split("\n", 6);
+    String[] parts = value.split("\n", 5);
     Direction direction = parts[1].charAt(0) == '1' ? OUT : IN;
     ChangeType changeType = assertions ? ChangeType.ASSERTED : ChangeType.RETRACTED;
+    int objectGraphIdx = parts[4].lastIndexOf('\n');
     return CursorQuad.create(
         subject,
         parts[0],
         direction,
         changeType,
-        parts[5],
+        parts[4].substring(0, objectGraphIdx),
         parts[2].isEmpty() ? null : parts[2],
         parts[3].isEmpty() ? null : parts[3],
-        parts[4].isEmpty() ? null : parts[4],
+        parts[4].substring(objectGraphIdx + 1).isEmpty() ?
+            null : parts[4].substring(objectGraphIdx + 1),
         ""
     );
   }
@@ -96,7 +98,7 @@ public class BdbPatchVersionStore {
     try {
       bdbWrapper.close();
     } catch (Exception e) {
-      LOG.error("Exception closing BdbpatchVersionStore", e);
+      LOG.error("Exception closing BdbPatchVersionStore", e);
     }
   }
 

@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStor
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class RebuildSchemaTask extends Task {
   private final DataSetRepository dataSetRepository;
@@ -20,8 +21,16 @@ public class RebuildSchemaTask extends Task {
 
   @Override
   public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
-    for (DataSet dataSet : dataSetRepository.getDataSets()) {
-      rebuildSchemaFor(dataSet, output);
+    if (parameters.isEmpty()) {
+      for (DataSet dataSet : dataSetRepository.getDataSets()) {
+        rebuildSchemaFor(dataSet, output);
+      }
+    } else {
+      if (parameters.containsKey("userId") && parameters.containsKey("dataSetId")) {
+        Optional<DataSet> dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(
+            parameters.get("userId").get(0), parameters.get("dataSetId").get(0));
+        dataSet.ifPresent(set -> rebuildSchemaFor(set, output));
+      }
     }
   }
 

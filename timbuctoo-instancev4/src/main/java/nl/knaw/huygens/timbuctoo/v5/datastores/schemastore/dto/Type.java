@@ -14,8 +14,8 @@ import java.util.function.BiFunction;
 import static com.google.common.base.Objects.equal;
 
 public class Type {
-  private String name;
-  private Map<String, Predicate> predicates = new HashMap<>();
+  private final String name;
+  private final Map<String, Predicate> predicates;
   private long subjectsWithThisType = 0;
   private final BiFunction<String, Direction, Predicate> predicateMaker = (name, direction) -> {
     Predicate predicate = new Predicate(name, direction);
