@@ -229,7 +229,8 @@ public class RdfWiringFactory implements WiringFactory {
       String dataSetName = dataSet.getValue();
       return new PersistEntityMutation(schemaUpdater, redirectionService, dataSetName, uriHelper);
     } else if (!environment.getFieldDefinition().getDirectives("setCustomProvenanceMutation").isEmpty()) {
-      Directive directive = environment.getFieldDefinition().getDirectives("setCustomProvenanceMutation").get(0);
+      Directive directive = environment.getFieldDefinition()
+              .getDirectives("setCustomProvenanceMutation").get(0);
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       String dataSetId = dataSet.getValue();
       return new SetCustomProvenanceMutation(schemaUpdater, dataSetRepository, dataSetId);
