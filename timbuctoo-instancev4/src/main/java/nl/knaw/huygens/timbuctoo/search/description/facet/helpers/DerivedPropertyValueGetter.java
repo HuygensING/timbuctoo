@@ -19,13 +19,12 @@ public class DerivedPropertyValueGetter implements PropertyValueGetter {
   @Override
   public List<String> getValues(Vertex vertex, String propertyName) {
     List<String> result = new ArrayList<>();
-    vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
-      targetVertex.vertices(Direction.BOTH, relationNames).forEachRemaining(finalVertex -> {
-        if (finalVertex.property(propertyName).isPresent()) {
-          result.add((String) finalVertex.property(propertyName).value());
-        }
-      });
-    });
+    vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex ->
+        targetVertex.vertices(Direction.BOTH, relationNames).forEachRemaining(finalVertex -> {
+          if (finalVertex.property(propertyName).isPresent()) {
+            result.add((String) finalVertex.property(propertyName).value());
+          }
+        }));
     return result;
   }
 }

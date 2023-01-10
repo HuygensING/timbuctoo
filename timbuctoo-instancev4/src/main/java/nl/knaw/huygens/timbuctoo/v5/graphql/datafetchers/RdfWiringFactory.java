@@ -112,34 +112,34 @@ public class RdfWiringFactory implements WiringFactory {
 
   @Override
   public boolean providesDataFetcher(FieldWiringEnvironment environment) {
-    return environment.getFieldDefinition().getDirective("fromCollection") != null ||
-      environment.getFieldDefinition().getDirective("lookupUri") != null ||
-      environment.getFieldDefinition().getDirective("rdf") != null ||
-      environment.getFieldDefinition().getDirective("uri") != null ||
-      environment.getFieldDefinition().getDirective("graphs") != null ||
-      environment.getFieldDefinition().getDirective("passThrough") != null ||
-      environment.getFieldDefinition().getDirective("related") != null ||
-      environment.getFieldDefinition().getDirective("dataSet") != null ||
-      environment.getFieldDefinition().getDirective("entityTitle") != null ||
-      environment.getFieldDefinition().getDirective("entityDescription") != null ||
-      environment.getFieldDefinition().getDirective("entityImage") != null ||
-      environment.getFieldDefinition().getDirective("otherDataSets") != null ||
-      environment.getFieldDefinition().getDirective("getAllOfPredicate") != null ||
-      environment.getFieldDefinition().getDirective("createMutation") != null ||
-      environment.getFieldDefinition().getDirective("editMutation") != null ||
-      environment.getFieldDefinition().getDirective("deleteMutation") != null ||
-      environment.getFieldDefinition().getDirective("persistEntityMutation") != null ||
-      environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null ||
-      environment.getFieldDefinition().getDirective("resetIndex") != null ||
-      environment.getFieldDefinition().getDirective("oldItems") != null;
+    return !environment.getFieldDefinition().getDirectives("fromCollection").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("lookupUri").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("rdf").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("uri").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("graphs").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("passThrough").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("related").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("dataSet").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("entityTitle").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("entityDescription").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("entityImage").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("otherDataSets").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("getAllOfPredicate").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("createMutation").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("editMutation").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("deleteMutation").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("persistEntityMutation").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("setCustomProvenanceMutation").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("resetIndex").isEmpty() ||
+      !environment.getFieldDefinition().getDirectives("oldItems").isEmpty();
   }
 
   @Override
   public DataFetcher getDataFetcher(FieldWiringEnvironment environment) {
-    if (environment.getFieldDefinition().getDirective("passThrough") != null) {
+    if (!environment.getFieldDefinition().getDirectives("passThrough").isEmpty()) {
       return DataFetchingEnvironment::getSource;
-    } else if (environment.getFieldDefinition().getDirective("related") != null) {
-      final Directive directive = environment.getFieldDefinition().getDirective("related");
+    } else if (!environment.getFieldDefinition().getDirectives("related").isEmpty()) {
+      final Directive directive = environment.getFieldDefinition().getDirectives("related").get(0);
       String source = ((StringValue) directive.getArgument("source").getValue()).getValue();
       String predicate = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
       String direction = ((StringValue) directive.getArgument("direction").getValue()).getValue();
@@ -148,14 +148,14 @@ public class RdfWiringFactory implements WiringFactory {
         predicate,
         Direction.valueOf(direction)
       ));
-    } else if (environment.getFieldDefinition().getDirective("lookupUri") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("lookupUri").isEmpty()) {
       return lookupFetcher;
-    } else if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
-      final Directive directive = environment.getFieldDefinition().getDirective("fromCollection");
+    } else if (!environment.getFieldDefinition().getDirectives("fromCollection").isEmpty()) {
+      final Directive directive = environment.getFieldDefinition().getDirectives("fromCollection").get(0);
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
       return new CollectionFetcherWrapper(argumentsHelper, new CollectionDataFetcher(uri));
-    } else if (environment.getFieldDefinition().getDirective("rdf") != null) {
-      final Directive directive = environment.getFieldDefinition().getDirective("rdf");
+    } else if (!environment.getFieldDefinition().getDirectives("rdf").isEmpty()) {
+      final Directive directive = environment.getFieldDefinition().getDirectives("rdf").get(0);
       String uri = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
       Direction direction = valueOf(((StringValue) directive.getArgument("direction").getValue()).getValue());
       boolean isList = ((BooleanValue) directive.getArgument("isList").getValue()).isValue();
@@ -170,29 +170,29 @@ public class RdfWiringFactory implements WiringFactory {
           return new DataFetcherWrapper(argumentsHelper, isList, new TypedLiteralDataFetcher(uri));
         }
       }
-    } else if (environment.getFieldDefinition().getDirective("uri") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("uri").isEmpty()) {
       return uriFetcher;
-    } else if (environment.getFieldDefinition().getDirective("graphs") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("graphs").isEmpty()) {
       return graphsFetcher;
-    } else if (environment.getFieldDefinition().getDirective("dataSet") != null) {
-      final Directive directive = environment.getFieldDefinition().getDirective("dataSet");
+    } else if (!environment.getFieldDefinition().getDirectives("dataSet").isEmpty()) {
+      final Directive directive = environment.getFieldDefinition().getDirectives("dataSet").get(0);
       String userId = ((StringValue) directive.getArgument("userId").getValue()).getValue();
       String dataSetId = ((StringValue) directive.getArgument("dataSetId").getValue()).getValue();
       final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(userId, dataSetId)
                                                .orElse(null);
       return dataFetchingEnvironment -> (DatabaseResult) () -> dataSet;
-    } else if (environment.getFieldDefinition().getDirective("entityTitle") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("entityTitle").isEmpty()) {
       return entityTitleFetcher;
-    } else if (environment.getFieldDefinition().getDirective("entityDescription") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("entityDescription").isEmpty()) {
       return entityDescriptionFetcher;
-    } else if (environment.getFieldDefinition().getDirective("entityImage") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("entityImage").isEmpty()) {
       return entityImageFetcher;
-    } else if (environment.getFieldDefinition().getDirective("otherDataSets") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("otherDataSets").isEmpty()) {
       return otherDataSetFetcher;
-    } else if (environment.getFieldDefinition().getDirective("getAllOfPredicate") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("getAllOfPredicate").isEmpty()) {
       return dynamicRelationDataFetcher;
-    } else if (environment.getFieldDefinition().getDirective("createMutation") != null) {
-      Directive directive = environment.getFieldDefinition().getDirective("createMutation");
+    } else if (!environment.getFieldDefinition().getDirectives("createMutation").isEmpty()) {
+      Directive directive = environment.getFieldDefinition().getDirectives("createMutation").get(0);
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       StringValue typeUri = (StringValue) directive.getArgument("typeUri").getValue();
 
@@ -207,37 +207,38 @@ public class RdfWiringFactory implements WiringFactory {
         dataSetName,
         typeUriName
       ));
-    } else if (environment.getFieldDefinition().getDirective("editMutation") != null) {
-      Directive directive = environment.getFieldDefinition().getDirective("editMutation");
+    } else if (!environment.getFieldDefinition().getDirectives("editMutation").isEmpty()) {
+      Directive directive = environment.getFieldDefinition().getDirectives("editMutation").get(0);
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
 
       String dataSetName = dataSet.getValue();
 
       return editMutationMap.computeIfAbsent(dataSetName,
         s -> new EditMutation(schemaUpdater, dataSetRepository, uriHelper, subjectFetcher, dataSetName));
-    } else if (environment.getFieldDefinition().getDirective("deleteMutation") != null) {
-      Directive directive = environment.getFieldDefinition().getDirective("deleteMutation");
+    } else if (!environment.getFieldDefinition().getDirectives("deleteMutation").isEmpty()) {
+      Directive directive = environment.getFieldDefinition().getDirectives("deleteMutation").get(0);
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
 
       String dataSetName = dataSet.getValue();
 
       return deleteMutationMap.computeIfAbsent(dataSetName,
         s -> new DeleteMutation(schemaUpdater, dataSetRepository, uriHelper, dataSetName));
-    } else if (environment.getFieldDefinition().getDirective("persistEntityMutation") != null) {
-      Directive directive = environment.getFieldDefinition().getDirective("persistEntityMutation");
+    } else if (!environment.getFieldDefinition().getDirectives("persistEntityMutation").isEmpty()) {
+      Directive directive = environment.getFieldDefinition().getDirectives("persistEntityMutation").get(0);
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       String dataSetName = dataSet.getValue();
       return new PersistEntityMutation(schemaUpdater, redirectionService, dataSetName, uriHelper);
-    } else if (environment.getFieldDefinition().getDirective("setCustomProvenanceMutation") != null) {
-      Directive directive = environment.getFieldDefinition().getDirective("setCustomProvenanceMutation");
+    } else if (!environment.getFieldDefinition().getDirectives("setCustomProvenanceMutation").isEmpty()) {
+      Directive directive = environment.getFieldDefinition()
+              .getDirectives("setCustomProvenanceMutation").get(0);
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       String dataSetId = dataSet.getValue();
       return new SetCustomProvenanceMutation(schemaUpdater, dataSetRepository, dataSetId);
-    } else if (environment.getFieldDefinition().getDirective("resetIndex") != null) {
-      final Directive resetIndex = environment.getFieldDefinition().getDirective("resetIndex");
+    } else if (!environment.getFieldDefinition().getDirectives("resetIndex").isEmpty()) {
+      final Directive resetIndex = environment.getFieldDefinition().getDirectives("resetIndex").get(0);
       final StringValue dataSet = (StringValue) resetIndex.getArgument("dataSet").getValue();
       return new DefaultIndexConfigMutation(schemaUpdater, dataSetRepository, dataSet.getValue());
-    } else if (environment.getFieldDefinition().getDirective("oldItems") != null) {
+    } else if (!environment.getFieldDefinition().getDirectives("oldItems").isEmpty()) {
       return oldItemsDataFetcher;
     }
     return null;
@@ -274,7 +275,7 @@ public class RdfWiringFactory implements WiringFactory {
           typeName = prefix + "_" + typeNameStore.makeGraphQlname(RDFS_RESOURCE);
         } else {
           typeName = null;
-          for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
+          for (Selection selection : environment.getField().getSingleField().getSelectionSet().getSelections()) {
             if (selection instanceof InlineFragment) {
               InlineFragment fragment = (InlineFragment) selection;
               final String typeConditionName = fragment.getTypeCondition().getName();

@@ -15,7 +15,7 @@ public class ObjectFactory {
 
   @XmlElementDecl(namespace = Gml.NAMESPACE, name = Data.LOCAL_NAME)
   public JAXBElement<Data> createData(Data value) {
-    return new JAXBElement<Data>(Data.QNAME, Data.class, value);
+    return new JAXBElement<>(Data.QNAME, Data.class, value);
   }
 
   public GmlEdge createEdge() {
@@ -24,7 +24,7 @@ public class ObjectFactory {
 
   @XmlElementDecl(namespace = Gml.NAMESPACE, name = GmlEdge.LOCAL_NAME)
   public JAXBElement<GmlEdge> createEdge(GmlEdge value) {
-    return new JAXBElement<GmlEdge>(GmlEdge.QNAME, GmlEdge.class, value);
+    return new JAXBElement<>(GmlEdge.QNAME, GmlEdge.class, value);
   }
 
   public Graph createGraph() {
@@ -33,7 +33,7 @@ public class ObjectFactory {
 
   @XmlElementDecl(namespace = Gml.NAMESPACE, name = Graph.LOCAL_NAME)
   public JAXBElement<Graph> createGraph(Graph value) {
-    return new JAXBElement<Graph>(Graph.QNAME, Graph.class, value);
+    return new JAXBElement<>(Graph.QNAME, Graph.class, value);
   }
 
   public GraphMl createGraphMl() {
@@ -42,7 +42,7 @@ public class ObjectFactory {
 
   @XmlElementDecl(namespace = Gml.NAMESPACE, name = Gml.LOCAL_NAME)
   public JAXBElement<GraphMl> createGraphMl(GraphMl value) {
-    return new JAXBElement<GraphMl>(GraphMl.QNAME, GraphMl.class,null, value);
+    return new JAXBElement<>(GraphMl.QNAME, GraphMl.class, null, value);
   }
 
   public Key createKey() {
@@ -51,7 +51,7 @@ public class ObjectFactory {
 
   @XmlElementDecl(namespace = Gml.NAMESPACE, name = Key.LOCAL_NAME)
   public JAXBElement<Key> createKey(Key value) {
-    return new JAXBElement<Key>(Key.QNAME, Key.class, GraphMl.class, value);
+    return new JAXBElement<>(Key.QNAME, Key.class, GraphMl.class, value);
   }
 
   public Node createNode() {
@@ -60,7 +60,7 @@ public class ObjectFactory {
 
   @XmlElementDecl(namespace = Gml.NAMESPACE, name = Node.LOCAL_NAME)
   public JAXBElement<Node> createNode(Node value) {
-    return new JAXBElement<Node>(Node.QNAME, Node.class, value);
+    return new JAXBElement<>(Node.QNAME, Node.class, value);
   }
 
 

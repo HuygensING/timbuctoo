@@ -11,7 +11,7 @@
   <properties>
     <jdk.version>11</jdk.version>
     <maven-compiler.version>3.8.1</maven-compiler.version>
-    <jackson.version>2.12.5</jackson.version>
+    <jackson.version>2.14.1</jackson.version>
   </properties>
 
   <build>
@@ -42,7 +42,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>31.0.1-jre</version>
+      <version>31.1-jre</version>
     </dependency>
 
     <!-- Hamcrest dependency should be on top see http://stackoverflow.com/a/16735373 -->
@@ -61,6 +61,5 @@
       <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 </project>

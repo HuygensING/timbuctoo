@@ -11,14 +11,14 @@ public class CompositeValidationResult implements ValidationResult {
 
   @Override
   public boolean isValid() {
-    return validationResults.stream().allMatch(result -> result.isValid());
+    return validationResults.stream().allMatch(ValidationResult::isValid);
   }
 
   @Override
   public String getMessage() {
     StringBuilder sb = new StringBuilder();
     validationResults.stream().filter(validationResult -> !validationResult.isValid())
-                     .map(validationResult -> validationResult.getMessage())
+                     .map(ValidationResult::getMessage)
                      .forEach(message -> sb.append(String.format("%s\n", message)));
     return sb.toString();
   }

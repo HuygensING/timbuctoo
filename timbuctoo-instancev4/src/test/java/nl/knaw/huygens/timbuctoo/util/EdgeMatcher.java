@@ -25,7 +25,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
   }
 
   public EdgeMatcher withLabel(String label) {
-    this.addMatcher(new PropertyEqualityMatcher<Edge, String>("label", label) {
+    this.addMatcher(new PropertyEqualityMatcher<>("label", label) {
       @Override
       protected String getItemValue(Edge item) {
         return item.label();
@@ -35,7 +35,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
   }
 
   public EdgeMatcher withModifiedTimestamp(long value) {
-    this.addMatcher(new PropertyEqualityMatcher<Edge, Long>("modifiedTimeStamp", value) {
+    this.addMatcher(new PropertyEqualityMatcher<>("modifiedTimeStamp", value) {
       @Override
       protected Long getItemValue(Edge item) {
         try {
@@ -51,7 +51,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
   }
 
   public EdgeMatcher withId(String id) {
-    this.addMatcher(new PropertyEqualityMatcher<Edge, String>("id", id) {
+    this.addMatcher(new PropertyEqualityMatcher<>("id", id) {
       @Override
       protected String getItemValue(Edge item) {
         return item.value("tim_id");
@@ -61,7 +61,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
   }
 
   public EdgeMatcher withProperty(String propertyName) {
-    this.addMatcher(new PropertyMatcher<Edge, Object>(propertyName, notNullValue()) {
+    this.addMatcher(new PropertyMatcher<>(propertyName, notNullValue()) {
       @Override
       protected Object getItemValue(Edge item) {
         return item.property(propertyName).orElse(null);
@@ -71,7 +71,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
   }
 
   public EdgeMatcher withProperty(final String name, final Object value) {
-    this.addMatcher(new PropertyEqualityMatcher<Edge, Object>(name, value) {
+    this.addMatcher(new PropertyEqualityMatcher<>(name, value) {
       @Override
       protected Object getItemValue(Edge item) {
         return item.property(name).orElse(null);
@@ -81,7 +81,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
   }
 
   public EdgeMatcher withSourceWithId(UUID id) {
-    this.addMatcher(new PropertyEqualityMatcher<Edge, String>("id of source vertex", id.toString()) {
+    this.addMatcher(new PropertyEqualityMatcher<>("id of source vertex", id.toString()) {
       @Override
       protected String getItemValue(Edge item) {
         return item.outVertex().value("tim_id");
@@ -91,7 +91,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
   }
 
   public EdgeMatcher withTargetWithId(UUID id) {
-    this.addMatcher(new PropertyEqualityMatcher<Edge, String>("id of source vertex", id.toString()) {
+    this.addMatcher(new PropertyEqualityMatcher<>("id of source vertex", id.toString()) {
       @Override
       protected String getItemValue(Edge item) {
         return item.inVertex().value("tim_id");
@@ -102,7 +102,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
 
 
   public EdgeMatcher withTypeId(UUID id) {
-    this.addMatcher(new PropertyEqualityMatcher<Edge, String>("id of target vertex", id.toString()) {
+    this.addMatcher(new PropertyEqualityMatcher<>("id of target vertex", id.toString()) {
       @Override
       protected String getItemValue(Edge item) {
         return item.value("typeId");

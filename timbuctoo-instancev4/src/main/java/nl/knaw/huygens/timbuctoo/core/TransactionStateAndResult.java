@@ -10,11 +10,11 @@ public class TransactionStateAndResult<T> {
   }
 
   public static <T> TransactionStateAndResult<T> commitAndReturn(T value) {
-    return new TransactionStateAndResult<T>(value, true);
+    return new TransactionStateAndResult<>(value, true);
   }
 
   public static <T> TransactionStateAndResult<T> rollbackAndReturn(T value) {
-    return new TransactionStateAndResult<T>(value, false);
+    return new TransactionStateAndResult<>(value, false);
   }
 
   public boolean wasCommitted() {

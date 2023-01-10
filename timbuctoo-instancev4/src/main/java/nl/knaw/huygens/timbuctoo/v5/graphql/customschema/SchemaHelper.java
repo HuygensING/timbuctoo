@@ -31,9 +31,7 @@ public class SchemaHelper {
 
     if (schemaFile.exists()) {
       try {
-        customSchema = OBJECT_MAPPER.readValue(schemaFile,
-          new TypeReference<Map<String, List<ExplicitField>>>() {
-          });
+        customSchema = OBJECT_MAPPER.readValue(schemaFile, new TypeReference<>() { });
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

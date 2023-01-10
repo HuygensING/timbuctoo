@@ -25,7 +25,7 @@ public class CleaningDropwizard extends DropwizardAppRule<TimbuctooConfiguration
   protected void before() throws Exception {
     try {
       if (dataPath.toFile().exists()) {
-        walkFileTree(dataPath, new SimpleFileVisitor<Path>() {
+        walkFileTree(dataPath, new SimpleFileVisitor<>() {
           @Override
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             Files.delete(file);

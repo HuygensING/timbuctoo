@@ -33,7 +33,7 @@ public class StringListParser implements PropertyParser {
       return null;
     }
     try {
-      List<String> readValue = objectMapper.readValue(value, new TypeReference<List<String>>() {});
+      List<String> readValue = objectMapper.readValue(value, new TypeReference<>() { });
       return Joiner.on(separator).join(readValue);
     } catch (IOException e) {
       LOG.error("Coud not parse {} to List of Strings", value);

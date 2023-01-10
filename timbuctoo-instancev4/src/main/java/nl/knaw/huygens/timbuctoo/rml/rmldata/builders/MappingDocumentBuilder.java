@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -123,7 +124,7 @@ public class MappingDocumentBuilder {
     final List<RrTriplesMap> triplesMaps = breakCyclesAndSort(this.tripleMapBuilders).stream()
       // Build the tripleMapBuilders with lambda to resolve otherMap they are dependent on
       .map(tripleMapBuilder -> tripleMapBuilder.build(dataSourceFactory, this::getRrTriplesMap, errors::add))
-      .filter(x -> x != null)
+      .filter(Objects::nonNull)
       // First collect all the builders, so requestedTripleMaps is filled via getRrTriplesMap lambda
       .collect(Collectors.toList())
       .stream()

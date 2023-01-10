@@ -46,12 +46,10 @@ public class JenaBasedReader {
     resource.out(NS_RML + "logicalSource").forEach(mapBuilder::withLogicalSource);
     resource.out(NS_RR + "logicalTable").forEach(mapBuilder::withLogicalSource);
 
-    resource.out(NS_RR + "subjectMap").forEach(subjectMap -> {
-      buildSubjectMap(
-        subjectMap,
-        mapBuilder.withSubjectMap()
-      );
-    });
+    resource.out(NS_RR + "subjectMap").forEach(subjectMap -> buildSubjectMap(
+      subjectMap,
+      mapBuilder.withSubjectMap()
+    ));
     resource.out(NS_RR + "predicateObjectMap").forEach(property ->
       buildPredicateObjectMap(
         property,
@@ -116,10 +114,8 @@ public class JenaBasedReader {
     object.out(NS_RR + "template").forEach(templateValue ->
       termMapBuilder.withTemplateTerm(templateValue, termType, language, datatype)
     );
-    object.out(NS_RR + "constant").forEach(templateValue -> {
-      termMapBuilder.withConstantTerm(templateValue, termType, language, datatype);
-    });
-
+    object.out(NS_RR + "constant").forEach(templateValue ->
+        termMapBuilder.withConstantTerm(templateValue, termType, language, datatype));
   }
 
   private static class InvalidRdfResourceException extends RuntimeException {

@@ -24,7 +24,7 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withType(String type) {
-    this.addMatcher(new PropertyMatcher<Vertex, String>("types", containsString(type)) {
+    this.addMatcher(new PropertyMatcher<>("types", containsString(type)) {
       @Override
       protected String getItemValue(Vertex item) {
         VertexProperty<String> types = item.property("types");
@@ -39,7 +39,7 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withTimId(String timId) {
-    this.addMatcher(new PropertyEqualityMatcher<Vertex, String>("timId", timId) {
+    this.addMatcher(new PropertyEqualityMatcher<>("timId", timId) {
       @Override
       protected String getItemValue(Vertex item) {
         return item.value("tim_id");
@@ -60,7 +60,7 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withProperty(String propertyName) {
-    this.addMatcher(new PropertyMatcher<Vertex, Object>(propertyName, notNullValue()) {
+    this.addMatcher(new PropertyMatcher<>(propertyName, notNullValue()) {
       @Override
       protected Object getItemValue(Vertex item) {
         return item.property(propertyName).orElse(null);
@@ -70,7 +70,7 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withProperty(String propertyName, Object value) {
-    this.addMatcher(new PropertyEqualityMatcher<Vertex, Object>(propertyName, value) {
+    this.addMatcher(new PropertyEqualityMatcher<>(propertyName, value) {
       @Override
       protected Object getItemValue(Vertex item) {
         VertexProperty<Object> property = item.property(propertyName);
@@ -84,7 +84,7 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withLabel(String expectedLabel) {
-    this.addMatcher(new PropertyMatcher<Vertex, String>("label", containsString(expectedLabel)) {
+    this.addMatcher(new PropertyMatcher<>("label", containsString(expectedLabel)) {
       @Override
       protected String getItemValue(Vertex item) {
         return item.label();
@@ -95,7 +95,7 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withId(Long expectedId) {
-    this.addMatcher(new PropertyMatcher<Vertex, Long>("id", is(expectedId)) {
+    this.addMatcher(new PropertyMatcher<>("id", is(expectedId)) {
       @Override
       protected Long getItemValue(Vertex item) {
         return (Long) item.id();
@@ -122,15 +122,15 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
     @Override
     public void describeTo(Description description) {
       description.appendText("vertex does not contain property ")
-                 .appendValue(propertyName);
+          .appendValue(propertyName);
     }
 
     @Override
     protected void describeMismatchSafely(Vertex item, Description mismatchDescription) {
       mismatchDescription.appendText("vertex with properties ")
-                         .appendValue(item.keys())
-                         .appendText(" contains property ")
-                         .appendValue(propertyName);
+          .appendValue(item.keys())
+          .appendText(" contains property ")
+          .appendValue(propertyName);
     }
   }
 }

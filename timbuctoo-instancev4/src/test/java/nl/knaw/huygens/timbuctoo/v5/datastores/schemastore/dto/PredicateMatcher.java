@@ -21,7 +21,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withName(String name) {
-    this.addMatcher(new PropertyEqualityMatcher<Predicate, String>("name", name) {
+    this.addMatcher(new PropertyEqualityMatcher<>("name", name) {
       @Override
       protected String getItemValue(Predicate item) {
         return item.getName();
@@ -31,7 +31,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withDirection(Direction direction) {
-    this.addMatcher(new PropertyEqualityMatcher<Predicate, Direction>("direction", direction) {
+    this.addMatcher(new PropertyEqualityMatcher<>("direction", direction) {
       @Override
       protected Direction getItemValue(Predicate item) {
         return item.getDirection();
@@ -41,7 +41,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withWasList(Boolean wasList) {
-    this.addMatcher(new PropertyEqualityMatcher<Predicate, Boolean>("list", wasList) {
+    this.addMatcher(new PropertyEqualityMatcher<>("list", wasList) {
       @Override
       protected Boolean getItemValue(Predicate item) {
         return item.hasBeenList();
@@ -51,7 +51,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withIsExplicit(Boolean isExplicit) {
-    this.addMatcher(new PropertyEqualityMatcher<Predicate, Boolean>("isExplicit", isExplicit) {
+    this.addMatcher(new PropertyEqualityMatcher<>("isExplicit", isExplicit) {
       @Override
       protected Boolean getItemValue(Predicate item) {
         return item.isExplicit();
@@ -61,7 +61,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withReferenceType(String referenceType) {
-    this.addMatcher(new PropertyMatcher<Predicate, Iterable<? super String>>("referenceTypes", hasItem(referenceType)) {
+    this.addMatcher(new PropertyMatcher<>("referenceTypes", hasItem(referenceType)) {
       @Override
       protected Iterable<String> getItemValue(Predicate item) {
         return item.getReferenceTypes().keySet();
@@ -71,7 +71,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withValueType(String valueType) {
-    this.addMatcher(new PropertyMatcher<Predicate, Iterable<? super String>>("valueTypes", hasItem(valueType)) {
+    this.addMatcher(new PropertyMatcher<>("valueTypes", hasItem(valueType)) {
       @Override
       protected Iterable<String> getItemValue(Predicate item) {
         return item.getValueTypes().keySet();
@@ -81,7 +81,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withIsList(boolean isList) {
-    this.addMatcher(new PropertyEqualityMatcher<Predicate, Boolean>("isList", isList) {
+    this.addMatcher(new PropertyEqualityMatcher<>("isList", isList) {
       @Override
       protected Boolean getItemValue(Predicate item) {
         return item.isList();
@@ -91,7 +91,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withValueTypeCount(long count) {
-    this.addMatcher(new PropertyEqualityMatcher<Predicate, Long>("valueTypeCount", count) {
+    this.addMatcher(new PropertyEqualityMatcher<>("valueTypeCount", count) {
 
       @Override
       protected Long getItemValue(Predicate item) {
@@ -102,7 +102,7 @@ public class PredicateMatcher extends CompositeMatcher<Predicate> {
   }
 
   public PredicateMatcher withReferenceTypeCount(long count) {
-    this.addMatcher(new PropertyEqualityMatcher<Predicate, Long>("referenceTypeCount", count) {
+    this.addMatcher(new PropertyEqualityMatcher<>("referenceTypeCount", count) {
       @Override
       protected Long getItemValue(Predicate item) {
         return item.getReferenceTypes().values().stream().mapToLong(value -> value).sum();

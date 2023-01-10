@@ -156,7 +156,7 @@ public class BdbSchemaStoreTest {
     schemaStore.onChangedSubject("subj", changeFetcher);
     schemaStore.finish();
 
-    Map<String, Type> schema = OBJECT_MAPPER.readValue(dataStore.getResult(), new TypeReference<Map<String, Type>>() {
+    Map<String, Type> schema = OBJECT_MAPPER.readValue(dataStore.getResult(), new TypeReference<>() {
     });
 
     assertThat(schema, hasEntry(is("type"), allOf(

@@ -104,7 +104,7 @@ public class JsonBasedAuthenticatorTest {
     instance.createLogin(userPid, "userName", "password", "givenName", "surname", "email", "org");
     instance.createLogin(userPid, "userName1", "password1", "givenName1", "surname1", "email1", "org1");
 
-    List<Login> loginList = objectMapper.readValue(emptyLoginsFile.toFile(), new TypeReference<List<Login>>() {
+    List<Login> loginList = objectMapper.readValue(emptyLoginsFile.toFile(), new TypeReference<>() {
     });
     long count = loginList.stream().filter(login -> Objects.equals(login.getUserPid(), userPid)).count();
     assertThat(count, is(1L));
@@ -124,7 +124,7 @@ public class JsonBasedAuthenticatorTest {
     instance.createLogin("userPid", userName, "password", "givenName", "surname", "email", "org");
     instance.createLogin("userPid2", userName, "password1", "givenName2", "surname2", "email2", "org2");
 
-    List<Login> loginList = objectMapper.readValue(emptyLoginsFile.toFile(), new TypeReference<List<Login>>() {
+    List<Login> loginList = objectMapper.readValue(emptyLoginsFile.toFile(), new TypeReference<>() {
     });
     long count = loginList.stream().filter(login -> Objects.equals(login.getUsername(), userName)).count();
     assertThat(count, is(1L));

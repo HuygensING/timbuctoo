@@ -16,7 +16,7 @@ public class ExplicitFieldMatcher extends CompositeMatcher<ExplicitField> {
   }
 
   public ExplicitFieldMatcher withUri(String uri) {
-    this.addMatcher(new PropertyEqualityMatcher<ExplicitField, String>("uri", uri) {
+    this.addMatcher(new PropertyEqualityMatcher<>("uri", uri) {
       @Override
       protected String getItemValue(ExplicitField item) {
         return item.getUri();
@@ -27,7 +27,7 @@ public class ExplicitFieldMatcher extends CompositeMatcher<ExplicitField> {
   }
 
   public ExplicitFieldMatcher withIsList(boolean isList) {
-    this.addMatcher(new PropertyEqualityMatcher<ExplicitField, Boolean>("isList", isList) {
+    this.addMatcher(new PropertyEqualityMatcher<>("isList", isList) {
       @Override
       protected Boolean getItemValue(ExplicitField item) {
         return item.isList();
@@ -38,7 +38,7 @@ public class ExplicitFieldMatcher extends CompositeMatcher<ExplicitField> {
   }
 
   public ExplicitFieldMatcher withValues(Set<String> values) {
-    this.addMatcher(new PropertyEqualityMatcher<ExplicitField, Set<String>>("values", values) {
+    this.addMatcher(new PropertyEqualityMatcher<>("values", values) {
       @Override
       protected Set<String> getItemValue(ExplicitField item) {
         return item.getValues();
@@ -49,7 +49,7 @@ public class ExplicitFieldMatcher extends CompositeMatcher<ExplicitField> {
   }
 
   public ExplicitFieldMatcher withReferences(Set<String> references) {
-    this.addMatcher(new PropertyEqualityMatcher<ExplicitField, Set<String>>("references", references) {
+    this.addMatcher(new PropertyEqualityMatcher<>("references", references) {
       @Override
       protected Set<String> getItemValue(ExplicitField item) {
         return item.getReferences();

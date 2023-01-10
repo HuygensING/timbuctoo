@@ -53,7 +53,7 @@ public class ExtendSchemaMutation extends Mutation {
 
     try {
       String customSchemaString = OBJECT_MAPPER.writeValueAsString(env.getArgument("customSchema"));
-      customSchema = OBJECT_MAPPER.readValue(customSchemaString, new TypeReference<List<ExplicitType>>() {
+      customSchema = OBJECT_MAPPER.readValue(customSchemaString, new TypeReference<>() {
       });
     } catch (IOException e) {
       throw new RuntimeException("Could not parse the schema input");

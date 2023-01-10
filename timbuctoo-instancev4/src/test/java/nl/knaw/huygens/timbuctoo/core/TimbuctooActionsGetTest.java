@@ -81,7 +81,7 @@ public class TimbuctooActionsGetTest {
   }
 
   private DataStream<ReadEntity> mockDataStream() {
-    return new DataStream<ReadEntity>() {
+    return new DataStream<>() {
       @Override
       public <U> List<U> map(Function<ReadEntity, U> mapping) {
         throw new UnsupportedOperationException("Not implemented yet");

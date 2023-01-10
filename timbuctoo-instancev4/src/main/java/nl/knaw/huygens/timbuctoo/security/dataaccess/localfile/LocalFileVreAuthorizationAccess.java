@@ -44,8 +44,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
           List<VreAuthorization> authorizations = Lists.newArrayList();
           if (file.exists()) {
             authorizations =
-              objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
-              });
+              objectMapper.readValue(file, new TypeReference<>() { });
           }
           VreAuthorization vreAuthorization = VreAuthorization.create(vreId, userId, userRole);
           authorizations.add(vreAuthorization);
@@ -88,7 +87,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
         List<VreAuthorization> authorizations;
         synchronized (authorizationsFolder) {
           authorizations =
-            objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
+            objectMapper.readValue(file, new TypeReference<>() {
             });
         }
         authorizationValue = authorizations.stream()

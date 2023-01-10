@@ -14,7 +14,7 @@ public class EntityRefMatcher extends CompositeMatcher<EntityRef> {
   }
 
   public EntityRefMatcher withType(String type) {
-    this.addMatcher(new PropertyEqualityMatcher<EntityRef, String>("type", type) {
+    this.addMatcher(new PropertyEqualityMatcher<>("type", type) {
       @Override
       protected String getItemValue(EntityRef item) {
         return item.getType();
@@ -24,7 +24,7 @@ public class EntityRefMatcher extends CompositeMatcher<EntityRef> {
   }
 
   public EntityRefMatcher withId(String id) {
-    this.addMatcher(new PropertyEqualityMatcher<EntityRef, String>("id", id) {
+    this.addMatcher(new PropertyEqualityMatcher<>("id", id) {
       @Override
       protected String getItemValue(EntityRef item) {
         return item.getId();
@@ -34,7 +34,7 @@ public class EntityRefMatcher extends CompositeMatcher<EntityRef> {
   }
 
   public EntityRefMatcher withDisplayName(String displayName) {
-    this.addMatcher(new PropertyEqualityMatcher<EntityRef, String>("displayName", displayName) {
+    this.addMatcher(new PropertyEqualityMatcher<>("displayName", displayName) {
       @Override
       protected String getItemValue(EntityRef item) {
         return item.getDisplayName();

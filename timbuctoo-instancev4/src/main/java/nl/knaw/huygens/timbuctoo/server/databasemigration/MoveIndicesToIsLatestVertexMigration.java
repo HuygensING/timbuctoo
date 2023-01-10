@@ -67,9 +67,7 @@ public class MoveIndicesToIsLatestVertexMigration implements DatabaseMigration {
     //construct all quicksearchIndices
     vres.getVres().values().stream()
       .flatMap(vre -> vre.getCollections().values().stream())
-      .forEach((collection) -> {
-        indexManager.forNodes(collection.getCollectionName(), indexConfig);
-      });
+      .forEach((collection) -> indexManager.forNodes(collection.getCollectionName(), indexConfig));
 
     //construct id index
     indexManager.forNodes("idIndex");
@@ -81,9 +79,7 @@ public class MoveIndicesToIsLatestVertexMigration implements DatabaseMigration {
     //delete all quicksearchIndices
     vres.getVres().values().stream()
         .flatMap(vre -> vre.getCollections().values().stream())
-        .forEach((collection) -> {
-          deleteIndex(indexManager, collection.getCollectionName());
-        });
+        .forEach((collection) -> deleteIndex(indexManager, collection.getCollectionName()));
 
     //delete id index
     deleteIndex(indexManager, "idIndex");
@@ -112,9 +108,7 @@ public class MoveIndicesToIsLatestVertexMigration implements DatabaseMigration {
     service.getAllRelationships().stream()
       .filter(e -> e.hasProperty("tim_id"))
       .filter(this::isLatest)
-      .forEach(edge -> {
-        indexManager.forRelationships("edgeIdIndex").add(edge, "tim_id", edge.getProperty("tim_id"));
-      });
+      .forEach(edge -> indexManager.forRelationships("edgeIdIndex").add(edge, "tim_id", edge.getProperty("tim_id")));
   }
 
   private void updateIdIndex(IndexManager indexManager, Node node) {

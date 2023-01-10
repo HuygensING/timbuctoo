@@ -61,10 +61,7 @@ public class PermissionConfigMigrator {
 
   public void update() throws IOException {
     Set<RolePermissions> rolePermissions = OBJECT_MAPPER.readValue(
-      new FileInputStream(permissionConfig.toFile()),
-      new TypeReference<Set<RolePermissions>>() {
-      }
-    );
+      new FileInputStream(permissionConfig.toFile()), new TypeReference<>() { });
 
     addCreateDeletePermissions(rolePermissions);
     addCustomProvenancePermission(rolePermissions);

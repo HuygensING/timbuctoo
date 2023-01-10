@@ -15,7 +15,7 @@ public class PropertyMatcher extends CompositeMatcher<Property> {
   }
 
   public PropertyMatcher withKey(String key) {
-    this.addMatcher(new PropertyEqualityMatcher<Property, String>("key", key) {
+    this.addMatcher(new PropertyEqualityMatcher<>("key", key) {
       @Override
       protected String getItemValue(Property item) {
         return item.key();

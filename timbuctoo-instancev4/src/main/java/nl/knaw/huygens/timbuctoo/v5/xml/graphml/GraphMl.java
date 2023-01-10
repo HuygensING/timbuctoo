@@ -64,6 +64,6 @@ public class GraphMl {
   }
 
   public JAXBElement<GraphMl> asJaxbElement() {
-    return new JAXBElement<GraphMl>(QNAME, GraphMl.class, this);
+    return new JAXBElement<>(QNAME, GraphMl.class, this);
   }
 }

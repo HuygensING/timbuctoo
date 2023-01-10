@@ -97,9 +97,7 @@ public class RelationData {
     }
     edge.property("types", types.toString());
     if (accepted != null) {
-      accepted.forEach((key, val) -> {
-        edge.property(key + "_accepted", val);
-      });
+      accepted.forEach((key, val) -> edge.property(key + "_accepted", val));
     }
     if (deleted != null) {
       edge.property("deleted", deleted);

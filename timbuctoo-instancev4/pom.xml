@@ -125,34 +125,33 @@
     <!--version numbers-->
     <maven-compiler.version>3.8.1</maven-compiler.version>
     <!-- code dependencies -->
-    <activemq.version>5.16.2</activemq.version>
+    <activemq.version>5.17.3</activemq.version>
     <concoridion.version>1.5.1</concoridion.version>
-    <dropwizard.version>2.0.25</dropwizard.version>
+    <dropwizard.version>2.1.4</dropwizard.version>
     <dropwizard-activemq.version>0.5.2</dropwizard-activemq.version>
-    <jsonassert.version>1.5.0</jsonassert.version>
-    <tinkerpop3.version>3.1.0-incubating</tinkerpop3.version>
+    <jsonassert.version>1.5.1</jsonassert.version>
+    <tinkerpop3.version>3.1.8</tinkerpop3.version>
     <!-- The number after the dash is the Neo4j version -->
-    <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
-    <neo4j.version>3.1.0</neo4j.version>
+    <neo4j-tinkerpop-api-impl.version>0.5-3.1.5</neo4j-tinkerpop-api-impl.version>
+    <neo4j.version>3.1.9</neo4j.version>
     <hamcrest-library.version>2.2</hamcrest-library.version>
     <vavr.version>0.10.4</vavr.version>
     <huygens.persistence.version>2.3.0</huygens.persistence.version>
     <junit.version>4.13.2</junit.version>
     <timbuctoo-test-services.version>1.0.0-SNAPSHOT</timbuctoo-test-services.version>
-    <mockito.version>4.0.0</mockito.version>
+    <mockito.version>4.11.0</mockito.version>
     <huygens.security.version>1.0.0-SNAPSHOT</huygens.security.version>
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
-    <jsonld-java.version>0.12.3</jsonld-java.version>
-    <rdf4j.version>3.7.3</rdf4j.version>
-    <xmlunit.version>2.8.2</xmlunit.version>
-    <jackson.version>2.13.0</jackson.version>
+    <rdf4j.version>4.2.2</rdf4j.version>
+    <xmlunit.version>2.9.0</xmlunit.version>
+    <jackson.version>2.14.1</jackson.version>
     <!-- Maven plugins -->
-    <appassembler.version>2.0.0</appassembler.version>
-    <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
-    <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+    <appassembler.version>2.1.0</appassembler.version>
+    <build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
+    <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
     <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
-    <maven-failsafe-plugin.version>2.22.1</maven-failsafe-plugin.version>
+    <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -203,20 +202,6 @@
       <version>1.1.1</version>
     </dependency>
 
-    <!-- support voor dropwizard -->
-    <dependency>
-      <groupId>org.javassist</groupId>
-      <artifactId>javassist</artifactId>
-      <version>3.28.0-GA</version>
-    </dependency>
-
-    <!-- list checkstyle so the bazel build also downloads it -->
-    <dependency>
-      <groupId>com.puppycrawl.tools</groupId>
-      <artifactId>checkstyle</artifactId>
-      <version>9.0.1</version>
-    </dependency>
-
     <!-- ## Main dependencies ## -->
     <!-- Dropwizard -->
     <dependency>
@@ -242,7 +227,6 @@
       <artifactId>dropwizard-assets</artifactId>
       <version>${dropwizard.version}</version>
     </dependency>
-
 
     <!-- TinkerPop library for support graph databases -->
     <dependency>
@@ -281,7 +265,7 @@
     <dependency>
       <groupId>com.graphql-java</groupId>
       <artifactId>graphql-java</artifactId>
-      <version>11.0</version>
+      <version>20.0</version>
     </dependency>
 
     <dependency>
@@ -347,13 +331,13 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
-      <version>1.8</version>
+      <version>1.9.0</version>
     </dependency>
     <!-- Excel -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
-      <version>3.17</version>
+      <version>4.1.2</version>
     </dependency>
     <!-- dataperfect -->
     <dependency>
@@ -365,7 +349,7 @@
     <dependency>
       <groupId>com.healthmarketscience.jackcess</groupId>
       <artifactId>jackcess</artifactId>
-      <version>4.0.1</version>
+      <version>4.0.4</version>
     </dependency>
 
     <!-- ### Search API's ## -->
@@ -380,7 +364,7 @@
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-jaxb</artifactId>
-      <version>2.33</version>
+      <version>2.38</version>
     </dependency>
 
     <!-- ### Logging and reporting ## -->
@@ -402,7 +386,7 @@
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>oauth2-oidc-sdk</artifactId>
-      <version>9.18</version>
+      <version>10.4</version>
     </dependency>
 
     <!--ResourceSync library-->
@@ -415,7 +399,7 @@
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>txw2</artifactId>
-      <version>3.0.2</version>
+      <version>4.0.1</version>
     </dependency>
 
     <!--Azure libraries for using azure services when running there -->
@@ -430,7 +414,7 @@
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-tdb</artifactId>
-      <version>4.2.0</version>
+      <version>4.7.0</version>
     </dependency>
 
     <!-- Rdf4J -->
@@ -474,6 +458,11 @@
       <artifactId>rdf4j-rio-jsonld</artifactId>
       <version>${rdf4j.version}</version>
     </dependency>
+    <dependency>
+      <groupId>nl.knaw.huc</groupId>
+      <artifactId>rdf4j-rio-nquadsnd</artifactId>
+      <version>1.0.0</version>
+    </dependency>
 
     <!-- character encoding detection -->
     <dependency>
@@ -486,7 +475,7 @@
     <dependency>
       <groupId>org.immutables</groupId>
       <artifactId>value</artifactId>
-      <version>2.8.8</version>
+      <version>2.9.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -516,7 +505,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>31.0.1-jre</version>
+      <version>31.1-jre</version>
     </dependency>
 
     <!--Try monad-->
@@ -524,13 +513,6 @@
       <groupId>io.vavr</groupId>
       <artifactId>vavr</artifactId>
       <version>${vavr.version}</version>
-    </dependency>
-
-    <!-- Java implementation of Json-ld specification -->
-    <dependency>
-      <groupId>com.github.jsonld-java</groupId>
-      <artifactId>jsonld-java</artifactId>
-      <version>0.13.3</version>
     </dependency>
 
     <!-- Twitter-4j oauth for twitter -->
@@ -551,7 +533,7 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.8</version>
+      <version>2.10.1</version>
     </dependency>
 
     <!-- ## End of main dependencies ## -->
@@ -680,7 +662,7 @@
     <dependency>
       <groupId>org.mock-server</groupId>
       <artifactId>mockserver-netty</artifactId>
-      <version>5.11.2</version>
+      <version>5.14.0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -707,7 +689,7 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.21.0</version>
+      <version>3.24.1</version>
       <scope>test</scope>
     </dependency>
     <!-- ## End of test dependencies ## -->

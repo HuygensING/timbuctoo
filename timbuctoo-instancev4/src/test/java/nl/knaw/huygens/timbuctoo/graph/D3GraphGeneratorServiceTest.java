@@ -142,9 +142,7 @@ public class D3GraphGeneratorServiceTest {
     List<Vertex> vertices = graph.traversal().V()
                                  .has("wwperson_tempName")
                                  .asAdmin().clone().toList();
-    Collections.sort(vertices,
-      Comparator.comparing(vertexA -> ((String) vertexA.property("wwperson_tempName").value()))
-    );
+    vertices.sort(Comparator.comparing(vertexA -> ((String) vertexA.property("wwperson_tempName").value())));
 
     GraphWrapper graphWrapper = createGraphWrapper(graph);
     D3GraphGeneratorService underTest = new D3GraphGeneratorService(graphWrapper, HuygensIng.mappings);

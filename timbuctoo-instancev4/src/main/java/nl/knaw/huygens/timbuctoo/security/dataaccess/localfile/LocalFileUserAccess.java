@@ -29,8 +29,7 @@ public class LocalFileUserAccess implements UserAccess {
     final List<User> users;
     try {
       synchronized (usersFile) {
-        users = objectMapper.readValue(usersFile.toFile(), new TypeReference<List<User>>() {
-        });
+        users = objectMapper.readValue(usersFile.toFile(), new TypeReference<>() { });
       }
       users.add(user);
       objectMapper.writeValue(usersFile.toFile(), users.toArray(new User[users.size()]));
@@ -59,7 +58,7 @@ public class LocalFileUserAccess implements UserAccess {
     List<User> users;
     try {
       synchronized (usersFile) {
-        users = objectMapper.readValue(usersFile.toFile(), new TypeReference<List<User>>() {
+        users = objectMapper.readValue(usersFile.toFile(), new TypeReference<>() {
         });
       }
     } catch (IOException e) {

@@ -70,6 +70,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -546,7 +547,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     // Set removed values to null.
     Set<String> propertyNames = updateEntity.getProperties().stream()
-                                            .map(prop -> prop.getName())
+                                            .map(TimProperty::getName)
                                             .collect(Collectors.toSet());
     for (String name : Sets.difference(collection.getWriteableProperties().keySet(),
       propertyNames)) {
@@ -749,7 +750,7 @@ public class TinkerPopOperations implements DataStoreOperations {
           getRequiredProp(e, "typeId", "").equals(typeId.toString())
       )
       //sort by rev (ascending)
-      .sorted((o1, o2) -> getRequiredProp(o1, "rev", -1).compareTo(getRequiredProp(o2, "rev", -1)))
+      .sorted(Comparator.comparing(o -> getRequiredProp(o, "rev", -1)))
       //get last element, i.e. with the highest rev, i.e. the most recent
       .reduce((o1, o2) -> o2)
       .map(edge -> makeEntityRelation(edge, collection));

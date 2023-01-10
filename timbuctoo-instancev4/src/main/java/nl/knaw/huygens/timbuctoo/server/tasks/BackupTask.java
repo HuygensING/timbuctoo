@@ -13,7 +13,7 @@ import java.util.Map;
 public class BackupTask extends Task {
   private static final Logger LOG = LoggerFactory.getLogger(BackupTask.class);
   private static final String BACKUP_PATH = "backupPath";
-  private DataSetRepository dataSetRepository;
+  private final DataSetRepository dataSetRepository;
 
   public BackupTask(DataSetRepository dataSetRepository) {
     super("backup");

@@ -58,6 +58,6 @@ public class Node {
   }
 
   public JAXBElement<Node> asJaxbElement() {
-    return new JAXBElement<Node>(QNAME, Node.class,this);
+    return new JAXBElement<>(QNAME, Node.class, this);
   }
 }

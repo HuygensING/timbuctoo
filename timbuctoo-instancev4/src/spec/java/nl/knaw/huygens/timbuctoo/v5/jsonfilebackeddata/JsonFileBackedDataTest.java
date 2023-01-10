@@ -21,28 +21,28 @@ public class JsonFileBackedDataTest {
       tmpFile.delete(); //the file must either not exist, or contain valid data
       JsonFileBackedData<Map<String, String>> instance = JsonFileBackedData.getOrCreate(
         tmpFile,
-        () -> new HashMap<>(),
-        new TypeReference<Map<String, String>>() {
-        }
+              HashMap::new,
+              new TypeReference<>() {
+              }
       );
 
       assertThat(instance.getData().isEmpty(), is(true));
-      assertThat(new String(Files.readAllBytes(tmpFile.toPath()), Charsets.UTF_8), is("{ }"));
+      assertThat(Files.readString(tmpFile.toPath()), is("{ }"));
 
       instance.updateData(data -> {
         data.put("foo", "utf-8 ☃");
         return data;
       });
 
-      assertThat(new String(Files.readAllBytes(tmpFile.toPath()), Charsets.UTF_8), is("{\n  \"foo\" : \"utf-8 ☃\"\n}"));
+      assertThat(Files.readString(tmpFile.toPath()), is("{\n  \"foo\" : \"utf-8 ☃\"\n}"));
 
       JsonFileBackedData.regenerateSoWeCanTestHowWellLoadingWorks(tmpFile);
 
       JsonFileBackedData<Map<String, String>> reloadedInstance = JsonFileBackedData.getOrCreate(
         tmpFile,
-        () -> new HashMap<>(),
-        new TypeReference<Map<String, String>>() {
-        }
+              HashMap::new,
+              new TypeReference<>() {
+              }
       );
 
       assertThat(reloadedInstance.getData().get("foo"), is("utf-8 ☃"));
@@ -59,11 +59,11 @@ public class JsonFileBackedDataTest {
       JsonFileBackedData<Map<String, String>> instance = JsonFileBackedData.getOrCreate(
         tmpFile,
         () -> null,
-        new TypeReference<Map<String, String>>() {
-        }
+              new TypeReference<>() {
+              }
       );
       assertThat(instance.getData(), is(nullValue()));
-      assertThat(new String(Files.readAllBytes(tmpFile.toPath()), Charsets.UTF_8), is("null"));
+      assertThat(Files.readString(tmpFile.toPath()), is("null"));
     } finally {
       tmpFile.delete(); //the file must either not exist, or contain valid data
     }

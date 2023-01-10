@@ -46,7 +46,7 @@ public class UserCreationTask extends Task {
     Map<String, String> userInfo = Maps.newHashMap();
     // get the first value of each entry
     immutableMultimap.keySet().stream()
-                     .filter(key -> UserInfoKeys.contains(key))
+                     .filter(UserInfoKeys::contains)
                      .forEach(key -> userInfo.put(key, immutableMultimap.get(key).iterator().next()));
 
     localUserCreator.create(userInfo);

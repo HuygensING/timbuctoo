@@ -28,11 +28,9 @@ public class RdfDataSourceFactory {
       for (RdfResource customField : customFields) {
         Set<RdfResource> fieldNameResource = customField.out("http://timbuctoo.huygens.knaw.nl/mapping#name");
         Set<RdfResource> fieldValueResource = customField.out("http://timbuctoo.huygens.knaw.nl/mapping#expression");
-        fieldNameResource.iterator().next().asLiteral().ifPresent(fieldName -> {
-          fieldValueResource.iterator().next().asLiteral().ifPresent(fieldValue -> {
-            expressions.put(fieldName.getValue(), fieldValue.getValue());
-          });
-        });
+        fieldNameResource.iterator().next().asLiteral().ifPresent(fieldName ->
+            fieldValueResource.iterator().next().asLiteral().ifPresent(fieldValue ->
+                expressions.put(fieldName.getValue(), fieldValue.getValue())));
       }
 
 

@@ -31,7 +31,7 @@ public class LocalFileLoginAccess implements LoginAccess {
     List<Login> logins;
     synchronized (loginsFile) {
       try {
-        logins = objectMapper.readValue(loginsFile.toFile(), new TypeReference<List<Login>>() {});
+        logins = objectMapper.readValue(loginsFile.toFile(), new TypeReference<>() { });
       } catch (IOException e) {
         LOG.error("Could not read \"{}\"", loginsFile.toAbsolutePath());
         LOG.error("Exception", e);
@@ -45,7 +45,7 @@ public class LocalFileLoginAccess implements LoginAccess {
   public void addLogin(Login login) throws LoginCreationException {
     synchronized (loginsFile) {
       try {
-        List<Login> logins = objectMapper.readValue(loginsFile.toFile(), new TypeReference<List<Login>>() {
+        List<Login> logins = objectMapper.readValue(loginsFile.toFile(), new TypeReference<>() {
         });
 
         if (containsLoginForUserName(logins, login.getUsername())) {

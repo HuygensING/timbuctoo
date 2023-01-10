@@ -211,9 +211,8 @@ public class GraphQl {
         return Response
           .ok()
           .type(serializerWriter.getMimeType())
-          .entity((StreamingOutput) os -> {
-            serializerWriter.getSerializationFactory().create(os).serialize(new SerializableResult(result.getData()));
-          })
+          .entity((StreamingOutput) os -> serializerWriter.getSerializationFactory()
+              .create(os).serialize(new SerializableResult(result.getData())))
           .build();
       }
     } catch (GraphQLException e) {

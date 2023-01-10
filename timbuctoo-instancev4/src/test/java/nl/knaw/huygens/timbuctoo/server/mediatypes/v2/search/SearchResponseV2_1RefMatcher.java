@@ -13,8 +13,7 @@ public class SearchResponseV2_1RefMatcher extends CompositeMatcher<SearchRespons
   }
 
   public SearchResponseV2_1RefMatcher withType(String type) {
-    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1Ref, String>("type", type) {
-
+    this.addMatcher(new PropertyEqualityMatcher<>("type", type) {
       @Override
       protected String getItemValue(SearchResponseV2_1Ref item) {
         return item.getType();
@@ -24,7 +23,7 @@ public class SearchResponseV2_1RefMatcher extends CompositeMatcher<SearchRespons
   }
 
   public SearchResponseV2_1RefMatcher withId(String id) {
-    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1Ref, String>("id", id) {
+    this.addMatcher(new PropertyEqualityMatcher<>("id", id) {
       @Override
       protected String getItemValue(SearchResponseV2_1Ref item) {
         return item.getId();
@@ -35,7 +34,7 @@ public class SearchResponseV2_1RefMatcher extends CompositeMatcher<SearchRespons
   }
 
   public SearchResponseV2_1RefMatcher withPath(String path) {
-    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1Ref, String>("path", path) {
+    this.addMatcher(new PropertyEqualityMatcher<>("path", path) {
       @Override
       protected String getItemValue(SearchResponseV2_1Ref item) {
         return item.getPath();
@@ -45,7 +44,7 @@ public class SearchResponseV2_1RefMatcher extends CompositeMatcher<SearchRespons
   }
 
   public SearchResponseV2_1RefMatcher withDisplayName(String displayName) {
-    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1Ref, String>("displayName", displayName) {
+    this.addMatcher(new PropertyEqualityMatcher<>("displayName", displayName) {
       @Override
       protected String getItemValue(SearchResponseV2_1Ref item) {
         return item.getDisplayName();
@@ -55,7 +54,7 @@ public class SearchResponseV2_1RefMatcher extends CompositeMatcher<SearchRespons
   }
 
   public SearchResponseV2_1RefMatcher withData(Object data) {
-    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1Ref, Object>("data", data) {
+    this.addMatcher(new PropertyEqualityMatcher<>("data", data) {
       @Override
       protected Object getItemValue(SearchResponseV2_1Ref item) {
         return item.getData();

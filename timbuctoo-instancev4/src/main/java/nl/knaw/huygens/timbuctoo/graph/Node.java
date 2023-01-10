@@ -10,7 +10,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +106,7 @@ public class Node {
       typeList.add("");
     }
 
-    typeList.sort((o1, o2) -> o1.length() - o2.length());
+    typeList.sort(Comparator.comparingInt(String::length));
     return typeList.get(0);
   }
 
