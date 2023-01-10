@@ -16,8 +16,8 @@ public interface LogStorage {
    * @param mediaType The mediatype, if available
    * @return a token that can be used to retrieve the file using getFile
    */
-  String saveLog(InputStream stream, String fileName, MediaType mediaType, Optional<Charset> charset)
-      throws IOException;
+  String saveLog(InputStream stream, String fileName, MediaType mediaType,
+                 Optional<Charset> charset, boolean replaceData, boolean isInverse) throws IOException;
 
   /**
    * Returns a previously stored file

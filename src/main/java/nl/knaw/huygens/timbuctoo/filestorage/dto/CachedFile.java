@@ -12,4 +12,8 @@ public interface CachedFile extends AutoCloseable {
   File file();
 
   MediaType mimeType();
+
+  boolean replaceData();
+
+  boolean isInverse();
 }

@@ -17,12 +17,15 @@ public class TimRdfHandler extends AbstractRDFHandler implements RDFAssertionHan
   private final String baseUri;
   private final String defaultGraph;
   private final String fileName;
+  private final boolean isInverse;
 
-  public TimRdfHandler(RdfProcessor rdfProcessor, String baseUri, String defaultGraph, String fileName) {
+  public TimRdfHandler(RdfProcessor rdfProcessor, String baseUri,
+                       String defaultGraph, String fileName, boolean isInverse) {
     this.rdfProcessor = rdfProcessor;
     this.baseUri = baseUri;
     this.defaultGraph = defaultGraph;
     this.fileName = fileName;
+    this.isInverse = isInverse;
   }
 
   @Override
@@ -57,7 +60,7 @@ public class TimRdfHandler extends AbstractRDFHandler implements RDFAssertionHan
       }
 
       rdfProcessor.onQuad(
-          isAssertion,
+          isInverse != isAssertion,
           handleNode(st.getSubject()),
           st.getPredicate().stringValue(),
           handleNode(st.getObject()),

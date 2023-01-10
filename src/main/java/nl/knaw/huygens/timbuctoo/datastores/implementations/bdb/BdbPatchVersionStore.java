@@ -23,7 +23,7 @@ public class BdbPatchVersionStore {
     this.bdbWrapper = bdbWrapper;
   }
 
-  public void put(String subject, String predicate, Direction direction, boolean isAssertion,
+  public void put(String subject, String predicate, Direction direction, ChangeType changeType,
                   String object, String valueType, String language, String graph) throws DatabaseWriteException {
     //if we assert something and then retract it in the same patch, it's as if it never happened at all
     //so we delete the inversion
@@ -34,8 +34,13 @@ public class BdbPatchVersionStore {
         object + "\n" +
         (graph == null ? "" : graph);
 
-    bdbWrapper.delete(subject + "\n" + (!isAssertion ? 1 : 0), value);
-    bdbWrapper.put(subject + "\n" + (isAssertion ? 1 : 0), value);
+    if (changeType == ChangeType.UNCHANGED) {
+      bdbWrapper.delete(subject + "\n" + 0, value);
+      bdbWrapper.delete(subject + "\n" + 1, value);
+    } else {
+      bdbWrapper.delete(subject + "\n" + (changeType == ChangeType.RETRACTED ? 1 : 0), value);
+      bdbWrapper.put(subject + "\n" + (changeType == ChangeType.ASSERTED ? 1 : 0), value);
+    }
   }
 
   public Stream<CursorQuad> getAllChanges(boolean assertions) {

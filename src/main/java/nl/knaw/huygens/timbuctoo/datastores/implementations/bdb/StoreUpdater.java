@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.datastores.rssource.ChangeListBuilder;
 import nl.knaw.huygens.timbuctoo.filestorage.ChangeLogStorage;
@@ -44,6 +45,7 @@ public class StoreUpdater implements RdfProcessor {
   private final ChangeLogStorage changeLogStorage;
 
   private int version = -1;
+  private boolean isReplace = false;
   private Stopwatch stopwatch;
   private long count;
   private long prevCount;
@@ -65,6 +67,51 @@ public class StoreUpdater implements RdfProcessor {
     this.listeners = listeners;
     this.importStatus = importStatus;
     this.changeLogStorage = changeLogStorage;
+  }
+
+  private void preProcess() throws RdfProcessingFailedException {
+    if (isReplace) {
+      try (Stream<CursorQuad> quadStream = this.quadStore.getAllQuads()) {
+        for (CursorQuad quad : (Iterable<CursorQuad>) quadStream::iterator) {
+          patchVersionStore.put(
+              quad.getSubject(),
+              quad.getPredicate(),
+              quad.getDirection(),
+              ChangeType.RETRACTED,
+              quad.getObject(),
+              quad.getValuetype().orElse(null),
+              quad.getLanguage().orElse(null),
+              quad.getGraph().orElse(null)
+          );
+        }
+      } catch (DatabaseWriteException e) {
+        throw new RdfProcessingFailedException(e);
+      }
+    }
+  }
+
+  private void postProcess() throws RdfProcessingFailedException {
+    if (isReplace) {
+      quadStore.start();
+      updatedPerPatchStore.start();
+
+      try (Stream<CursorQuad> quadStream = patchVersionStore.getAllChanges(false)) {
+        for (CursorQuad quad : (Iterable<CursorQuad>) quadStream::iterator) {
+          deleteQuad(
+              quad.getSubject(),
+              quad.getPredicate(),
+              quad.getDirection(),
+              quad.getObject(),
+              quad.getValuetype().orElse(null),
+              quad.getLanguage().orElse(null),
+              quad.getGraph().orElse(null)
+          );
+        }
+      } finally {
+        quadStore.commit();
+        updatedPerPatchStore.commit();
+      }
+    }
   }
 
   private void updateListeners() throws RdfProcessingFailedException {
@@ -94,6 +141,7 @@ public class StoreUpdater implements RdfProcessor {
         }
       }
     }
+
     for (OptimizedPatchListener listener : listeners) {
       listener.finish();
       importStatus.finishProgressItem(listener.getClass().getSimpleName());
@@ -132,7 +180,7 @@ public class StoreUpdater implements RdfProcessor {
     try {
       final boolean wasChanged = quadStore.putQuad(subject, predicate, direction, object, valueType, language, graph);
       if (wasChanged) {
-        patchVersionStore.put(subject, predicate, direction, true, object, valueType, language, graph);
+        patchVersionStore.put(subject, predicate, direction, ChangeType.ASSERTED, object, valueType, language, graph);
         updatedPerPatchStore.put(version, subject);
         graphStore.put(graph, subject);
 
@@ -141,6 +189,8 @@ public class StoreUpdater implements RdfProcessor {
             oldSubjectTypesStore.delete(subject, object, v);
           }
         }
+      } else if (isReplace) {
+        patchVersionStore.put(subject, predicate, direction, ChangeType.UNCHANGED, object, valueType, language, graph);
       }
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);
@@ -153,7 +203,7 @@ public class StoreUpdater implements RdfProcessor {
       final boolean wasChanged =
           quadStore.deleteQuad(subject, predicate, direction, object, valueType, language, graph);
       if (wasChanged) {
-        patchVersionStore.put(subject, predicate, direction, false, object, valueType, language, graph);
+        patchVersionStore.put(subject, predicate, direction, ChangeType.RETRACTED, object, valueType, language, graph);
         updatedPerPatchStore.put(version, subject);
 
         if (predicate.equals(RDF_TYPE)) {
@@ -173,7 +223,7 @@ public class StoreUpdater implements RdfProcessor {
 
   @Override
   public void addRelation(String subject, String predicate, String object, String graph)
-    throws RdfProcessingFailedException {
+      throws RdfProcessingFailedException {
     notifyUpdate();
     putQuad(subject, predicate, OUT, object, null, null, graph);
     putQuad(object, predicate, Direction.IN, subject, null, null, graph);
@@ -181,7 +231,7 @@ public class StoreUpdater implements RdfProcessor {
 
   @Override
   public void addValue(String subject, String predicate, String value, String dataType, String graph)
-    throws RdfProcessingFailedException {
+      throws RdfProcessingFailedException {
     notifyUpdate();
     putQuad(subject, predicate, OUT, value, dataType, null, graph);
   }
@@ -195,7 +245,7 @@ public class StoreUpdater implements RdfProcessor {
 
   @Override
   public void delRelation(String subject, String predicate, String object, String graph)
-    throws RdfProcessingFailedException {
+      throws RdfProcessingFailedException {
     notifyUpdate();
     deleteQuad(subject, predicate, OUT, object, null, null, graph);
     deleteQuad(object, predicate, Direction.IN, subject, null, null, graph);
@@ -203,7 +253,7 @@ public class StoreUpdater implements RdfProcessor {
 
   @Override
   public void delValue(String subject, String predicate, String value, String dataType, String graph)
-    throws RdfProcessingFailedException {
+      throws RdfProcessingFailedException {
     notifyUpdate();
     deleteQuad(subject, predicate, OUT, value, dataType, null, graph);
   }
@@ -215,12 +265,20 @@ public class StoreUpdater implements RdfProcessor {
     deleteQuad(subject, predicate, OUT, value, LANGSTRING, language, graph);
   }
 
-
   @Override
-  public void start(int index) throws RdfProcessingFailedException {
+  public void start(int index, boolean replaceData) throws RdfProcessingFailedException {
     stopwatch = Stopwatch.createStarted();
     version = index;
+    isReplace = replaceData;
     startTransactions();
+
+    preProcess();
+    String msg = "pre-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
+    LOG.info(msg);
+    importStatus.setStatus(msg);
+    stopwatch.reset();
+
+    stopwatch.start();
     logString = "Processed {} triples ({} triples/s)";
     count = 0; // reset the count to make sure the right amount of imported triples are logged.
     hasOldSubjectTypes = oldSubjectTypesStore.size() > 0;
@@ -251,8 +309,7 @@ public class StoreUpdater implements RdfProcessor {
     if (curTime - prevTime > 5) {
       final long itemsPerSecond = (count - prevCount) / (curTime - prevTime);
       LOG.info(logString, count, itemsPerSecond);
-      importStatus.setStatus(String.format(logString.replaceAll("\\{\\}", "%d"),
-        count, itemsPerSecond));
+      importStatus.setStatus(String.format(logString.replaceAll("\\{\\}", "%d"), count, itemsPerSecond));
       prevCount = count;
       prevTime = curTime;
       updateStoreProgress();
@@ -281,18 +338,21 @@ public class StoreUpdater implements RdfProcessor {
       String msg = "processing " + count + " triples took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       importStatus.setStatus(msg);
-      importStatus.setStatus(msg);
       stopwatch.reset();
+
       stopwatch.start();
       commitChanges();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       stopwatch.reset();
+
       stopwatch.start();
+      postProcess();
       updateListeners();
       msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
       stopwatch.reset();
+
       stopwatch.start();
       buildChangeLog();
       msg = "writing changelog took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";

@@ -245,7 +245,7 @@ public class SchemaGenerationPermutationTest {
       final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
       for (List<CursorQuad> cursorQuadList : input) {
-        storeUpdater.start(storeUpdater.getCurrentVersion() + 1);
+        storeUpdater.start(storeUpdater.getCurrentVersion() + 1, false);
         for (CursorQuad quad : cursorQuadList) {
           storeUpdater.onQuad(
             quad.getChangeType() == ASSERTED,

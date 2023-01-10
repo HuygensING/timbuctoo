@@ -13,20 +13,25 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutableFileInfo.class)
 @JsonDeserialize(as = ImmutableFileInfo.class)
 public interface FileInfo {
-  static FileInfo create(String name, String mediatype, String charset) {
+  static FileInfo create(String name, String mediatype, String charset, boolean replaceData, boolean isInverse) {
     return ImmutableFileInfo.builder()
-      .name(name)
-      .mediaType(MediaType.valueOf(mediatype))
-      .charset(Optional.ofNullable(charset).map(Charset::forName))
-      .build();
+                            .name(name)
+                            .mediaType(MediaType.valueOf(mediatype))
+                            .charset(Optional.ofNullable(charset).map(Charset::forName))
+                            .replaceData(replaceData)
+                            .isInverse(isInverse)
+                            .build();
   }
 
-  static FileInfo create(String name, MediaType mediatype, Optional<Charset> charset) {
+  static FileInfo create(String name, MediaType mediatype, Optional<Charset> charset,
+                         boolean replaceData, boolean isInverse) {
     return ImmutableFileInfo.builder()
-      .name(name)
-      .mediaType(mediatype)
-      .charset(charset)
-      .build();
+                            .name(name)
+                            .mediaType(mediatype)
+                            .charset(charset)
+                            .replaceData(replaceData)
+                            .isInverse(isInverse)
+                            .build();
   }
 
   String getName();
@@ -34,4 +39,14 @@ public interface FileInfo {
   MediaType getMediaType();
 
   Optional<Charset> getCharset();
+
+  @Value.Default
+  default boolean getReplaceData() {
+    return false;
+  }
+
+  @Value.Default
+  default boolean getIsInverse() {
+    return false;
+  }
 }

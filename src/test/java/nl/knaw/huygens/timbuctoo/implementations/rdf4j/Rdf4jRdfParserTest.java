@@ -30,7 +30,7 @@ public class Rdf4jRdfParserTest {
       new StringReader("-<http://example.org/subject1> <http://pred> \"12\"^^<http://number> <http://some_graph> .");
     Rdf4jRdfParser instance = new Rdf4jRdfParser();
 
-    instance.importRdf(rdfPatchLog(reader, File.createTempFile("test", "rdf")), "", "", rdfProcessor);
+    instance.importRdf(rdfPatchLog(reader, File.createTempFile("test", "rdf")), "", "", rdfProcessor, false);
 
     verify(rdfProcessor).onQuad(
       DELETE,
@@ -53,7 +53,7 @@ public class Rdf4jRdfParserTest {
 
     File tempFile = File.createTempFile("test", "rdf");
     instance.importRdf(rdfPatchLog(reader, tempFile),
-        "http://example.org/", "http://example.com/test.rdf", rdfProcessor);
+        "http://example.org/", "http://example.com/test.rdf", rdfProcessor, false);
 
     verify(rdfProcessor).onQuad(
       ADD,
@@ -76,7 +76,7 @@ public class Rdf4jRdfParserTest {
 
     File tempFile = File.createTempFile("test", "rdf");
     instance.importRdf(rdfPatchLog(reader, tempFile),
-        "http://example.org/", "http://example.com/test.rdf", rdfProcessor);
+        "http://example.org/", "http://example.com/test.rdf", rdfProcessor, false);
 
     verify(rdfProcessor).onQuad(
       ADD,
@@ -120,6 +120,16 @@ public class Rdf4jRdfParserTest {
       @Override
       public Charset getCharset() {
         return Charset.defaultCharset();
+      }
+
+      @Override
+      public boolean getReplaceData() {
+        return false;
+      }
+
+      @Override
+      public boolean getIsInverse() {
+        return false;
       }
     };
   }

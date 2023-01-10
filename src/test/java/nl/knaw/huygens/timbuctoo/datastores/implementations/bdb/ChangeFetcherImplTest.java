@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringStringIsCleanHandler;
+import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.QuadGraphs;
 import nl.knaw.huygens.timbuctoo.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ public class ChangeFetcherImplTest {
     ));
 
     bdbQuadStore.putQuad("subj", "pred", OUT, "obj", null, null, null);
-    patchVersionStore.put("subj", "pred", OUT, true, "obj", null, null, null);
+    patchVersionStore.put("subj", "pred", OUT, ChangeType.ASSERTED, "obj", null, null, null);
 
     ChangeFetcherImpl changeFetcher = new ChangeFetcherImpl(patchVersionStore, bdbQuadStore);
 
@@ -58,7 +59,7 @@ public class ChangeFetcherImplTest {
 
     patchVersionStore.empty();
     bdbQuadStore.putQuad("subj", "pred", OUT, "obj2", null, null, "graph");
-    patchVersionStore.put("subj", "pred", OUT, true, "obj2", null, null, "graph");
+    patchVersionStore.put("subj", "pred", OUT, ChangeType.ASSERTED, "obj2", null, null, "graph");
     changeFetcher = new ChangeFetcherImpl(patchVersionStore, bdbQuadStore);
 
     try (Stream<QuadGraphs> predicates = changeFetcher.getPredicates("subj", "pred", OUT, false, false, true)) {

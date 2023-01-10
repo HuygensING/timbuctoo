@@ -73,13 +73,12 @@ public class ImportManager implements DataProvider {
   }
 
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
-                                     InputStream rdfInputStream, Optional<Charset> charset, MediaType mediaType)
-    throws LogStorageFailedException {
-
+                                     InputStream rdfInputStream, Optional<Charset> charset, MediaType mediaType,
+                                     boolean replaceData, boolean isInverse) throws LogStorageFailedException {
     importStatus.start(this.getClass().getSimpleName() + ".addLog", baseUri);
     int[] index = new int[1];
     try {
-      String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
+      String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset, replaceData, isInverse);
       logListStore.updateData(logList -> {
         index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
         return logList;
@@ -199,7 +198,9 @@ public class ImportManager implements DataProvider {
               inputStream,
               "log_generated_by_" + creator.getClass().getSimpleName(),
               mediaType,
-              charset
+              charset,
+              false,
+              false
             );
           }
           entry = LogEntry.addLogToEntry(entry, token);
@@ -231,8 +232,9 @@ public class ImportManager implements DataProvider {
             importStatus.setStatus(msg);
             importStatus.setEntryName(log.name());
             RdfParser rdfParser = serializerFactory.makeRdfParser(log);
-            processor.start(index);
-            rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph().orElse(null), processor);
+            processor.start(index, log.getReplaceData());
+            rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph().orElse(null),
+                processor, log.getIsInverse());
             processor.commit();
           }
         }

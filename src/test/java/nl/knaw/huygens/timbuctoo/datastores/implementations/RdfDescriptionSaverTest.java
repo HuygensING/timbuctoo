@@ -64,7 +64,7 @@ public class RdfDescriptionSaverTest {
     Metadata metadata = Metadata.create(Optional.empty(), props);
 
     testRdfDescriptionSaver = new RdfDescriptionSaver(metadata, descriptionFile, BASE_URI, importStatus);
-    testRdfDescriptionSaver.start(0);
+    testRdfDescriptionSaver.start(0, false);
   }
 
   @AfterEach

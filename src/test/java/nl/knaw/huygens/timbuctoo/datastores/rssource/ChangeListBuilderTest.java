@@ -4,6 +4,7 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbPatchVersionStore;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.UpdatedPerPatchStore;
+import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.util.RdfConstants;
@@ -44,12 +45,14 @@ public class ChangeListBuilderTest {
         new StringStringIsCleanHandler()
     ));
 
-    bdbPatchVersionStore.put("s1", "p1", Direction.OUT, true, "o1", null, null, null);
-    bdbPatchVersionStore.put("s2", "p2", Direction.OUT, false, "o2", null, null, null);
-    bdbPatchVersionStore.put("s3", "p3", Direction.OUT, true, "o3", RdfConstants.STRING, null, null);
-    bdbPatchVersionStore.put("s4", "p4", Direction.OUT, false, "o4", RdfConstants.STRING, null, null);
-    bdbPatchVersionStore.put("s5", "p5", Direction.OUT, true, "o5", RdfConstants.LANGSTRING, "en", null);
-    bdbPatchVersionStore.put("s6", "p6", Direction.OUT, false, "o6", RdfConstants.LANGSTRING, "en", null);
+    bdbPatchVersionStore.put("s1", "p1", Direction.OUT, ChangeType.ASSERTED, "o1", null, null, null);
+    bdbPatchVersionStore.put("s2", "p2", Direction.OUT, ChangeType.RETRACTED, "o2", null, null, null);
+    bdbPatchVersionStore.put("s3", "p3", Direction.OUT, ChangeType.ASSERTED, "o3", RdfConstants.STRING, null, null);
+    bdbPatchVersionStore.put("s4", "p4", Direction.OUT, ChangeType.RETRACTED, "o4", RdfConstants.STRING, null, null);
+    bdbPatchVersionStore.put("s5", "p5", Direction.OUT, ChangeType.ASSERTED, "o5",
+        RdfConstants.LANGSTRING, "en", null);
+    bdbPatchVersionStore.put("s6", "p6", Direction.OUT, ChangeType.RETRACTED, "o6",
+        RdfConstants.LANGSTRING, "en", null);
 
     ChangeListBuilder changeListBuilder = new ChangeListBuilder();
     List<String> changes = changeListBuilder

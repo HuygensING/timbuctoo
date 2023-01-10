@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.endsWith;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -68,8 +69,10 @@ public class ResourceSyncImportTest {
 
     instance.filterAndImport(CAPABILITY_LIST_URI, null, null, null, fileHelper);
 
-    verify(importManager).addLog(any(), any(), endsWith("changes1.nqud"), any(), any(), any());
-    verify(importManager).addLog(any(), any(), endsWith("changes2.nqud"), any(), any(), any());
+    verify(importManager).addLog(any(), any(), endsWith("changes1.nqud"), any(), any(), any(),
+        anyBoolean(), anyBoolean());
+    verify(importManager).addLog(any(), any(), endsWith("changes2.nqud"), any(), any(), any(),
+        anyBoolean(), anyBoolean());
     assertThat(resourceSyncReport.importedFiles, containsInAnyOrder(
         is(BASE_URL + "files/changes1.nqud"),
         is(BASE_URL + "files/changes2.nqud")
@@ -89,7 +92,7 @@ public class ResourceSyncImportTest {
 
     instance.filterAndImport(CAPABILITY_LIST_URI, null, null, null, fileHelper);
 
-    verify(importManager).addLog(any(), any(), endsWith("dataset.nq"), any(), any(), any());
+    verify(importManager).addLog(any(), any(), endsWith("dataset.nq"), any(), any(), any(), anyBoolean(), anyBoolean());
     assertThat(resourceSyncReport.importedFiles, contains(BASE_URL + "files/dataset.nq"));
   }
 
@@ -109,7 +112,8 @@ public class ResourceSyncImportTest {
 
     instance.filterAndImport(CAPABILITY_LIST_URI, null, null, null, fileHelper);
 
-    verify(importManager).addLog(any(), any(), endsWith("dataset.rdf"), any(), any(), any());
+    verify(importManager).addLog(any(), any(), endsWith("dataset.rdf"), any(), any(), any(),
+        anyBoolean(), anyBoolean());
     assertThat(resourceSyncReport.importedFiles, contains(BASE_URL + "files/dataset.rdf"));
   }
 
@@ -128,7 +132,8 @@ public class ResourceSyncImportTest {
 
     instance.filterAndImport(CAPABILITY_LIST_URI, userSpecifiedDataSet, null, null, fileHelper);
 
-    verify(importManager).addLog(any(), any(), endsWith("dataset.rdf"), any(), any(), any());
+    verify(importManager).addLog(any(), any(), endsWith("dataset.rdf"), any(), any(), any(),
+        anyBoolean(), anyBoolean());
     assertThat(resourceSyncReport.importedFiles, contains(BASE_URL + "files/dataset.rdf"));
   }
 

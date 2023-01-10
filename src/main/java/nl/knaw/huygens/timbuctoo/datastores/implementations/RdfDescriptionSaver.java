@@ -121,7 +121,7 @@ public class RdfDescriptionSaver implements RdfProcessor {
   }
 
   @Override
-  public void start(int index) throws RdfProcessingFailedException {
+  public void start(int index, boolean replaceData) throws RdfProcessingFailedException {
     this.currentVersion = index;
     importStatus.setStatus("Started " + this.getClass().getSimpleName());
   }

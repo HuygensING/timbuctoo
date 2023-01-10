@@ -25,10 +25,13 @@ public class FileSystemCachedLog implements CachedLog {
   private final MediaType mimeType;
   private final Charset charset;
   private final String name;
+  private final boolean replaceData;
+  private final boolean isInverse;
   private final File file;
   private final List<Closeable> toClose = new ArrayList<>();
 
-  public FileSystemCachedLog(MediaType mimeType, Optional<Charset> charset, String name, File file) {
+  public FileSystemCachedLog(MediaType mimeType, Optional<Charset> charset, String name,
+                             boolean replaceData, boolean isInverse, File file) {
     this.mimeType = mimeType;
     if (charset.isEmpty()) {
       try {
@@ -60,6 +63,8 @@ public class FileSystemCachedLog implements CachedLog {
     }
     this.charset = charset.orElse(null);
     this.name = name;
+    this.replaceData = replaceData;
+    this.isInverse = isInverse;
     this.file = file;
   }
 
@@ -106,6 +111,16 @@ public class FileSystemCachedLog implements CachedLog {
   @Override
   public Charset getCharset() {
     return charset;
+  }
+
+  @Override
+  public boolean getReplaceData() {
+    return replaceData;
+  }
+
+  @Override
+  public boolean getIsInverse() {
+    return isInverse;
   }
 
   @Override

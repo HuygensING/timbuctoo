@@ -17,7 +17,8 @@ import java.io.IOException;
 
 public class Rdf4jRdfParser implements RdfParser {
   @Override
-  public void importRdf(CachedLog input, String baseUri, String defaultGraph, RdfProcessor rdfProcessor)
+  public void importRdf(CachedLog input, String baseUri, String defaultGraph,
+                        RdfProcessor rdfProcessor, boolean isInverse)
     throws RdfProcessingFailedException, RdfProcessingParseException {
 
     try {
@@ -27,7 +28,8 @@ public class Rdf4jRdfParser implements RdfParser {
         );
       RDFParser rdfParser = Rio.createParser(format);
       rdfParser.setPreserveBNodeIDs(true);
-      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, baseUri, defaultGraph, input.file().getName()));
+      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, baseUri, defaultGraph,
+          input.file().getName(), isInverse));
       rdfParser.parse(input.getReader(), baseUri);
     } catch (IOException | UnsupportedRDFormatException e) {
       throw new RdfProcessingFailedException(e);

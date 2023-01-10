@@ -276,7 +276,7 @@ public class IntegrationTest {
                 "query {\n" +
                     "  dataSets {\n" +
                     "    " + dataSetId + "{\n" +
-                    "      schema_Person(uri: \"http://example.org/person1\") {\n" +
+                    "      schema_Person(uri: \"http://example.org/person2\") {\n" +
                     "        schema_familyName {\n" +
                     "          value\n" +
                     "        }\n" +

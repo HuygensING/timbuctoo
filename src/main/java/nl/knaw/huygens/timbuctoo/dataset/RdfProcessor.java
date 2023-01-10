@@ -49,7 +49,7 @@ public interface RdfProcessor {
     }
   }
 
-  void start(int index) throws RdfProcessingFailedException;
+  void start(int index, boolean replaceData) throws RdfProcessingFailedException;
 
   int getCurrentVersion();
 

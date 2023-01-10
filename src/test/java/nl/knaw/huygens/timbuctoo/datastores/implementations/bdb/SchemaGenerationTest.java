@@ -146,11 +146,11 @@ public class SchemaGenerationTest {
 
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
-    storeUpdater.start(0);
+    storeUpdater.start(0, false);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, null);
     storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, null);
     storeUpdater.commit();
-    storeUpdater.start(1);
+    storeUpdater.start(1, false);
     storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_3, null, null, null);
     storeUpdater.commit();
 
@@ -317,11 +317,11 @@ public class SchemaGenerationTest {
 
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
-    storeUpdater.start(0);
+    storeUpdater.start(0, false);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, null);
     storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, null);
     storeUpdater.commit();
-    storeUpdater.start(1);
+    storeUpdater.start(1, false);
     storeUpdater.onQuad(true, SUBJECT_A, PROP_I, SUBJECT_B, null, null, null);
     storeUpdater.commit();
 
@@ -380,11 +380,11 @@ public class SchemaGenerationTest {
 
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
-    storeUpdater.start(0);
+    storeUpdater.start(0, false);
     storeUpdater.onQuad(true, SUBJECT_A, PROP_III, SUBJECT_C, null, null, null);
     storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, null);
     storeUpdater.commit();
-    storeUpdater.start(1);
+    storeUpdater.start(1, false);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, null);
     storeUpdater.commit();
 
@@ -417,11 +417,11 @@ public class SchemaGenerationTest {
 
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
-    storeUpdater.start(0);
+    storeUpdater.start(0, false);
     storeUpdater.onQuad(true, SUBJECT_A, PROP_III, SUBJECT_C, null, null, null);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_2, null, null, null);
     storeUpdater.commit();
-    storeUpdater.start(1);
+    storeUpdater.start(1, false);
     storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, null);
     storeUpdater.commit();
 
@@ -448,7 +448,7 @@ public class SchemaGenerationTest {
 
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
-    storeUpdater.start(0);
+    storeUpdater.start(0, false);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
     storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
@@ -475,12 +475,12 @@ public class SchemaGenerationTest {
 
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
-    storeUpdater.start(0);
+    storeUpdater.start(0, false);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
     storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
     storeUpdater.commit();
 
-    storeUpdater.start(1);
+    storeUpdater.start(1, false);
     storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
     storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
@@ -507,14 +507,14 @@ public class SchemaGenerationTest {
 
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
-    storeUpdater.start(0);
+    storeUpdater.start(0, false);
     storeUpdater.onQuad(true, SUBJECT_A, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
     storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_1);
     storeUpdater.onQuad(true, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
     storeUpdater.onQuad(true, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
     storeUpdater.commit();
 
-    storeUpdater.start(1);
+    storeUpdater.start(1, false);
     storeUpdater.onQuad(false, SUBJECT_B, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
     storeUpdater.onQuad(false, SUBJECT_C, RDF_TYPE, TYPE_1, null, null, GRAPH_2);
     storeUpdater.commit();
@@ -540,7 +540,7 @@ public class SchemaGenerationTest {
 
     final StoreUpdater storeUpdater = createInstance(dataStoreFactory, schema);
 
-    storeUpdater.start(0);
+    storeUpdater.start(0, false);
     for (CursorQuad quad : quads) {
       storeUpdater.onQuad(
         quad.getChangeType() == ASSERTED,

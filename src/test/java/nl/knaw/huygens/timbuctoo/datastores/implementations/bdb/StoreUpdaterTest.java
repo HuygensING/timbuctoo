@@ -24,7 +24,7 @@ public class StoreUpdaterTest {
     ImportStatus importStatus = mock(ImportStatus.class);
     StoreUpdater instance = createInstance(importStatus, Lists.newArrayList());
 
-    instance.start(0);
+    instance.start(0, false);
 
     verify(importStatus).addProgressItem(BdbPatchVersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(BdbQuadStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
@@ -38,7 +38,7 @@ public class StoreUpdaterTest {
     ImportStatus importStatus = mock(ImportStatus.class);
     StoreUpdater instance = createInstance(importStatus, Lists.newArrayList(new DerivedStore1(), new DerivedStore2()));
 
-    instance.start(0);
+    instance.start(0, false);
 
     verify(importStatus).addProgressItem(DerivedStore1.class.getSimpleName(), ImportStatusLabel.PENDING);
     verify(importStatus).addProgressItem(DerivedStore2.class.getSimpleName(), ImportStatusLabel.PENDING);
@@ -48,7 +48,7 @@ public class StoreUpdaterTest {
   public void onceEvery5SecondesTheStoreProgressItemsAreUpdated() throws Exception {
     ImportStatus importStatus = mock(ImportStatus.class);
     StoreUpdater instance = createInstance(importStatus, Lists.newArrayList());
-    instance.start(0);
+    instance.start(0, false);
 
     instance.onQuad(true, "", "", "", "", "", "");
     Thread.sleep(6000); // wait 6 seconds to let the second update trigger the notify
@@ -65,7 +65,7 @@ public class StoreUpdaterTest {
   public void commitSetsTheProgressItemsOfThePrimaryStoresToDone() throws Exception {
     ImportStatus importStatus = mock(ImportStatus.class);
     StoreUpdater instance = createInstance(importStatus, Lists.newArrayList());
-    instance.start(0);
+    instance.start(0, false);
 
     instance.commit();
 
@@ -81,7 +81,7 @@ public class StoreUpdaterTest {
     ImportStatus importStatus = mock(ImportStatus.class);
     StoreUpdater instance = createInstance(importStatus, Lists.newArrayList(new DerivedStore1(), new DerivedStore2()));
 
-    instance.start(0);
+    instance.start(0, false);
     instance.commit();
 
     verify(importStatus).startProgressItem(DerivedStore1.class.getSimpleName());

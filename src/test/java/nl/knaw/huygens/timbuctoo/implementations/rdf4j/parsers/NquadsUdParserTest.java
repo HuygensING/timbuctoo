@@ -23,12 +23,14 @@ public class NquadsUdParserTest {
   public void setUp() throws Exception {
     rdfProcessor = mock(RdfProcessor.class);
     instance = new NQuadsUdParser();
-    instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file", "http://example.org/file/", ""));
+    instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file",
+        "http://example.org/file/", "", false));
   }
 
   @Test
   public void parseStripsTheActionAddsItToTheActionsHolder() throws Exception {
-    instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file", "http://example.org/file/",""));
+    instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file",
+        "http://example.org/file/","", false));
     StringReader reader =
       new StringReader("-<http://example.org/subject1> <http://pred> \"12\"^^<http://number> <http://some_graph> .");
 

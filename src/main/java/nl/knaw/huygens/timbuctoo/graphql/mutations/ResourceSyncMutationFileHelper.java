@@ -43,7 +43,8 @@ public class ResourceSyncMutationFileHelper implements ResourceSyncImport.WithFi
           url.substring(url.lastIndexOf('/') + 1),
           inputStream,
           Optional.of(StandardCharsets.UTF_8),
-          parsedMediatype);
+          parsedMediatype,
+          false, false);
     }
 
     resourceSyncReport.ignoredFiles.add(url);

@@ -42,11 +42,11 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
 
   @Override
   public String saveFile(InputStream stream, String fileName, MediaType mediaType) throws IOException {
-    return storeFile(stream, fileName, mediaType, Optional.empty());
+    return storeFile(stream, fileName, mediaType, Optional.empty(), false, false);
   }
 
   private String storeFile(InputStream stream, String fileName, MediaType mediaType,
-                           Optional<Charset> charset) throws IOException {
+                           Optional<Charset> charset, boolean replaceData, boolean isInverse) throws IOException {
     String random = UUID.randomUUID().toString();
     String mnemonic = fileName.replaceAll("[^a-zA-Z0-9]", "_");
     String token = random + "-" + mnemonic;
@@ -66,7 +66,8 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
       out.close();
     }
 
-    fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, mediaType, charset)));
+    fileInfo.updateData(data ->
+        data.addItem(token, FileInfo.create(fileName, mediaType, charset, replaceData, isInverse)));
 
     return token;
   }
@@ -76,7 +77,8 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     CachedFile cachedFile = null;
     FileInfo fileInfo = this.fileInfo.getData().getItems().get(token);
     if (fileInfo != null) {
-      cachedFile = new FileSystemCachedFile(fileInfo.getMediaType(), fileInfo.getName(), new File(dir, token));
+      cachedFile = new FileSystemCachedFile(fileInfo.getMediaType(), fileInfo.getName(),
+          fileInfo.getReplaceData(), fileInfo.getIsInverse(), new File(dir, token));
     }
     return Optional.ofNullable(cachedFile);
   }
@@ -87,9 +89,9 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
   }
 
   @Override
-  public String saveLog(InputStream stream, String fileName, MediaType mediaType, Optional<Charset> charset)
-    throws IOException {
-    return storeFile(stream, fileName, mediaType, charset);
+  public String saveLog(InputStream stream, String fileName, MediaType mediaType,
+                        Optional<Charset> charset, boolean replaceData, boolean isInverse) throws IOException {
+    return storeFile(stream, fileName, mediaType, charset, replaceData, isInverse);
   }
 
   @Override
@@ -99,6 +101,8 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
       fileInfo.getMediaType(),
       fileInfo.getCharset(),
       fileInfo.getName(),
+      fileInfo.getReplaceData(),
+      fileInfo.getIsInverse(),
       new File(dir, token)
     );
   }

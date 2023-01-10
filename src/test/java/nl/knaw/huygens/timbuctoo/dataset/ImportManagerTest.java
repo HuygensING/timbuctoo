@@ -68,7 +68,8 @@ public class ImportManagerTest {
         name,
         new FileInputStream(file),
         Optional.of(Charsets.UTF_8),
-        MediaType.valueOf("text/turtle")
+        MediaType.valueOf("text/turtle"),
+      false, false
     );
 
     ImportStatus status = promise.get();
@@ -96,7 +97,8 @@ public class ImportManagerTest {
         name,
         new FileInputStream(file),
         Optional.of(Charsets.UTF_8),
-        MediaType.valueOf("text/turtle")
+        MediaType.valueOf("text/turtle"),
+      false, false
     );
     ImportStatus status = promise.get();
     assertThat(processor.getCounter(), is(28));
@@ -180,7 +182,7 @@ public class ImportManagerTest {
     }
 
     @Override
-    public void start(int index) throws RdfProcessingFailedException {
+    public void start(int index, boolean replaceData) throws RdfProcessingFailedException {
       currentVersion = index;
       counter.incrementAndGet();
     }

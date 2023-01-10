@@ -59,7 +59,8 @@ public class RdfUpload {
                          @PathParam("dataSet") final String dataSetId,
                          @QueryParam("forceCreation") boolean forceCreation,
                          @QueryParam("async") final boolean async,
-                         @QueryParam("replace") final boolean replaceData)
+                         @QueryParam("replace") final boolean replaceData,
+                         @QueryParam("inverse") final boolean isInverse)
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
     final Either<Response, Response> result = authCheck
@@ -95,17 +96,15 @@ public class RdfUpload {
 
         Future<ImportStatus> promise;
         try {
-          if (replaceData) {
-            deleteCurrentData(dataSet, importManager);
-          }
-
           promise = importManager.addLog(
             baseUri == null ? dataSet.getMetadata().getBaseUri() : baseUri.toString(),
             defaultGraph != null ? defaultGraph.toString() : null,
             body.getContentDisposition().getFileName(),
             rdfInputStream,
             Optional.of(Charset.forName(encoding)),
-            mediaType
+            mediaType,
+            replaceData,
+            isInverse
           );
         } catch (LogStorageFailedException e) {
           return Response.serverError().build();
@@ -119,57 +118,6 @@ public class RdfUpload {
       return result.left();
     } else {
       return result.right();
-    }
-  }
-
-  private void deleteCurrentData(DataSet dataSet, ImportManager importManager) throws LogStorageFailedException {
-    final String dataSetBaseUri = dataSet.getMetadata().getBaseUri();
-    final ChangesQuadGenerator nqUdGenerator = new ChangesQuadGenerator();
-    try (Stream<CursorQuad> quads = dataSet.getQuadStore().getAllQuads()) {
-      Stream<byte[]> deleteCurrentData =
-          quads.filter(quad -> quad.getDirection() == Direction.OUT).map(quad -> {
-            if (quad.getValuetype().isPresent()) {
-              final String valueType = quad.getValuetype().get();
-              if (quad.getLanguage().isPresent() && valueType.equals(RdfConstants.LANGSTRING)) {
-                return nqUdGenerator.delLanguageTaggedString(
-                    quad.getSubject(),
-                    quad.getPredicate(),
-                    quad.getObject(),
-                    quad.getLanguage().get(),
-                    quad.getGraph().orElse(null)
-                );
-              } else {
-                return nqUdGenerator.delValue(
-                    quad.getSubject(),
-                    quad.getPredicate(),
-                    quad.getObject(),
-                    valueType,
-                    quad.getGraph().orElse(null)
-                );
-              }
-            } else {
-              return nqUdGenerator.delRelation(
-                  quad.getSubject(),
-                  quad.getPredicate(),
-                  quad.getObject(),
-                  quad.getGraph().orElse(null)
-              );
-            }
-          }).map(String::getBytes);
-
-      final Future<ImportStatus> deletePromise = importManager.addLog(
-          dataSetBaseUri,
-          null,
-          "deleteCurrentData.nqud",
-          new ByteArrayStreamInputStream(deleteCurrentData),
-          Optional.of(StandardCharsets.UTF_8),
-          new MediaType("application", "vnd.timbuctoo-rdf.nquads_unified_diff")
-      );
-      // Wait until the deletions are done, before starting to import the new data,
-      // to make sure all new data is shown to the user
-      deletePromise.get();
-    } catch (InterruptedException | ExecutionException e) {
-      LoggerFactory.getLogger(RdfUpload.class).error("data could not be deleted");
     }
   }
 }
