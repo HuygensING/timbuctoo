@@ -9,6 +9,11 @@ import java.util.Optional;
 public class DirectiveRetriever {
   public static Optional<String> getDirectiveArgument(GraphQLObjectType parentType, String directiveName,
                                                       String argumentName) {
+    //    if (parentType.getDefinition().getDirectives(directiveName).isEmpty()) {
+    //      return Optional.empty();
+    //    }
+
+    //    return Optional.of(parentType.getDefinition().getDirectives(directiveName).get(0))
     return Optional.ofNullable(parentType.getDefinition().getDirective(directiveName))
       .map(d -> d.getArgument(argumentName))
       .map(v -> (StringValue) v.getValue())
@@ -17,6 +22,11 @@ public class DirectiveRetriever {
 
   public static Optional<String> getDirectiveArgument(GraphQLFieldDefinition field, String directiveName,
                                                       String argumentName) {
+    //    if (field.getDefinition().getDirectives(directiveName).isEmpty()) {
+    //      return Optional.empty();
+    //    }
+    //
+    //    return Optional.of(field.getDefinition().getDirectives(directiveName).get(0))
     return Optional.ofNullable(field.getDefinition().getDirective(directiveName))
       .map(d -> d.getArgument(argumentName))
       .map(v -> (StringValue) v.getValue())

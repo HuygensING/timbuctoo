@@ -2236,7 +2236,7 @@ public class TinkerPopOperationsTest {
 
     List<QuickSearchResult> result = instance.doQuickSearch(collection, quickSearch, 3);
 
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
+    assertThat(result.stream().map(QuickSearchResult::getId).collect(toList()), containsInAnyOrder(id1, id2));
 
     verify(indexHandler).findByQuickSearch(collection, quickSearch);
   }
@@ -2342,7 +2342,7 @@ public class TinkerPopOperationsTest {
 
     List<QuickSearchResult> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 3);
 
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
+    assertThat(result.stream().map(QuickSearchResult::getId).collect(toList()), contains(id1, id2));
     verify(indexHandler).findKeywordsByQuickSearch(collection, quickSearch, keywordType);
   }
 

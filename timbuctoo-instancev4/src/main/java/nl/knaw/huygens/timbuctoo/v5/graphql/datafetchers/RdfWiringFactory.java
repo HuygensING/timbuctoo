@@ -274,6 +274,7 @@ public class RdfWiringFactory implements WiringFactory {
           typeName = prefix + "_" + typeNameStore.makeGraphQlname(RDFS_RESOURCE);
         } else {
           typeName = null;
+          // for (Selection selection : environment.getField().getSingleField().getSelectionSet().getSelections()) {
           for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
             if (selection instanceof InlineFragment) {
               InlineFragment fragment = (InlineFragment) selection;

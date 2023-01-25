@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static graphql.ExecutionInput.newExecutionInput;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -123,7 +122,6 @@ public class GraphQl {
 
   public Response executeGraphql(String query, String acceptHeader, String acceptParam, String queryFromBody,
                                  Map variables, String operationName, String authHeader) {
-
     final SerializerWriter serializerWriter;
     if (acceptParam != null && !acceptParam.isEmpty()) {
       acceptHeader = acceptParam; //Accept param overrules header because it's more under the user's control
@@ -211,9 +209,8 @@ public class GraphQl {
         return Response
           .ok()
           .type(serializerWriter.getMimeType())
-          .entity((StreamingOutput) os -> {
-            serializerWriter.getSerializationFactory().create(os).serialize(new SerializableResult(result.getData()));
-          })
+          .entity((StreamingOutput) os -> serializerWriter.getSerializationFactory()
+              .create(os).serialize(new SerializableResult(result.getData())))
           .build();
       }
     } catch (GraphQLException e) {

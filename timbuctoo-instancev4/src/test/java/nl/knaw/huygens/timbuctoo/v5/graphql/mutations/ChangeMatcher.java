@@ -23,7 +23,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
   }
 
   public ChangeMatcher withSubject(String subject) {
-    this.addMatcher(new PropertyEqualityMatcher<Change, String>("subject", subject) {
+    this.addMatcher(new PropertyEqualityMatcher<>("subject", subject) {
       @Override
       protected String getItemValue(Change item) {
         return item.getSubject();
@@ -33,7 +33,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
   }
 
   public ChangeMatcher withPredicate(String predicate) {
-    this.addMatcher(new PropertyEqualityMatcher<Change, String>("predicate", predicate) {
+    this.addMatcher(new PropertyEqualityMatcher<>("predicate", predicate) {
       @Override
       protected String getItemValue(Change item) {
         return item.getPredicate();
@@ -73,7 +73,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
   }
 
   public ChangeMatcher oldValuesIsEmpty() {
-    this.addMatcher(new PropertyEqualityMatcher<Change, Boolean>("oldValues", false) {
+    this.addMatcher(new PropertyEqualityMatcher<>("oldValues", false) {
       @Override
       protected Boolean getItemValue(Change item) {
         return item.getOldValues().findAny().isPresent();

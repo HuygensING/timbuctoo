@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import nl.knaw.huygens.timbuctoo.util.Streams;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
@@ -112,7 +113,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
 
         if (!hadTypesBefore) {
           try (Stream<QuadGraphs> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
-            boolean subjectIsNew = !predicates.findAny().isPresent();
+            boolean subjectIsNew = predicates.findAny().isEmpty();
             if (!subjectIsNew) {
               final Type unknown = types.computeIfAbsent(RDFS_RESOURCE, TYPE_MAKER);
               removedTypes.add(unknown);
@@ -128,7 +129,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       if (removedTypes.isEmpty()) {
         //subject had no types either
         try (Stream<QuadGraphs> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
-          boolean subjectIsNew = !predicates.findAny().isPresent();
+          boolean subjectIsNew = predicates.findAny().isEmpty();
           if (subjectIsNew) {
             final Type unknown = types.computeIfAbsent(RDFS_RESOURCE, TYPE_MAKER);
             addedTypes.add(unknown);
@@ -182,12 +183,14 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
             prevPred,
             prevDir[0]
           );
+
           prevPred = quad.getPredicate();
           prevDir[0] = quad.getDirection();
           retractedCount = 0;
           assertedCount = 0;
           unchangedCount = 0;
         }
+
         if (quad.getChangeType() == ChangeType.RETRACTED) {
           retractedCount++;
         } else if (quad.getChangeType() == ChangeType.UNCHANGED) {
@@ -195,6 +198,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         } else if (quad.getChangeType() == ChangeType.ASSERTED) {
           assertedCount++;
         }
+
         if (quad.getChangeType() == ChangeType.RETRACTED) {
           for (Type type : unchangedTypes) {
             updatePredicateType(type, quad, false, changeFetcher);
@@ -251,6 +255,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       boolean isList = (unchangedCount + assertedCount) > 1;
       boolean wasPresent = (retractedCount + unchangedCount) > 0;
       boolean isPresent = (unchangedCount + assertedCount) > 0;
+
       for (Type type : removedTypes) {
         setPredicateOccurrence(
           type,
@@ -260,6 +265,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
           wasPresent ? -1 : 0
         );
       }
+
       for (Type type : unchangedTypes) {
         setPredicateOccurrence(
           type,
@@ -269,6 +275,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
           wasPresent == isPresent ? 0 : isPresent ? 1 : -1
         );
       }
+
       for (Type type : addedTypes) {
         setPredicateOccurrence(
           type,
@@ -365,7 +372,9 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     stableTypes = new HashMap<>();
 
     final ChangeFetcher getQuads = new ChangeFetcherImpl(quadStore);
-    try (Stream<String> subjects = quadStore.getAllQuads().map(CursorQuad::getSubject).distinct()) {
+    try (Stream<String> subjects = Streams
+        .combine(quadStore.getAllQuads(), (cqA, cqB) -> cqA.getSubject().equals(cqB.getSubject()), ArrayList::new)
+        .map(cqs -> cqs.get(0).getSubject())) {
       for (String subject : (Iterable<String>) subjects::iterator) {
         onChangedSubject(subject, getQuads);
       }

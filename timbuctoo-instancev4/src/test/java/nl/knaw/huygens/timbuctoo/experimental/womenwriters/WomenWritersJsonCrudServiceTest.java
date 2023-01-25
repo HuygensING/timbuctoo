@@ -35,15 +35,13 @@ public class WomenWritersJsonCrudServiceTest {
     throws InvalidCollectionException, NotFoundException {
     UUID workId = UUID.randomUUID();
     TinkerPopGraphManager graphManager = newGraph()
-      .withVertex("work1", v -> {
-          v.withOutgoingRelation("isCreatedBy", "pers1")
-           .withOutgoingRelation("isCreatedBy", "pers2")
-           .withVre("ww")
-           .withVre("")
-           .withType("document")
-           .isLatest(true)
-           .withTimId(workId.toString());
-        }
+      .withVertex("work1", v -> v.withOutgoingRelation("isCreatedBy", "pers1")
+       .withOutgoingRelation("isCreatedBy", "pers2")
+       .withVre("ww")
+       .withVre("")
+       .withType("document")
+       .isLatest(true)
+       .withTimId(workId.toString())
       )
       .withVertex("pers1", v ->
         v.withVre("ww")

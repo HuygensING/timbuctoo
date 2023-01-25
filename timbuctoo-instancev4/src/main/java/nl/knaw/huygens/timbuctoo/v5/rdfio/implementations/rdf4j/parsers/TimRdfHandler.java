@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
+import nl.knaw.huc.rdf4j.rio.nquadsnd.RDFAssertionHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -10,25 +11,17 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 
-import java.util.function.Supplier;
-
-public class TimRdfHandler extends AbstractRDFHandler {
-  private static final int ADD = '+';
+public class TimRdfHandler extends AbstractRDFHandler implements RDFAssertionHandler {
   private final RdfProcessor rdfProcessor;
   private final String baseUri;
   private final String defaultGraph;
   private final String fileName;
-  private Supplier<Integer> actionSupplier;
 
   public TimRdfHandler(RdfProcessor rdfProcessor, String baseUri, String defaultGraph, String fileName) {
     this.rdfProcessor = rdfProcessor;
     this.baseUri = baseUri;
     this.defaultGraph = defaultGraph;
     this.fileName = fileName;
-  }
-
-  public void registerActionSupplier(Supplier<Integer> actionSupplier) {
-    this.actionSupplier = actionSupplier;
   }
 
   @Override
@@ -50,6 +43,11 @@ public class TimRdfHandler extends AbstractRDFHandler {
 
   @Override
   public void handleStatement(Statement st) throws RDFHandlerException {
+    handleStatement(true, st);
+  }
+
+  @Override
+  public void handleStatement(boolean isAssertion, Statement st) throws RDFHandlerException {
     try {
       if (Thread.currentThread().isInterrupted()) {
         rdfProcessor.commit();
@@ -66,21 +64,17 @@ public class TimRdfHandler extends AbstractRDFHandler {
       }
 
       rdfProcessor.onQuad(
-        isAssertion(),
-        handleNode(st.getSubject()),
-        st.getPredicate().stringValue(),
-        handleNode(st.getObject()),
-        (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getDatatype().toString() : null,
-        (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getLanguage().orElse(null) : null,
-        graph
+          isAssertion,
+          handleNode(st.getSubject()),
+          st.getPredicate().stringValue(),
+          handleNode(st.getObject()),
+          (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getDatatype().toString() : null,
+          (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getLanguage().orElse(null) : null,
+          graph
       );
     } catch (RdfProcessingFailedException e) {
       throw new RDFHandlerException(e);
     }
-  }
-
-  private boolean isAssertion() {
-    return actionSupplier == null || actionSupplier.get() == ADD;
   }
 
   private String handleNode(Value resource) {

@@ -28,19 +28,14 @@ public class LoadSaveVresTest {
     final String keywordTypesJson = new ObjectMapper().writeValueAsString(keywordTypes);
 
     final TinkerPopGraphManager graphManager = newGraph()
-      .withVertex("documents", v -> {
-        v.withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "documents")
-          .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "document")
-          .withProperty(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, false);
-      })
-      .withVertex(v -> {
-
-        v.withLabel(Vre.DATABASE_LABEL)
-          .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreA")
-          .withProperty(Vre.KEYWORD_TYPES_PROPERTY_NAME,
-           keywordTypesJson)
-          .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "documents");
-      })
+      .withVertex("documents", v -> v.withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "documents")
+        .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "document")
+        .withProperty(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, false))
+      .withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+        .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreA")
+        .withProperty(Vre.KEYWORD_TYPES_PROPERTY_NAME,
+         keywordTypesJson)
+        .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "documents"))
       .wrap();
 
     TransactionEnforcer transactionEnforcer = forGraphWrapper(graphManager);
@@ -55,10 +50,8 @@ public class LoadSaveVresTest {
   @Test
   public void onlyReloadReloadsTheConfigurationsFromTheGraph() throws JsonProcessingException {
     TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> {
-        v.withLabel(Vre.DATABASE_LABEL)
-          .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreA");
-      })
+      .withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+        .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreA"))
       .wrap();
 
     TransactionEnforcer transactionEnforcer = TransactionEnforcerStubs.forGraphWrapper(graphManager);
@@ -70,10 +63,8 @@ public class LoadSaveVresTest {
     // TODO find a clearer way to write this test.
     // This call overrides the GraphManager pointer, so the DatabaseConfiguredVres has an empty database again.
     graphManager = newGraph()
-      .withVertex(v -> {
-        v.withLabel(Vre.DATABASE_LABEL)
-          .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreB");
-      })
+      .withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+        .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreB"))
       .wrap();
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));

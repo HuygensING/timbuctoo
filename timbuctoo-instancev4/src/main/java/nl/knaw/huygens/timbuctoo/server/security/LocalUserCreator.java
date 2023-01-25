@@ -49,9 +49,7 @@ public class LocalUserCreator {
       loginCreator.createLogin(userPid, userName, password, givenName, surname, emailAddress, organization);
       User user = userCreator.createUser(userPid, emailAddress, givenName, surname, organization);
       authorizationCreator.createAuthorization(vreId, user, vreRole);
-    } catch (LoginCreationException e) {
-      throw new UserCreationException(e);
-    } catch (AuthorizationCreationException e) {
+    } catch (LoginCreationException | AuthorizationCreationException e) {
       throw new UserCreationException(e);
     }
   }

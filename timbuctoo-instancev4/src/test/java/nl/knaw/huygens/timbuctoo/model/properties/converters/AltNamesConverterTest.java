@@ -55,7 +55,7 @@ public class AltNamesConverterTest {
 
     JsonNode jsonNode = instance.tinkerpopToJson(dbValue);
 
-    List<AltName> altNameList = objectMapper.readValue(jsonNode.toString(), new TypeReference<List<AltName>>() {
+    List<AltName> altNameList = objectMapper.readValue(jsonNode.toString(), new TypeReference<>() {
     });
 
     assertThat(altNameList, containsInAnyOrder(ALT_NAME_1, ALT_NAME_2));

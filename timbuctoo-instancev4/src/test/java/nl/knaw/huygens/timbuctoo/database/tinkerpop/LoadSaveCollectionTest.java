@@ -83,15 +83,12 @@ public class LoadSaveCollectionTest {
   @Test(expected = IllegalArgumentException.class)
   public void saveThrowsWhenTheCollectionNameIsNotUniqueToThisVre() {
     Graph graph = newGraph()
-      .withVertex(v -> {
-        v.withLabel(Collection.DATABASE_LABEL)
-          .withProperty(COLLECTION_NAME_PROPERTY_NAME, "persons")
-          .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "person")
-          .withIncomingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "vre");
-      }).withVertex("vre", v -> {
-        v.withLabel(Vre.DATABASE_LABEL)
-          .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "OtherVreName");
-      }).build();
+      .withVertex(v -> v.withLabel(Collection.DATABASE_LABEL)
+        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "persons")
+        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "person")
+        .withIncomingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "vre"))
+        .withVertex("vre", v -> v.withLabel(Vre.DATABASE_LABEL)
+          .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "OtherVreName")).build();
 
     save(new Collection("person", "person", null, Maps.newLinkedHashMap(), "persons",
       new Vre(vreName), null, false, false, null), graph);

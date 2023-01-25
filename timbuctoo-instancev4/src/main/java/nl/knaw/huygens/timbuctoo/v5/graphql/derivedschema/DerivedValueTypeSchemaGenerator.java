@@ -16,7 +16,7 @@ class DerivedValueTypeSchemaGenerator implements DerivedTypeSchemaGenerator {
   public StringBuilder getSchema() {
     String interfaceName = VALUE_INTERFACE_NAME;
     if (hasLanguage) {
-      interfaceName += ", " + LANGUAGE_INTERFACE_NAME;
+      interfaceName += " & " + LANGUAGE_INTERFACE_NAME;
     }
 
     StringBuilder builder = new StringBuilder();

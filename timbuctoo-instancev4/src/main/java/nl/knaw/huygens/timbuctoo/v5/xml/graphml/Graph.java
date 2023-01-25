@@ -89,6 +89,6 @@ public class Graph {
   }
 
   public JAXBElement<Graph> asJaxbElement() {
-    return new JAXBElement<Graph>(QNAME, Graph.class, this);
+    return new JAXBElement<>(QNAME, Graph.class, this);
   }
 }

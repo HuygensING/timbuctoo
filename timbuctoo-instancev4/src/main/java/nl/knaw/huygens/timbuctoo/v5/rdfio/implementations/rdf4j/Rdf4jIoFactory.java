@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j;
 
+import nl.knaw.huc.rdf4j.rio.nquadsnd.NQuadsUdParserFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfParser;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.BasicRdfPatchSerializer;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.NquadsUdParser.NquadsUdParserFactory;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParserRegistry;
 
@@ -23,7 +23,7 @@ public class Rdf4jIoFactory implements RdfIoFactory {
   private String rdfFormat = "application/n-quads"; // format for serializer
 
   public Rdf4jIoFactory() {
-    RDFParserRegistry.getInstance().add(new NquadsUdParserFactory());
+    RDFParserRegistry.getInstance().add(new NQuadsUdParserFactory());
   }
 
   @Override

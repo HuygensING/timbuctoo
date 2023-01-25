@@ -44,8 +44,7 @@ public class ImportManagerTest {
     filesDir = Files.createTempDir();
     fileStorage = new FileSystemFileStorage(filesDir);
     this.importManager = new ImportManager(
-      JsonFileBackedData.getOrCreate(logListLocation, LogList::new, new TypeReference<LogList>() {
-      }),
+      JsonFileBackedData.getOrCreate(logListLocation, LogList::new, new TypeReference<>() { }),
       fileStorage,
       fileStorage,
       fileStorage,
@@ -68,12 +67,12 @@ public class ImportManagerTest {
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
     Future<ImportStatus> promise = importManager.addLog(
-      baseUri,
-      defaultGraph,
-      name,
-      new FileInputStream(file),
-      Optional.of(Charsets.UTF_8),
-      MediaType.valueOf("text/turtle")
+        baseUri,
+        defaultGraph,
+        name,
+        new FileInputStream(file),
+        Optional.of(Charsets.UTF_8),
+        MediaType.valueOf("text/turtle")
     );
 
     ImportStatus status = promise.get();
@@ -96,12 +95,12 @@ public class ImportManagerTest {
     importManager.subscribeToRdf(processor);
 
     Future<ImportStatus> promise = importManager.addLog(
-      baseUri,
-      defaultGraph,
-      name,
-      new FileInputStream(file),
-      Optional.of(Charsets.UTF_8),
-      MediaType.valueOf("text/turtle")
+        baseUri,
+        defaultGraph,
+        name,
+        new FileInputStream(file),
+        Optional.of(Charsets.UTF_8),
+        MediaType.valueOf("text/turtle")
     );
     ImportStatus status = promise.get();
     assertThat(processor.getCounter(), is(28));
@@ -116,9 +115,9 @@ public class ImportManagerTest {
     importManager.subscribeToRdf(processor);
 
     Future<ImportStatus> promise = importManager.generateLog(
-      baseUri,
-      defaultGraph,
-      new DummyRdfCreator()
+        baseUri,
+        defaultGraph,
+        new DummyRdfCreator()
     );
 
     ImportStatus status = promise.get();
@@ -142,13 +141,13 @@ public class ImportManagerTest {
 
     private static CachedFileMatcher cachedFile(CachedFile cachedFile) {
       return cachedFile()
-        .withFile(cachedFile.getFile())
-        .withMimeType(cachedFile.getMimeType())
-        .withName(cachedFile.getName());
+          .withFile(cachedFile.getFile())
+          .withMimeType(cachedFile.getMimeType())
+          .withName(cachedFile.getName());
     }
 
     public CachedFileMatcher withFile(File file) {
-      this.addMatcher(new PropertyEqualityMatcher<CachedFile, File>("file", file) {
+      this.addMatcher(new PropertyEqualityMatcher<>("file", file) {
         @Override
         protected File getItemValue(CachedFile item) {
           return item.getFile();
@@ -158,7 +157,7 @@ public class ImportManagerTest {
     }
 
     public CachedFileMatcher withName(String name) {
-      this.addMatcher(new PropertyEqualityMatcher<CachedFile, String>("name", name) {
+      this.addMatcher(new PropertyEqualityMatcher<>("name", name) {
         @Override
         protected String getItemValue(CachedFile item) {
           return item.getName();
@@ -168,7 +167,7 @@ public class ImportManagerTest {
     }
 
     public CachedFileMatcher withMimeType(MediaType mimeType) {
-      this.addMatcher(new PropertyEqualityMatcher<CachedFile, MediaType>("mimeType", mimeType) {
+      this.addMatcher(new PropertyEqualityMatcher<>("mimeType", mimeType) {
         @Override
         protected MediaType getItemValue(CachedFile item) {
           return item.getMimeType();
@@ -197,13 +196,13 @@ public class ImportManagerTest {
 
     @Override
     public void addRelation(String subject, String predicate, String object, String graph)
-      throws RdfProcessingFailedException {
+        throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
     public void addValue(String subject, String predicate, String value, String dataType, String graph)
-      throws RdfProcessingFailedException {
+        throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
@@ -215,13 +214,13 @@ public class ImportManagerTest {
 
     @Override
     public void delRelation(String subject, String predicate, String object, String graph)
-      throws RdfProcessingFailedException {
+        throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
     public void delValue(String subject, String predicate, String value, String valueType, String graph)
-      throws RdfProcessingFailedException {
+        throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 

@@ -15,7 +15,7 @@ public class CollectionMatcher extends CompositeMatcher<Collection> {
   }
 
   public CollectionMatcher withCollectionName(String collectionName) {
-    this.addMatcher(new PropertyEqualityMatcher<Collection, String>("collectionName", collectionName) {
+    this.addMatcher(new PropertyEqualityMatcher<>("collectionName", collectionName) {
       @Override
       protected String getItemValue(Collection item) {
         return item.getCollectionName();

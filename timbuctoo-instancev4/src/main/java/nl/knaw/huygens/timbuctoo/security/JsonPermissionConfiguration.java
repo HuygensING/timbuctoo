@@ -20,11 +20,7 @@ public class JsonPermissionConfiguration implements PermissionConfiguration {
   private final Set<RolePermissions> rolePermissions;
 
   public JsonPermissionConfiguration(InputStream permissionConfig) throws IOException {
-    rolePermissions = OBJECT_MAPPER.readValue(
-      permissionConfig,
-      new TypeReference<Set<RolePermissions>>() {
-      }
-    );
+    rolePermissions = OBJECT_MAPPER.readValue(permissionConfig, new TypeReference<>() { });
   }
 
   @Override

@@ -17,7 +17,7 @@ public class ElementMatcher extends CompositeMatcher<Element> {
   }
 
   public <T extends Element> ElementMatcher ofType(final Class<T> type) {
-    this.addMatcher(new TypeSafeMatcher<Element>() {
+    this.addMatcher(new TypeSafeMatcher<>() {
       @Override
       protected boolean matchesSafely(Element element) {
         return type.isAssignableFrom(element.getClass());
@@ -32,7 +32,7 @@ public class ElementMatcher extends CompositeMatcher<Element> {
   }
 
   public ElementMatcher withTimId(String id) {
-    this.addMatcher(new PropertyEqualityMatcher<Element, String>("id", id) {
+    this.addMatcher(new PropertyEqualityMatcher<>("id", id) {
       @Override
       protected String getItemValue(Element item) {
         return item.value("tim_id");
@@ -42,7 +42,7 @@ public class ElementMatcher extends CompositeMatcher<Element> {
   }
 
   public ElementMatcher withProperty(final String name, final Object value) {
-    this.addMatcher(new PropertyEqualityMatcher<Element, Object>(name, value) {
+    this.addMatcher(new PropertyEqualityMatcher<>(name, value) {
       @Override
       protected Object getItemValue(Element item) {
         return item.value(name);

@@ -69,6 +69,6 @@ public class GmlEdge {
   }
 
   public JAXBElement<GmlEdge> asJaxbElement() {
-    return new JAXBElement<GmlEdge>(QNAME, GmlEdge.class, this);
+    return new JAXBElement<>(QNAME, GmlEdge.class, this);
   }
 }

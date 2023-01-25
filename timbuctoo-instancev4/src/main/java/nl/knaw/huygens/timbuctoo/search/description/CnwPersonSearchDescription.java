@@ -168,7 +168,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
     Map<String, Object> data = entityRef.getData();
 
     try {
-      final TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {
+      final TypeReference<List<String>> listTypeReference = new TypeReference<>() {
       };
       data.put("networkDomains", objectMapper.readValue((String) vertex.value("cnwperson_networkDomains"),
         listTypeReference));

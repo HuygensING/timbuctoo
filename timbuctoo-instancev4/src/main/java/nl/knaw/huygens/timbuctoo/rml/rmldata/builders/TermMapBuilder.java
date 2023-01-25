@@ -129,9 +129,7 @@ public class TermMapBuilder {
 
   private TermType termTypeOrDefault(Optional<TermType> termTypeOpt, Optional<String> language,
                                      Optional<String> datatypeOpt) {
-    return termTypeOpt.orElseGet(() -> {
-      return getDefaultTermType(true, language.isPresent(), datatypeOpt.isPresent());
-    });
+    return termTypeOpt.orElseGet(() -> getDefaultTermType(true, language.isPresent(), datatypeOpt.isPresent()));
   }
 
   private String dataTypeOrDefault(Optional<String> datatypeOpt) {

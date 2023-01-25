@@ -120,9 +120,10 @@ public class EntityToJsonMapper {
   private JsonNode mapRelations(List<RelationRef> relations,
                                 ExtraRelationMappingOptions relationMappingOptions) {
     ObjectNode relationsNode = jsnO();
-    relations.stream().map(relationRef -> mapRelationRef(relationRef, relationMappingOptions)
-    ).collect(groupingBy(x -> x.get("relationType").asText())).entrySet().forEach(relationsType ->
-      relationsNode.set(relationsType.getKey(), jsnA(relationsType.getValue().stream())));
+    relations.stream()
+            .map(relationRef -> mapRelationRef(relationRef, relationMappingOptions))
+            .collect(groupingBy(x -> x.get("relationType").asText()))
+            .forEach((key, value) -> relationsNode.set(key, jsnA(value.stream())));
 
     return relationsNode;
   }

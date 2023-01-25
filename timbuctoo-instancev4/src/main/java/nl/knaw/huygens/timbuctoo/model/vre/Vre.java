@@ -170,7 +170,7 @@ public class Vre {
     if (vreVertex.property(KEYWORD_TYPES_PROPERTY_NAME).isPresent()) {
       final String keywordTypesJson = vreVertex.value(KEYWORD_TYPES_PROPERTY_NAME);
       try {
-        return new ObjectMapper().readValue(keywordTypesJson, new TypeReference<Map<String, String>>() { });
+        return new ObjectMapper().readValue(keywordTypesJson, new TypeReference<>() { });
       } catch (IOException e) {
         LOG.warn(databaseInvariant, "Cannot deserialize keyword types property {} ", keywordTypesJson);
       }

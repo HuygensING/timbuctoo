@@ -36,7 +36,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
 
     Map<String, Object> data = Maps.newHashMap();
 
-    getDataPropertyDescriptors().entrySet().forEach(entry -> data.put(entry.getKey(), entry.getValue().get(vertex)));
+    getDataPropertyDescriptors().forEach((key, value) -> data.put(key, value.get(vertex)));
 
     ref.setData(data);
 
@@ -129,9 +129,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     public void addSearchHits(Vertex vertex) {
       final List<String> facetValues = facetDescription.getValues(vertex);
       if (facetValues != null) {
-        facetValues.stream().forEach(facetValue -> {
-          this.addSearchHitForValue(facetValue, vertex);
-        });
+        facetValues.stream().forEach(facetValue -> this.addSearchHitForValue(facetValue, vertex));
       }
     }
   }

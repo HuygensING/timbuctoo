@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -89,8 +90,7 @@ public class EdgeListFacetDescriptionTest {
             .withVertex("v2", v -> v.withTimId("2").withOutgoingRelation(RELATION_NAME, "v1"))
             .build().traversal().V().toList();
 
-    Collections.sort(vertices, (vertexA, vertexB) ->
-            ((String) vertexA.property("tim_id").value()).compareTo((String) vertexB.property("tim_id").value()));
+    vertices.sort(Comparator.comparing(vertexA -> ((String) vertexA.property("tim_id").value())));
 
     List<String> values = instance.getValues(vertices.get(0));
     List<String> values2 = instance.getValues(vertices.get(1));

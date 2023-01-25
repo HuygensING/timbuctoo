@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
+import nl.knaw.huc.rdf4j.rio.nquadsnd.NQuadsUdParser;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,12 +17,12 @@ public class NquadsUdParserTest {
 
   private static final String BASE_URI = "http://example.org";
   private RdfProcessor rdfProcessor;
-  private NquadsUdParser instance;
+  private NQuadsUdParser instance;
 
   @Before
   public void setUp() throws Exception {
     rdfProcessor = mock(RdfProcessor.class);
-    instance = new NquadsUdParser();
+    instance = new NQuadsUdParser();
     instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file", "http://example.org/file/", ""));
   }
 

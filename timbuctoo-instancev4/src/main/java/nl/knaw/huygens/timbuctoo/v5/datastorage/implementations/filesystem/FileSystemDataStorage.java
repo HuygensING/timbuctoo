@@ -60,7 +60,7 @@ public class FileSystemDataStorage implements DataStorage {
       String currentOwnerId = dirName.substring(dirName.lastIndexOf("/") + 1);
       Set<DataSetMetaData> tempMetaDataSet = new HashSet<>();
       try (Stream<Path> fileStream = Files.walk(directory.toPath())) {
-        Set<Path> paths = fileStream.filter(current -> Files.isDirectory(current)).collect(Collectors.toSet());
+        Set<Path> paths = fileStream.filter(Files::isDirectory).collect(Collectors.toSet());
         for (Path path : paths) {
           File tempFile = new File(path.toString() + "/metaData.json");
           if (tempFile.exists()) {

@@ -183,13 +183,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       httpClient
     );
 
-    securityConfig.getHealthChecks().forEachRemaining(check -> {
-      register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight()));
-    });
+    securityConfig.getHealthChecks().forEachRemaining(check ->
+            register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight())));
 
-    configuration.getCollectionFilters().entrySet().forEach(entry -> {
-      register(environment, entry.getKey() + "Check", new CollectionFilterCheck(entry.getValue()));
-    });
+    configuration.getCollectionFilters().forEach((key, value) ->
+            register(environment, key + "Check", new CollectionFilterCheck(value)));
 
     // Database migration
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();

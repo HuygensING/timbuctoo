@@ -197,9 +197,7 @@ public class BdbWrapperTest {
     final Stream<String> stream = database.databaseGetter()
       .key("ab")
       .skipNearValue("b")
-      .onlyValuesMatching((prefix, value) -> {
-        return value.startsWith(prefix);
-      })
+      .onlyValuesMatching((prefix, value) -> value.startsWith(prefix))
       .forwards()
       .getValues(database.valueRetriever());
     final long count = stream

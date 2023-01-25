@@ -113,9 +113,7 @@ public class RawUploadRdfSaver implements Saver<String> {
   @Override
   public void addPropertyDescriptions(String collection, ImportPropertyDescriptions importPropertyDescriptions) {
     SortedMap<Integer, ImportPropertyDescription> sortedDescriptions = new TreeMap<>();
-    importPropertyDescriptions.forEach(prop -> {
-      sortedDescriptions.put(prop.getOrder(), prop);
-    });
+    importPropertyDescriptions.forEach(prop -> sortedDescriptions.put(prop.getOrder(), prop));
     String prevPropUri = addPropertyDescription(collection, "tim_id", -1, null);
     for (ImportPropertyDescription prop : sortedDescriptions.values()) {
       String propertyName = prop.getPropertyName();

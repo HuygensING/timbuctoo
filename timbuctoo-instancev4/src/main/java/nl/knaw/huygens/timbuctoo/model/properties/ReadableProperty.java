@@ -65,7 +65,7 @@ public abstract class ReadableProperty {
     String[] options = null;
     if (propertyVertex.property(LocalProperty.OPTIONS_PROPERTY_NAME).isPresent()) {
       final String optionsJson = propertyVertex.value(LocalProperty.OPTIONS_PROPERTY_NAME);
-      options = new ObjectMapper().readValue(optionsJson, new TypeReference<String[]>() {
+      options = new ObjectMapper().readValue(optionsJson, new TypeReference<>() {
       });
     }
 

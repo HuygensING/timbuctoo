@@ -34,6 +34,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -157,7 +158,7 @@ public class TinkerPopToEntityMapper {
     Optional<String> typesOptional = getProp(entityVertex, "types", String.class);
     if (typesOptional.isPresent()) {
       try {
-        List<String> types = new ObjectMapper().readValue(typesOptional.get(), new TypeReference<List<String>>() {
+        List<String> types = new ObjectMapper().readValue(typesOptional.get(), new TypeReference<>() {
         });
         entity.setTypes(types);
       } catch (Exception e) {
@@ -304,7 +305,7 @@ public class TinkerPopToEntityMapper {
                         .map(x -> null));
 
     List<RelationRef> relations = stream(realRelations)
-      .filter(x -> x != null).collect(toList());
+      .filter(Objects::nonNull).collect(toList());
 
     return relations;
   }

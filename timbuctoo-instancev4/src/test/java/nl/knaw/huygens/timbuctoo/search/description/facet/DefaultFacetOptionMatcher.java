@@ -14,7 +14,7 @@ public class DefaultFacetOptionMatcher extends CompositeMatcher<Facet.Option> {
   }
 
   public DefaultFacetOptionMatcher withName(String name) {
-    this.addMatcher(new PropertyEqualityMatcher<Facet.Option, String>("name", name) {
+    this.addMatcher(new PropertyEqualityMatcher<>("name", name) {
       @Override
       protected String getItemValue(Facet.Option item) {
         if (item instanceof Facet.DefaultOption) {

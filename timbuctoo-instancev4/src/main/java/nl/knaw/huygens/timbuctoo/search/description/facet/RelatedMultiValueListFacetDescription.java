@@ -43,10 +43,9 @@ public class RelatedMultiValueListFacetDescription extends AbstractFacetDescript
       if (facetValue instanceof ListFacetValue) {
         List<String> values = ((ListFacetValue) facetValue).getValues();
         if (!values.isEmpty()) {
-          graphTraversal.where(__.bothE(relations).otherV().has(propertyName, P.test((o1, o2) -> {
-            return o1 instanceof String && o2 instanceof List &&
-                    ((List<?>) o2).stream().anyMatch(val -> ((String) o1).contains("\"" + val + "\""));
-          }, values)));
+          graphTraversal.where(__.bothE(relations).otherV().has(propertyName,
+              P.test((o1, o2) -> o1 instanceof String && o2 instanceof List &&
+                  ((List<?>) o2).stream().anyMatch(val -> ((String) o1).contains("\"" + val + "\"")), values)));
         }
       }
     }

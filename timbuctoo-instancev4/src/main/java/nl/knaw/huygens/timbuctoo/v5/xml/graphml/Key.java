@@ -60,6 +60,6 @@ public class Key {
   }
 
   public JAXBElement<Key> asJaxbElement() {
-    return new JAXBElement<Key>(QNAME, Key.class, this);
+    return new JAXBElement<>(QNAME, Key.class, this);
   }
 }

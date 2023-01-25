@@ -60,7 +60,7 @@ public class MimeParser {
   protected static ParseResults parseMimeType(String mimeType) {
     String[] parts = StringUtils.split(mimeType, ";");
     ParseResults results = new ParseResults();
-    results.params = new HashMap<String, String>();
+    results.params = new HashMap<>();
 
     for (int i = 1; i < parts.length; ++i) {
       String part = parts[i];
@@ -191,7 +191,7 @@ public class MimeParser {
    * mediaRanges in ranges. For example:
    */
   public static float quality(String mimeType, String ranges) {
-    List<ParseResults> results = new LinkedList<ParseResults>();
+    List<ParseResults> results = new LinkedList<>();
     for (String r : StringUtils.split(ranges, ',')) {
       results.add(parseMediaRange(r));
     }

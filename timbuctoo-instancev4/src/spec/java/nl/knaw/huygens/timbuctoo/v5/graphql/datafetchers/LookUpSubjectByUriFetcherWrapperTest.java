@@ -35,10 +35,12 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.dataloader.DataLoader;
+import org.dataloader.DataLoaderRegistry;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 

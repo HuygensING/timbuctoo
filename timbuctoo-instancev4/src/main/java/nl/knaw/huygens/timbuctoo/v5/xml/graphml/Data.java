@@ -35,6 +35,6 @@ public class Data {
   }
 
   public JAXBElement<Data> asJaxbElement() {
-    return new JAXBElement<Data>(QNAME, Data.class, this);
+    return new JAXBElement<>(QNAME, Data.class, this);
   }
 }

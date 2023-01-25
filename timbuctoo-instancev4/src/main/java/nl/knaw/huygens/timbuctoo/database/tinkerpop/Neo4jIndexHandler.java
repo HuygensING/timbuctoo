@@ -67,7 +67,7 @@ public class Neo4jIndexHandler implements IndexHandler {
 
     try {
       IndexHits<Node> hits = index.query(QUICK_SEARCH_PROP_NAME, createQuery(quickSearch));
-      List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
+      List<Long> ids = StreamIterator.stream(hits.iterator()).map(Node::getId).collect(toList());
       return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal().V(ids);
     } catch (Exception e) {
       LOG.error("Unexpected exception during search", e);

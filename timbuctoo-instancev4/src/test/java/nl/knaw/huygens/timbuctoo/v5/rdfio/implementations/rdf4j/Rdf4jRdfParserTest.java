@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j;
 
+import nl.knaw.huc.rdf4j.rio.nquadsnd.NQuadsUdParserFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.NquadsUdParser.NquadsUdParserFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.rdf4j.rio.RDFParserRegistry;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class Rdf4jRdfParserTest {
 
   @Test
   public void supportsNQuadsUdDeletions() throws Exception {
-    RDFParserRegistry.getInstance().add(new NquadsUdParserFactory());
+    RDFParserRegistry.getInstance().add(new NQuadsUdParserFactory());
     RdfProcessor rdfProcessor = mock(RdfProcessor.class);
     StringReader reader =
       new StringReader("-<http://example.org/subject1> <http://pred> \"12\"^^<http://number> <http://some_graph> .");
@@ -45,7 +45,7 @@ public class Rdf4jRdfParserTest {
 
   @Test
   public void handlesBlankNodeSubjectProperly() throws Exception {
-    RDFParserRegistry.getInstance().add(new NquadsUdParserFactory());
+    RDFParserRegistry.getInstance().add(new NQuadsUdParserFactory());
     RdfProcessor rdfProcessor = mock(RdfProcessor.class);
     StringReader reader =
       new StringReader("+_:alice <http://pred> \"12\"^^<http://number> <http://some_graph> .");
@@ -68,7 +68,7 @@ public class Rdf4jRdfParserTest {
 
   @Test
   public void handlesBlankNodeObjectProperly() throws Exception {
-    RDFParserRegistry.getInstance().add(new NquadsUdParserFactory());
+    RDFParserRegistry.getInstance().add(new NQuadsUdParserFactory());
     RdfProcessor rdfProcessor = mock(RdfProcessor.class);
     StringReader reader =
       new StringReader("+_:alice <http://pred> _:bob <http://some_graph> .");

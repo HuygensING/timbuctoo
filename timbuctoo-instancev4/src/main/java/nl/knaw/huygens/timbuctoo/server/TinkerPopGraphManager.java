@@ -162,9 +162,7 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
         }
         if (member.getRoles() != null) {
           logMessage.append("roles=");
-          member.getRoles().forEach(role -> {
-            logMessage.append(role).append("; ");
-          });
+          member.getRoles().forEach(role -> logMessage.append(role).append("; "));
         }
         logMessage.append("\n");
       });
