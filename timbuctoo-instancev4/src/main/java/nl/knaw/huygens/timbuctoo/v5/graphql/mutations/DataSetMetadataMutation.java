@@ -9,10 +9,10 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.MetadataProp;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.SimpleMetadataProp;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.UriMetadataProp;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation.MutationOperation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 
 import java.util.List;
@@ -42,6 +42,7 @@ public class DataSetMetadataMutation extends Mutation {
   @Override
   public Object executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
+    UserPermissionCheck userPermissionCheck = env.getGraphQlContext().get("userPermissionCheck");
     MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.EDIT_DATASET_METADATA);
 
     try {
@@ -57,7 +58,7 @@ public class DataSetMetadataMutation extends Mutation {
 
       addMutation(dataSet, new PredicateMutation().entity(baseUri, mutationOperations));
 
-      return new DataSetWithDatabase(dataSet, env.<ContextData>getContext().getUserPermissionCheck());
+      return new DataSetWithDatabase(dataSet, userPermissionCheck);
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }

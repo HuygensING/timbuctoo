@@ -3,17 +3,14 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sleepycat.je.DatabaseException;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLException;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.PermissionBasedFieldVisibility;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
@@ -35,6 +32,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +43,6 @@ import java.util.function.Supplier;
 import static graphql.ExecutionInput.newExecutionInput;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
-import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData.contextData;
 
 @Path("/v5/graphql")
 public class GraphQl {
@@ -58,8 +56,7 @@ public class GraphQl {
 
   public GraphQl(Supplier<GraphQLSchema> graphqlGetter, SerializerWriterRegistry serializerWriterRegistry,
                  UserValidator userValidator, UriHelper uriHelper, PermissionFetcher permissionFetcher,
-                 DataSetRepository dataSetRepository)
-    throws DatabaseException, RdfProcessingFailedException {
+                 DataSetRepository dataSetRepository) {
     this.graphqlGetter = graphqlGetter;
     this.serializerWriterRegistry = serializerWriterRegistry;
     this.userValidator = userValidator;
@@ -85,7 +82,7 @@ public class GraphQl {
     } else {
       queryFromBody = null;
     }
-    Map variables = null;
+    Map<String, Object> variables = null;
     if (body.has("variables")) {
       try {
         variables = objectMapper.treeToValue(body.get("variables"), HashMap.class);
@@ -119,14 +116,13 @@ public class GraphQl {
     return executeGraphql(null, acceptHeader, acceptParam, query, null, null, authHeader);
   }
 
-
   public Response executeGraphql(String query, String acceptHeader, String acceptParam, String queryFromBody,
-                                 Map variables, String operationName, String authHeader) {
+                                 Map<String, Object> variables, String operationName, String authHeader) {
     final SerializerWriter serializerWriter;
     if (acceptParam != null && !acceptParam.isEmpty()) {
       acceptHeader = acceptParam; //Accept param overrules header because it's more under the user's control
     }
-    if (unSpecifiedAcceptHeader(acceptHeader)) {
+    if (acceptHeader == null || acceptHeader.isEmpty() || "*/*".equals(acceptHeader)) {
       acceptHeader = MediaType.APPLICATION_JSON;
     }
     if (MediaType.APPLICATION_JSON.equals(acceptHeader)) {
@@ -166,14 +162,11 @@ public class GraphQl {
       user = Optional.empty();
     }
 
-    UserPermissionCheck userPermissionCheck = new UserPermissionCheck(
-      user,
-      permissionFetcher
-    );
-
-    final GraphQLSchema transform = graphqlGetter
-      .get()
-      .transform(b -> b.fieldVisibility(new PermissionBasedFieldVisibility(userPermissionCheck,dataSetRepository)));
+    final UserPermissionCheck userPermissionCheck = new UserPermissionCheck(user, permissionFetcher);
+    final GraphQLSchema schema = graphqlGetter.get();
+    final GraphQLSchema transform = schema.transformWithoutTypes(sb ->
+        sb.codeRegistry(schema.getCodeRegistry().transform(crb ->
+            crb.fieldVisibility(new PermissionBasedFieldVisibility(userPermissionCheck, dataSetRepository)))));
     final GraphQL.Builder builder = GraphQL.newGraphQL(transform);
 
     if (serializerWriter != null) {
@@ -185,8 +178,8 @@ public class GraphQl {
     try {
       final ExecutionResult result = graphQl
         .execute(newExecutionInput()
-          .root(new RootData(user))
-          .context(contextData(userPermissionCheck, user))
+          .root(new Object())
+          .graphQLContext(Map.of("userPermissionCheck", userPermissionCheck, "user", user))
           .query(queryFromBody)
           .operationName(operationName)
           .variables(variables == null ? Collections.emptyMap() : variables)
@@ -219,10 +212,4 @@ public class GraphQl {
       // throw e;
     }
   }
-
-
-  public boolean unSpecifiedAcceptHeader(@HeaderParam("accept") String acceptHeader) {
-    return acceptHeader == null || acceptHeader.isEmpty() || "*/*".equals(acceptHeader);
-  }
-
 }

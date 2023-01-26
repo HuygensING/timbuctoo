@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -16,17 +15,13 @@ import java.util.concurrent.ExecutionException;
 
 public class MutationHelpers {
   public static User getUser(DataFetchingEnvironment env) {
-    ContextData contextData = env.getContext();
-
-    return contextData.getUser().orElseThrow(() -> new RuntimeException("You are not logged in"));
+    Optional<User> user = env.getGraphQlContext().get("user");
+    return user.orElseThrow(() -> new RuntimeException("You are not logged in"));
   }
 
   public static void checkPermission(DataFetchingEnvironment env, DataSetMetaData dataSetMetaData,
-                                     Permission permission)
-    throws RuntimeException {
-    ContextData contextData = env.getContext();
-
-    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+                                     Permission permission) throws RuntimeException {
+    UserPermissionCheck userPermissionCheck = env.getGraphQlContext().get("userPermissionCheck");
     if (!userPermissionCheck.hasPermission(dataSetMetaData, permission)) {
       throw new RuntimeException("You do not have permission '" + permission + "' for this data set.");
     }

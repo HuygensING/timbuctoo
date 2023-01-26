@@ -1,10 +1,15 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
-import graphql.execution.ExecutionContext;
+import graphql.GraphQLContext;
+import graphql.cachecontrol.CacheControl;
 import graphql.execution.ExecutionId;
 import graphql.execution.ExecutionStepInfo;
+import graphql.execution.MergedField;
+import graphql.execution.directives.QueryDirectives;
+import graphql.language.Document;
 import graphql.language.Field;
 import graphql.language.FragmentDefinition;
+import graphql.language.OperationDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLFieldDefinition;
@@ -242,7 +247,22 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     }
 
     @Override
+    public <T> T getArgumentOrDefault(String s, T t) {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
     public <T> T getContext() {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public GraphQLContext getGraphQlContext() {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public <T> T getLocalContext() {
       throw new IllegalStateException("Not implemented yet");
     }
 
@@ -258,6 +278,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
     @Override
     public List<Field> getFields() {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public MergedField getMergedField() {
       throw new IllegalStateException("Not implemented yet");
     }
 
@@ -302,13 +327,43 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     }
 
     @Override
-    public ExecutionContext getExecutionContext() {
-      throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+    public QueryDirectives getQueryDirectives() {
+      throw new IllegalStateException("Not implemented yet");
     }
 
     @Override
     public <K, V> DataLoader<K, V> getDataLoader(String dataLoaderName) {
       throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+    }
+
+    @Override
+    public DataLoaderRegistry getDataLoaderRegistry() {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public CacheControl getCacheControl() {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public Locale getLocale() {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public OperationDefinition getOperationDefinition() {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public Document getDocument() {
+      throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public Map<String, Object> getVariables() {
+      throw new IllegalStateException("Not implemented yet");
     }
   }
 }
