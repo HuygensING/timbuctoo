@@ -10,8 +10,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutation;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -23,7 +23,7 @@ import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.PredicateMutati
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class DefaultIndexConfigMutation extends Mutation {
-  private static String INDEX_TITLE = "{\n" +
+  private static final String INDEX_TITLE = "{\n" +
       "\t\"facet\": [],\n" +
       "\t\"fullText\": [{\n" +
       "\t\t\"fields\": [{\n" +
@@ -47,13 +47,13 @@ public class DefaultIndexConfigMutation extends Mutation {
   protected Object executeAction(DataFetchingEnvironment env) {
     final User user = MutationHelpers.getUser(env);
     Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user, ownerId, dataSetName);
-    if (!dataSetOpt.isPresent()) {
+    if (dataSetOpt.isEmpty()) {
       throw new RuntimeException("Dataset does not exist");
     }
 
     final DataSet dataSet = dataSetOpt.get();
-    ImmutableContextData contextData = env.getContext();
-    if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.CONFIG_INDEX)) {
+    UserPermissionCheck userPermissionCheck = env.getGraphQlContext().get("userPermissionCheck");
+    if (!userPermissionCheck.hasPermission(dataSet.getMetadata(), Permission.CONFIG_INDEX)) {
       throw new RuntimeException("User has no permissions to change the index configuration.");
     }
 

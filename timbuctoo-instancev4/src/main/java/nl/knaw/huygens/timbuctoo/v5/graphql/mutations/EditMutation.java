@@ -11,8 +11,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
@@ -46,20 +46,21 @@ public class EditMutation extends Mutation {
     final Graph graph = new Graph(environment.getArgument("graph"));
     final String uri = environment.getArgument("uri");
     final Map entity = environment.getArgument("entity");
-    ImmutableContextData contextData = environment.getContext();
-    Optional<User> userOpt = contextData.getUser();
-    if (!userOpt.isPresent()) {
+
+    Optional<User> userOpt = environment.getGraphQlContext().get("user");
+    if (userOpt.isEmpty()) {
       throw new RuntimeException("User should be logged in.");
     }
 
     User user = userOpt.get();
     Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user, ownerId, dataSetName);
-    if (!dataSetOpt.isPresent()) {
+    if (dataSetOpt.isEmpty()) {
       throw new RuntimeException("Data set is not available.");
     }
 
     DataSet dataSet = dataSetOpt.get();
-    if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.WRITE)) {
+    UserPermissionCheck userPermissionCheck = environment.getGraphQlContext().get("userPermissionCheck");
+    if (!userPermissionCheck.hasPermission(dataSet.getMetadata(), Permission.WRITE)) {
       throw new RuntimeException("User should have permissions to edit entities of the data set.");
     }
 

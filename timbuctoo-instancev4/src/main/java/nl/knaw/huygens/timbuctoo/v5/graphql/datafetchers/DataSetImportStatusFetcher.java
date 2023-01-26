@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.LogEntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.MutationHelpers;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -29,11 +28,10 @@ public class DataSetImportStatusFetcher implements DataFetcher<List<LogEntryImpo
 
   @Override
   public List<LogEntryImportStatus> get(DataFetchingEnvironment env) {
-    User currentUser = env.<ContextData>getContext().getUser()
-                                                    .orElseThrow(() -> new RuntimeException("You are not logged in"));
+    Optional<User> user = env.getGraphQlContext().get("user");
+    User currentUser = user.orElseThrow(() -> new RuntimeException("You are not logged in"));
 
     DataSetMetaData dataSetMetaData = env.getSource();
-
     MutationHelpers.checkPermission(env, dataSetMetaData, Permission.READ_IMPORT_STATUS);
 
     DataSetMetaData input = env.getSource();
@@ -43,16 +41,16 @@ public class DataSetImportStatusFetcher implements DataFetcher<List<LogEntryImpo
       input.getDataSetId()
     );
 
-    return dataSetOpt.map(dataSet -> dataSet.getImportManager().getLogList())
-                     .map(logList -> {
-                       final int[] num = new int[]{0};
-                       return logList.getEntries().stream().map(logEntry -> {
-                         Iterable<LogEntry> unprocessedEntries = logList::getUnprocessed;
-                         boolean unprocessed = stream(unprocessedEntries.spliterator(), false)
-                           .anyMatch(unprocessedEntry -> unprocessedEntry.equals(logEntry));
-                         return new LogEntryImportStatus(logEntry, num[0]++, unprocessed);
-                       }).collect(toList());
-                     }).orElse(Lists.newArrayList());
+    return dataSetOpt
+      .map(dataSet -> dataSet.getImportManager().getLogList())
+      .map(logList -> {
+        final int[] num = new int[]{0};
+        return logList.getEntries().stream().map(logEntry -> {
+          Iterable<LogEntry> unprocessedEntries = logList::getUnprocessed;
+          boolean unprocessed = stream(unprocessedEntries.spliterator(), false)
+              .anyMatch(unprocessedEntry -> unprocessedEntry.equals(logEntry));
+          return new LogEntryImportStatus(logEntry, num[0]++, unprocessed);
+        }).collect(toList());
+      }).orElse(Lists.newArrayList());
   }
-
 }

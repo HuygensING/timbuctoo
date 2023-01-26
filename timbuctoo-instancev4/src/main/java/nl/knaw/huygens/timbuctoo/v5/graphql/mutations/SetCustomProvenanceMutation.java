@@ -8,8 +8,8 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ImmutableContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
@@ -33,19 +33,19 @@ public class SetCustomProvenanceMutation extends Mutation {
 
   @Override
   public Object executeAction(DataFetchingEnvironment environment) {
-    ImmutableContextData contextData = environment.getContext();
-    Optional<User> userOpt = contextData.getUser();
-    if (!userOpt.isPresent()) {
+    Optional<User> userOpt = environment.getGraphQlContext().get("user");
+    if (userOpt.isEmpty()) {
       throw new RuntimeException("User should be logged in.");
     }
     User user = userOpt.get();
     Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user, ownerId, dataSetName);
-    if (!dataSetOpt.isPresent()) {
+    if (dataSetOpt.isEmpty()) {
       throw new RuntimeException("Data set is not available.");
     }
 
     DataSet dataSet = dataSetOpt.get();
-    if (!contextData.getUserPermissionCheck().hasPermission(dataSet.getMetadata(), Permission.SET_CUSTOM_PROV)) {
+    UserPermissionCheck userPermissionCheck = environment.getGraphQlContext().get("userPermissionCheck");
+    if (!userPermissionCheck.hasPermission(dataSet.getMetadata(), Permission.SET_CUSTOM_PROV)) {
       throw new RuntimeException("User should have permissions to set the custom provenance.");
     }
 

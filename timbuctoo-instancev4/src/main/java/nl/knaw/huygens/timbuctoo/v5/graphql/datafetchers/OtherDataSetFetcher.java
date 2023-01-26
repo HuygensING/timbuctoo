@@ -8,10 +8,10 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectGraphReference;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +24,6 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
 public class OtherDataSetFetcher implements DataFetcher<List<Map>> {
-
   private final DataSetRepository repo;
 
   public OtherDataSetFetcher(DataSetRepository repo) {
@@ -34,15 +33,16 @@ public class OtherDataSetFetcher implements DataFetcher<List<Map>> {
   @Override
   public List<Map> get(DataFetchingEnvironment env) {
     if (env.getSource() instanceof SubjectGraphReference) {
-      final Set<String> dataSetIds = new HashSet<>();
       SubjectGraphReference source = env.getSource();
-      ContextData contextData = env.getContext();
-      Stream<DataSet> dataSets = contextData.getUser()
+      Optional<User> optUser = env.getGraphQlContext().get("user");
+      UserPermissionCheck userPermissionCheck = env.getGraphQlContext().get("userPermissionCheck");
+
+      Stream<DataSet> dataSets = optUser
         .map(user -> repo.getDataSetsWithReadAccess(user).stream())
         .orElseGet(() -> repo.getDataSets().stream().filter(d -> d.getMetadata().isPublished()));
 
       if (env.containsArgument("dataSetIds")) {
-        dataSetIds.addAll(env.getArgument("dataSetIds"));
+        final Set<String> dataSetIds = new HashSet<>(env.getArgument("dataSetIds"));
         dataSets = dataSets.filter(d -> dataSetIds.contains(d.getMetadata().getCombinedId()));
       }
       final String ownId = source.getDataSet().getMetadata().getCombinedId();
@@ -55,13 +55,11 @@ public class OtherDataSetFetcher implements DataFetcher<List<Map>> {
         })
         .filter(i -> i.getRight().isPresent())
         .map(i -> ImmutableMap.of(
-          "metadata", new DataSetWithDatabase(i.getLeft(), env.<ContextData>getContext().getUserPermissionCheck()),
+          "metadata", new DataSetWithDatabase(i.getLeft(), userPermissionCheck),
           "entity", new LazyTypeSubjectReference(i.getRight().get().getSubject(), source.getGraph(), i.getLeft())
         ))
         .collect(toList());
-
     }
     return Lists.newArrayList();
   }
-
 }

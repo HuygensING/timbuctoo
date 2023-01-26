@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.QuadGraphs;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;

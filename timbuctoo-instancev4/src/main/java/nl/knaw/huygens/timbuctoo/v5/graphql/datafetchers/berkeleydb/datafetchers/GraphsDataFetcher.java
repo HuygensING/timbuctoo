@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.CursorUri;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.StringList;
@@ -30,7 +29,7 @@ public class GraphsDataFetcher implements DataFetcher<StringList> {
   public StringList get(DataFetchingEnvironment environment) {
     if (environment.getSource() instanceof DataSetMetaData) {
       final DataSetMetaData input = environment.getSource();
-      final Optional<User> userOpt = ((ContextData) environment.getContext()).getUser();
+      final Optional<User> userOpt = environment.getGraphQlContext().get("user");
       final User user = userOpt.orElse(null);
       final DataSet dataSet = dataSetRepository.getDataSet(user, input.getOwnerId(), input.getDataSetId()).get();
 
