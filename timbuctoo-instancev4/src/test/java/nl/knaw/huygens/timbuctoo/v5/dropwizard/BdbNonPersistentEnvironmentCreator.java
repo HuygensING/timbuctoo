@@ -158,14 +158,4 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
   public void closeDatabase(String ownerId, String dataSetId, String dataStore) {
     throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
   }
-
-  @Override
-  public void removeDatabase(String ownerId, String dataSetId, String dataStore) {
-    throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-  }
-
-  @Override
-  public void renameDatabase(String userId, String dataSetName, String databaseName, String newDatabaseName) {
-    throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-  }
 }

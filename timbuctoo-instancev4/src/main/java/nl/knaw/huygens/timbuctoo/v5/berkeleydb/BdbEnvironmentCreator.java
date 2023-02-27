@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 
 import com.sleepycat.bind.EntryBinding;
-import com.sleepycat.je.Database;
-import com.sleepycat.je.Environment;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.IsCleanHandler;
 
@@ -28,10 +26,6 @@ public interface BdbEnvironmentCreator {
   List<String> getUnavailableDatabases(String ownerId, String dataSetName);
 
   void closeDatabase(String ownerId, String dataSetId, String dataStore);
-
-  void removeDatabase(String ownerId, String dataSetId, String dataStore);
-
-  void renameDatabase(String ownerId, String dataSetId, String databaseName, String newDatabaseName);
 
   void backUpDatabases(String backupPath, String ownerId, String dataSetId) throws IOException;
 }

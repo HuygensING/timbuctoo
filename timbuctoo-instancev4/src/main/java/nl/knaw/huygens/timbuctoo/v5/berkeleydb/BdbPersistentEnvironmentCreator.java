@@ -180,20 +180,4 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
       databases.remove(databaseKey);
     }
   }
-
-  @Override
-  public void removeDatabase(String ownerId, String dataSetId, String databaseName) {
-    final String environmentKey = environmentKey(ownerId, dataSetId);
-    if (environmentMap.containsKey(environmentKey)) {
-      environmentMap.get(environmentKey).removeDatabase(null, databaseName);
-    }
-  }
-
-  @Override
-  public void renameDatabase(String ownerId, String dataSetId, String databaseName, String newDatabaseName) {
-    final String environmentKey = environmentKey(ownerId, dataSetId);
-    if (environmentMap.containsKey(environmentKey)) {
-      environmentMap.get(environmentKey).renameDatabase(null, databaseName, newDatabaseName);
-    }
-  }
 }
