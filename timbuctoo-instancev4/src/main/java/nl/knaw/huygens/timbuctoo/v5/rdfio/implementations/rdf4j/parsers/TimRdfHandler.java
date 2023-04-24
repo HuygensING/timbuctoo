@@ -3,13 +3,14 @@ package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 import nl.knaw.huc.rdf4j.rio.nquadsnd.RDFAssertionHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
+
+import static nl.knaw.huygens.timbuctoo.v5.util.BNodeHelper.createSkolomIri;
 
 public class TimRdfHandler extends AbstractRDFHandler implements RDFAssertionHandler {
   private final RdfProcessor rdfProcessor;
@@ -31,14 +32,6 @@ public class TimRdfHandler extends AbstractRDFHandler implements RDFAssertionHan
     } catch (RdfProcessingFailedException e) {
       throw new RDFHandlerException(e);
     }
-  }
-
-  @Override
-  public void startRDF() throws RDFHandlerException {
-  }
-
-  @Override
-  public void endRDF() throws RDFHandlerException {
   }
 
   @Override
@@ -78,12 +71,6 @@ public class TimRdfHandler extends AbstractRDFHandler implements RDFAssertionHan
   }
 
   private String handleNode(Value resource) {
-    if (resource instanceof BNode) {
-      String nodeName = resource.toString();
-      String nodeId = nodeName.substring(nodeName.indexOf(":") + 1);
-      return baseUri + ".well-known/genid/" + DigestUtils.md5Hex(fileName) + "_" + nodeId;
-    } else {
-      return resource.stringValue();
-    }
+    return resource instanceof BNode ? createSkolomIri(baseUri, fileName, (BNode) resource) : resource.stringValue();
   }
 }

@@ -2,15 +2,15 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.UnsupportedEncodingException;
@@ -37,13 +37,13 @@ public class GetEntityInGraph extends AbstractGetEntity {
   }
 
   @GET
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response getEntity(@HeaderParam("authorization") String authHeader,
+  public Response getEntity(@Context HttpHeaders headers,
                             @PathParam("ownerId") String ownerId,
                             @PathParam("dataSetId") String dataSetId,
                             @PathParam("graph") String graph,
                             @PathParam("id") String id) {
-    return handleRequest(authHeader, ownerId, dataSetId,
-      dataSet -> dataSet.getQuadStore().getQuadsInGraph(id, Optional.of(new Graph(graph))));
+    return handleRequest(ownerId, dataSetId, headers, id, dataSet -> uri ->
+            dataSet.getQuadStore().getQuadsInGraph(uri, Optional.of(new Graph(graph)))
+                    .filter(quad -> quad.getDirection() == Direction.OUT));
   }
 }

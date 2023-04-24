@@ -169,10 +169,19 @@
           </exclusion>
         </exclusions>
       </dependency>
+
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
         <version>${jackson.version}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-bom</artifactId>
+        <version>${rdf4j.version}</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -420,44 +429,10 @@
     <!-- Rdf4J -->
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-model</artifactId>
-      <version>${rdf4j.version}</version>
+      <artifactId>rdf4j-client</artifactId>
+      <type>pom</type>
     </dependency>
-    <dependency>
-      <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-rio-rdfxml</artifactId>
-      <version>${rdf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-rio-turtle</artifactId>
-      <version>${rdf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-rio-ntriples</artifactId>
-      <version>${rdf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-rio-trig</artifactId>
-      <version>${rdf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-rio-n3</artifactId>
-      <version>${rdf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-rio-nquads</artifactId>
-      <version>${rdf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-rio-jsonld</artifactId>
-      <version>${rdf4j.version}</version>
-    </dependency>
+
     <dependency>
       <groupId>nl.knaw.huc</groupId>
       <artifactId>rdf4j-rio-nquadsnd</artifactId>

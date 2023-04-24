@@ -2,10 +2,21 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.CursorValue;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.immutables.value.Value;
 
 import java.util.Objects;
 import java.util.Optional;
+
+import static nl.knaw.huygens.timbuctoo.v5.util.BNodeHelper.createBNode;
+import static nl.knaw.huygens.timbuctoo.v5.util.BNodeHelper.isSkolomIri;
+import static org.eclipse.rdf4j.model.util.Statements.statement;
+import static org.eclipse.rdf4j.model.util.Values.iri;
+import static org.eclipse.rdf4j.model.util.Values.literal;
+import static org.eclipse.rdf4j.model.util.Values.triple;
 
 @Value.Immutable
 public interface CursorQuad extends CursorValue {
@@ -64,5 +75,23 @@ public interface CursorQuad extends CursorValue {
         Objects.equals(getValuetype(), other.getValuetype()) &&
         Objects.equals(getLanguage(), other.getLanguage()) &&
         getDirection().equals(other.getDirection());
+  }
+
+  default Statement getStatement() {
+    Resource subject = isSkolomIri(getSubject()) ? createBNode(getSubject()) : iri(getSubject());
+    IRI predicate = iri(getPredicate());
+
+    org.eclipse.rdf4j.model.Value value;
+    if (getValuetype().isEmpty()) {
+      value = isSkolomIri(getObject()) ? createBNode(getObject()) : iri(getObject());
+    } else if (getLanguage().isPresent() && getValuetype().get().equals(RdfConstants.LANGSTRING)) {
+      value = literal(getObject(), getLanguage().get());
+    } else {
+      value = literal(getObject(), iri(getValuetype().get()));
+    }
+
+    IRI graph = getGraph().isPresent() ? iri(getGraph().get()) : null;
+
+    return statement(triple(subject, predicate, value), graph);
   }
 }
