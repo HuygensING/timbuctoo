@@ -123,11 +123,11 @@
     <rpm.app-home>/data/timbuctoo/app</rpm.app-home>
 
     <!--version numbers-->
-    <maven-compiler.version>3.8.1</maven-compiler.version>
+    <maven-compiler.version>3.11.0</maven-compiler.version>
     <!-- code dependencies -->
     <activemq.version>5.17.3</activemq.version>
     <concoridion.version>1.5.1</concoridion.version>
-    <dropwizard.version>2.1.4</dropwizard.version>
+    <dropwizard.version>2.1.6</dropwizard.version>
     <dropwizard-activemq.version>0.5.2</dropwizard-activemq.version>
     <jsonassert.version>1.5.1</jsonassert.version>
     <tinkerpop3.version>3.1.8</tinkerpop3.version>
@@ -143,7 +143,7 @@
     <huygens.security.version>1.0.0-SNAPSHOT</huygens.security.version>
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
-    <rdf4j.version>4.2.2</rdf4j.version>
+    <rdf4j.version>4.2.4</rdf4j.version>
     <xmlunit.version>2.9.0</xmlunit.version>
     <jackson.version>2.14.1</jackson.version>
     <!-- Maven plugins -->
@@ -265,7 +265,7 @@
     <dependency>
       <groupId>com.graphql-java</groupId>
       <artifactId>graphql-java</artifactId>
-      <version>20.0</version>
+      <version>20.2</version>
     </dependency>
 
     <dependency>
@@ -386,7 +386,7 @@
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>oauth2-oidc-sdk</artifactId>
-      <version>10.4</version>
+      <version>10.8</version>
     </dependency>
 
     <!--ResourceSync library-->
@@ -993,5 +993,4 @@
       </build>
     </profile>
   </profiles>
-
 </project>
