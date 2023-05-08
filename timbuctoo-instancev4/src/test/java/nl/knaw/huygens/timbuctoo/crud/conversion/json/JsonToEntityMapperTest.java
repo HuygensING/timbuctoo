@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.conversion.JsonToEntityMapper;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -69,42 +71,46 @@ public class JsonToEntityMapperTest {
     assertThat(properties, not(hasItem(hasProperty("name", equalTo("age")))));
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void newCreateEntityThrowsAnIoExceptionWhenThePropertyIsUnknown() throws Exception {
-    Collection collection = new VresBuilder()
-      .withVre("WomenWriters", "ww", vre -> vre
-        .withCollection("wwpersons", c -> c
-          .withProperty("name", localProperty("wwname"))
-          .withProperty("age", localProperty("wwage"))
-        )
-      ).build().getCollection("wwpersons").get();
-    ObjectNode input = JsonBuilder.jsnO(
-      "unknownProperty", jsn("value"),
-      "age", jsn("12")
-    );
+    Assertions.assertThrows(IOException.class, () -> {
+      Collection collection = new VresBuilder()
+          .withVre("WomenWriters", "ww", vre -> vre
+              .withCollection("wwpersons", c -> c
+                  .withProperty("name", localProperty("wwname"))
+                  .withProperty("age", localProperty("wwage"))
+              )
+          ).build().getCollection("wwpersons").get();
+      ObjectNode input = JsonBuilder.jsnO(
+          "unknownProperty", jsn("value"),
+          "age", jsn("12")
+      );
 
-    JsonToEntityMapper instance = new JsonToEntityMapper();
+      JsonToEntityMapper instance = new JsonToEntityMapper();
 
-    instance.getDataProperties(collection, input);
+      instance.getDataProperties(collection, input);
+    });
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void newCreateEntityThrowsAnIoExceptionWhenThePropertyCannotBeConverted() throws Exception {
-    Collection collection = new VresBuilder()
-      .withVre("WomenWriters", "ww", vre -> vre
-        .withCollection("wwpersons", c -> c
-          .withProperty("name", localProperty("wwname"))
-          .withProperty("age", localProperty("wwage"))
-        )
-      ).build().getCollection("wwpersons").get();
-    ObjectNode input = JsonBuilder.jsnO(
-      "name", jsn("Hans"),
-      "age", jsn(12)
-    );
+    Assertions.assertThrows(IOException.class, () -> {
+      Collection collection = new VresBuilder()
+          .withVre("WomenWriters", "ww", vre -> vre
+              .withCollection("wwpersons", c -> c
+                  .withProperty("name", localProperty("wwname"))
+                  .withProperty("age", localProperty("wwage"))
+              )
+          ).build().getCollection("wwpersons").get();
+      ObjectNode input = JsonBuilder.jsnO(
+          "name", jsn("Hans"),
+          "age", jsn(12)
+      );
 
-    JsonToEntityMapper instance = new JsonToEntityMapper();
+      JsonToEntityMapper instance = new JsonToEntityMapper();
 
-    instance.getDataProperties(collection, input);
+      instance.getDataProperties(collection, input);
+    });
   }
 
   @Test
@@ -158,44 +164,48 @@ public class JsonToEntityMapperTest {
     assertThat(updateEntity.getRev(), is(rev));
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void newUpdateEntityThrowsAnIoExceptionWhenThePropertyIsUnknown() throws Exception {
-    Collection collection = new VresBuilder()
-      .withVre("WomenWriters", "ww", vre -> vre
-        .withCollection("wwpersons", c -> c
-          .withProperty("name", localProperty("wwname"))
-          .withProperty("age", localProperty("wwage"))
-        )
-      ).build().getCollection("wwpersons").get();
-    ObjectNode input = JsonBuilder.jsnO(
-      "unknownProperty", jsn("value"),
-      "age", jsn("12"),
-      "^rev", jsn(2)
-    );
+    Assertions.assertThrows(IOException.class, () -> {
+      Collection collection = new VresBuilder()
+          .withVre("WomenWriters", "ww", vre -> vre
+              .withCollection("wwpersons", c -> c
+                  .withProperty("name", localProperty("wwname"))
+                  .withProperty("age", localProperty("wwage"))
+              )
+          ).build().getCollection("wwpersons").get();
+      ObjectNode input = JsonBuilder.jsnO(
+          "unknownProperty", jsn("value"),
+          "age", jsn("12"),
+          "^rev", jsn(2)
+      );
 
-    JsonToEntityMapper instance = new JsonToEntityMapper();
+      JsonToEntityMapper instance = new JsonToEntityMapper();
 
-    instance.newUpdateEntity(collection, UUID.randomUUID(), input);
+      instance.newUpdateEntity(collection, UUID.randomUUID(), input);
+    });
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void newUpdateEntityThrowsAnIoExceptionWhenThePropertyCannotBeConverted() throws Exception {
-    Collection collection = new VresBuilder()
-      .withVre("WomenWriters", "ww", vre -> vre
-        .withCollection("wwpersons", c -> c
-          .withProperty("name", localProperty("wwname"))
-          .withProperty("age", localProperty("wwage"))
-        )
-      ).build().getCollection("wwpersons").get();
-    ObjectNode input = JsonBuilder.jsnO(
-      "name", jsn("Hans"),
-      "age", jsn(12),
-      "^rev", jsn(2)
-    );
+    Assertions.assertThrows(IOException.class, () -> {
+      Collection collection = new VresBuilder()
+          .withVre("WomenWriters", "ww", vre -> vre
+              .withCollection("wwpersons", c -> c
+                  .withProperty("name", localProperty("wwname"))
+                  .withProperty("age", localProperty("wwage"))
+              )
+          ).build().getCollection("wwpersons").get();
+      ObjectNode input = JsonBuilder.jsnO(
+          "name", jsn("Hans"),
+          "age", jsn(12),
+          "^rev", jsn(2)
+      );
 
-    JsonToEntityMapper instance = new JsonToEntityMapper();
+      JsonToEntityMapper instance = new JsonToEntityMapper();
 
-    instance.newUpdateEntity(collection, UUID.randomUUID(), input);
+      instance.newUpdateEntity(collection, UUID.randomUUID(), input);
+    });
   }
 
   @Test

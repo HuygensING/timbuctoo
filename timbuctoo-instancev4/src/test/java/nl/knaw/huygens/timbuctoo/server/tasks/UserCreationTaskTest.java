@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.server.security.UserInfoKeys;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
 import java.io.PrintWriter;
@@ -40,7 +40,7 @@ public class UserCreationTaskTest {
   private PrintWriter printWriter;
   private UserCreationTask instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     localUserCreator = mock(LocalUserCreator.class);
     printWriter = mock(PrintWriter.class);
@@ -127,21 +127,22 @@ public class UserCreationTaskTest {
     verify(printWriter).write(argThat(containsString(UserInfoKeys.USER_PID)));
   }
 
-  @Test(expected = UserCreationException.class)
+  @Test
   public void executeRethrowsTheExceptionsOfTheLocalUserCreator() throws Exception {
-    doThrow(new UserCreationException("")).when(localUserCreator).create(ArgumentMatchers.any());
-    Map<String, List<String>> userInfo = Maps.newHashMap();
-    userInfo.put(UserInfoKeys.USER_PID, List.of(PID));
-    userInfo.put(UserInfoKeys.USER_NAME, List.of(USER_NAME));
-    userInfo.put(UserInfoKeys.PASSWORD, List.of(PWD));
-    userInfo.put(UserInfoKeys.GIVEN_NAME, List.of(GIVEN_NAME));
-    userInfo.put(UserInfoKeys.SURNAME, List.of(SURNAME));
-    userInfo.put(UserInfoKeys.EMAIL_ADDRESS, List.of(EMAIL));
-    userInfo.put(UserInfoKeys.ORGANIZATION, List.of(ORGANIZATION));
-    userInfo.put(UserInfoKeys.VRE_ID, List.of(VRE_ID));
-    userInfo.put(UserInfoKeys.VRE_ROLE, List.of(VRE_ROLE));
+    Assertions.assertThrows(UserCreationException.class, () -> {
+      doThrow(new UserCreationException("")).when(localUserCreator).create(ArgumentMatchers.any());
+      Map<String, List<String>> userInfo = Maps.newHashMap();
+      userInfo.put(UserInfoKeys.USER_PID, List.of(PID));
+      userInfo.put(UserInfoKeys.USER_NAME, List.of(USER_NAME));
+      userInfo.put(UserInfoKeys.PASSWORD, List.of(PWD));
+      userInfo.put(UserInfoKeys.GIVEN_NAME, List.of(GIVEN_NAME));
+      userInfo.put(UserInfoKeys.SURNAME, List.of(SURNAME));
+      userInfo.put(UserInfoKeys.EMAIL_ADDRESS, List.of(EMAIL));
+      userInfo.put(UserInfoKeys.ORGANIZATION, List.of(ORGANIZATION));
+      userInfo.put(UserInfoKeys.VRE_ID, List.of(VRE_ID));
+      userInfo.put(UserInfoKeys.VRE_ROLE, List.of(VRE_ROLE));
 
-    instance.execute(userInfo, mock(PrintWriter.class));
+      instance.execute(userInfo, mock(PrintWriter.class));
+    });
   }
-
 }

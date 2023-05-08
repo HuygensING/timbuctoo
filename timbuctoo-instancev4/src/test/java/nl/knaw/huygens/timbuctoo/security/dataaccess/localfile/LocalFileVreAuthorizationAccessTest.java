@@ -5,9 +5,10 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -36,7 +37,7 @@ public class LocalFileVreAuthorizationAccessTest {
   private VreAuthorizationAccess instance;
   private ObjectMapper objectMapper;
 
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     authorizationsFolder = makeTempDir();
     vreAuthPath = authorizationsFolder.resolve(VRE);
@@ -53,7 +54,7 @@ public class LocalFileVreAuthorizationAccessTest {
     instance = new LocalFileVreAuthorizationAccess(authorizationsFolder);
   }
 
-  @After
+  @AfterEach
   public void teardown() throws Exception {
 
     if (new File(vreAuthPath.toString()).exists()) {
@@ -130,11 +131,11 @@ public class LocalFileVreAuthorizationAccessTest {
     assertThat(authorization1, is(present()));
   }
 
-  @Test(expected = AuthorizationUnavailableException.class)
+  @Test
   public void deleteVreAuthorizationThrowsAnAuthorizationUnavailableExceptionWhenTheFileIsUnavailable()
     throws Exception {
-
-    instance.deleteVreAuthorizations("nonExisting");
+    Assertions.assertThrows(AuthorizationUnavailableException.class, () ->
+      instance.deleteVreAuthorizations("nonExisting"));
   }
 
   @Test

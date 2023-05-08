@@ -8,8 +8,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.DeleteMutationChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 
 import java.util.List;
@@ -38,7 +38,7 @@ public class DeleteMutationChangeLogTest {
   private QuadStore quadStore;
   private TypeNameStore typeNameStore;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     dataSet = mock(DataSet.class);
     quadStore = mock(QuadStore.class);

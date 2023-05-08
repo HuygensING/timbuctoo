@@ -4,8 +4,8 @@ package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.socket.PortFactory;
 
@@ -21,7 +21,7 @@ public abstract class AbstractRemoteTest {
   private static ResourceSyncContext rsContext;
   private static CloseableHttpClient httpclient;
 
-  @BeforeClass
+  @BeforeAll
   public static void initialize() throws Exception {
     port = PortFactory.findFreePort();
     mockServer = startClientAndServer(port);
@@ -29,7 +29,7 @@ public abstract class AbstractRemoteTest {
     httpclient = HttpClients.createDefault();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() {
     mockServer.stop();
   }

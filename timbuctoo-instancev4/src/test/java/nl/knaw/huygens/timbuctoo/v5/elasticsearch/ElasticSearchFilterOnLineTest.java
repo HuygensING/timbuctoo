@@ -1,8 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -19,7 +20,7 @@ import static org.junit.Assume.assumeTrue;
  * See example at
  * https://www.elastic.co/guide/en/elasticsearch/reference/current/_exploring_your_data.html#_loading_the_sample_dataset
  */
-@Ignore("This test is handy when working with elastic search. " +
+@Disabled("This test is handy when working with elastic search. " +
   "This test will fail when you run your own elastic search server." +
   "So for now ignore this test, to make sure no test fails unexpectedly.")
 public class ElasticSearchFilterOnLineTest {
@@ -31,7 +32,7 @@ public class ElasticSearchFilterOnLineTest {
 
   private static ElasticSearchFilter eSearch;
 
-  @BeforeClass
+  @BeforeAll
   public static void initialize() throws Exception {
     assumeTrue("No host at " + hostname + ":" + port + ", skipping tests." +
       "\nPlease start an ElasticSearch instance at the specified host and port.", hostIsAvailable());
@@ -70,12 +71,14 @@ public class ElasticSearchFilterOnLineTest {
     assertThat(pageableResult.getTotal(), equalTo(493));
   }
 
-  @Test(expected = org.elasticsearch.client.ResponseException.class)
+  @Test
   public void queryAndIndexDoesNotExist() throws Exception {
-    String index = "does_not_exist";
-    String elasticsearchQuery = createQuery1();
-    int preferredPageSize = 3;
-    eSearch.query(index, null, elasticsearchQuery, null, preferredPageSize);
+    Assertions.assertThrows(org.elasticsearch.client.ResponseException.class, () -> {
+      String index = "does_not_exist";
+      String elasticsearchQuery = createQuery1();
+      int preferredPageSize = 3;
+      eSearch.query(index, null, elasticsearchQuery, null, preferredPageSize);
+    });
   }
 
   @Test

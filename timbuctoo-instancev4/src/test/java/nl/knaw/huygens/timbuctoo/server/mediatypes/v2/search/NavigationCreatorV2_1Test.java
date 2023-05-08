@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.UUID;
@@ -19,7 +19,7 @@ public class NavigationCreatorV2_1Test {
   public static final String BASE_URI = "http://example.com";
   private NavigationCreator instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     UriHelper uriHelper = new UriHelper(URI.create(BASE_URI));
     instance = new NavigationCreator(uriHelper);

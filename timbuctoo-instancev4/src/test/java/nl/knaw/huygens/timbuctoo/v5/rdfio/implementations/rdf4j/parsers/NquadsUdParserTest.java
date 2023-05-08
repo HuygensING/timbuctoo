@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
 import nl.knaw.huc.rdf4j.rio.nquadsnd.NQuadsUdParser;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 
@@ -19,7 +19,7 @@ public class NquadsUdParserTest {
   private RdfProcessor rdfProcessor;
   private NQuadsUdParser instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     rdfProcessor = mock(RdfProcessor.class);
     instance = new NQuadsUdParser();

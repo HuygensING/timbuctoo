@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
-
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBException;
 import java.io.InputStream;
@@ -44,14 +44,15 @@ public class RsBuilderTest {
 
   }
 
-  @Test(expected = JAXBException.class)
+  @Test
   public void buildAndFailure() throws Exception {
-    String invalidXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"><foo>bar</foo>";
-    InputStream invalidIs = IOUtils.toInputStream(invalidXml);
-    RsBuilder rsBuilder = new RsBuilder(new ResourceSyncContext());
-    rsBuilder.setInputStream(invalidIs).build();
+    Assertions.assertThrows(JAXBException.class, () -> {
+      String invalidXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"><foo>bar</foo>";
+      InputStream invalidIs = IOUtils.toInputStream(invalidXml);
+      RsBuilder rsBuilder = new RsBuilder(new ResourceSyncContext());
+      rsBuilder.setInputStream(invalidIs).build();
+    });
   }
-
 
   private Sitemapindex createSitemapIndex() {
 

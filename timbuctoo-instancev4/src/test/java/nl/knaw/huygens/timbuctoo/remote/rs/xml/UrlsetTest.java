@@ -1,11 +1,10 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -22,7 +21,7 @@ public class UrlsetTest {
   private static Marshaller jaxbMarshaller;
   private static Unmarshaller jaxbUnmarshaller;
 
-  @BeforeClass
+  @BeforeAll
   public static void initialize() throws Exception {
     JAXBContext jaxbContext = JAXBContext.newInstance(Urlset.class);
     jaxbMarshaller = jaxbContext.createMarshaller();

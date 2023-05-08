@@ -7,13 +7,13 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ResourceSyncMutationFileHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ResourceSyncReport;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,7 +40,7 @@ public class ResourceSyncImportTest {
   private ResourceSyncImport instance;
   private static final String CAPABILITY_LIST_URI = BASE_URL + "capabilitylist.xml";
 
-  @Before
+  @BeforeEach
   public void setUp() {
     resourceSyncFileLoader = mock(ResourceSyncFileLoader.class);
     importManager = mock(ImportManager.class);
@@ -132,17 +132,19 @@ public class ResourceSyncImportTest {
     assertThat(resourceSyncReport.importedFiles, contains(BASE_URL + "files/dataset.rdf"));
   }
 
-  @Test(expected = CantDetermineDataSetException.class)
+  @Test
   public void filterReturnsMessageWithFilesListIfMultipleFilesAndNoneSpecifiedAsDataset() throws Exception {
-    String capabilityListUri = BASE_URL + "capabilitylist.xml";
-    List<RemoteFile> changes = Collections.emptyList();
-    List<RemoteFile> resources = new ArrayList<>();
-    resources.add(RemoteFile.create(BASE_URL + "files/dataset.nq", () -> null, "", metadata));
-    resources.add(RemoteFile.create(BASE_URL + "files/dataset.rdf", () -> null, "", metadata));
-    RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
-    given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri, null)).willReturn(remoteFilesList);
+    Assertions.assertThrows(CantDetermineDataSetException.class, () -> {
+      String capabilityListUri = BASE_URL + "capabilitylist.xml";
+      List<RemoteFile> changes = Collections.emptyList();
+      List<RemoteFile> resources = new ArrayList<>();
+      resources.add(RemoteFile.create(BASE_URL + "files/dataset.nq", () -> null, "", metadata));
+      resources.add(RemoteFile.create(BASE_URL + "files/dataset.rdf", () -> null, "", metadata));
+      RemoteFilesList remoteFilesList = new RemoteFilesList(changes, resources);
+      given(resourceSyncFileLoader.getRemoteFilesList(capabilityListUri, null)).willReturn(remoteFilesList);
 
-    ResourceSyncMutationFileHelper fileHelper = new ResourceSyncMutationFileHelper(dataSet, new ResourceSyncReport());
-    instance.filterAndImport(capabilityListUri, null, null, null, fileHelper);
+      ResourceSyncMutationFileHelper fileHelper = new ResourceSyncMutationFileHelper(dataSet, new ResourceSyncReport());
+      instance.filterAndImport(capabilityListUri, null, null, null, fileHelper);
+    });
   }
 }

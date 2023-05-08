@@ -22,7 +22,6 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -32,7 +31,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,7 +43,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndChangeListener;
@@ -259,18 +258,20 @@ public class TinkerPopOperationsTest {
 
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void createEntityThrowsAnIoExceptionWhenItEncountersAnUnknownProperty() throws Exception {
-    TinkerPopGraphManager graphManager = newGraph().wrap();
-    Vres vres = createConfiguration();
-    final Collection collection = vres.getCollection("testthings").get();
-    final TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    List<TimProperty<?>> properties = Lists.newArrayList();
-    properties.add(new StringProperty("prop1", "val1"));
-    properties.add(new StringProperty("unknowProp", "val2"));
-    CreateEntity createEntity = withProperties(properties);
+    Assertions.assertThrows(IOException.class, () -> {
+      TinkerPopGraphManager graphManager = newGraph().wrap();
+      Vres vres = createConfiguration();
+      final Collection collection = vres.getCollection("testthings").get();
+      final TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+      List<TimProperty<?>> properties = Lists.newArrayList();
+      properties.add(new StringProperty("prop1", "val1"));
+      properties.add(new StringProperty("unknowProp", "val2"));
+      CreateEntity createEntity = withProperties(properties);
 
-    instance.createEntity(collection, Optional.empty(), createEntity);
+      instance.createEntity(collection, Optional.empty(), createEntity);
+    });
   }
 
   // TODO move increase of the rev to TimbuctooActions
@@ -566,36 +567,40 @@ public class TinkerPopOperationsTest {
 
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void deleteEntityThrowsNotFoundWhenTheEntityIsNotOfThisVre() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    UUID id = UUID.randomUUID();
-    String idString = id.toString();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(idString)
-        .withVre("other")
-        .withType("person")
-        .withProperty("isLatest", true)
-        .withProperty("rev", 1)
-        .withProperty("deleted", false)
-      )
-      .wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testthings").get();
+      UUID id = UUID.randomUUID();
+      String idString = id.toString();
+      TinkerPopGraphManager graphManager = newGraph()
+          .withVertex(v -> v
+              .withTimId(idString)
+              .withVre("other")
+              .withType("person")
+              .withProperty("isLatest", true)
+              .withProperty("rev", 1)
+              .withProperty("deleted", false)
+          )
+          .wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
-    instance.deleteEntity(collection, id, null);
+      instance.deleteEntity(collection, id, null);
+    });
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void deleteEntitythrowsNotFoundWhenTheIdIsNotInTheDatabase() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    UUID id = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testthings").get();
+      UUID id = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph().wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
-    instance.deleteEntity(collection, id, null);
+      instance.deleteEntity(collection, id, null);
+    });
   }
 
   @Test
@@ -781,20 +786,22 @@ public class TinkerPopOperationsTest {
     ));
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void getEntityThrowsANotFoundExceptionWhenTheDatabaseDoesNotContainTheEntity() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    UUID id = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testthings").get();
+      UUID id = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph().wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
-    instance.getEntity(id, null, collection,
-      (readEntity, vertex) -> {
-      },
-      (graphTraversalSource, vre, vertex, relationRef) -> {
-      }
-    );
+      instance.getEntity(id, null, collection,
+        (readEntity, vertex) -> {
+        },
+        (graphTraversalSource, vre, vertex, relationRef) -> {
+        }
+      );
+    });
   }
 
   @Test
@@ -1031,51 +1038,55 @@ public class TinkerPopOperationsTest {
     assertThat(entity.getTypes(), containsInAnyOrder("testthing", "otherthing"));
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void getEntityThrowsNotFoundIfTheEntityDoesNotContainTheRequestType() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    UUID id = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id.toString())
-        .withType("thing")
-        .withVre("other")
-        .withProperty("isLatest", true)
-        .withProperty("rev", 1)
-      ).wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testthings").get();
+      UUID id = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph()
+          .withVertex(v -> v
+              .withTimId(id.toString())
+              .withType("thing")
+              .withVre("other")
+              .withProperty("isLatest", true)
+              .withProperty("rev", 1)
+          ).wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
-    instance.getEntity(id, null, collection,
-      (readEntity, vertex) -> {
-      },
-      (graphTraversalSource, vre, vertex, relationRef) -> {
-      }
-    );
+      instance.getEntity(id, null, collection,
+        (readEntity, vertex) -> {
+        },
+        (graphTraversalSource, vre, vertex, relationRef) -> {
+        }
+      );
+    });
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void getEntityThrowsNotFoundIfTheEntityIsDeleted() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    UUID id = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id.toString())
-        .withType("thing")
-        .withVre("test")
-        .withProperty("isLatest", true)
-        .withProperty("deleted", true)
-        .withProperty("rev", 1)
-      ).wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testthings").get();
+      UUID id = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph()
+          .withVertex(v -> v
+              .withTimId(id.toString())
+              .withType("thing")
+              .withVre("test")
+              .withProperty("isLatest", true)
+              .withProperty("deleted", true)
+              .withProperty("rev", 1)
+          ).wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
-    instance.getEntity(id, null, collection,
-      (readEntity, vertex) -> {
-      },
-      (graphTraversalSource, vre, vertex, relationRef) -> {
-      }
-    );
+      instance.getEntity(id, null, collection,
+        (readEntity, vertex) -> {
+        },
+        (graphTraversalSource, vre, vertex, relationRef) -> {
+        }
+      );
+    });
   }
 
   @Test
@@ -1541,39 +1552,43 @@ public class TinkerPopOperationsTest {
     assertThat(stream(newVertex.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(2L));
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void replaceEntityThrowsANotFoundExceptionWhenTheEntityIsNotInTheDatabase() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    UUID id = UUID.randomUUID();
-    TinkerPopGraphManager emptyDatabase = newGraph().wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
-    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
-    long timeStamp = Instant.now().toEpochMilli();
-    updateEntity.setModified(new Change(timeStamp, "userId", null));
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testthings").get();
+      UUID id = UUID.randomUUID();
+      TinkerPopGraphManager emptyDatabase = newGraph().wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
+      UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
+      long timeStamp = Instant.now().toEpochMilli();
+      updateEntity.setModified(new Change(timeStamp, "userId", null));
 
-    instance.replaceEntity(collection, updateEntity);
+      instance.replaceEntity(collection, updateEntity);
+    });
   }
 
-  @Test(expected = AlreadyUpdatedException.class)
+  @Test
   public void replaceEntityThrowsAnAlreadyUpdatedExceptionWhenTheRevDoesNotMatch() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    UUID id = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("isLatest", true)
-        .withProperty("rev", 2)
-      ).wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
-    long timeStamp = Instant.now().toEpochMilli();
-    updateEntity.setModified(new Change(timeStamp, "userId", null));
+    Assertions.assertThrows(AlreadyUpdatedException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testthings").get();
+      UUID id = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph()
+          .withVertex(v -> v
+              .withTimId(id)
+              .withVre("test")
+              .withType("thing")
+              .withProperty("isLatest", true)
+              .withProperty("rev", 2)
+          ).wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+      UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
+      long timeStamp = Instant.now().toEpochMilli();
+      updateEntity.setModified(new Change(timeStamp, "userId", null));
 
-    instance.replaceEntity(collection, updateEntity);
+      instance.replaceEntity(collection, updateEntity);
+    });
   }
 
   @Test
@@ -1721,155 +1736,163 @@ public class TinkerPopOperationsTest {
       .get();
   }
 
-  @Test(expected = RelationNotPossibleException.class)
+  @Test
   public void acceptRelationThrowsARelationNotPossibleExceptionIfTheSourceIsNotInTheRightVre() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testrelations").get();
-    UUID typeId = UUID.randomUUID();
-    UUID sourceId = UUID.randomUUID();
-    UUID targetId = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(typeId.toString())
-        .withType("relationtype")
-        .withProperty("relationtype_regularName", "regularName")
-        .withProperty("rev", 1)
-        .withProperty("isLatest", true)
-      )
-      .withVertex(v -> v
-        .withTimId(sourceId.toString())
-        .withProperty("rev", 1)
-        .withVre("other")
-        .withType("thing")
-        .withProperty("isLatest", true)
-      )
-      .withVertex(v -> v
-        .withTimId(targetId.toString())
-        .withProperty("rev", 1)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("isLatest", true)
-      ).wrap();
+    Assertions.assertThrows(RelationNotPossibleException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testrelations").get();
+      UUID typeId = UUID.randomUUID();
+      UUID sourceId = UUID.randomUUID();
+      UUID targetId = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph()
+          .withVertex(v -> v
+              .withTimId(typeId.toString())
+              .withType("relationtype")
+              .withProperty("relationtype_regularName", "regularName")
+              .withProperty("rev", 1)
+              .withProperty("isLatest", true)
+          )
+          .withVertex(v -> v
+              .withTimId(sourceId.toString())
+              .withProperty("rev", 1)
+              .withVre("other")
+              .withType("thing")
+              .withProperty("isLatest", true)
+          )
+          .withVertex(v -> v
+              .withTimId(targetId.toString())
+              .withProperty("rev", 1)
+              .withVre("test")
+              .withType("thing")
+              .withProperty("isLatest", true)
+          ).wrap();
 
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
-    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+      CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+      createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
-    instance.acceptRelation(collection, createRelation);
+      instance.acceptRelation(collection, createRelation);
+    });
   }
 
-  @Test(expected = RelationNotPossibleException.class)
+  @Test
   public void acceptRelationThrowsARelationNotPossibleExceptionIfTheTargetIsNotInTheRightVre() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testrelations").get();
-    UUID typeId = UUID.randomUUID();
-    UUID sourceId = UUID.randomUUID();
-    UUID targetId = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(typeId.toString())
-        .withType("relationtype")
-        .withProperty("relationtype_regularName", "regularName")
-        .withProperty("rev", 1)
-        .withProperty("isLatest", true)
-      )
-      .withVertex(v -> v
-        .withTimId(sourceId.toString())
-        .withProperty("rev", 1)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("isLatest", true)
-      )
-      .withVertex(v -> v
-        .withTimId(targetId.toString())
-        .withProperty("rev", 1)
-        .withVre("other")
-        .withType("thing")
-        .withProperty("isLatest", true)
-      ).wrap();
+    Assertions.assertThrows(RelationNotPossibleException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testrelations").get();
+      UUID typeId = UUID.randomUUID();
+      UUID sourceId = UUID.randomUUID();
+      UUID targetId = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph()
+          .withVertex(v -> v
+              .withTimId(typeId.toString())
+              .withType("relationtype")
+              .withProperty("relationtype_regularName", "regularName")
+              .withProperty("rev", 1)
+              .withProperty("isLatest", true)
+          )
+          .withVertex(v -> v
+              .withTimId(sourceId.toString())
+              .withProperty("rev", 1)
+              .withVre("test")
+              .withType("thing")
+              .withProperty("isLatest", true)
+          )
+          .withVertex(v -> v
+              .withTimId(targetId.toString())
+              .withProperty("rev", 1)
+              .withVre("other")
+              .withType("thing")
+              .withProperty("isLatest", true)
+          ).wrap();
 
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
-    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+      CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+      createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
-    instance.acceptRelation(collection, createRelation);
+      instance.acceptRelation(collection, createRelation);
+    });
   }
 
-  @Test(expected = RelationNotPossibleException.class)
+  @Test
   public void acceptRelationsThrowsARelationNotPossibleExceptionIfTheTypeOfTheSourceIsInvalid() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testrelations").get();
-    UUID typeId = UUID.randomUUID();
-    UUID sourceId = UUID.randomUUID();
-    UUID targetId = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(typeId.toString())
-        .withType("relationtype")
-        .withProperty("relationtype_regularName", "isRelatedTo")
-        .withProperty("relationtype_sourceTypeName", "teststuff")
-        .withProperty("relationtype_targeTypeName", "testthing")
-        .withProperty("rev", 1)
-        .withProperty("isLatest", true)
-      )
-      .withVertex(v -> v
-        .withTimId(sourceId.toString())
-        .withProperty("rev", 1)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("isLatest", true)
-      )
-      .withVertex(v -> v
-        .withTimId(targetId.toString())
-        .withProperty("rev", 1)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("isLatest", true)
-      ).wrap();
+    Assertions.assertThrows(RelationNotPossibleException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testrelations").get();
+      UUID typeId = UUID.randomUUID();
+      UUID sourceId = UUID.randomUUID();
+      UUID targetId = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph()
+          .withVertex(v -> v
+              .withTimId(typeId.toString())
+              .withType("relationtype")
+              .withProperty("relationtype_regularName", "isRelatedTo")
+              .withProperty("relationtype_sourceTypeName", "teststuff")
+              .withProperty("relationtype_targeTypeName", "testthing")
+              .withProperty("rev", 1)
+              .withProperty("isLatest", true)
+          )
+          .withVertex(v -> v
+              .withTimId(sourceId.toString())
+              .withProperty("rev", 1)
+              .withVre("test")
+              .withType("thing")
+              .withProperty("isLatest", true)
+          )
+          .withVertex(v -> v
+              .withTimId(targetId.toString())
+              .withProperty("rev", 1)
+              .withVre("test")
+              .withType("thing")
+              .withProperty("isLatest", true)
+          ).wrap();
 
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
-    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+      CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+      createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
-    instance.acceptRelation(collection, createRelation);
+      instance.acceptRelation(collection, createRelation);
+    });
   }
 
-  @Test(expected = RelationNotPossibleException.class)
+  @Test
   public void acceptRelationsThrowsARelationNotPossibleExceptionIfTheTypeOfTheTargetIsInvalid() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testrelations").get();
-    UUID typeId = UUID.randomUUID();
-    UUID sourceId = UUID.randomUUID();
-    UUID targetId = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(typeId.toString())
-        .withType("relationtype")
-        .withProperty("relationtype_regularName", "isRelatedTo")
-        .withProperty("relationtype_sourceTypeName", "testthing")
-        .withProperty("relationtype_targeTypeName", "teststuff")
-        .withProperty("rev", 1)
-        .withProperty("isLatest", true)
-      )
-      .withVertex(v -> v
-        .withTimId(sourceId.toString())
-        .withProperty("rev", 1)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("isLatest", true)
-      )
-      .withVertex(v -> v
-        .withTimId(targetId.toString())
-        .withProperty("rev", 1)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("isLatest", true)
-      ).wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
-    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+    Assertions.assertThrows(RelationNotPossibleException.class, () -> {
+      Vres vres = createConfiguration();
+      Collection collection = vres.getCollection("testrelations").get();
+      UUID typeId = UUID.randomUUID();
+      UUID sourceId = UUID.randomUUID();
+      UUID targetId = UUID.randomUUID();
+      TinkerPopGraphManager graphManager = newGraph()
+          .withVertex(v -> v
+              .withTimId(typeId.toString())
+              .withType("relationtype")
+              .withProperty("relationtype_regularName", "isRelatedTo")
+              .withProperty("relationtype_sourceTypeName", "testthing")
+              .withProperty("relationtype_targeTypeName", "teststuff")
+              .withProperty("rev", 1)
+              .withProperty("isLatest", true)
+          )
+          .withVertex(v -> v
+              .withTimId(sourceId.toString())
+              .withProperty("rev", 1)
+              .withVre("test")
+              .withType("thing")
+              .withProperty("isLatest", true)
+          )
+          .withVertex(v -> v
+              .withTimId(targetId.toString())
+              .withProperty("rev", 1)
+              .withVre("test")
+              .withType("thing")
+              .withProperty("isLatest", true)
+          ).wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+      CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+      createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
-    instance.acceptRelation(collection, createRelation);
+      instance.acceptRelation(collection, createRelation);
+    });
   }
 
   @Test
@@ -2176,17 +2199,19 @@ public class TinkerPopOperationsTest {
     assertThat(graphManager.getGraph().traversal().V().has("pid", pidUri.toString()).count().next(), is(2L));
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void addPidThrowsANotFoundExceptionWhenNoVertexCanBeFound() throws Exception {
-    Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    UUID id = UUID.randomUUID();
-    int rev = 1;
-    TinkerPopGraphManager emptyDatabase = newGraph().wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
-    URI pidUri = new URI("http://example.com/pid");
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      Vres vres = createConfiguration();
+      GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+      UUID id = UUID.randomUUID();
+      int rev = 1;
+      TinkerPopGraphManager emptyDatabase = newGraph().wrap();
+      TinkerPopOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
+      URI pidUri = new URI("http://example.com/pid");
 
-    instance.addPid(id, rev, pidUri);
+      instance.addPid(id, rev, pidUri);
+    });
   }
 
   @Test

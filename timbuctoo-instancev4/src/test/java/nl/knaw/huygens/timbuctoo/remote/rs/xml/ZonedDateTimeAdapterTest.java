@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
-
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -61,9 +61,10 @@ public class ZonedDateTimeAdapterTest {
     assertThat(replacedZoneId, equalTo(newZoneId));
   }
 
-  @Test(expected = DateTimeParseException.class)
+  @Test
   public void testUnmarshalWithInvalidString() throws Exception {
-    new ZonedDateTimeAdapter().unmarshal("ivalid string");
+    Assertions.assertThrows(DateTimeParseException.class, () ->
+      new ZonedDateTimeAdapter().unmarshal("ivalid string"));
   }
 
   @Test

@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.neo4j.graphdb.Transaction;
 
 import java.util.Optional;
@@ -30,7 +30,7 @@ public class Neo4JIndexHandlerTest {
   private static final String COLLECTION = "collection";
   private Collection collection;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION);

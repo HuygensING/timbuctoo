@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;

@@ -4,6 +4,7 @@ import org.concordion.api.AbstractCommand;
 import org.concordion.api.CommandCall;
 import org.concordion.api.Element;
 import org.concordion.api.Evaluator;
+import org.concordion.api.Fixture;
 import org.concordion.api.ResultRecorder;
 
 public class HttpCommand extends AbstractCommand {
@@ -22,19 +23,19 @@ public class HttpCommand extends AbstractCommand {
   }
 
   @Override
-  public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
+  public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder, Fixture fixture) {
     stripCommandAttribute(commandCall.getElement());
     variableName = commandCall.getExpression();
     if (!variableName.isEmpty() && !variableName.startsWith("#")) {
       throw new RuntimeException(variableName + " should start with a #, to be a valid Concordion variable.");
     }
 
-    commandCall.getChildren().setUp(evaluator, resultRecorder);
+    commandCall.getChildren().setUp(evaluator, resultRecorder, fixture);
   }
 
   @Override
-  public void execute(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
-    commandCall.getChildren().execute(evaluator, resultRecorder);
+  public void execute(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder, Fixture fixture) {
+    commandCall.getChildren().execute(evaluator, resultRecorder, fixture);
 
     if (!variableName.isEmpty()) {
       evaluator.setVariable(variableName, requestCommand.getActualResult());
@@ -42,8 +43,8 @@ public class HttpCommand extends AbstractCommand {
   }
 
   @Override
-  public void verify(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
-    commandCall.getChildren().verify(evaluator, resultRecorder);
+  public void verify(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder, Fixture fixture) {
+    commandCall.getChildren().verify(evaluator, resultRecorder, fixture);
     cleanUp();
   }
 

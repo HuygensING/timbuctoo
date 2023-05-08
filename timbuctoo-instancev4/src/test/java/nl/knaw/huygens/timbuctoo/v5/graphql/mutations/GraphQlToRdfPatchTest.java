@@ -10,8 +10,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.stubbing.Answer;
 
@@ -50,7 +50,7 @@ public class GraphQlToRdfPatchTest {
   private DataSet dataSet;
   private QuadStore quadStore;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     serializer = mock(RdfPatchSerializer.class);
     changeLog = mock(ChangeLog.class);
@@ -913,8 +913,8 @@ public class GraphQlToRdfPatchTest {
 
   private void addProvenanceToChangeLog(Provenance... provenances) {
     Answer<Stream<Change>> answer = invocation -> newArrayList(provenances).stream().flatMap(
-        provenance -> Arrays.stream(invocation.getArguments()).skip(1)
-            .map(arg -> provenance.toChange(arg.toString())));
+      provenance -> Arrays.stream(invocation.getArguments()).skip(1)
+        .map(arg -> provenance.toChange(arg.toString())));
 
     when(changeLog.getProvenance(any(DataSet.class), any(String.class))).thenAnswer(answer);
     when(changeLog.getProvenance(any(DataSet.class), any(String.class), any(String.class))).thenAnswer(answer);

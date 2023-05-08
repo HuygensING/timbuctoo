@@ -14,9 +14,9 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileS
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -37,7 +37,7 @@ public class ImportManagerTest {
   protected File filesDir;
   protected FileSystemFileStorage fileStorage;
 
-  @Before
+  @BeforeEach
   public void makeSimpleDataSet() throws IOException {
     logListLocation = File.createTempFile("logList", ".json");
     logListLocation.delete();
@@ -54,7 +54,7 @@ public class ImportManagerTest {
     );
   }
 
-  @After
+  @AfterEach
   public void cleanUp() throws IOException {
     logListLocation.delete();
     FileUtils.cleanDirectory(filesDir);

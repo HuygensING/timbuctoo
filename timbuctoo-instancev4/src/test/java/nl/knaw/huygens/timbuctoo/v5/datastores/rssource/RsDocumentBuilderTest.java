@@ -14,9 +14,9 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.UpdatedPerPatchStore;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -38,12 +38,12 @@ public class RsDocumentBuilderTest {
   private DataSet dataSet;
   private RsDocumentBuilder rsDocumentBuilder;
 
-  @BeforeClass
+  @BeforeAll
   public static void initialize() throws Exception {
     rsBuilder = new RsBuilder(new ResourceSyncContext());
   }
 
-  @Before
+  @BeforeEach
   public void init() throws Exception {
     dataSetRepository = mock(DataSetRepository.class);
     rsDocumentBuilder = new RsDocumentBuilder(dataSetRepository, new UriHelper(URI.create("http://example.com")));

@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 

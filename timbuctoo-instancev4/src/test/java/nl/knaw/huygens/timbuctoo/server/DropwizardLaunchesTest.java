@@ -1,10 +1,11 @@
 package nl.knaw.huygens.timbuctoo.server;
 
 import io.dropwizard.testing.ConfigOverride;
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -14,8 +15,8 @@ import javax.ws.rs.core.Response;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class DropwizardLaunchesTest {
-
   static {
     EvilEnvironmentVariableHacker.setEnv(
       "http://localhost",
@@ -30,8 +31,7 @@ public class DropwizardLaunchesTest {
     );
   }
 
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
+  public static final DropwizardAppExtension<TimbuctooConfiguration> APP = new DropwizardAppExtension<>(
     TimbuctooV4.class,
     "example_config.yaml",
     ConfigOverride.config(
@@ -39,7 +39,6 @@ public class DropwizardLaunchesTest {
         "nl.knaw.huygens.timbuctoo.server.TestCollectionFilter"
     )
   );
-
 
   @Test
   public void dropwizardLaunches() throws Exception {

@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;

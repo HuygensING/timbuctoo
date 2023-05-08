@@ -5,8 +5,8 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +24,7 @@ public class IdIndexChangeListenerTest {
   private IndexHandler indexHandler;
   private IdIndexChangeListener instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     indexHandler = mock(IndexHandler.class);
     instance = new IdIndexChangeListener(indexHandler);

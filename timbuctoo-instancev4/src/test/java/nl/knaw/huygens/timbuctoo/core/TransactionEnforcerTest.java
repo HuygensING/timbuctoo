@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import static org.mockito.Mockito.inOrder;
@@ -38,21 +39,19 @@ public class TransactionEnforcerTest {
     verifyNoInteractions(afterSuccessTaskExecutor);
   }
 
-
-  @Test(expected = RuntimeException.class)
+  @Test
   public void executeAndReturnDoesNotExecuteTheAfterSuccessTaskExecutorWhenAnExceptionIsThrown() {
-    AfterSuccessTaskExecutor afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
-    TransactionEnforcer instance = TransactionEnforcerStubs.withAfterSuccessExecutor(afterSuccessTaskExecutor);
+    Assertions.assertThrows(RuntimeException.class, () -> {
+      AfterSuccessTaskExecutor afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
+      TransactionEnforcer instance = TransactionEnforcerStubs.withAfterSuccessExecutor(afterSuccessTaskExecutor);
 
-    try {
-      instance.executeAndReturn(timbuctooActions -> {
-        throw new RuntimeException();
-      });
-    } finally {
-      verifyNoInteractions(afterSuccessTaskExecutor);
-    }
-
-
+      try {
+        instance.executeAndReturn(timbuctooActions -> {
+          throw new RuntimeException();
+        });
+      } finally {
+        verifyNoInteractions(afterSuccessTaskExecutor);
+      }
+    });
   }
-
 }

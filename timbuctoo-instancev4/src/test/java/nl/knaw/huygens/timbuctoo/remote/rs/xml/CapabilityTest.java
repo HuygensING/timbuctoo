@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,9 +17,9 @@ public class CapabilityTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void forWrongString() {
-    Capability.forString("bar");
+    Assertions.assertThrows(IllegalArgumentException.class, () -> Capability.forString("bar"));
   }
 
   @Test

@@ -7,12 +7,11 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.AltNamesProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.DatableProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.conversion.JsonPropertyConverter;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.model.AltName;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 

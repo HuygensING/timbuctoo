@@ -8,7 +8,8 @@ import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Optional;
@@ -36,12 +37,14 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class AutocompleteServiceTest {
 
-  @Test(expected = InvalidCollectionException.class)
+  @Test
   public void searchThrowsWhenTheCollectionNameDoesNotExist() throws InvalidCollectionException {
-    TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
-    given(timbuctooActions.getCollectionMetadata(anyString())).willThrow(new InvalidCollectionException(""));
-    AutocompleteService underTest = new AutocompleteService(null, timbuctooActions);
-    underTest.search("nonexistent", Optional.empty(), Optional.empty());
+    Assertions.assertThrows(InvalidCollectionException.class, () -> {
+      TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
+      given(timbuctooActions.getCollectionMetadata(anyString())).willThrow(new InvalidCollectionException(""));
+      AutocompleteService underTest = new AutocompleteService(null, timbuctooActions);
+      underTest.search("nonexistent", Optional.empty(), Optional.empty());
+    });
   }
 
   @Test

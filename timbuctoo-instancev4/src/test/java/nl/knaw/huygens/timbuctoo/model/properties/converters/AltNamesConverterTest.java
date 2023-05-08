@@ -6,8 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.AltName;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,7 +23,7 @@ public class AltNamesConverterTest {
   private ObjectMapper objectMapper;
   private AltNamesConverter instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     objectMapper = new ObjectMapper();
     instance = new AltNamesConverter();
@@ -40,11 +41,13 @@ public class AltNamesConverterTest {
     assertThat(altNamesValue.list, containsInAnyOrder(ALT_NAME_1, ALT_NAME_2));
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void jsonToTinkerpopThrowsAnIoExceptionIfTheValueCannotBeConvertedToAltNames() throws Exception {
-    JsonNode bogusInput = new ObjectMapper().createObjectNode();
+    Assertions.assertThrows(IOException.class, () -> {
+      JsonNode bogusInput = new ObjectMapper().createObjectNode();
 
-    instance.jsonToTinkerpop(bogusInput);
+      instance.jsonToTinkerpop(bogusInput);
+    });
   }
 
   @Test
@@ -61,11 +64,12 @@ public class AltNamesConverterTest {
     assertThat(altNameList, containsInAnyOrder(ALT_NAME_1, ALT_NAME_2));
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void tinkerpopToJsonThrowsAnIoExceptionWhenTheValueCannotBeParsed() throws Exception {
-    String dbValue = "";
+    Assertions.assertThrows(IOException.class, () -> {
+      String dbValue = "";
 
-    instance.tinkerpopToJson(dbValue);
+      instance.tinkerpopToJson(dbValue);
+    });
   }
-
 }

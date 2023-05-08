@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.databaselog.entry;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.databaselog.LogOutput;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static nl.knaw.huygens.timbuctoo.util.EdgeMockBuilder.edge;
 import static nl.knaw.huygens.timbuctoo.util.PropertyMatcher.likeProperty;

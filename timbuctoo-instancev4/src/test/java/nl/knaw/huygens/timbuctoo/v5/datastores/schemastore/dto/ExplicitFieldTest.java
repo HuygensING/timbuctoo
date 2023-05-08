@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto;
 
 import org.hamcrest.collection.IsMapContaining;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;

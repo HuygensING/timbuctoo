@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;

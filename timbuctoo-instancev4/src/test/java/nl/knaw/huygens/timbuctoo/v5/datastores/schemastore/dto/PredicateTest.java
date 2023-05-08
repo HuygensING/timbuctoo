@@ -1,11 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsMapContaining;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,12 +13,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class PredicateTest {
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void mergeThrowsExceptionIfPredicateNamesDontMatch() throws Exception {
-    Predicate predicate1 = createPredicate("predicate1", Direction.OUT, "testOwner");
-    Predicate predicate2 = createPredicate("predicate2", Direction.OUT, "testOwner");
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      Predicate predicate1 = createPredicate("predicate1", Direction.OUT, "testOwner");
+      Predicate predicate2 = createPredicate("predicate2", Direction.OUT, "testOwner");
 
-    predicate1.merge(predicate2);
+      predicate1.merge(predicate2);
+    });
   }
 
   private Predicate createPredicate(String predicate12, Direction out, String testOwner) {
@@ -28,26 +29,32 @@ public class PredicateTest {
     return predicate1;
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void mergeThrowsExceptionIfPredicateDirectionsDontMatch() throws Exception {
-    Predicate predicate1 = createPredicate("predicate", Direction.OUT, "testOwner");
-    Predicate predicate2 = createPredicate("predicate", Direction.IN, "testOwner");
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      Predicate predicate1 = createPredicate("predicate", Direction.OUT, "testOwner");
+      Predicate predicate2 = createPredicate("predicate", Direction.IN, "testOwner");
 
-    predicate1.merge(predicate2);
+      predicate1.merge(predicate2);
+    });
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void mergeThrowsExceptionIfPredicateOwnersDontMatch() throws Exception {
-    Predicate predicate1 = createPredicate("predicate", Direction.OUT, "testOwner");
-    Predicate predicate2 = createPredicate("predicate", Direction.OUT, "testOwner2");
-    predicate1.merge(predicate2);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      Predicate predicate1 = createPredicate("predicate", Direction.OUT, "testOwner");
+      Predicate predicate2 = createPredicate("predicate", Direction.OUT, "testOwner2");
+      predicate1.merge(predicate2);
+    });
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void mergeThrowsExceptionIfPredicateOwnerIsNotSet() throws Exception {
-    Predicate predicate1 = new Predicate("predicate", Direction.OUT);
-    Predicate predicate2 = new Predicate("predicate", Direction.OUT);
-    predicate1.merge(predicate2);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      Predicate predicate1 = new Predicate("predicate", Direction.OUT);
+      Predicate predicate2 = new Predicate("predicate", Direction.OUT);
+      predicate1.merge(predicate2);
+    });
   }
 
   @Test

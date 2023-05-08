@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -14,7 +14,7 @@ public class ElasticSearchFilterTest {
 
   private static ElasticSearchFilter eSearch;
 
-  @BeforeClass
+  @BeforeAll
   public static void initialize() throws Exception {
     eSearch = new ElasticSearchFilter("not-existing-host", 0, Optional.of(""), Optional.empty());
   }

@@ -1,21 +1,18 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.customschema;
 
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.ExplicitFieldMatcher;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.ExplicitField;
-import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.MergeExplicitSchemas;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;

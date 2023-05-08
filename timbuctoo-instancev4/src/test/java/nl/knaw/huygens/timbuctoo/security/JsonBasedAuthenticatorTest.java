@@ -6,8 +6,9 @@ import nl.knaw.huygens.timbuctoo.security.dto.Login;
 import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +33,7 @@ public class JsonBasedAuthenticatorTest {
   public static final String CORRECT_PASSWORD = "correctPassword";
   private JsonBasedAuthenticator instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     LOGINS_FILE = FileHelpers.getFileFromResource(JsonBasedAuthenticatorTest.class, "logins.json");
     instance = backedByFile(LOGINS_FILE);
@@ -123,11 +124,13 @@ public class JsonBasedAuthenticatorTest {
     Files.delete(emptyLoginsFile);
   }
 
-  @Test(expected = LoginCreationException.class)
+  @Test
   public void createLoginThrowsLoginCreationExceptionWhenTheLoginsFileCannotBeRead() throws Exception {
-    Path pathToNonExistingFile = FileHelpers.makeTempFilePath(false);
-    JsonBasedAuthenticator instance = backedByFile(pathToNonExistingFile);
+    Assertions.assertThrows(LoginCreationException.class, () -> {
+      Path pathToNonExistingFile = FileHelpers.makeTempFilePath(false);
+      JsonBasedAuthenticator instance = backedByFile(pathToNonExistingFile);
 
-    instance.createLogin("userPid", "userName", "password", "givenName", "surname", "email", "org");
+      instance.createLogin("userPid", "userName", "password", "givenName", "surname", "email", "org");
+    });
   }
 }

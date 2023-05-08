@@ -16,7 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SimplePath;
 import nl.knaw.huygens.timbuctoo.v5.graphql.defaultconfiguration.SummaryProp;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import java.util.List;

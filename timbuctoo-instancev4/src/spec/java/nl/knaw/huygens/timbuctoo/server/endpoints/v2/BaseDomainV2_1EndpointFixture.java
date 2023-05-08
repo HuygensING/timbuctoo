@@ -4,7 +4,8 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import nl.knaw.huygens.concordion.extensions.ActualResult;
 import nl.knaw.huygens.concordion.extensions.ExpectedResult;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
@@ -16,7 +17,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -28,15 +29,14 @@ import java.util.List;
 import static nl.knaw.huygens.concordion.extensions.ValidationResult.result;
 import static nl.knaw.huygens.util.DropwizardMaker.makeTimbuctoo;
 
+@ExtendWith(DropwizardExtensionsSupport.class)
 public abstract class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
+  public static final DropwizardAppExtension<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
 
   private String recordId;
   private String recordLocation;
   private String pid;
   private String authenticationToken;
-
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
 
   @Override
   protected WebTarget returnUrlToMockedOrRealServer(String serverAddress) {

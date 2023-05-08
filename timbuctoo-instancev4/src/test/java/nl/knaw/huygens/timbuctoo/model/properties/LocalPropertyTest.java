@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringArrayToEncodedArrayOfLimitedValues;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.LocalProperty.DATABASE_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.properties.LocalProperty.OPTIONS_PROPERTY_NAME;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.mock;
 public class LocalPropertyTest {
   private Graph graph;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     graph = newGraph().build();
   }

@@ -41,7 +41,7 @@ import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;

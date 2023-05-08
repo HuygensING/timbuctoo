@@ -8,8 +8,9 @@ import nl.knaw.huygens.timbuctoo.security.LoginCreator;
 import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.security.UserCreator;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Map;
@@ -40,7 +41,7 @@ public class LocalUserCreatorTest {
   private LocalUserCreator instance;
   private Map<String, String> userInfo;
 
-  @Before
+  @BeforeEach
   public void setup() throws Exception {
     loginCreator = mock(LoginCreator.class);
     userCreator = mock(UserCreator.class);
@@ -71,30 +72,36 @@ public class LocalUserCreatorTest {
   }
 
 
-  @Test(expected = UserCreationException.class)
+  @Test
   public void createThrowsAUserCreationExceptionWhenTheLoginCreatorThrowsALoginCreationException() throws Exception {
-    Mockito.doThrow(new LoginCreationException("")).when(loginCreator)
-           .createLogin(anyString(), anyString(), anyString(), anyString(), anyString(),
-                                             anyString(),
-                                             anyString());
+    Assertions.assertThrows(UserCreationException.class, () -> {
+      Mockito.doThrow(new LoginCreationException("")).when(loginCreator)
+          .createLogin(anyString(), anyString(), anyString(), anyString(), anyString(),
+              anyString(),
+              anyString());
 
-    instance.create(userInfo);
+      instance.create(userInfo);
+    });
   }
 
-  @Test(expected = UserCreationException.class)
+  @Test
   public void createThrowsAUserCreationExceptionWhenTheUserCreatorDoes() throws Exception {
-    doThrow(new UserCreationException("")).when(userCreator)
-                                          .createUser(anyString(), anyString(), anyString(), anyString(), anyString());
+    Assertions.assertThrows(UserCreationException.class, () -> {
+      doThrow(new UserCreationException("")).when(userCreator)
+          .createUser(anyString(), anyString(), anyString(), anyString(), anyString());
 
-    instance.create(userInfo);
+      instance.create(userInfo);
+    });
   }
 
-  @Test(expected = UserCreationException.class)
+  @Test
   public void createThrowsAUserCreationExceptionWhenTheAuthorizationCreatorThrowsAnAuthorizationCreationException()
     throws Exception {
-    Mockito.doThrow(new AuthorizationCreationException("")).when(authorizationCreator)
-           .createAuthorization(anyString(), any(User.class), anyString());
+    Assertions.assertThrows(UserCreationException.class, () -> {
+      Mockito.doThrow(new AuthorizationCreationException("")).when(authorizationCreator)
+          .createAuthorization(anyString(), any(User.class), anyString());
 
-    instance.create(userInfo);
+      instance.create(userInfo);
+    });
   }
 }

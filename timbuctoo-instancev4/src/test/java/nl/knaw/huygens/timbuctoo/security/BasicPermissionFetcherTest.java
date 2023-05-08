@@ -12,8 +12,9 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailable
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class BasicPermissionFetcherTest {
   private DataSetMetaData publishedDataSetMetaData;
   private PermissionConfiguration permissionConfig;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     vreAuthorizationCrud = mock(VreAuthorizationCrud.class);
     userValidator = mock(UserValidator.class);
@@ -172,16 +173,18 @@ public class BasicPermissionFetcherTest {
     verify(vreAuthorizationCrud).createAuthorization("testownerid__testdatasetid", user, "ADMIN");
   }
 
-  @Test(expected = AuthorizationCreationException.class)
+  @Test
   public void initializeOwnerAuthorizationThrowsExceptionWhenVreAuthorizationCrudFails() throws Exception {
-    User user = userWithId("testuserid");
-    doThrow(AuthorizationCreationException.class).when(vreAuthorizationCrud).createAuthorization(
-      "testownerid__testdatasetid",
-      user,
-      "ADMIN"
-    );
+    Assertions.assertThrows(AuthorizationCreationException.class, () -> {
+      User user = userWithId("testuserid");
+      doThrow(AuthorizationCreationException.class).when(vreAuthorizationCrud).createAuthorization(
+          "testownerid__testdatasetid",
+          user,
+          "ADMIN"
+      );
 
-    permissionFetcher.initializeOwnerAuthorization(user,"testownerid", "testdatasetid");
+      permissionFetcher.initializeOwnerAuthorization(user, "testownerid", "testdatasetid");
+    });
   }
 
   @Test

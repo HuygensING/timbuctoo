@@ -8,8 +8,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +28,7 @@ public class PermissionBasedFieldVisibilityTest {
 
   private UserPermissionCheck userPermissionCheck;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     userPermissionCheck = mock(UserPermissionCheck.class);
   }

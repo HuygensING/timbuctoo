@@ -1,8 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Charsets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;

@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.graph;
 
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -15,7 +15,7 @@ public class LinkTest {
   private Edge edgeMock;
   private Edge compareEdgeMockDifferentType;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     edgeMock = mock(Edge.class);
     given(edgeMock.label()).willReturn(RELATION_NAME);

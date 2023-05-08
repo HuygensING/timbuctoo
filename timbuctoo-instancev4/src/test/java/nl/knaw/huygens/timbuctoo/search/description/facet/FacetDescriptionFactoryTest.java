@@ -3,8 +3,8 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -18,7 +18,7 @@ public class FacetDescriptionFactoryTest {
   private FacetDescriptionFactory instance;
   private PropertyParserFactory parserFactory;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     parserFactory = mock(PropertyParserFactory.class);
     instance = new FacetDescriptionFactory(parserFactory);

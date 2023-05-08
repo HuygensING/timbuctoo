@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,7 +16,7 @@ public class ChangeDatePropertyParserTest extends AbstractPropertyParserTest {
 
   private ChangeDatePropertyParser instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = new ChangeDatePropertyParser();
   }

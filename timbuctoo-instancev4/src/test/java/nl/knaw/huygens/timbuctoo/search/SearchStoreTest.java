@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.search;
 
 import nl.knaw.huygens.timbuctoo.util.Timeout;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -23,7 +23,7 @@ public class SearchStoreTest {
   public SearchResult searchResult;
   private SearchStore instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = new SearchStore(ONE_SECOND_TIMEOUT);
     searchResult = new SearchResult(null, null, null);

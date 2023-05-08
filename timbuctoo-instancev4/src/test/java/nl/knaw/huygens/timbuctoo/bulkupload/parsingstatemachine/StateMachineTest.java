@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.Saver;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import static org.hamcrest.Matchers.allOf;
@@ -96,7 +96,7 @@ public class StateMachineTest {
   }
 
   @Test
-  @Ignore
+  @Disabled
   public void recordsEachImportError() {
     fail("Yet to implemented.");
   }

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -11,7 +11,7 @@ public class PlaceNameTest {
 
   private PlaceName instance;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     instance = new PlaceName();
   }

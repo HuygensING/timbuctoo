@@ -1,17 +1,20 @@
 package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 public class StringToEncodedStringOfLimitedValuesConverterTest {
 
-  @Test(expected = IOException.class)
+  @Test
   public void validateThrowsAnExceptionWhenTheValueIsNotAnExpectedValue() throws IOException {
-    StringToEncodedStringOfLimitedValuesConverter instance =
-      new StringToEncodedStringOfLimitedValuesConverter("val1", "val2");
+    Assertions.assertThrows(IOException.class, () -> {
+      StringToEncodedStringOfLimitedValuesConverter instance =
+          new StringToEncodedStringOfLimitedValuesConverter("val1", "val2");
 
-    instance.validate("\"val3\"");
+      instance.validate("\"val3\"");
+    });
   }
 
   @Test

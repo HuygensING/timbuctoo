@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.util.Set;

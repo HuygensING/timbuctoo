@@ -3,8 +3,8 @@ package nl.knaw.huygens.timbuctoo.search.description.property;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -17,7 +17,7 @@ public class PropertyDescriptorFactoryTest {
   private PropertyDescriptorFactory instance;
   private PropertyParserFactory parserFactory;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     parserFactory = mock(PropertyParserFactory.class);
     instance = new PropertyDescriptorFactory(parserFactory);

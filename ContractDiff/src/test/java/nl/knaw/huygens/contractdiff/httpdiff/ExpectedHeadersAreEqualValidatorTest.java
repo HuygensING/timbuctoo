@@ -1,7 +1,7 @@
 package nl.knaw.huygens.contractdiff.httpdiff;
 
 import com.google.common.collect.LinkedListMultimap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static nl.knaw.huygens.contractdiff.httpdiff.ExpectedHeadersAreEqualValidator.validate;
 

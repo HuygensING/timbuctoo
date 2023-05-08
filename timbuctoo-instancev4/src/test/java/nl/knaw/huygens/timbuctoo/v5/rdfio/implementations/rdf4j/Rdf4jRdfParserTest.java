@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.rdf4j.rio.RDFParserRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;

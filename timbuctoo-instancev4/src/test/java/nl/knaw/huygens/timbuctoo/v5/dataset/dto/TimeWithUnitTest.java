@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
 
@@ -28,9 +29,11 @@ public class TimeWithUnitTest {
     assertThat(duration, is(123L));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void unknownUnit() {
-    TimeWithUnit twu = new TimeWithUnit(TimeUnit.DAYS, 123);
-    twu.getTime("Foo");
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      TimeWithUnit twu = new TimeWithUnit(TimeUnit.DAYS, 123);
+      twu.getTime("Foo");
+    });
   }
 }

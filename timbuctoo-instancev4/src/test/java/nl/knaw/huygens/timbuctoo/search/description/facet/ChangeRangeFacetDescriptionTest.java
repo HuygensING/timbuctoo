@@ -7,8 +7,8 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -30,7 +30,7 @@ public class ChangeRangeFacetDescriptionTest {
   public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
   private ChangeRangeFacetDescription instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = new ChangeRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
   }

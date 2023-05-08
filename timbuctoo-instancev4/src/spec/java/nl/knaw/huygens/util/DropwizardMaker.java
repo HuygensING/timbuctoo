@@ -1,6 +1,6 @@
 package nl.knaw.huygens.util;
 
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
@@ -20,8 +20,8 @@ public class DropwizardMaker {
     );
   }
 
-  public static DropwizardAppRule<TimbuctooConfiguration> makeTimbuctoo() {
-    return new DropwizardAppRule<>(
+  public static DropwizardAppExtension<TimbuctooConfiguration> makeTimbuctoo() {
+    return new DropwizardAppExtension<>(
       TimbuctooV4.class,
       "example_config.yaml"
     );

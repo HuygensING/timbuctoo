@@ -7,15 +7,17 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.ChangeLogStorage;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-@Ignore
 public class StoreUpdaterTest {
 
   @Test
@@ -89,7 +91,8 @@ public class StoreUpdaterTest {
     verify(importStatus).finishProgressItem(DerivedStore2.class.getSimpleName());
   }
 
-  private StoreUpdater createInstance(ImportStatus importStatus, List<OptimizedPatchListener> listeners) {
+  private StoreUpdater createInstance(ImportStatus importStatus, List<OptimizedPatchListener> listeners)
+      throws IOException {
     BdbTypeNameStore bdbTypeNameStore = mock(BdbTypeNameStore.class);
     BdbQuadStore bdbQuadStore = mock(BdbQuadStore.class);
     GraphStore graphStore = mock(GraphStore.class);
@@ -97,6 +100,7 @@ public class StoreUpdaterTest {
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
     OldSubjectTypesStore oldSubjectTypesStore = mock(OldSubjectTypesStore.class);
     ChangeLogStorage changeLogStorage = mock(ChangeLogStorage.class);
+    given(changeLogStorage.getChangeLogOutputStream(anyInt())).willAnswer(inv -> OutputStream.nullOutputStream());
 
     return new StoreUpdater(
       bdbQuadStore,

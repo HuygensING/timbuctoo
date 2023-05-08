@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImporterStubs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URL;

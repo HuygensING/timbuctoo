@@ -12,8 +12,8 @@ import nl.knaw.huygens.timbuctoo.crud.conversion.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.time.Instant;
@@ -40,7 +40,7 @@ public class EntityToJsonMapperTest {
   private UserValidator userValidator;
   private EntityToJsonMapper instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     userValidator = mock(UserValidator.class);
     when(userValidator.getUserFromUserId(USER_ID)).thenReturn(Optional.of(User.create(USER_NAME, "")));

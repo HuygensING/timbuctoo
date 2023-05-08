@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.property;
 
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static org.hamcrest.MatcherAssert.assertThat;

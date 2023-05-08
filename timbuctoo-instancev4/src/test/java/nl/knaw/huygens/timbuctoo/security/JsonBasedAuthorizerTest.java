@@ -5,8 +5,9 @@ import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorizationStubs;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
@@ -24,7 +25,7 @@ public class JsonBasedAuthorizerTest {
   private VreAuthorizationAccess authorizationAccess;
   private JsonBasedAuthorizer instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     authorizationAccess = mock(VreAuthorizationAccess.class);
     instance = new JsonBasedAuthorizer(authorizationAccess);
@@ -38,13 +39,15 @@ public class JsonBasedAuthorizerTest {
     verify(authorizationAccess).getOrCreateAuthorization(VRE_ID, USER_PID, UserRoles.USER_ROLE);
   }
 
-  @Test(expected = AuthorizationCreationException.class)
+  @Test
   public void createAuthorizationThrowsAnAuthCreateExWhenTheAuthorizationCollectionThrowsAnAuthUnavailableEx()
     throws Exception {
-    when(authorizationAccess.getOrCreateAuthorization(anyString(), anyString(), anyString()))
-      .thenThrow(new AuthorizationUnavailableException());
+    Assertions.assertThrows(AuthorizationCreationException.class, () -> {
+      when(authorizationAccess.getOrCreateAuthorization(anyString(), anyString(), anyString()))
+          .thenThrow(new AuthorizationUnavailableException());
 
-    instance.createAuthorization(VRE_ID, userWithPid(USER_PID), UserRoles.USER_ROLE);
+      instance.createAuthorization(VRE_ID, userWithPid(USER_PID), UserRoles.USER_ROLE);
+    });
   }
 
   @Test

@@ -10,8 +10,9 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class LoadSaveCollectionTest {
   private Graph graph;
   private final String vreName = "VreName";
 
-  @Before
+  @BeforeEach
   public void setUp() {
     graph = newGraph().build();
   }
@@ -80,21 +81,21 @@ public class LoadSaveCollectionTest {
     assertThat(result, equalTo(existingVertex));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void saveThrowsWhenTheCollectionNameIsNotUniqueToThisVre() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withLabel(Collection.DATABASE_LABEL)
-        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "persons")
-        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "person")
-        .withIncomingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "vre"))
-        .withVertex("vre", v -> v.withLabel(Vre.DATABASE_LABEL)
-          .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "OtherVreName")).build();
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      Graph graph = newGraph()
+          .withVertex(v -> v.withLabel(Collection.DATABASE_LABEL)
+              .withProperty(COLLECTION_NAME_PROPERTY_NAME, "persons")
+              .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "person")
+              .withIncomingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "vre"))
+          .withVertex("vre", v -> v.withLabel(Vre.DATABASE_LABEL)
+              .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "OtherVreName")).build();
 
-    save(new Collection("person", "person", null, Maps.newLinkedHashMap(), "persons",
-      new Vre(vreName), null, false, false, null), graph);
-
+      save(new Collection("person", "person", null, Maps.newLinkedHashMap(), "persons",
+          new Vre(vreName), null, false, false, null), graph);
+    });
   }
-
 
   @Test
   public void saveCreatesARelationToAnEntityHolderVertex() {

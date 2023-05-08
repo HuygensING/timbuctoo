@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.hamcrest.OptionalPresentMatcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
@@ -19,7 +19,7 @@ public class BasicUserValidatorTest {
   private BasicUserValidator basicUserValidator;
   private LoggedInUsers loggedInUsers;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     userStore = mock(UserStore.class);
     loggedInUsers = mock(LoggedInUsers.class);

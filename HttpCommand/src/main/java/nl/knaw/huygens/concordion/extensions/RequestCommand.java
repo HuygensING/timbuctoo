@@ -10,6 +10,7 @@ import org.concordion.api.AbstractCommand;
 import org.concordion.api.CommandCall;
 import org.concordion.api.Element;
 import org.concordion.api.Evaluator;
+import org.concordion.api.Fixture;
 import org.concordion.api.ResultRecorder;
 
 import java.io.ByteArrayInputStream;
@@ -41,13 +42,13 @@ class RequestCommand extends AbstractCommand {
   }
 
   @Override
-  public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
+  public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder, Fixture fixture) {
     httpRequest = parseRequest(commandCall.getElement(), evaluator, resultRecorder);
     formatRequest(commandCall.getElement(), httpRequest);
   }
 
   @Override
-  public void execute(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
+  public void execute(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder, Fixture fixture) {
     actualResult = caller.call(httpRequest);
   }
 

@@ -3,11 +3,12 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import org.concordion.integration.junit4.ConcordionRunner;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -22,10 +23,9 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.util.DropwizardMaker.makeTimbuctoo;
 
 @RunWith(ConcordionRunner.class)
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class MetadataFixture extends AbstractV2_1EndpointFixture {
-
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
+  public static final DropwizardAppExtension<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
 
   private static ArrayList<String> validNameComponents;
 

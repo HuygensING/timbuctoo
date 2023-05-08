@@ -1,36 +1,45 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class JsonCrudServiceTest {
 
-  @Test(expected = InvalidCollectionException.class)
+  @Test
   public void createThrowsAnInvalidCollectionExceptionWhenTheCollectionIsUnknown() throws Exception {
-    JsonCrudService instance = createInstanceWithoutKnownCollections();
+    Assertions.assertThrows(InvalidCollectionException.class, () -> {
+      JsonCrudService instance = createInstanceWithoutKnownCollections();
 
-    instance.create("unknown_collection", null, null);
+      instance.create("unknown_collection", null, null);
+    });
   }
 
-  @Test(expected = InvalidCollectionException.class)
+  @Test
   public void deleteThrowsAnInvalidCollectionExceptionWhenTheCollectionIsUnknown() throws Exception {
-    JsonCrudService instance = createInstanceWithoutKnownCollections();
+    Assertions.assertThrows(InvalidCollectionException.class, () -> {
+      JsonCrudService instance = createInstanceWithoutKnownCollections();
 
-    instance.delete("unknown_collection", null, null);
+      instance.delete("unknown_collection", null, null);
+    });
   }
 
-  @Test(expected = InvalidCollectionException.class)
+  @Test
   public void getThrowsAnInvalidCollectionExceptionWhenTheCollectionIsUnknown() throws Exception {
-    JsonCrudService instance = createInstanceWithoutKnownCollections();
+    Assertions.assertThrows(InvalidCollectionException.class, () -> {
+      JsonCrudService instance = createInstanceWithoutKnownCollections();
 
-    instance.get("unknown_collection", null);
+      instance.get("unknown_collection", null);
+    });
   }
 
-  @Test(expected = InvalidCollectionException.class)
+  @Test
   public void replaceThrowsAnInvalidCollectionExceptionWhenTheCollectionIsUnknown() throws Exception {
-    JsonCrudService instance = createInstanceWithoutKnownCollections();
+    Assertions.assertThrows(InvalidCollectionException.class, () -> {
+      JsonCrudService instance = createInstanceWithoutKnownCollections();
 
-    instance.replace("unknown_collection", null, null, null);
+      instance.replace("unknown_collection", null, null, null);
+    });
   }
 
   private JsonCrudService createInstanceWithoutKnownCollections() {

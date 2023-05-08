@@ -1,11 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.concordion.api.FullOGNL;
 import org.concordion.integration.junit4.ConcordionRunner;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -16,10 +17,9 @@ import static nl.knaw.huygens.util.DropwizardMaker.makeTimbuctoo;
 
 @FullOGNL
 @RunWith(ConcordionRunner.class)
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class WwDocumentFacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
-
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
+  public static final DropwizardAppExtension<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
 
   public String isFullyQualified(String url) {
     if (StringUtils.isBlank(url) || (!url.startsWith("http://") && !url.startsWith("https://"))) {

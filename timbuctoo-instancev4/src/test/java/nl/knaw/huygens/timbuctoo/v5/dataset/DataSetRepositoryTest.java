@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
-
 import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
@@ -14,9 +13,10 @@ import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class DataSetRepositoryTest {
   private DataSetRepository dataSetRepository;
   private PermissionFetcher permissionFetcher;
 
-  @Before
+  @BeforeEach
   public void init() throws Exception {
     tempFile = Files.createTempDir();
     dataSetRepository = createDataSetRepo();
@@ -59,15 +59,17 @@ public class DataSetRepositoryTest {
     );
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     tempFile.delete();
   }
 
-  @Test(expected = DataSetCreationException.class)
+  @Test
   public void createDataSetThrowsAnExceptionWhenTheDataSetAlreadyExist() throws Exception {
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    Assertions.assertThrows(DataSetCreationException.class, () -> {
+      dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+      dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    });
   }
 
   public ImportManager getImportManager(String user, String dataset) throws Exception {
@@ -130,13 +132,15 @@ public class DataSetRepositoryTest {
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(false));
   }
 
-  @Test(expected = NotEnoughPermissionsException.class)
+  @Test
   public void removeDataSetThrowsAnExceptionWhenTheUserHasNoAdminPermissions() throws Exception {
-    User user = User.create(null, "user");
-    final DataSet dataSet = dataSetRepository.createDataSet(user,"dataset");
-    User userWithOutPermissions = User.create(null, "userWithOutPermissions");
+    Assertions.assertThrows(NotEnoughPermissionsException.class, () -> {
+      User user = User.create(null, "user");
+      final DataSet dataSet = dataSetRepository.createDataSet(user, "dataset");
+      User userWithOutPermissions = User.create(null, "userWithOutPermissions");
 
-    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", userWithOutPermissions);
+      dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset", userWithOutPermissions);
+    });
   }
 
   @Test

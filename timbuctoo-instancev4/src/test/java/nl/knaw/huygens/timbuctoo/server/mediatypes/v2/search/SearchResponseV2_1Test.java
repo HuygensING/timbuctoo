@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

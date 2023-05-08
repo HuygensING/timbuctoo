@@ -10,7 +10,8 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopProperty
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -40,38 +41,44 @@ public class TinkerPopPropertyConverterTest {
     assertThat(property, is(instanceOf(StringProperty.class)));
   }
 
-  @Test(expected = UnknownPropertyException.class)
+  @Test
   public void fromThrowsAnUnknownPropertyExceptionWhenThePropertyDoesNotExistInTheCollection()
     throws UnknownPropertyException, IOException {
-    Collection collection = mock(Collection.class);
-    when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.empty());
-    TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
+    Assertions.assertThrows(UnknownPropertyException.class, () -> {
+      Collection collection = mock(Collection.class);
+      when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.empty());
+      TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
 
-    instance.from(PROPERTY_NAME, STRING_VALUE);
+      instance.from(PROPERTY_NAME, STRING_VALUE);
+    });
   }
 
-  @Test(expected = UnknownPropertyException.class)
+  @Test
   public void fromThrowsAnUnknownPropertyExceptionWhenThePropertyHasAnUnknownUniqueTypeId()
     throws UnknownPropertyException, IOException {
-    Collection collection = mock(Collection.class);
-    ReadableProperty readableProperty = mock(ReadableProperty.class);
-    when(readableProperty.getUniqueTypeId()).thenReturn("unknownType");
-    when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.of(readableProperty));
-    TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
+    Assertions.assertThrows(UnknownPropertyException.class, () -> {
+      Collection collection = mock(Collection.class);
+      ReadableProperty readableProperty = mock(ReadableProperty.class);
+      when(readableProperty.getUniqueTypeId()).thenReturn("unknownType");
+      when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.of(readableProperty));
+      TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
 
-    instance.from(PROPERTY_NAME, STRING_VALUE);
+      instance.from(PROPERTY_NAME, STRING_VALUE);
+    });
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void fromThrowsAnIoExceptionIfThePropertyCannotBeConverted()
     throws UnknownPropertyException, IOException {
-    Collection collection = mock(Collection.class);
-    ReadableProperty readableProperty = mock(ReadableProperty.class);
-    when(readableProperty.getUniqueTypeId()).thenReturn("string");
-    when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.of(readableProperty));
-    TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
+    Assertions.assertThrows(IOException.class, () -> {
+      Collection collection = mock(Collection.class);
+      ReadableProperty readableProperty = mock(ReadableProperty.class);
+      when(readableProperty.getUniqueTypeId()).thenReturn("string");
+      when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.of(readableProperty));
+      TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
 
-    instance.from(PROPERTY_NAME, new Object());
+      instance.from(PROPERTY_NAME, new Object());
+    });
   }
 
   @Test
@@ -108,12 +115,13 @@ public class TinkerPopPropertyConverterTest {
     assertThat(value.getRight(), is("\"1800\""));
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void toThrowsAnExceptionWhenTheDateFormatIsNotSupported() throws Exception {
-    TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(null);
-    DatableProperty property = new DatableProperty(PROPERTY_NAME, "01-02-180");
+    Assertions.assertThrows(IOException.class, () -> {
+      TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(null);
+      DatableProperty property = new DatableProperty(PROPERTY_NAME, "01-02-180");
 
-    instance.to(property);
+      instance.to(property);
+    });
   }
-
 }

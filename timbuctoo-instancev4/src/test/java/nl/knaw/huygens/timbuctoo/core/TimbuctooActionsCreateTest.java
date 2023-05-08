@@ -9,8 +9,9 @@ import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
@@ -46,7 +47,7 @@ public class TimbuctooActionsCreateTest {
   private DataStoreOperations dataStoreOperations;
   private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     clock = mock(Clock.class);
     instant = Instant.now();
@@ -60,16 +61,18 @@ public class TimbuctooActionsCreateTest {
     afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
 
-  @Test(expected = PermissionFetchingException.class)
+  @Test
   public void createEntityThrowsAnAuthorizationExceptionWhenTheUserIsNotAllowedToWriteToTheCollection()
     throws Exception {
-    TimbuctooActions instance = createInstance(false);
+    Assertions.assertThrows(PermissionFetchingException.class, () -> {
+      TimbuctooActions instance = createInstance(false);
 
-    try {
-      instance.createEntity(mock(Collection.class), baseCollection, newArrayList(), userWithId(userId));
-    } finally {
-      verifyNoInteractions(dataStoreOperations);
-    }
+      try {
+        instance.createEntity(mock(Collection.class), baseCollection, newArrayList(), userWithId(userId));
+      } finally {
+        verifyNoInteractions(dataStoreOperations);
+      }
+    });
   }
 
   @Test
@@ -117,14 +120,16 @@ public class TimbuctooActionsCreateTest {
     );
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void createEntityDoesNotCallTheAfterSuccessTaskExecutor() throws Exception {
-    doThrow(IOException.class).when(dataStoreOperations).createEntity(eq(collection), eq(baseCollection), any());
-    TimbuctooActions instance = createInstance(true);
+    Assertions.assertThrows(IOException.class, () -> {
+      doThrow(IOException.class).when(dataStoreOperations).createEntity(eq(collection), eq(baseCollection), any());
+      TimbuctooActions instance = createInstance(true);
 
-    instance.createEntity(collection, baseCollection, newArrayList(), userWithId(userId));
+      instance.createEntity(collection, baseCollection, newArrayList(), userWithId(userId));
 
-    verifyNoInteractions(afterSuccessTaskExecutor);
+      verifyNoInteractions(afterSuccessTaskExecutor);
+    });
   }
 
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {

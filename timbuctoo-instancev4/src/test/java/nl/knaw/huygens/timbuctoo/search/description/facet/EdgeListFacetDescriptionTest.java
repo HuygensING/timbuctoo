@@ -7,10 +7,9 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class EdgeListFacetDescriptionTest {
   private static final String RELATION_NAME = "relationName";
   private EdgeListFacetDescription instance;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     instance = new EdgeListFacetDescription(FACET_NAME, RELATION_NAME);
   }

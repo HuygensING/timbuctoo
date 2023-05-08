@@ -9,8 +9,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class ChangeLogSerializationTest {
 
   private DataSet dataSet;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     dataSet = mock(DataSet.class);
     QuadStore quadStore = mock(QuadStore.class);

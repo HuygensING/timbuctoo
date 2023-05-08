@@ -6,9 +6,10 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.Optional;
@@ -32,7 +33,7 @@ public class LoggedInUsersTest {
   private LoggedInUsers userStoreWithUserA;
   private LoggedInUsers userStoreWithUserAAndB;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Authenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
     UserStore userStore = userStore().withUserFor("pid").build();
@@ -170,29 +171,25 @@ public class LoggedInUsersTest {
   @Test
   public void throwsLocalLoginUnavailableExceptionWhenTheUserCouldNotBeAuthenticatedLocallyDueToASystemError()
     throws Exception {
-    Authenticator authenticator = mock(JsonBasedAuthenticator.class);
-    given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
-    LoggedInUsers instance = new LoggedInUsers(authenticator, null, ONE_SECOND_TIMEOUT, null);
+    Assertions.assertThrows(LocalLoginUnavailableException.class, () -> {
+      Authenticator authenticator = mock(JsonBasedAuthenticator.class);
+      given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
+      LoggedInUsers instance = new LoggedInUsers(authenticator, null, ONE_SECOND_TIMEOUT, null);
 
-
-    expectedException.expect(LocalLoginUnavailableException.class);
-
-    instance.userTokenFor("", "");
+      instance.userTokenFor("", "");
+    });
   }
 
   @Test
   public void throwsAnAuthenticationUnavailableExceptionWhenTheUserCouldNotBeRetrievedDueToASystemError()
     throws Exception {
-    UserStore userStore = mock(JsonBasedUserStore.class);
-    given(userStore.userFor(anyString())).willThrow(new AuthenticationUnavailableException(""));
-    Authenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
-    LoggedInUsers instance = new LoggedInUsers(authenticator, userStore, ONE_SECOND_TIMEOUT, null);
+    Assertions.assertThrows(AuthenticationUnavailableException.class, () -> {
+      UserStore userStore = mock(JsonBasedUserStore.class);
+      given(userStore.userFor(anyString())).willThrow(new AuthenticationUnavailableException(""));
+      Authenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
+      LoggedInUsers instance = new LoggedInUsers(authenticator, userStore, ONE_SECOND_TIMEOUT, null);
 
-
-    expectedException.expect(AuthenticationUnavailableException.class);
-
-    instance.userTokenFor("a", "b");
-
+      instance.userTokenFor("a", "b");
+    });
   }
-
 }

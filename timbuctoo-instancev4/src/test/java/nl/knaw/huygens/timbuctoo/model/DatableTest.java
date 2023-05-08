@@ -23,10 +23,8 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import com.google.common.base.Objects;
-import nl.knaw.huygens.timbuctoo.model.Datable;
-import nl.knaw.huygens.timbuctoo.model.EdtfPattern;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.text.DateFormat;
 import java.text.ParseException;

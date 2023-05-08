@@ -7,8 +7,8 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +25,7 @@ public class MultiValueListFacetDescriptionTest {
   private ObjectMapper objectMapper;
   private MultiValueListFacetDescription instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     objectMapper = new ObjectMapper();
     instance = new MultiValueListFacetDescription(FACET_NAME, PROPERTY_NAME);

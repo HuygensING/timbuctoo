@@ -15,6 +15,7 @@ import org.concordion.api.AbstractCommand;
 import org.concordion.api.CommandCall;
 import org.concordion.api.Element;
 import org.concordion.api.Evaluator;
+import org.concordion.api.Fixture;
 import org.concordion.api.Result;
 import org.concordion.api.ResultRecorder;
 
@@ -50,7 +51,7 @@ class ResponseCommand extends AbstractCommand {
   }
 
   @Override
-  public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
+  public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder, Fixture fixture) {
     verificationMethod = commandCall.getExpression();
     expectation = parseExpectedResponse(commandCall.getElement(), evaluator, resultRecorder);
   }
@@ -91,7 +92,7 @@ class ResponseCommand extends AbstractCommand {
   }
 
   @Override
-  public void verify(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
+  public void verify(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder, Fixture fixture) {
     ValidationResult validationResult;
     if (!StringUtils.isBlank(verificationMethod)) {
       evaluator.setVariable("#nl_knaw_huygens_httpcommand_result", requestCommand.getActualResult());

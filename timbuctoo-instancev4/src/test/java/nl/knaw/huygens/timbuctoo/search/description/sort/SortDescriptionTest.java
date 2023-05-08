@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SortParameter;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class SortDescriptionTest {
   public SortFieldDescription sortFieldDescription2;
   private SortDescription instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     sortFieldDescription1 = newSortFieldDescription()
       .withName(SORT_FIELD_1)

@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToUnencodedStringOfLimitedValuesConverter;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -23,7 +24,7 @@ import static org.hamcrest.Matchers.contains;
 public class ReadablePropertyTest {
   private Graph graph;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     graph = newGraph().build();
   }
@@ -98,17 +99,18 @@ public class ReadablePropertyTest {
     assertThat(rdfResult, instanceOf(RdfImportedDefaultDisplayname.class));
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void loadThrowsWhenTypeIsNotSupported()
     throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException,
     IllegalAccessException {
+    Assertions.assertThrows(IOException.class, () -> {
+      final Vertex vertex = graph.addVertex(DATABASE_LABEL);
+      final String typeIdentifier = new StringToUnencodedStringOfLimitedValuesConverter(new String[]{})
+          .getUniqueTypeIdentifier();
+      vertex.property(CLIENT_PROPERTY_NAME, "clientName");
+      vertex.property(PROPERTY_TYPE_NAME, typeIdentifier);
 
-    final Vertex vertex = graph.addVertex(DATABASE_LABEL);
-    final String typeIdentifier = new StringToUnencodedStringOfLimitedValuesConverter(new String[]{})
-      .getUniqueTypeIdentifier();
-    vertex.property(CLIENT_PROPERTY_NAME, "clientName");
-    vertex.property(PROPERTY_TYPE_NAME, typeIdentifier);
-
-    ReadableProperty.load(vertex, null);
+      ReadableProperty.load(vertex, null);
+    });
   }
 }

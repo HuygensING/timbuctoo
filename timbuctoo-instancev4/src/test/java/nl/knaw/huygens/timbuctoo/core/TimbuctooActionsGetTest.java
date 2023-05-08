@@ -11,8 +11,9 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.List;
@@ -38,7 +39,7 @@ public class TimbuctooActionsGetTest {
   private boolean withRelations = false;
   private DataStoreOperations dataStoreOperations;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     entityProps = mock(CustomEntityProperties.class);
     relationProps = mock(CustomRelationProperties.class);
@@ -48,12 +49,14 @@ public class TimbuctooActionsGetTest {
     collection = mock(Collection.class);
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void getEntityThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
-    when(dataStoreOperations.getEntity(ID, rev, collection, entityProps, relationProps))
-      .thenThrow(new NotFoundException());
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      when(dataStoreOperations.getEntity(ID, rev, collection, entityProps, relationProps))
+          .thenThrow(new NotFoundException());
 
-    instance.getEntity(collection, ID, rev, entityProps, relationProps);
+      instance.getEntity(collection, ID, rev, entityProps, relationProps);
+    });
   }
 
   @Test
@@ -127,12 +130,14 @@ public class TimbuctooActionsGetTest {
     assertThat(actualVres, is(sameInstance(vres)));
   }
 
-  @Test(expected = InvalidCollectionException.class)
+  @Test
   public void getCollectionMetadataThrowsAnInvalidCollectionExceptionWhenTheCollectionCannotBeFound() throws Exception {
-    Vres vres = mock(Vres.class);
-    when(dataStoreOperations.loadVres()).thenReturn(vres);
+    Assertions.assertThrows(InvalidCollectionException.class, () -> {
+      Vres vres = mock(Vres.class);
+      when(dataStoreOperations.loadVres()).thenReturn(vres);
 
-    instance.getCollectionMetadata("unknowncollections");
+      instance.getCollectionMetadata("unknowncollections");
+    });
   }
 
   @Test

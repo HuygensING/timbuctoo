@@ -5,9 +5,9 @@ import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,7 +27,7 @@ public class JsonBasedUserStoreTest {
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private JsonBasedUserStore instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     usersFile = FileHelpers.makeTempFilePath(false);
     User user = User.create("", "pidOfKnownUser");
@@ -38,7 +38,7 @@ public class JsonBasedUserStoreTest {
     instance = forFile(usersFile);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     Files.delete(usersFile);
   }

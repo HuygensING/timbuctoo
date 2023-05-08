@@ -7,7 +7,7 @@ import io.vavr.control.Try;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 

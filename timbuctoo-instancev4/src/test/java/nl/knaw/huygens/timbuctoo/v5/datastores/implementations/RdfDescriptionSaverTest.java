@@ -9,9 +9,9 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.Metadata;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.MetadataProp;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.SimpleMetadataProp;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.UriMetadataProp;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.DefaultComparisonFormatter;
 
@@ -36,7 +36,7 @@ public class RdfDescriptionSaverTest {
   private ImportStatus importStatus;
   private Metadata metadata;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     descriptionFileName = "description.xml";
     descriptionFile = new File(descriptionFileName);
@@ -70,7 +70,7 @@ public class RdfDescriptionSaverTest {
     testRdfDescriptionSaver.start(0);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     descriptionFile.delete();
   }

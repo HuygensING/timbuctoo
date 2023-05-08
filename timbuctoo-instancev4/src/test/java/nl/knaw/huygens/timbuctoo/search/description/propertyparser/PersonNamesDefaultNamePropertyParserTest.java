@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,7 +17,7 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
 
   private PersonNamesDefaultNamePropertyParser instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = new PersonNamesDefaultNamePropertyParser();
   }

@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.core;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreStubs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.RDF_URI_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;

@@ -9,8 +9,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.EditMutationChangeLog;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 
 import java.util.List;
@@ -40,7 +41,7 @@ public class EditMutationChangeLogTest {
   private QuadStore quadStore;
   private TypeNameStore typeNameStore;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     dataSet = mock(DataSet.class);
     quadStore = mock(QuadStore.class);
@@ -380,18 +381,20 @@ public class EditMutationChangeLogTest {
     assertThat(reps, empty());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void getReplacementsThrowsAnExceptionWhenTheReplacementHasAnUnsupportedValue() throws Exception {
-    String addedValue1 = "newValue1";
-    String oldValue = "oldValue";
-    Map<Object, Object> replacements = Maps.newHashMap();
-    replacements.put(NAMES_FIELD, addedValue1);
-    Map<Object, Object> entity = Maps.newHashMap();
-    entity.put("replacements", replacements);
-    EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
-    valuesInQuadStore(NAMES_PRED, oldValue);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      String addedValue1 = "newValue1";
+      String oldValue = "oldValue";
+      Map<Object, Object> replacements = Maps.newHashMap();
+      replacements.put(NAMES_FIELD, addedValue1);
+      Map<Object, Object> entity = Maps.newHashMap();
+      entity.put("replacements", replacements);
+      EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
+      valuesInQuadStore(NAMES_PRED, oldValue);
 
-    instance.getReplacements(dataSet).collect(toList()); // collect to trigger right exception
+      instance.getReplacements(dataSet).collect(toList()); // collect to trigger right exception
+    });
   }
 
   private Map<Object, Object> createPropertyInput(String value) {

@@ -3,7 +3,8 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.IsIterableContaining;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +35,14 @@ public class ExplicitTypeTest {
     assertThat(type.getName(), is("TestType"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void mergeThrowsExceptionIfUrisDontMatch() {
-    ExplicitField explicitField1 = new ExplicitField("test:test", false, null, null);
-    ExplicitField explicitField2 = new ExplicitField("test:test2", false, null, null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      ExplicitField explicitField1 = new ExplicitField("test:test", false, null, null);
+      ExplicitField explicitField2 = new ExplicitField("test:test2", false, null, null);
 
-    ExplicitField mergedExplicitField = explicitField1.mergeWith(explicitField2);
+      ExplicitField mergedExplicitField = explicitField1.mergeWith(explicitField2);
+    });
   }
 
   @Test

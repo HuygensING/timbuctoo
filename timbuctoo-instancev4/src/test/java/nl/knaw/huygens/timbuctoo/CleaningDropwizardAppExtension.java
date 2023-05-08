@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo;
 
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 
@@ -13,16 +13,16 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import static java.nio.file.Files.walkFileTree;
 
-public class CleaningDropwizard extends DropwizardAppRule<TimbuctooConfiguration> {
+public class CleaningDropwizardAppExtension extends DropwizardAppExtension<TimbuctooConfiguration> {
   private final Path dataPath;
 
-  public CleaningDropwizard(String configPath, Path dataPath) {
+  public CleaningDropwizardAppExtension(String configPath, Path dataPath) {
     super(TimbuctooV4.class, configPath);
     this.dataPath = dataPath;
   }
 
   @Override
-  protected void before() throws Exception {
+  public void before() throws Exception {
     try {
       if (dataPath.toFile().exists()) {
         walkFileTree(dataPath, new SimpleFileVisitor<>() {

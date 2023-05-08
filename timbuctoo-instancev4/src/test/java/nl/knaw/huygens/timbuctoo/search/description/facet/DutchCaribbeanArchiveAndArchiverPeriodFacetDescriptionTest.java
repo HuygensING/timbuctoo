@@ -7,8 +7,8 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +34,7 @@ public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescriptionTest {
   public static final String END_YEAR = "endYear";
   private DutchCaribbeanArchiveAndArchiverPeriodFacetDescription instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = new DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(FACET_NAME, BEGIN_YEAR, END_YEAR);
   }

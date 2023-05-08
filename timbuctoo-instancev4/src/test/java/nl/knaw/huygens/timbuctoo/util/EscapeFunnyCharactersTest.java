@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static nl.knaw.huygens.timbuctoo.util.EscapeFunnyCharacters.escapeFunnyCharacters;
 import static org.hamcrest.MatcherAssert.assertThat;

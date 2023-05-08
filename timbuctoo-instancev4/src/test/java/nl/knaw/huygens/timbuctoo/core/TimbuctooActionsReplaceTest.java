@@ -8,8 +8,9 @@ import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import java.net.URI;
@@ -43,7 +44,7 @@ public class TimbuctooActionsReplaceTest {
   private Instant instant;
   private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     clock = mock(Clock.class);
     instant = Instant.now();
@@ -57,15 +58,17 @@ public class TimbuctooActionsReplaceTest {
     dataStoreOperations = mock(DataStoreOperations.class);
   }
 
-  @Test(expected = PermissionFetchingException.class)
+  @Test
   public void replaceEntityThrowsAnUnauthorizedExceptionWhenTheUserIsNotAllowedToWrite() throws Exception {
-    TimbuctooActions instance = createInstance(false);
+    Assertions.assertThrows(PermissionFetchingException.class, () -> {
+      TimbuctooActions instance = createInstance(false);
 
-    try {
-      instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
-    } finally {
-      verifyNoInteractions(dataStoreOperations);
-    }
+      try {
+        instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
+      } finally {
+        verifyNoInteractions(dataStoreOperations);
+      }
+    });
   }
 
   @Test
@@ -101,22 +104,26 @@ public class TimbuctooActionsReplaceTest {
     inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void replaceEntityThrowsANotFoundExceptionWhenExecuteAndReturnReturnsAnUpdateStatusNotFound()
     throws Exception {
-    when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenThrow(new NotFoundException());
-    TimbuctooActions instance = createInstance(true);
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenThrow(new NotFoundException());
+      TimbuctooActions instance = createInstance(true);
 
-    instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
+      instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
+    });
   }
 
-  @Test(expected = AlreadyUpdatedException.class)
+  @Test
   public void replaceEntityThrowsAnAlreadyUpdatedExceptionWhenExecuteAndReturnReturnsAnUpdateStatusAlreadyUpdated()
     throws Exception {
-    when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenThrow(new AlreadyUpdatedException());
-    TimbuctooActions instance = createInstance(true);
+    Assertions.assertThrows(AlreadyUpdatedException.class, () -> {
+      when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenThrow(new AlreadyUpdatedException());
+      TimbuctooActions instance = createInstance(true);
 
-    instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
+      instance.replaceEntity(collection, updateEntity, userWithId(USER_ID));
+    });
   }
 
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {

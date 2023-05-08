@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base;
 
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.SourceData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Set;

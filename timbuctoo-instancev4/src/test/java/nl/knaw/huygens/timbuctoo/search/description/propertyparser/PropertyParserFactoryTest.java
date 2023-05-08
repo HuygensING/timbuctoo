@@ -6,8 +6,9 @@ import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class PropertyParserFactoryTest {
 
   private PropertyParserFactory instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = new PropertyParserFactory();
   }
@@ -35,11 +36,10 @@ public class PropertyParserFactoryTest {
 
   }
 
-  @Test(expected = UnparsableTypeException.class)
+  @Test
   public void getParserThrowsAUnparsableTypeExceptionWhenNoParserIsKnowForTheType() {
-    instance.getParser(UnknownType.class);
+    Assertions.assertThrows(UnparsableTypeException.class, () -> instance.getParser(UnknownType.class));
   }
-
 
   @Test
   public void getParserReturnsAChangeDatePropertyParserForChange() {

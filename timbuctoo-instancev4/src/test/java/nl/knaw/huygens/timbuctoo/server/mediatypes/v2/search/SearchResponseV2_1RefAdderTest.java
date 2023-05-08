@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 

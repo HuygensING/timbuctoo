@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.dropwizard.testing.junit.DropwizardAppRule;
-import nl.knaw.huygens.timbuctoo.CleaningDropwizard;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import nl.knaw.huygens.timbuctoo.CleaningDropwizardAppExtension;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.apache.activemq.util.ByteArrayInputStream;
@@ -19,9 +20,9 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.hamcrest.Matchers;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -73,10 +74,9 @@ import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class IntegrationTest {
-
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new CleaningDropwizard(
+  public static final DropwizardAppExtension<TimbuctooConfiguration> APP = new CleaningDropwizardAppExtension(
     "example_config.yaml",
     Paths.get(resourceFilePath("integrationtest"), "datasets")
   );
@@ -99,7 +99,7 @@ public class IntegrationTest {
     );
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws IOException {
     ClientConfig configuration = new ClientConfig();
     client = ClientBuilder.newClient(configuration);

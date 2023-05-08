@@ -7,9 +7,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +29,7 @@ public class BdbQuadStoreTest {
   protected BdbNonPersistentEnvironmentCreator databaseCreator;
   protected BdbQuadStore quadStore;
 
-  @Before
+  @BeforeEach
   public void makeCollection() throws Exception {
     databaseCreator = new BdbNonPersistentEnvironmentCreator();
     quadStore = new BdbQuadStore(
@@ -46,7 +46,7 @@ public class BdbQuadStoreTest {
     Thread.sleep(2000); // to make the test work on slow systems
   }
 
-  @After
+  @AfterEach
   public void cleanUp() throws Exception {
     databaseCreator.close();
   }

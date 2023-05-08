@@ -3,8 +3,8 @@ package nl.knaw.huygens.timbuctoo.search.description.fulltext;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FullTextSearchParameter;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalFullTextSearchDescriptionWithBackupProperty;
@@ -23,7 +23,7 @@ public class FullTextSearchDescriptionTest {
   protected static final String NAME = "name";
   private FullTextSearchDescription instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = createLocalSimpleFullTextSearchDescription(NAME, PROPERTY);
   }

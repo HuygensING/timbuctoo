@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.databaselog.entry;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.databaselog.LogOutput;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 

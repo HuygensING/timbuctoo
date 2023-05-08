@@ -7,8 +7,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import org.assertj.core.util.Lists;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.PredicateBuilder.predicate;
@@ -44,7 +44,7 @@ public class DerivedSchemaContainerTest {
   private PaginationArgumentsHelper argumentsHelper;
   private ReadOnlyChecker readOnlyChecker;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     nameGenerator = mock(GraphQlNameGenerator.class);
 

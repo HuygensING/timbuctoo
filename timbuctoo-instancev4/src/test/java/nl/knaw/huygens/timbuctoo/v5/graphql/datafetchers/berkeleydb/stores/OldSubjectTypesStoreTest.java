@@ -5,9 +5,9 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandle
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.OldSubjectTypesStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.updatedperpatchstore.SubjectCursor;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
@@ -23,7 +23,7 @@ public class OldSubjectTypesStoreTest {
   protected BdbNonPersistentEnvironmentCreator databaseCreator;
   protected OldSubjectTypesStore oldSubjectTypesStore;
 
-  @Before
+  @BeforeEach
   public void makeCollection() throws Exception {
     databaseCreator = new BdbNonPersistentEnvironmentCreator();
     oldSubjectTypesStore = new OldSubjectTypesStore(
@@ -40,7 +40,7 @@ public class OldSubjectTypesStoreTest {
     Thread.sleep(2000); // to make the test work on slow systems
   }
 
-  @After
+  @AfterEach
   public void cleanUp() throws Exception {
     databaseCreator.close();
   }

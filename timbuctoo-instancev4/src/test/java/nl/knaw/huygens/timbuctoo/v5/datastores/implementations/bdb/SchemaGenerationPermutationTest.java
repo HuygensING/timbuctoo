@@ -12,17 +12,17 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.ChangeLogStorage;
 import org.hamcrest.Matcher;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.Collections2.orderedPermutations;
 import static java.util.Arrays.asList;
@@ -39,10 +39,11 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@Ignore // disable test because our docker hub build fails with this test on
-@RunWith(Parameterized.class)
+@Disabled // disable test because our docker hub build fails with this test on
 public class SchemaGenerationPermutationTest {
   private static final String USER = "user";
   private static final String DATA_SET = "dataSet";
@@ -64,18 +65,9 @@ public class SchemaGenerationPermutationTest {
 
   private static final String GRAPH = "http://example.org";
 
-  private final List<List<CursorQuad>> input;
-  private final Matcher<Map<String, Type>> result;
-  
-  public SchemaGenerationPermutationTest(List<List<CursorQuad>> input, Matcher<Map<String, Type>> result) {
-    this.input = input;
-    this.result = result;
-  }
-
   // Run the cases one by one
   // Some test generate a large amount of permutations
-  @Parameters(name = "{index}: schema for {0}")
-  public static Collection<Object[]> getData() {
+  public static Stream<Object[]> getData() {
     List<Object[]> testCases = Lists.newArrayList();
     // predicateOfASubjectIsAddedToEachType
     testCases.addAll(createPermutationsOfTestCase(
@@ -201,7 +193,7 @@ public class SchemaGenerationPermutationTest {
       CursorQuad.create(SUBJECT_A, PROP_I, OUT, ASSERTED, SUBJECT_B, null, null, null, ""),
       CursorQuad.create(SUBJECT_A, PROP_I, OUT, RETRACTED, SUBJECT_B, null, null, null, "")
     ));
-    return testCases;
+    return testCases.stream();
   }
 
   private static List<Object[]> createPartitionsOfTestCase(Matcher<Map<String, Type>> result,
@@ -231,8 +223,9 @@ public class SchemaGenerationPermutationTest {
     return permutations;
   }
 
-  @Test
-  public void runTest() throws Exception {
+  @ParameterizedTest
+  @MethodSource("getData")
+  public void runTest(List<List<CursorQuad>> input, Matcher<Map<String, Type>> result) throws Exception {
     BdbNonPersistentEnvironmentCreator dataStoreFactory = new BdbNonPersistentEnvironmentCreator();
     final BdbSchemaStore schema = new BdbSchemaStore(
       new BdbBackedData(dataStoreFactory.getDatabase(
@@ -266,7 +259,7 @@ public class SchemaGenerationPermutationTest {
         storeUpdater.commit();
       }
 
-      assertThat(schema.getStableTypes(), this.result);
+      assertThat(schema.getStableTypes(), result);
     } finally {
       dataStoreFactory.close();
     }
@@ -370,6 +363,9 @@ public class SchemaGenerationPermutationTest {
         STRING_IS_CLEAN_HANDLER
     ));
 
+    ChangeLogStorage changeLogStorage = mock(ChangeLogStorage.class);
+    given(changeLogStorage.getChangeLogOutputStream(anyInt())).willAnswer(inv -> OutputStream.nullOutputStream());
+
     return new StoreUpdater(
       quadStore,
       graphStore,
@@ -379,7 +375,7 @@ public class SchemaGenerationPermutationTest {
       oldSubjectTypesStore,
       Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
       mock(ImportStatus.class),
-      mock(ChangeLogStorage.class)
+      changeLogStorage
     );
   }
 

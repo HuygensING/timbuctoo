@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class RelatedListFacetDescriptionTest {
   public static final String RELATION_2 = "relation2";
   private PropertyParser parser;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     parser = mock(PropertyParser.class);
     given(parser.parse(anyString())).willAnswer(invocation -> invocation.getArguments()[0]);

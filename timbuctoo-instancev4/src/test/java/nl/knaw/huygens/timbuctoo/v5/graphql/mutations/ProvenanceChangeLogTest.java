@@ -9,10 +9,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.Change.Value;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ProvenanceChangeLog;
-import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.assertj.core.util.Lists;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -49,7 +48,7 @@ public class ProvenanceChangeLogTest {
   private DataSetMetaData dataSetMetaData;
   private TypeNameStore typeNameStore;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     dataSet = mock(DataSet.class);
     dataSetMetaData = mock(DataSetMetaData.class);

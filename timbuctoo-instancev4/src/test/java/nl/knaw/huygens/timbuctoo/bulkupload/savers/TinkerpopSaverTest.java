@@ -10,8 +10,8 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +34,7 @@ public class TinkerpopSaverTest {
   private GraphWrapper graphWrapper;
   private Vertex rawCollection;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     vres = mock(Vres.class);
     graphWrapper = newGraph().withVertex(v -> v.withProperty("name", "rawCollection")).wrap();

@@ -1,15 +1,15 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
-
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import nl.knaw.huygens.contractdiff.diffresults.MatchingDiffResult;
 import nl.knaw.huygens.contractdiff.diffresults.MisMatchDiffResult;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import org.concordion.integration.junit4.ConcordionRunner;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -21,10 +21,9 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.util.DropwizardMaker.makeTimbuctoo;
 
 @RunWith(ConcordionRunner.class)
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class RelationTypesV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
-
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
+  public static final DropwizardAppExtension<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
 
   @Override
   protected JsonDiffer makeJsonDiffer() {
@@ -70,7 +69,6 @@ public class RelationTypesV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
             .build();
   }
 
-
   @Override
   protected WebTarget returnUrlToMockedOrRealServer(String serverAddress) {
     String defaultAddress = String.format("http://localhost:%d", APPLICATION.getLocalPort());
@@ -78,5 +76,4 @@ public class RelationTypesV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
 
     return ClientBuilder.newClient().target(address);
   }
-
 }

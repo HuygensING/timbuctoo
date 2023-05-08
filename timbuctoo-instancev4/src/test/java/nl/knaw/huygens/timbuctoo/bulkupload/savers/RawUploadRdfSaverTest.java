@@ -8,8 +8,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.BasicDataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
@@ -57,7 +57,7 @@ public class RawUploadRdfSaverTest {
   private DataSetMetaData dataSetMetadata;
   private Clock clock = Clock.fixed(Instant.parse(DATE), ZoneId.of("UTC"));
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     rdfSerializer = mock(RdfSerializer.class);
     dataSetMetadata = new BasicDataSetMetaData(

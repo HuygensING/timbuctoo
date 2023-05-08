@@ -8,8 +8,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.assertj.core.util.Lists;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
@@ -37,7 +37,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
   private ReadOnlyChecker readOnlyChecker;
   private DerivedSchemaContainer derivedSchemaContainer;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     graphQlNameGenerator = mock(GraphQlNameGenerator.class);
     when(graphQlNameGenerator.createObjectTypeName(ROOT_TYPE, TYPE_URI)).thenReturn(TYPE);

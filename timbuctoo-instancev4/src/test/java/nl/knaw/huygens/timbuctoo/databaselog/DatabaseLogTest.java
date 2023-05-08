@@ -7,8 +7,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class DatabaseLogTest {
   private LogEntryFactory logEntryFactory;
   private LogEntry vertexLogEntry;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     objectMapper = new ObjectMapper();
     logEntryFactory = mock(LogEntryFactory.class);

@@ -8,8 +8,9 @@ import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.time.Clock;
@@ -39,7 +40,7 @@ public class TimbuctooActionsDeleteTest {
   private DataStoreOperations dataStoreOperations;
   private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     clock = mock(Clock.class);
     instant = Instant.now();
@@ -63,23 +64,27 @@ public class TimbuctooActionsDeleteTest {
     verify(dataStoreOperations).deleteEntity(collection, ID, change);
   }
 
-  @Test(expected = PermissionFetchingException.class)
+  @Test
   public void deleteEntityThrowsAnUnAuthrozedExceptionIfTheUserIsNotAllowedToWriteTheCollection() throws Exception {
-    TimbuctooActions instance = createInstance(false);
+    Assertions.assertThrows(PermissionFetchingException.class, () -> {
+      TimbuctooActions instance = createInstance(false);
 
-    try {
-      instance.deleteEntity(collection, ID, userWithId(USER_ID));
-    } finally {
-      verifyNoInteractions(dataStoreOperations);
-    }
+      try {
+        instance.deleteEntity(collection, ID, userWithId(USER_ID));
+      } finally {
+        verifyNoInteractions(dataStoreOperations);
+      }
+    });
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void deleteEntityThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
-    doThrow(new NotFoundException()).when(dataStoreOperations).deleteEntity(collection, ID, change);
-    TimbuctooActions instance = createInstance(true);
+    Assertions.assertThrows(NotFoundException.class, () -> {
+      doThrow(new NotFoundException()).when(dataStoreOperations).deleteEntity(collection, ID, change);
+      TimbuctooActions instance = createInstance(true);
 
-    instance.deleteEntity(collection, ID, userWithId(USER_ID));
+      instance.deleteEntity(collection, ID, userWithId(USER_ID));
+    });
   }
 
   @Test

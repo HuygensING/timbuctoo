@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class RelatedDatableRangeFacetDescriptionTest {
 
   private RelatedDatableRangeFacetDescription instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = new RelatedDatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME, RELATION);
   }

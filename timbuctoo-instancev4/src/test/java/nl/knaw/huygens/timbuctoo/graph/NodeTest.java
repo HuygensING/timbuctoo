@@ -4,8 +4,9 @@ package nl.knaw.huygens.timbuctoo.graph;
 import com.google.common.collect.Sets;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -21,7 +22,7 @@ public class NodeTest {
   private static final String DOCUMENT_LABEL = "the title";
   private Vertex mockDocumentVertex;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     mockDocumentVertex = mock(Vertex.class);
 
@@ -111,18 +112,20 @@ public class NodeTest {
     assertThat(underTest.getLabel(), is(tempName));
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void nodeConstructorThrowsIoExceptionWhenTypeIsNotSupported() throws IOException {
-    Vertex mockUnsupportedVertex = mock(Vertex.class);
-    VertexProperty typesProperty = mock(VertexProperty.class);
-    VertexProperty timIdProperty = mock(VertexProperty.class);
-    final String timId = "tim-id";
-    final String type = "unsupported";
-    given(mockUnsupportedVertex.property("tim_id")).willReturn(timIdProperty);
-    given(mockUnsupportedVertex.property("types")).willReturn(typesProperty);
-    given(timIdProperty.value()).willReturn(timId);
-    given(typesProperty.value()).willReturn("[\"" + type +  "\"]");
+    Assertions.assertThrows(IOException.class, () -> {
+      Vertex mockUnsupportedVertex = mock(Vertex.class);
+      VertexProperty typesProperty = mock(VertexProperty.class);
+      VertexProperty timIdProperty = mock(VertexProperty.class);
+      final String timId = "tim-id";
+      final String type = "unsupported";
+      given(mockUnsupportedVertex.property("tim_id")).willReturn(timIdProperty);
+      given(mockUnsupportedVertex.property("types")).willReturn(typesProperty);
+      given(timIdProperty.value()).willReturn(timId);
+      given(typesProperty.value()).willReturn("[\"" + type + "\"]");
 
-    new Node(mockUnsupportedVertex, null);
+      new Node(mockUnsupportedVertex, null);
+    });
   }
 }

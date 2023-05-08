@@ -5,9 +5,9 @@ import com.microsoft.azure.storage.table.CloudTableClient;
 import nl.knaw.huygens.timbuctoo.security.dto.Login;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
@@ -17,13 +17,13 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.text.IsEmptyString.emptyOrNullString;
 
-@Ignore
+@Disabled
 //You need to specify a valid accountName and accountKey and you need to provide this test with empty databases
 public class AzureAccessTest {
 
   private CloudTableClient tableClient;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     tableClient = CloudStorageAccount.parse("DefaultEndpointsProtocol=http;" +
       "AccountName=;" +

@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.databaselog;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.io.Writer;

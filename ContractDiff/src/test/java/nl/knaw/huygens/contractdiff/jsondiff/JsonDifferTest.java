@@ -1,7 +1,7 @@
 package nl.knaw.huygens.contractdiff.jsondiff;
 
 import nl.knaw.huygens.contractdiff.diffresults.DiffResult;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static nl.knaw.huygens.contractdiff.JsonBuilder.jsn;
 import static nl.knaw.huygens.contractdiff.JsonBuilder.jsnA;

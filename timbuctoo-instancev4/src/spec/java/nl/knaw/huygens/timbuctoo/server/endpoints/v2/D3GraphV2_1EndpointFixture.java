@@ -1,13 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import org.concordion.api.FullOGNL;
-import org.concordion.integration.junit4.ConcordionRunner;
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -18,11 +17,9 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.util.DropwizardMaker.makeTimbuctoo;
 
 @FullOGNL
-@RunWith(ConcordionRunner.class)
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class D3GraphV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
-
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
+  public static final DropwizardAppExtension<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
 
   @Override
   protected JsonDiffer makeJsonDiffer() {

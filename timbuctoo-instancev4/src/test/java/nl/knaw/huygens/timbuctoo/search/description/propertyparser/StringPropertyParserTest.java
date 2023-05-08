@@ -2,10 +2,9 @@ package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -14,7 +13,7 @@ public class StringPropertyParserTest extends AbstractPropertyParserTest {
 
   private StringPropertyParser instance;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     instance = new StringPropertyParser();
   }

@@ -4,9 +4,9 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -27,7 +27,7 @@ public class BdbWrapperTest {
   private BdbWrapper<String, String> database;
   private static final TupleBinding<String> STRING_BINDER = getPrimitiveBinding(String.class);
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     creator = new BdbNonPersistentEnvironmentCreator();
     creator.start();
@@ -42,7 +42,7 @@ public class BdbWrapperTest {
     database.put("bb", "bb");
   }
 
-  @After
+  @AfterEach
   public void close() {
     creator.stop();
   }
