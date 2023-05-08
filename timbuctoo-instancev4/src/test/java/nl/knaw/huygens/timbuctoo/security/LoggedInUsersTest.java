@@ -17,9 +17,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.security.UserStoreMockBuilder.userStore;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -72,7 +72,7 @@ public class LoggedInUsersTest {
     Optional<String> token = instance.userTokenFor("a", "b");
 
     assertThat(token, is(present()));
-    assertThat(token.get(), not(isEmptyString()));
+    assertThat(token.get(), not(is(emptyString())));
   }
 
   @Test

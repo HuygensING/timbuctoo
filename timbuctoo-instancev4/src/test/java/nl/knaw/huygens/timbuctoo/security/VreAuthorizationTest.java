@@ -7,7 +7,7 @@ import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.USER_ROLE;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class VreAuthorizationTest {
   @Test

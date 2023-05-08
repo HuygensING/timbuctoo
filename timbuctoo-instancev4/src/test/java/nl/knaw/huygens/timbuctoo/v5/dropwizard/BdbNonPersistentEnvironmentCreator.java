@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard;
 
+import com.github.jsonldjava.shaded.com.google.common.io.Files;
 import com.google.common.collect.Maps;
-import com.google.common.io.Files;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;

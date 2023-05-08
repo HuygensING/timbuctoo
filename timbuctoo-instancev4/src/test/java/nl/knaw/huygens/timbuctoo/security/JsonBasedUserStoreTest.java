@@ -7,9 +7,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,13 +19,12 @@ import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThrows;
 
 public class JsonBasedUserStoreTest {
 
   public Path usersFile;
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
   private JsonBasedUserStore instance;
 
   @Before
@@ -69,13 +66,10 @@ public class JsonBasedUserStoreTest {
   }
 
   @Test
-  public void userForThrowsAnAuthenticationUnavailableExceptionWhenTheUsersFileCannotBeRead()
-    throws AuthenticationUnavailableException {
+  public void userForThrowsAnAuthenticationUnavailableExceptionWhenTheUsersFileCannotBeRead() {
     JsonBasedUserStore instance = forFile(Paths.get("nonExistingUserFile"));
 
-    expectedException.expect(AuthenticationUnavailableException.class);
-
-    instance.userFor("pid");
+    assertThrows(AuthenticationUnavailableException.class, () -> instance.userFor("pid"));
   }
 
   @Test
@@ -97,13 +91,12 @@ public class JsonBasedUserStoreTest {
   }
 
   @Test
-  public void createUserThrowsAUserCreationExceptionWhenTheUsersFileCannotBeRead() throws Exception {
+  public void createUserThrowsAUserCreationExceptionWhenTheUsersFileCannotBeRead() {
     Path nonExistingUsersFile = Paths.get("src", "test", "resources", "users1.json");
     JsonBasedUserStore instance = forFile(nonExistingUsersFile);
 
-    expectedException.expect(UserCreationException.class);
-    instance.createUser("pid", "email", "givenName", "surname", "organization");
-
+    assertThrows(UserCreationException.class, () ->
+        instance.createUser("pid", "email", "givenName", "surname", "organization"));
   }
 
 }

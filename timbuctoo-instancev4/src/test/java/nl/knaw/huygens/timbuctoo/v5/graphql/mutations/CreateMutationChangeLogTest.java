@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import co.unruly.matchers.StreamMatchers;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -14,15 +13,15 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ChangeMatcher.likeChange;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -100,9 +99,9 @@ public class CreateMutationChangeLogTest {
     entity.put("creations", creations);
     CreateMutationChangeLog instance = new CreateMutationChangeLog(new Graph(GRAPH), SUBJECT, TYPE_URI, entity);
 
-    Stream<Change> deletes = instance.getDeletions(dataSet);
+    List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
 
-    assertThat(deletes, StreamMatchers.empty());
+    assertThat(deletes, empty());
   }
 
   @Test
@@ -115,9 +114,9 @@ public class CreateMutationChangeLogTest {
     entity.put("creations", creations);
     CreateMutationChangeLog instance = new CreateMutationChangeLog(new Graph(GRAPH), SUBJECT, TYPE_URI, entity);
 
-    Stream<Change> replacements = instance.getReplacements(dataSet);
+    List<Change> replacements = instance.getReplacements(dataSet).collect(toList());
 
-    assertThat(replacements, StreamMatchers.empty());
+    assertThat(replacements, empty());
   }
 
   private Map<Object, Object> createPropertyInput(String value) {

@@ -294,7 +294,7 @@ public class RdfDescriptionSaverTest {
     testRdfDescriptionSaver.commit();
 
     File file = new File(descriptionFileName);
-    String descriptionFile = Files.toString(file, Charsets.UTF_8);
+    String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
     assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<rdf:RDF\n" +
@@ -310,7 +310,7 @@ public class RdfDescriptionSaverTest {
     testRdfDescriptionSaver.commit();
 
     File file = new File(descriptionFileName);
-    String descriptionFile = Files.toString(file, Charsets.UTF_8);
+    String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
     assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<rdf:RDF\n" +
@@ -325,7 +325,7 @@ public class RdfDescriptionSaverTest {
     testRdfDescriptionSaver.commit();
 
     File file = new File(descriptionFileName);
-    String descriptionFile = Files.toString(file, Charsets.UTF_8);
+    String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
     assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<rdf:RDF\n" +
@@ -341,7 +341,7 @@ public class RdfDescriptionSaverTest {
     testRdfDescriptionSaver.commit();
 
     File file = new File(descriptionFileName);
-    String descriptionFile = Files.toString(file, Charsets.UTF_8);
+    String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
     assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<rdf:RDF\n" +
@@ -357,7 +357,7 @@ public class RdfDescriptionSaverTest {
     testRdfDescriptionSaver.commit();
 
     File file = new File(descriptionFileName);
-    String descriptionFile = Files.toString(file, Charsets.UTF_8);
+    String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
     assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<rdf:RDF\n" +

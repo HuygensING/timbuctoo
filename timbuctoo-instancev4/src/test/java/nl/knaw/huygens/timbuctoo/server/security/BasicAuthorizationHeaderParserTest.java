@@ -1,23 +1,20 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.Base64;
 
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 
 public class BasicAuthorizationHeaderParserTest {
 
   public static final String KNOWN_USER = "knownUser";
   public static final String CORRECT_PASSWORD = "correctPassword";
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
   public static final String VALID_AUTH_STRING = String.format("%s:%s", KNOWN_USER, CORRECT_PASSWORD);
 
 
@@ -63,42 +60,32 @@ public class BasicAuthorizationHeaderParserTest {
   }
 
   @Test
-  public void parseRequiresTheHeaderToStartWithBasic() throws InvalidAuthorizationHeaderException {
+  public void parseRequiresTheHeaderToStartWithBasic() {
     String encodedAuthString = encodeBase64(VALID_AUTH_STRING);
     String header = String.format("absic %s", encodedAuthString);
 
-    expectedException.expect(InvalidAuthorizationHeaderException.class);
-
-    BasicAuthorizationHeaderParser.parse(header);
+    assertThrows(InvalidAuthorizationHeaderException.class, () -> BasicAuthorizationHeaderParser.parse(header));
   }
 
 
   @Test
-  public void parseFailsWhenTheHeaderOnlyHasTheHash() throws InvalidAuthorizationHeaderException {
+  public void parseFailsWhenTheHeaderOnlyHasTheHash() {
     String encodedAuthString = encodeBase64(VALID_AUTH_STRING);
     String header = String.format("%s", encodedAuthString);
 
-    expectedException.expect(InvalidAuthorizationHeaderException.class);
-
-    BasicAuthorizationHeaderParser.parse(header);
+    assertThrows(InvalidAuthorizationHeaderException.class, () -> BasicAuthorizationHeaderParser.parse(header));
   }
 
   @Test
-  public void parseThrowsAnInvalidAuthorizationHeaderExceptionIfTheAuthenticationStringIsInvalidBase64()
-    throws InvalidAuthorizationHeaderException {
-
-    expectedException.expect(InvalidAuthorizationHeaderException.class);
-
-    BasicAuthorizationHeaderParser.parse("Basic Unencoded%AuthString");
+  public void parseThrowsAnInvalidAuthorizationHeaderExceptionIfTheAuthenticationStringIsInvalidBase64() {
+    assertThrows(InvalidAuthorizationHeaderException.class, () ->
+        BasicAuthorizationHeaderParser.parse("Basic Unencoded%AuthString"));
   }
 
   @Test
-  public void parseThrowsAnInvalidAuthorizationHeaderExceptionIfTheAuthenticationDoesNotContainAColon()
-    throws InvalidAuthorizationHeaderException {
-
-    expectedException.expect(InvalidAuthorizationHeaderException.class);
-
-    BasicAuthorizationHeaderParser.parse(makeHeader("InvalidAuthString"));
+  public void parseThrowsAnInvalidAuthorizationHeaderExceptionIfTheAuthenticationDoesNotContainAColon() {
+    assertThrows(InvalidAuthorizationHeaderException.class, () ->
+        BasicAuthorizationHeaderParser.parse(makeHeader("InvalidAuthString")));
   }
   
   private String makeHeader(String authString) {

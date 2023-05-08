@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SearchResponseV2_1Test {
 

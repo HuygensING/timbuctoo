@@ -7,9 +7,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableExcept
 import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,14 +23,13 @@ import static nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticatorStubs.thr
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThrows;
 
 public class JsonBasedAuthenticatorTest {
 
   public static final String KNOWN_USER = "knownUser";
   public static Path LOGINS_FILE;
   public static final String CORRECT_PASSWORD = "correctPassword";
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
   private JsonBasedAuthenticator instance;
 
   @Before
@@ -60,21 +57,15 @@ public class JsonBasedAuthenticatorTest {
   }
 
   @Test
-  public void authenticateThrowsALocalLoginUnavailableExceptionWhenTheLoginsFileCouldBeRead()
-    throws LocalLoginUnavailableException {
+  public void authenticateThrowsALocalLoginUnavailableExceptionWhenTheLoginsFileCouldBeRead() {
     JsonBasedAuthenticator instance = backedByFile(Paths.get("unavailableLoginsFile"));
 
-    expectedException.expect(LocalLoginUnavailableException.class);
-
-    instance.authenticate("user", "password");
+    assertThrows(LocalLoginUnavailableException.class, () -> instance.authenticate("user", "password"));
   }
 
   @Test
-  public void constructorThrowsNoSuchAlgorithmWhenTheAlgorithmIsNotAvailable()
-    throws NoSuchAlgorithmException {
-
-    expectedException.expect(NoSuchAlgorithmException.class);
-    throwingWithAlgorithm(LOGINS_FILE, "bogusAlgorithm");
+  public void constructorThrowsNoSuchAlgorithmWhenTheAlgorithmIsNotAvailable() {
+    assertThrows(NoSuchAlgorithmException.class, () -> throwingWithAlgorithm(LOGINS_FILE, "bogusAlgorithm"));
   }
 
   @Test

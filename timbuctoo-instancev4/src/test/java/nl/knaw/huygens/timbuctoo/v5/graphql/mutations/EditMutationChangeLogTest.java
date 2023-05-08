@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import co.unruly.matchers.StreamMatchers;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -17,7 +16,6 @@ import org.mockito.stubbing.Answer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -25,9 +23,10 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ChangeMatcher.likeChange;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -141,9 +140,9 @@ public class EditMutationChangeLogTest {
 
     valuesInQuadStore(NAMES_PRED, oldValue);
 
-    Stream<Change> adds = instance.getAdditions(dataSet);
+    List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds, StreamMatchers.empty());
+    assertThat(adds, empty());
   }
 
   @Test
@@ -158,9 +157,9 @@ public class EditMutationChangeLogTest {
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
-    Stream<Change> adds = instance.getAdditions(dataSet);
+    List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds, StreamMatchers.empty());
+    assertThat(adds, empty());
   }
 
   @Test
@@ -171,9 +170,9 @@ public class EditMutationChangeLogTest {
     entity.put("replacements", replacements);
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
-    Stream<Change> adds = instance.getAdditions(dataSet);
+    List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds, StreamMatchers.empty());
+    assertThat(adds, empty());
   }
 
   @Test
@@ -184,9 +183,9 @@ public class EditMutationChangeLogTest {
     entity.put("replacements", replacements);
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
-    Stream<Change> adds = instance.getAdditions(dataSet);
+    List<Change> adds = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(adds, StreamMatchers.empty());
+    assertThat(adds, empty());
   }
 
   @Test
@@ -277,9 +276,9 @@ public class EditMutationChangeLogTest {
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, addedValue);
 
-    Stream<Change> deletes = instance.getDeletions(dataSet);
+    List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
 
-    assertThat(deletes, StreamMatchers.empty());
+    assertThat(deletes, empty());
   }
 
   @Test
@@ -292,9 +291,9 @@ public class EditMutationChangeLogTest {
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, addedValue);
 
-    Stream<Change> deletes = instance.getDeletions(dataSet);
+    List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
 
-    assertThat(deletes, StreamMatchers.empty());
+    assertThat(deletes, empty());
   }
 
   @Test
@@ -305,9 +304,9 @@ public class EditMutationChangeLogTest {
     entity.put("replacements", replacements);
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
-    Stream<Change> deletes = instance.getDeletions(dataSet);
+    List<Change> deletes = instance.getDeletions(dataSet).collect(toList());
 
-    assertThat(deletes, StreamMatchers.empty());
+    assertThat(deletes, empty());
   }
 
   @Test
@@ -361,9 +360,9 @@ public class EditMutationChangeLogTest {
     entity.put("replacements", replacements);
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
 
-    Stream<Change> reps = instance.getReplacements(dataSet);
+    List<Change> reps = instance.getReplacements(dataSet).collect(toList());
 
-    assertThat(reps, StreamMatchers.empty());
+    assertThat(reps, empty());
   }
 
   @Test
@@ -376,9 +375,9 @@ public class EditMutationChangeLogTest {
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
-    Stream<Change> reps = instance.getReplacements(dataSet);
+    List<Change> reps = instance.getReplacements(dataSet).collect(toList());
 
-    assertThat(reps, StreamMatchers.empty());
+    assertThat(reps, empty());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -392,7 +391,7 @@ public class EditMutationChangeLogTest {
     EditMutationChangeLog instance = new EditMutationChangeLog(new Graph(GRAPH), SUBJECT, entity);
     valuesInQuadStore(NAMES_PRED, oldValue);
 
-    instance.getReplacements(dataSet).collect(Collectors.toList()); // collect to trigger right exception
+    instance.getReplacements(dataSet).collect(toList()); // collect to trigger right exception
   }
 
   private Map<Object, Object> createPropertyInput(String value) {

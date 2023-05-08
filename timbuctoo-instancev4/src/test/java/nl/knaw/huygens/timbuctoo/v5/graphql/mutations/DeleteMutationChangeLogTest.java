@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import co.unruly.matchers.StreamMatchers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
@@ -23,8 +22,9 @@ import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ChangeMatcher.likeChange;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -53,9 +53,9 @@ public class DeleteMutationChangeLogTest {
   public void getAdditionsReturnsNothing() throws Exception {
     DeleteMutationChangeLog instance = new DeleteMutationChangeLog(new Graph(GRAPH), SUBJECT, null);
 
-    Stream<Change> additions = instance.getAdditions(dataSet);
+    List<Change> additions = instance.getAdditions(dataSet).collect(toList());
 
-    assertThat(additions, StreamMatchers.empty());
+    assertThat(additions, empty());
   }
 
   @Test
@@ -78,9 +78,9 @@ public class DeleteMutationChangeLogTest {
   public void getReplacementsReturnsNothing() throws Exception {
     DeleteMutationChangeLog instance = new DeleteMutationChangeLog(new Graph(GRAPH), SUBJECT, null);
 
-    Stream<Change> replacements = instance.getReplacements(dataSet);
+    List<Change> replacements = instance.getReplacements(dataSet).collect(toList());
 
-    assertThat(replacements, StreamMatchers.empty());
+    assertThat(replacements, empty());
   }
 
   private void valuesInQuadStore(String pred, String... oldValues) {

@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BasicRdfPatchSerializerTest {
   private String result;

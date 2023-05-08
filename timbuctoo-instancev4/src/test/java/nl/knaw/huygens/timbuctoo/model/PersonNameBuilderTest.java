@@ -22,22 +22,21 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.model.PersonNameBuilder;
-import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent.Type;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.emptyString;
 
 public class PersonNameBuilderTest {
 
   @Test
   public void testSeparator() {
-    assertThat(PersonNameBuilder.separator(null, null), isEmptyString());
-    assertThat(PersonNameBuilder.separator(Type.FORENAME, null), isEmptyString());
-    assertThat(PersonNameBuilder.separator(null, Type.SURNAME), isEmptyString());
+    assertThat(PersonNameBuilder.separator(null, null), is(emptyString()));
+    assertThat(PersonNameBuilder.separator(Type.FORENAME, null), is(emptyString()));
+    assertThat(PersonNameBuilder.separator(null, Type.SURNAME), is(emptyString()));
     assertThat(PersonNameBuilder.separator(Type.FORENAME, Type.SURNAME), equalTo(" "));
     assertThat(PersonNameBuilder.separator(Type.SURNAME, Type.FORENAME), equalTo(", "));
   }

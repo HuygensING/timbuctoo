@@ -15,7 +15,7 @@ import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
+import static org.hamcrest.text.IsEmptyString.emptyOrNullString;
 
 @Ignore
 //You need to specify a valid accountName and accountKey and you need to provide this test with empty databases
@@ -51,7 +51,7 @@ public class AzureAccessTest {
 
     assertThat(userForPersistentId.get(), is(user));
     assertThat(userForTimLocalId.get(), is(user));
-    assertThat(user.getId(), not(isEmptyOrNullString()));
+    assertThat(user.getId(), not(is(emptyOrNullString())));
   }
 
   @Test
@@ -64,7 +64,7 @@ public class AzureAccessTest {
 
     assertThat(userForPersistentId.get(), is(user));
     assertThat(userForTimLocalId.get(), is(user));
-    assertThat(user.getId(), not(isEmptyOrNullString()));
+    assertThat(user.getId(), not(is(emptyOrNullString())));
   }
 
   @Test

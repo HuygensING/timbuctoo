@@ -1,9 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto;
 
-
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
-import org.hamcrest.core.IsCollectionContaining;
+import org.hamcrest.core.IsIterableContaining;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -60,7 +59,7 @@ public class ExplicitTypeTest {
 
     ExplicitField mergedExplicitField = explicitField1.mergeWith(explicitField2);
 
-    assertThat(mergedExplicitField.getValues(), Matchers.is(IsCollectionContaining.hasItems("String", "Integer")));
+    assertThat(mergedExplicitField.getValues(), Matchers.is(IsIterableContaining.hasItems("String", "Integer")));
   }
 
   @Test
@@ -70,7 +69,7 @@ public class ExplicitTypeTest {
 
     ExplicitField mergedExplicitField = explicitField1.mergeWith(explicitField2);
 
-    assertThat(mergedExplicitField.getReferences(), Matchers.is(IsCollectionContaining.hasItems("Integer", "String")));
+    assertThat(mergedExplicitField.getReferences(), Matchers.is(IsIterableContaining.hasItems("Integer", "String")));
   }
 }
 

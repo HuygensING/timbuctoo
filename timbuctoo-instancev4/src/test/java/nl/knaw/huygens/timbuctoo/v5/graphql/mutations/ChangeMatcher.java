@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import co.unruly.matchers.StreamMatchers;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
@@ -9,7 +8,7 @@ import org.assertj.core.util.Lists;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.empty;
 
@@ -53,10 +52,10 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
   }
 
   public ChangeMatcher withOldValues(Value... oldValues) {
-    this.addMatcher(new PropertyMatcher<Change, Stream<Value>>("oldValues", StreamMatchers.contains(oldValues)) {
+    this.addMatcher(new PropertyEqualityMatcher<Change, List<Value>>("oldValues", Lists.newArrayList(oldValues)) {
       @Override
-      protected Stream<Value> getItemValue(Change item) {
-        return item.getOldValues();
+      protected List<Value> getItemValue(Change item) {
+        return item.getOldValues().collect(Collectors.toList());
       }
     });
     return this;

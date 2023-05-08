@@ -18,7 +18,8 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
@@ -258,7 +259,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
   public void createAnEmptySchemaWhenNoPropertiesAreAdded() {
     String schema = instanceNoProv.getSchema().toString();
 
-    assertThat(schema, isEmptyString());
+    assertThat(schema, is(emptyString()));
   }
 
   @Test
@@ -440,7 +441,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
     instance.valueField(null, predicate, RdfConstants.STRING);
 
     String schema = instance.getSchema().toString();
-    assertThat(schema, isEmptyString());
+    assertThat(schema, is(emptyString()));
   }
 
   @Test
@@ -452,7 +453,7 @@ public class DerivedInputTypeSchemaGeneratorTest {
     instanceNoProv.valueField(null, predicate, RdfConstants.STRING);
 
     String schema = instanceNoProv.getSchema().toString();
-    assertThat(schema, isEmptyString());
+    assertThat(schema, is(emptyString()));
   }
 
   @Test
