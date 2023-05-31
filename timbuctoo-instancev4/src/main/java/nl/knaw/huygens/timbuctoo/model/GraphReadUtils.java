@@ -43,15 +43,12 @@ public class GraphReadUtils {
   }
 
   public static Optional<Collection> getCollectionByVreId(Element element, Vres mappings, String vreId) {
-
-    final List<Collection> filteredTypes = Arrays.asList(getEntityTypesOrDefault(element))
-      .stream()
+    final List<Collection> filteredTypes = Arrays.stream(getEntityTypesOrDefault(element))
+      .filter(type -> mappings.getCollectionForType(type).isPresent())
       .map(type -> mappings.getCollectionForType(type).get())
       .filter(collection -> collection.getVreName().equals(vreId))
       .collect(toList());
 
     return Optional.ofNullable(filteredTypes.size() > 0 ? filteredTypes.get(0) : null);
   }
-
-
 }

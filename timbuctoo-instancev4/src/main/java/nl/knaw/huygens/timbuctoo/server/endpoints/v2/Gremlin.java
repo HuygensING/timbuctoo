@@ -155,7 +155,6 @@ public class Gremlin {
         LOG.error(e.getMessage(), e);
       }
     } else {
-      result.append(item);
       result.append(item).append("\n");
     }
   }
