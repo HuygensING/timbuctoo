@@ -127,7 +127,7 @@
     <!-- code dependencies -->
     <activemq.version>5.17.3</activemq.version>
     <concordion.version>3.1.3</concordion.version>
-    <dropwizard.version>2.1.6</dropwizard.version>
+    <dropwizard.version>2.1.7</dropwizard.version>
     <dropwizard-activemq.version>0.5.2</dropwizard-activemq.version>
     <jsonassert.version>1.5.1</jsonassert.version>
     <tinkerpop3.version>3.1.8</tinkerpop3.version>
@@ -143,7 +143,7 @@
     <huygens.security.version>1.0.0-SNAPSHOT</huygens.security.version>
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
-    <rdf4j.version>4.2.4</rdf4j.version>
+    <rdf4j.version>4.3.3</rdf4j.version>
     <xmlunit.version>2.9.1</xmlunit.version>
     <jackson.version>2.14.1</jackson.version>
     <!-- Maven plugins -->
@@ -274,7 +274,7 @@
     <dependency>
       <groupId>com.graphql-java</groupId>
       <artifactId>graphql-java</artifactId>
-      <version>20.2</version>
+      <version>21.0</version>
     </dependency>
 
     <dependency>
@@ -480,7 +480,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>31.1-jre</version>
+      <version>32.1.1-jre</version>
     </dependency>
 
     <!--Try monad-->

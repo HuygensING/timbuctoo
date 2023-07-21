@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.GraphQLContext;
-import graphql.cachecontrol.CacheControl;
 import graphql.execution.ExecutionId;
 import graphql.execution.ExecutionStepInfo;
 import graphql.execution.MergedField;
@@ -338,11 +337,6 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
     @Override
     public DataLoaderRegistry getDataLoaderRegistry() {
-      throw new IllegalStateException("Not implemented yet");
-    }
-
-    @Override
-    public CacheControl getCacheControl() {
       throw new IllegalStateException("Not implemented yet");
     }
 

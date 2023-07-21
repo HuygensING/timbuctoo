@@ -40,7 +40,7 @@
     <jdk.version>11</jdk.version>
     <maven-compiler.version>3.11.0</maven-compiler.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <guava.version>31.1-jre</guava.version>
+    <guava.version>32.1.1-jre</guava.version>
   </properties>
   
   <dependencies>
