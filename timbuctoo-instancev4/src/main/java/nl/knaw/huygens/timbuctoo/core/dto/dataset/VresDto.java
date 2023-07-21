@@ -26,7 +26,9 @@ public abstract class VresDto implements Vres {
           .flatMap(vre -> vre.getCollections().values().stream())
           .forEach(collection -> {
             collectionsByName.put(collection.getCollectionName(), collection);
+            collectionsByName.put(collection.getAbstractType() + "s", collection);
             collectionsByType.put(collection.getEntityTypeName(), collection);
+            collectionsByType.put(collection.getAbstractType(), collection);
           });
     }
   }
