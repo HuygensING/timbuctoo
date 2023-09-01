@@ -21,18 +21,18 @@ import java.util.Optional;
 
 public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   public static final Logger LOG = LoggerFactory.getLogger(LocalFileVreAuthorizationAccess.class);
-  private final ObjectMapper objectMapper;
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+      .registerModule(new GuavaModule());
+
   private final Path authorizationsFolder;
 
   public LocalFileVreAuthorizationAccess(Path authorizationsFolder) {
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new GuavaModule());
     this.authorizationsFolder = authorizationsFolder;
   }
 
   @Override
   public VreAuthorization getOrCreateAuthorization(String vreId, String userId, String userRole)
-    throws AuthorizationUnavailableException {
+      throws AuthorizationUnavailableException {
     Optional<VreAuthorization> authOptional = getAuthorization(vreId, userId);
 
     if (authOptional.isPresent()) {
@@ -43,13 +43,12 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
           File file = getFileOfVre(vreId);
           List<VreAuthorization> authorizations = Lists.newArrayList();
           if (file.exists()) {
-            authorizations =
-              objectMapper.readValue(file, new TypeReference<>() { });
+            authorizations = OBJECT_MAPPER.readValue(file, new TypeReference<>() { });
           }
-          VreAuthorization vreAuthorization = VreAuthorization.create(vreId, userId, userRole);
+          VreAuthorization vreAuthorization = VreAuthorization.create(userId, userRole);
           authorizations.add(vreAuthorization);
 
-          objectMapper.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
+          OBJECT_MAPPER.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
           return vreAuthorization;
         }
       } catch (IOException e) {
@@ -59,22 +58,16 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
     }
   }
 
-
   @Override
   public Optional<VreAuthorization> getAuthorization(String vreId, String userId)
-    throws AuthorizationUnavailableException {
-
+      throws AuthorizationUnavailableException {
     Optional<VreAuthorization> authorizationValue = Optional.empty();
-
     File file = getFileOfVre(vreId);
-
     authorizationValue = getAuthorization(userId, authorizationValue, file);
 
     if (!authorizationValue.isPresent()) {
       file = authorizationsFolder.resolve("authorizations.json").toFile();
-
       authorizationValue = getAuthorization(userId, authorizationValue, file);
-
     }
 
     return authorizationValue;
@@ -86,9 +79,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
       try {
         List<VreAuthorization> authorizations;
         synchronized (authorizationsFolder) {
-          authorizations =
-            objectMapper.readValue(file, new TypeReference<>() {
-            });
+          authorizations = OBJECT_MAPPER.readValue(file, new TypeReference<>() { });
         }
         authorizationValue = authorizations.stream()
                                            .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
@@ -111,28 +102,13 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
     }
   }
 
-
-
   private File getFileOfVre(String vreId) {
-
-    File directory;
-    /*
-     * The authorizations of the specific data set are placed in the folder of the data set.
-     * For legacy data sets this means {dataSetsPath}/{dataSetName}.
-     * For new data sets this will be {dataSetsPath}/{ownerId}/{dataSetName}.
-     */
-    if (vreId.contains("__")) { // new style vre
-      Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(vreId);
-      directory = authorizationsFolder.resolve(ownerIdDataSetId.getLeft())
-                                      .resolve(ownerIdDataSetId.getRight().replace("__", ""))
-                                      .toFile();
-    } else {
-      // old style vre
-      directory = authorizationsFolder.resolve(vreId).toFile();
-    }
+    Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(vreId);
+    File directory = authorizationsFolder.resolve(ownerIdDataSetId.getLeft())
+        .resolve(ownerIdDataSetId.getRight().replace("__", ""))
+        .toFile();
 
     directory.mkdirs();
     return new File(directory, "authorizations.json");
   }
-
 }

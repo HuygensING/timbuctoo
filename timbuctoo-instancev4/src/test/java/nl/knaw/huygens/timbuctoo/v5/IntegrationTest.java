@@ -82,8 +82,8 @@ public class IntegrationTest {
   );
   private static final String AUTH = "FAKE_AUTH_TOKEN";
   private static final String USER_ID = "33707283d426f900d4d33707283d426f900d4d0d";
+  private static final String PREFIX = "u" + USER_ID;
   private static Client client;
-  private static String PREFIX = "u" + USER_ID;
 
   static {
     EvilEnvironmentVariableHacker.setEnv(

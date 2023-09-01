@@ -28,8 +28,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public Set<Permission> getPermissions(User user, DataSetMetaData dataSetMetadata)
-    throws PermissionFetchingException {
+  public Set<Permission> getPermissions(User user, DataSetMetaData dataSetMetadata) {
     String ownerId = dataSetMetadata.getOwnerId();
     String dataSetId = dataSetMetadata.getDataSetId();
 
@@ -65,10 +64,8 @@ public class BasicPermissionFetcher implements PermissionFetcher {
 
   @Override
   @Deprecated
-  public Set<Permission> getOldPermissions(User user, String vreId)
-    throws PermissionFetchingException {
+  public Set<Permission> getOldPermissions(User user, String vreId) {
     Set<Permission> permissions = new HashSet<>();
-
     permissions.add(Permission.READ);
 
     try {
@@ -91,17 +88,14 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   @Override
   public void initializeOwnerAuthorization(User user, String ownerId, String dataSetId)
     throws AuthorizationCreationException {
-
     String vreId = createCombinedId(ownerId, dataSetId);
 
     try {
       vreAuthorizationCrud.createAuthorization(vreId, user, "ADMIN");
     } catch (AuthorizationCreationException e) {
-      LOG.error("Could not initialize VRE Authorization {}", vreId);
-      LOG.error("Exception thrown", e);
+      LOG.error("Could not initialize VRE Authorization " + vreId, e);
       throw e;
     }
-
   }
 
   @Override
@@ -114,6 +108,6 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   private boolean isResourceSyncCopy(DataSetMetaData dataSetMetaData) {
-    return dataSetMetaData.getImportInfo() != null && dataSetMetaData.getImportInfo().size() > 0;
+    return dataSetMetaData.getImportInfo() != null && !dataSetMetaData.getImportInfo().isEmpty();
   }
 }

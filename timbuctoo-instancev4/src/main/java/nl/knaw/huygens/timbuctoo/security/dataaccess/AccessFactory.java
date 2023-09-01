@@ -11,8 +11,6 @@ import java.util.function.Supplier;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public interface AccessFactory {
-  LoginAccess getLoginAccess() throws AccessNotPossibleException;
-
   UserAccess getUserAccess() throws AccessNotPossibleException;
 
   VreAuthorizationAccess getVreAuthorizationAccess() throws AccessNotPossibleException;

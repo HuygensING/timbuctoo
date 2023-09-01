@@ -20,6 +20,4 @@ public interface PermissionFetcher {
     throws PermissionFetchingException, AuthorizationCreationException;
 
   void removeAuthorizations(String combinedId) throws PermissionFetchingException;
-
-
 }

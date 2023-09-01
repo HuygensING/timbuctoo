@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +21,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThrows;
 
 public class JsonBasedUserStoreTest {
-
   public Path usersFile;
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private JsonBasedUserStore instance;
@@ -71,32 +69,4 @@ public class JsonBasedUserStoreTest {
 
     assertThrows(AuthenticationUnavailableException.class, () -> instance.userFor("pid"));
   }
-
-  @Test
-  public void createUserAddsAUserToTheUsersFile() throws Exception {
-    User createdUser = instance.createUser("pidOfOtherUser", "email", "givenName", "surname", "organization");
-
-    Optional<User> user = instance.userForId(createdUser.getId());
-    assertThat(user, is(present()));
-    assertThat(user.get().getPersistentId(), is("pidOfOtherUser"));
-  }
-
-  @Test
-  public void createUserLetsTheUserBeCreatedOnlyOnce() throws Exception {
-    User user1 = instance.createUser("pid", "email", "givenName", "surname", "organization");
-    User user2 = instance.createUser("pid", "email", "givenName", "surname", "organization");
-
-    assertThat(user1.getId(), is(user2.getId()));
-
-  }
-
-  @Test
-  public void createUserThrowsAUserCreationExceptionWhenTheUsersFileCannotBeRead() {
-    Path nonExistingUsersFile = Paths.get("src", "test", "resources", "users1.json");
-    JsonBasedUserStore instance = forFile(nonExistingUsersFile);
-
-    assertThrows(UserCreationException.class, () ->
-        instance.createUser("pid", "email", "givenName", "surname", "organization"));
-  }
-
 }

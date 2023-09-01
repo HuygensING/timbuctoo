@@ -140,7 +140,6 @@
     <junit.version>5.9.3</junit.version>
     <timbuctoo-test-services.version>1.0.0-SNAPSHOT</timbuctoo-test-services.version>
     <mockito.version>5.3.1</mockito.version>
-    <huygens.security.version>1.0.0-SNAPSHOT</huygens.security.version>
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
     <rdf4j.version>4.3.3</rdf4j.version>
@@ -384,18 +383,11 @@
       <version>2.0.1</version>
     </dependency>
 
-    <!--federated auth support -->
-    <dependency>
-      <groupId>nl.knaw.huygens</groupId>
-      <artifactId>security-client-agnostic</artifactId>
-      <version>${huygens.security.version}</version>
-    </dependency>
-
     <!-- OpenID Connect -->
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>oauth2-oidc-sdk</artifactId>
-      <version>10.8</version>
+      <version>10.14.1</version>
     </dependency>
 
     <!--ResourceSync library-->
@@ -488,13 +480,6 @@
       <groupId>io.vavr</groupId>
       <artifactId>vavr</artifactId>
       <version>${vavr.version}</version>
-    </dependency>
-
-    <!-- Twitter-4j oauth for twitter -->
-    <dependency>
-      <groupId>org.twitter4j</groupId>
-      <artifactId>twitter4j-core</artifactId>
-      <version>4.0.7</version>
     </dependency>
 
     <!-- Bit.ly java client -->

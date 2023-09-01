@@ -13,16 +13,12 @@ import java.util.List;
 @JsonSerialize(as = ImmutableVreAuthorization.class)
 @JsonDeserialize(as = ImmutableVreAuthorization.class)
 public abstract class VreAuthorization implements Authorization {
-
-  public static VreAuthorization create(String vreId, String userId, String... roles) {
+  public static VreAuthorization create(String userId, String... roles) {
     return ImmutableVreAuthorization.builder()
-      .vreId(vreId)
-      .userId(userId)
-      .addRoles(roles)
-      .build();
+        .userId(userId)
+        .addRoles(roles)
+        .build();
   }
-
-  public abstract String getVreId();
 
   public abstract String getUserId();
 
@@ -39,5 +35,4 @@ public abstract class VreAuthorization implements Authorization {
   public boolean hasAdminAccess() {
     return getRoles().contains(UserRoles.ADMIN_ROLE);
   }
-
 }

@@ -27,6 +27,5 @@ public class FileHealthCheck implements Supplier<Optional<String>> {
     }
 
     return Optional.empty();
-
   }
 }

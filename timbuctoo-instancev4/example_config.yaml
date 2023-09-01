@@ -2,20 +2,12 @@
 #it also explains the options that you need to configure a production-worthy version
 
 securityConfiguration:
-  "@class": nl.knaw.huygens.timbuctoo.server.security.OldStyleSecurityFactoryConfiguration
-  localAuthentication:
+  "@class": nl.knaw.huygens.timbuctoo.v5.security.dummy.DummySecurityFactoryConfiguration
+  accessFactory:
     "@class": nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory
     authorizationsPath: ${timbuctoo_dataPath}/datasets
     permissionConfig: ${timbuctoo_dataPath}/permissionConfig.json
-    loginsFilePath: ${timbuctoo_authPath}/logins.json
     usersFilePath: ${timbuctoo_authPath}/users.json
-  autoLogoutTimeout:
-    duration: 8
-    timeUnit: HOURS
-  federatedAuthentication:
-    enabled: true
-    authenticationServerUrl: DUMMY
-    authenticationCredentials: DUMMY
 
 baseUri: ${base_uri} #specifying 0 as port will replace it with the port that timbuctoo ends up listening on
 userRedirectUrl: ./static/graphiql

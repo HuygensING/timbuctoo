@@ -24,7 +24,6 @@ public class OpenIdConnectSecurityFactory implements SecurityFactory {
 
   OpenIdConnectSecurityFactory(Timeout timeout, AccessFactory accessFactory,
                                OpenIdClient openIdClient) {
-
     this.timeout = timeout;
     this.openIdClient = openIdClient;
     this.accessFactory = accessFactory;

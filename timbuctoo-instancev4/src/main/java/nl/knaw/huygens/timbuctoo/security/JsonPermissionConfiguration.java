@@ -25,7 +25,6 @@ public class JsonPermissionConfiguration implements PermissionConfiguration {
 
   @Override
   public Set<Permission> getPermissionsForRoles(Collection<String> roles) {
-
     return rolePermissions.stream()
                           .filter(rolePerm -> roles.contains(rolePerm.roleName))
                           .flatMap(rolePerm -> rolePerm.permissions.stream())

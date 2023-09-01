@@ -9,19 +9,16 @@ import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailable
 import java.util.Optional;
 
 public class JsonBasedAuthorizer implements VreAuthorizationCrud {
-
-  private VreAuthorizationAccess authorizationAccess;
+  private final VreAuthorizationAccess authorizationAccess;
 
   public JsonBasedAuthorizer(VreAuthorizationAccess authorizationAccess) {
     this.authorizationAccess = authorizationAccess;
   }
 
   @Override
-  public Optional<VreAuthorization> getAuthorization(String vreId, User user)
-    throws AuthorizationUnavailableException {
+  public Optional<VreAuthorization> getAuthorization(String vreId, User user) throws AuthorizationUnavailableException {
     return authorizationAccess.getAuthorization(vreId, user.getPersistentId());
   }
-
 
   @Override
   public void createAuthorization(String vreId, User user, String vreRole) throws AuthorizationCreationException {
@@ -32,11 +29,8 @@ public class JsonBasedAuthorizer implements VreAuthorizationCrud {
     }
   }
 
-
   @Override
-  public void deleteVreAuthorizations(String vreId)
-    throws AuthorizationUnavailableException {
-
+  public void deleteVreAuthorizations(String vreId) throws AuthorizationUnavailableException {
     authorizationAccess.deleteVreAuthorizations(vreId);
   }
 }

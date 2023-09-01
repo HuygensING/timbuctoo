@@ -31,7 +31,6 @@ import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.security.OldStyleSecurityFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
@@ -63,7 +62,6 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextInde
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
-import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.server.tasks.AddPidsToWomenWritersEntities;
 import nl.knaw.huygens.timbuctoo.server.tasks.AddTypeToNeo4JVertexTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BackupTask;
@@ -74,7 +72,6 @@ import nl.knaw.huygens.timbuctoo.server.tasks.MoveDefaultGraphsTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MoveEdgesTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.RebuildSchemaTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.ReimportDatasetsTask;
-import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -385,15 +382,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Admin resources
     environment.admin().addTask(new ReloadDataSet(dataSetRepository));
-    if (securityConfig instanceof OldStyleSecurityFactory) {
-      final OldStyleSecurityFactory oldStyleSecurityFactory = (OldStyleSecurityFactory) securityConfig;
-      environment.admin().addTask(new UserCreationTask(new LocalUserCreator(
-        oldStyleSecurityFactory.getLoginCreator(),
-        oldStyleSecurityFactory.getUserCreator(),
-        oldStyleSecurityFactory.getVreAuthorizationCreator()
-      )));
-    }
-
     environment.admin().addTask(
       new DatabaseValidationTask(
         new DatabaseValidator(

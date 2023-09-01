@@ -8,11 +8,6 @@ public class VreAuthorizationStubs {
   public static VreAuthorization authorizationWithRole(final String role) {
     return new VreAuthorization() {
       @Override
-      public String getVreId() {
-        throw new UnsupportedOperationException("Not implemented yet");
-      }
-
-      @Override
       public String getUserId() {
         throw new UnsupportedOperationException("Not implemented yet");
       }

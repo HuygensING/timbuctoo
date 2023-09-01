@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 
 public class UserTypeIdResolver extends TypeIdResolverBase {
   public static final String TYPENAME = "user";

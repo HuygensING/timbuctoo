@@ -1,36 +1,30 @@
 package nl.knaw.huygens.timbuctoo.v5.security.openidconnect;
 
-
-import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Path("/v5/openid-connect")
 public class LoginEndPoint {
   public static final Logger LOG = LoggerFactory.getLogger(LoginEndPoint.class);
-  private final Map<UUID, String> loginSessionRedirects;
+  private final Map<UUID, LoginSessionData> loginSessions;
   private final OpenIdClient openIdClient;
 
   public LoginEndPoint(OpenIdClient openIdClient) {
     this.openIdClient = openIdClient;
-    loginSessionRedirects = new HashMap<>();
+    loginSessions = new HashMap<>();
   }
-
 
   @GET
   @Path("/login")
@@ -41,34 +35,47 @@ public class LoginEndPoint {
     }
 
     UUID sessionId = UUID.randomUUID();
-    loginSessionRedirects.put(sessionId, clientRedirectUri);
+    UUID nonce = UUID.randomUUID();
 
-    try {
-      return openIdClient.createRedirectResponse(sessionId);
-    } catch (IOException | ParseException e) {
-      LOG.error("Could not create redirect to OpenID Connect server", e);
-      return Response.serverError().build();
-    }
+    loginSessions.put(sessionId, new LoginSessionData(clientRedirectUri, nonce.toString()));
+    return openIdClient.createRedirectResponse(sessionId, nonce);
   }
 
   @GET
   @Path("/callback")
   public Response callback(@QueryParam("state") UUID loginSession, @QueryParam("code") String code) {
-    if (!loginSessionRedirects.containsKey(loginSession)) {
+    if (!loginSessions.containsKey(loginSession)) {
       return Response.status(417).entity("Login session unknown").build();
     }
 
     try {
-      final Optional<Tokens> userTokens = openIdClient.getUserTokens(code);
-      final String value = userTokens.isPresent() ? userTokens.get().getBearerAccessToken().getValue() : "no-token";
-      final URI userUri = UriBuilder.fromUri(loginSessionRedirects.get(loginSession))
-                                    .queryParam("sessionToken", value)
+      final LoginSessionData loginSessionData = loginSessions.remove(loginSession);
+      final Tokens userTokens = openIdClient.getUserTokens(code, loginSessionData.getNonce());
+      final URI userUri = UriBuilder.fromUri(loginSessionData.getUserRedirectUri())
+                                    .queryParam("sessionToken", userTokens.getBearerAccessToken().getValue())
                                     .build();
       return Response.temporaryRedirect(userUri).build();
-
-    } catch (IOException | ParseException e) {
-      LOG.error("Retrieval of userTokes failed", e);
+    } catch (OpenIdConnectException e) {
+      LOG.error(e.getMessage(), e);
       return Response.serverError().build();
+    }
+  }
+
+  private static final class LoginSessionData {
+    private final String userRedirectUri;
+    private final String nonce;
+
+    public LoginSessionData(String userRedirectUri, String nonce) {
+      this.userRedirectUri = userRedirectUri;
+      this.nonce = nonce;
+    }
+
+    public String getUserRedirectUri() {
+      return userRedirectUri;
+    }
+
+    public String getNonce() {
+      return nonce;
     }
   }
 }

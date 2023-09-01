@@ -63,7 +63,6 @@ class OpenIdConnectUserValidator implements UserValidator {
     } catch (AuthenticationUnavailableException | IOException | ParseException e) {
       throw new UserValidationException(e);
     }
-
   }
 
   @Override

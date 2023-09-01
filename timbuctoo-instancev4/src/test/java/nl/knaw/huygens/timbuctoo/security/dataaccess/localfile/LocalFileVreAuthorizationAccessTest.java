@@ -27,36 +27,33 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 public class LocalFileVreAuthorizationAccessTest {
-
-  public static final String VRE = "vre";
+  public static final String VRE = "u12345__dataset";
   public static final String AUTH_FILE = "authorizations.json";
   public static final String USER_ID = "USER000000000001";
   public static final String USER_ID_WITHOUT_WRITE_PERMISSIONS = "USER000000000002";
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private Path authorizationsFolder;
   private Path vreAuthPath;
   private VreAuthorizationAccess instance;
-  private ObjectMapper objectMapper;
 
   @BeforeEach
   public void setup() throws Exception {
     authorizationsFolder = makeTempDir();
-    vreAuthPath = authorizationsFolder.resolve(VRE);
+    vreAuthPath = authorizationsFolder.resolve(VRE.replace("__", "/"));
     vreAuthPath.toFile().mkdirs();
 
     VreAuthorization[] authorizations = {
-      VreAuthorization.create(VRE, USER_ID, "USER"),
-      VreAuthorization.create(VRE, USER_ID_WITHOUT_WRITE_PERMISSIONS, UNVERIFIED_USER_ROLE)
+      VreAuthorization.create(USER_ID, "USER"),
+      VreAuthorization.create(USER_ID_WITHOUT_WRITE_PERMISSIONS, UNVERIFIED_USER_ROLE)
     };
     File file = vreAuthPath.resolve(AUTH_FILE).toFile();
-    objectMapper = new ObjectMapper();
-    objectMapper.writeValue(file, authorizations);
+    OBJECT_MAPPER.writeValue(file, authorizations);
 
     instance = new LocalFileVreAuthorizationAccess(authorizationsFolder);
   }
 
   @AfterEach
   public void teardown() throws Exception {
-
     if (new File(vreAuthPath.toString()).exists()) {
       FileUtils.deleteDirectory(vreAuthPath.toFile());
     }
@@ -78,7 +75,7 @@ public class LocalFileVreAuthorizationAccessTest {
 
   @Test
   public void authorizationForReturnsAnEmptyOptionalIfTheVreAuthorizationsFileDoesNotExist() throws Exception {
-    Optional<VreAuthorization> vreAuthorization = instance.getAuthorization("nonExisting", USER_ID);
+    Optional<VreAuthorization> vreAuthorization = instance.getAuthorization("u12345__dataset2", USER_ID);
 
     assertThat(vreAuthorization, is(not(present())));
   }
@@ -115,12 +112,11 @@ public class LocalFileVreAuthorizationAccessTest {
     VreAuthorization authorization2 = instance.getOrCreateAuthorization(VRE, unknownUser, ADMIN_ROLE);
 
     assertThat(authorization2.getRoles(), contains(UNVERIFIED_USER_ROLE));
-
   }
 
   @Test
   public void addAuthorizationCreatesANewFileForAnUnknownVre() throws Exception {
-    String newVre = "newVRE";
+    String newVre = "u12345__dataset2";
     Optional<VreAuthorization> authorization = instance.getAuthorization(newVre, USER_ID);
     assertThat(authorization, is(not(present())));
 
@@ -135,7 +131,7 @@ public class LocalFileVreAuthorizationAccessTest {
   public void deleteVreAuthorizationThrowsAnAuthorizationUnavailableExceptionWhenTheFileIsUnavailable()
     throws Exception {
     Assertions.assertThrows(AuthorizationUnavailableException.class, () ->
-      instance.deleteVreAuthorizations("nonExisting"));
+      instance.deleteVreAuthorizations("u12345__dataset2"));
   }
 
   @Test
@@ -179,5 +175,4 @@ public class LocalFileVreAuthorizationAccessTest {
 
     assertThat(authorization, is(not(present())));
   }
-
 }
