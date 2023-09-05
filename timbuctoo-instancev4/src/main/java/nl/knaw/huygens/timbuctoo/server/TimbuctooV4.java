@@ -170,13 +170,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
 
-    HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
-      .using(configuration.getHttpClientConfiguration());
-    CloseableHttpClient httpClient = apacheHttpClientBuilder.build("httpclient");
     // Support services
-    SecurityFactory securityConfig = configuration.getSecurityConfiguration().createNewSecurityFactory(
-      httpClient
-    );
+    SecurityFactory securityConfig = configuration.getSecurityConfiguration().createNewSecurityFactory();
 
     securityConfig.getHealthChecks().forEachRemaining(check ->
             register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight())));
@@ -253,6 +248,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("give-existing-relationtypes-rdf-uris", new RelationTypeRdfUriMigration());
     migrations.put("remove-search-results", new RemoveSearchResultsMigration());
     migrations.put("move-indices-to-isLatest-vertex", new MoveIndicesToIsLatestVertexMigration(vres));
+
+    HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
+        .using(configuration.getHttpClientConfiguration());
+    CloseableHttpClient httpClient = apacheHttpClientBuilder.build("httpclient");
 
     final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, new ResourceSyncContext());
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
