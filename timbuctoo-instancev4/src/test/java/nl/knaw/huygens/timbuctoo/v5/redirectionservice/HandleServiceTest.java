@@ -10,9 +10,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonDataStore;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueCreator;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueSender;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
@@ -65,13 +62,9 @@ public class HandleServiceTest {
     given(dataSetRepository.getDataSet(user, "testOwnerId", "testDataSetId"))
       .willReturn(Optional.of(dataSet));
 
-    QueueManager queueManager = mock(QueueManager.class);
-    QueueCreator queueCreator = new NonQueueQueueCreator();
-    given(queueManager.createQueue(any(),anyString())).willReturn(queueCreator);
-
     PersistenceManager persistenceManager = createMockPersistenceManager();
 
-    final HandleService handleService = new HandleService(persistenceManager, queueManager, dataSetRepository);
+    final HandleService handleService = new HandleService(persistenceManager, dataSetRepository);
     EntityLookup entityLookup = createMockEntityLookup(user);
     RedirectionServiceParameters redirectionServiceParameters = new RedirectionServiceParameters(
       URI.create("redirectionUri"),
@@ -123,36 +116,6 @@ public class HandleServiceTest {
     given(dataSetMetaData.getOwnerId()).willReturn("testOwnerId");
     given(dataSetMetaData.getBaseUri()).willReturn("testOwnerId__testDataSetId");
     return dataSetMetaData;
-  }
-
-  private static class NonQueueQueueCreator<T> implements QueueCreator<T> {
-    List<QueueSender> queueSenderList = new ArrayList<>();
-    List<Consumer> receiverList = new ArrayList<>();
-
-    @Override
-    public void registerReceiver(Consumer consumer) {
-      receiverList.add(consumer);
-    }
-
-    @Override
-    public QueueSender createSender() {
-      QueueSender queueSender = new NonQueueQueueSender(receiverList);
-      queueSenderList.add(queueSender);
-      return queueSender;
-    }
-  }
-
-  private static class NonQueueQueueSender implements  QueueSender {
-    private final List<Consumer> receiverList;
-
-    public NonQueueQueueSender(List<Consumer> receiverList) {
-      this.receiverList = receiverList;
-    }
-
-    @Override
-    public void send(Object object) {
-      receiverList.forEach(receiver -> receiver.accept(object));
-    }
   }
 
   private static class LogListJsonDataStore implements JsonDataStore<LogList> {

@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceParameters;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.exceptions.RedirectionServiceException;
@@ -26,15 +25,12 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class BitlyService extends RedirectionService {
-  public static final String BITLY_QUEUE = "bitly";
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(BitlyService.class);
   private static final String PERSISTENT_ID = RdfConstants.timPredicate("persistentUri");
   private final BitlyClient bitlyClient;
   private final DataSetRepository dataSetRepository;
 
-  public BitlyService(QueueManager queueManager, DataSetRepository dataSetRepository,
-                      String accessToken) {
-    super(BITLY_QUEUE, queueManager);
+  public BitlyService(DataSetRepository dataSetRepository, String accessToken) {
     this.dataSetRepository = dataSetRepository;
     bitlyClient = new BitlyClient(accessToken);
   }

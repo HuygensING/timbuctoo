@@ -4,9 +4,6 @@ import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueCreator;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueSender;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.exceptions.RedirectionServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,22 +13,8 @@ import java.net.URISyntaxException;
 
 public abstract class RedirectionService {
   private static final Logger LOG = LoggerFactory.getLogger(RedirectionService.class);
-  private final QueueSender sender;
-  private final QueueSender oldSender;
+
   protected TransactionEnforcer transactionEnforcer;
-
-  public RedirectionService(String queueName, QueueManager queueManager) {
-    QueueCreator<RedirectionServiceParameters> queueCreator =
-      queueManager.createQueue(RedirectionServiceParameters.class, queueName);
-    QueueCreator<RedirectionServiceParameters> oldQueueCreator =
-      queueManager.createQueue(RedirectionServiceParameters.class, queueName + "Old");
-
-    queueCreator.registerReceiver(this::actualExecution);
-    this.sender = queueCreator.createSender();
-
-    oldQueueCreator.registerReceiver(this::oldActualExecution);
-    this.oldSender = oldQueueCreator.createSender();
-  }
 
   private void oldActualExecution(RedirectionServiceParameters params) {
     try {
@@ -44,7 +27,7 @@ public abstract class RedirectionService {
           params.getEntityLookup(),
           params.getUrlToRedirectTo()
         ));
-        this.oldSender.send(params.nextTry());
+        this.oldActualExecution(params.nextTry());
       }
     }
   }
@@ -60,7 +43,7 @@ public abstract class RedirectionService {
           params.getEntityLookup(),
           params.getUrlToRedirectTo()
         ));
-        this.sender.send(params.nextTry());
+        this.actualExecution(params.nextTry());
       }
     }
   }
@@ -95,11 +78,11 @@ public abstract class RedirectionService {
     if (transactionEnforcer == null) {
       throw new IllegalStateException("init() must be called before you can add items");
     }
-    this.oldSender.send(new RedirectionServiceParameters(uriToRedirectTo, entityLookup));
+    this.oldActualExecution(new RedirectionServiceParameters(uriToRedirectTo, entityLookup));
   }
 
   public final void add(URI uriToRedirectTo, EntityLookup entityLookup) {
-    this.sender.send(new RedirectionServiceParameters(uriToRedirectTo, entityLookup));
+    this.actualExecution(new RedirectionServiceParameters(uriToRedirectTo, entityLookup));
   }
 
   public final void init(TransactionEnforcer transactionEnforcer) {

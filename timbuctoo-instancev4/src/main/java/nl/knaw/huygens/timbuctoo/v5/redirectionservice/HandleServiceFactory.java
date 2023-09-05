@@ -7,8 +7,6 @@ import nl.knaw.huygens.persistence.HandleManager;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
-
 
 public class HandleServiceFactory implements RedirectionServiceFactory {
   private PersistenceManager manager;
@@ -56,8 +54,8 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
   }
 
   @Override
-  public RedirectionService makeRedirectionService(QueueManager queueManager, DataSetRepository dataSetRepository) {
-    return new HandleService(manager, queueManager, dataSetRepository);
+  public RedirectionService makeRedirectionService(DataSetRepository dataSetRepository) {
+    return new HandleService(manager, dataSetRepository);
   }
 }
 

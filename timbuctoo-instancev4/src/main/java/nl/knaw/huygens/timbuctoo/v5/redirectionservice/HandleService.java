@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.queue.QueueManager;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.exceptions.RedirectionServiceException;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
@@ -23,14 +22,12 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class HandleService extends RedirectionService {
-  public static final String HANDLE_QUEUE = "pids";
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleService.class);
   private static final String PERSISTENT_ID = RdfConstants.timPredicate("persistentUri");
   private final PersistenceManager manager;
   private final DataSetRepository dataSetRepository;
 
-  public HandleService(PersistenceManager manager, QueueManager queueManager, DataSetRepository dataSetRepository) {
-    super(HANDLE_QUEUE, queueManager);
+  public HandleService(PersistenceManager manager, DataSetRepository dataSetRepository) {
     this.manager = manager;
     this.dataSetRepository = dataSetRepository;
   }

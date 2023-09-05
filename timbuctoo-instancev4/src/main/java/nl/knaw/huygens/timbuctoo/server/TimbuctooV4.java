@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server;
 
 import com.codahale.metrics.health.HealthCheck;
-import com.codahale.metrics.jvm.JmxAttributeGauge;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.client.HttpClientBuilder;
@@ -25,7 +23,6 @@ import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
-import nl.knaw.huygens.timbuctoo.queued.activemq.ActiveMqManager;
 import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
@@ -110,7 +107,6 @@ import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.ObjectName;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -120,14 +116,8 @@ import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 
-import static com.codahale.metrics.MetricRegistry.name;
-import static nl.knaw.huygens.timbuctoo.handle.HandleAdder.HANDLE_QUEUE;
-import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
-
 public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
-
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
-  private ActiveMQBundle activeMqBundle;
 
   public static void main(String[] args) throws Exception {
     new TimbuctooV4().run(args);
@@ -136,8 +126,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   @Override
   public void initialize(Bootstrap<TimbuctooConfiguration> bootstrap) {
     //bundles
-    activeMqBundle = new ActiveMQBundle();
-    bootstrap.addBundle(activeMqBundle);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new AssetsBundle("/static", "/static", "index.html"));
     /*
@@ -218,13 +206,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       configuration.dataSetsArePublicByDefault()
     );
 
-
     environment.lifecycle().manage(new DataSetRepositoryManager(dataSetRepository));
     register(environment, "dataStoreAvailabilityCheck", new DatabaseAvailabilityCheck(dataSetRepository));
 
     RedirectionServiceFactory redirectionServiceFactory = configuration.getRedirectionServiceFactory();
     RedirectionService redirectionService = redirectionServiceFactory != null ?
-        redirectionServiceFactory.makeRedirectionService(new ActiveMqManager(activeMqBundle), dataSetRepository) : null;
+        redirectionServiceFactory.makeRedirectionService(dataSetRepository) : null;
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
@@ -323,7 +310,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getPermissionFetcher(), dataSetRepository
     );
     register(environment, graphQlEndpoint);
-
 
     securityConfig.register(component -> register(environment, component));
 
@@ -431,21 +417,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new TransactionFilter(graphManager));
     //Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
-
-    //Add embedded AMQ (if any) to the metrics
-    configuration.getLocalAmqJmxPath(HANDLE_QUEUE).ifPresent(rethrowConsumer(jmxPath -> {
-      String dwMetricName = name(this.getClass(), "localAmq");
-      ObjectName jmxMetricName = new ObjectName(jmxPath);
-
-      environment.metrics().register(
-        dwMetricName + ".enqueueCount",
-        new JmxAttributeGauge(jmxMetricName, "EnqueueCount")
-      );
-      environment.metrics().register(
-        dwMetricName + ".dequeueCount",
-        new JmxAttributeGauge(jmxMetricName, "DequeueCount")
-      );
-    }));
 
     setupObjectMapping(environment);
   }
