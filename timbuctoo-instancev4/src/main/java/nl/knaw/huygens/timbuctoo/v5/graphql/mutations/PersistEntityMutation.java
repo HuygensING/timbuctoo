@@ -35,24 +35,29 @@ public class PersistEntityMutation extends Mutation {
 
   @Override
   public Object executeAction(DataFetchingEnvironment env) {
-    User user = MutationHelpers.getUser(env);
-    String graph = env.getArgument("graph");
-    String entityUri = env.getArgument("entityUri");
-    URI uri;
-    try {
-      if (graph != null) {
-        uri = GetEntityInGraph.makeUrl(ownerId, dataSetName, graph, entityUri);
-      } else {
-        uri = GetEntity.makeUrl(ownerId, dataSetName, entityUri);
+    if (redirectionService != null) {
+      User user = MutationHelpers.getUser(env);
+      String graph = env.getArgument("graph");
+      String entityUri = env.getArgument("entityUri");
+      URI uri;
+      try {
+        if (graph != null) {
+          uri = GetEntityInGraph.makeUrl(ownerId, dataSetName, graph, entityUri);
+        } else {
+          uri = GetEntity.makeUrl(ownerId, dataSetName, entityUri);
+        }
+      } catch (UnsupportedEncodingException e) {
+        return ImmutableMap.of("message", "Request for persistent Uri failed.");
       }
-    } catch (UnsupportedEncodingException e) {
-      return ImmutableMap.of("message", "Request for persistent Uri failed.");
+      URI fullUri = uriHelper.fromResourceUri(uri);
+
+      EntityLookup entityLookup =
+          ImmutableEntityLookup.builder().dataSetId(dataSetId).uri(entityUri).user(user).build();
+      redirectionService.add(fullUri, entityLookup);
+
+      return ImmutableMap.of("message", "Request for persistent Uri accepted");
     }
-    URI fullUri = uriHelper.fromResourceUri(uri);
 
-    EntityLookup entityLookup = ImmutableEntityLookup.builder().dataSetId(dataSetId).uri(entityUri).user(user).build();
-    redirectionService.add(fullUri, entityLookup);
-
-    return ImmutableMap.of("message", "Request for persistent Uri accepted");
+    return ImmutableMap.of("message", "Request for persistent Uri failed: no service configured!");
   }
 }

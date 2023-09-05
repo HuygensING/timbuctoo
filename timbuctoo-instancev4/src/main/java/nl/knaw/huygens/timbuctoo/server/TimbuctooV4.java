@@ -231,10 +231,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "dataStoreAvailabilityCheck", new DatabaseAvailabilityCheck(dataSetRepository));
 
     RedirectionServiceFactory redirectionServiceFactory = configuration.getRedirectionServiceFactory();
-    RedirectionService redirectionService = redirectionServiceFactory.makeRedirectionService(
-      new ActiveMqManager(activeMqBundle), dataSetRepository
-      );
-
+    RedirectionService redirectionService = redirectionServiceFactory != null ?
+        redirectionServiceFactory.makeRedirectionService(new ActiveMqManager(activeMqBundle), dataSetRepository) : null;
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
@@ -249,7 +247,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(graphManager).execute());
 
-    redirectionService.init(transactionEnforcer);
+    if (redirectionService != null) {
+      redirectionService.init(transactionEnforcer);
+    }
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
     migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, graphManager));

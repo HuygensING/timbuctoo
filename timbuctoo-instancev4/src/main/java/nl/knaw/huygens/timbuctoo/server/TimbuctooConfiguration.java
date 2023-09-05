@@ -29,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceFactory
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.ws.rs.DefaultValue;
 import java.net.URI;
@@ -90,9 +91,9 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract Optional<DatabaseBackupperFactory> getDatabaseBackupper();
 
   @Valid
+  @Nullable
   @JsonProperty("redirectionService")
   public abstract RedirectionServiceFactory getRedirectionServiceFactory();
-
 
   public abstract String getArchetypesSchema();
 

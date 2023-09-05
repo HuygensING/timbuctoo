@@ -73,17 +73,19 @@ public class TimbuctooActions implements AutoCloseable {
 
     dataStoreOperations.createEntity(collection, baseCollection, createEntity);
 
-    afterSuccessTaskExecutor.addTask(
-      new AddPersistentUrlTask(
-        redirectionService,
-        uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), id, 1),
-        ImmutableEntityLookup.builder()
-          .rev(1)
-          .timId(id)
-          .collection(collection.getCollectionName())
-          .build()
-      )
-    );
+    if (redirectionService != null) {
+      afterSuccessTaskExecutor.addTask(
+          new AddPersistentUrlTask(
+              redirectionService,
+              uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), id, 1),
+              ImmutableEntityLookup.builder()
+                  .rev(1)
+                  .timId(id)
+                  .collection(collection.getCollectionName())
+                  .build()
+          )
+      );
+    }
 
     return id;
   }
@@ -96,17 +98,20 @@ public class TimbuctooActions implements AutoCloseable {
     updateEntity.setModified(createChange(user));
 
     int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
-    afterSuccessTaskExecutor.addTask(
-      new AddPersistentUrlTask(
-        redirectionService,
-        uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), updateEntity.getId(), rev),
-        ImmutableEntityLookup.builder()
-          .rev(rev)
-          .timId(updateEntity.getId())
-          .collection(collection.getCollectionName())
-          .build()
-      )
-    );
+
+    if (redirectionService != null) {
+      afterSuccessTaskExecutor.addTask(
+          new AddPersistentUrlTask(
+              redirectionService,
+              uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), updateEntity.getId(), rev),
+              ImmutableEntityLookup.builder()
+                  .rev(rev)
+                  .timId(updateEntity.getId())
+                  .collection(collection.getCollectionName())
+                  .build()
+          )
+      );
+    }
   }
   //FIXME: when adding the new datamodel. We need to fix the persistent url generator. It now generates a url per
   // collection, but writes to a property that exists regardless of the collection. It also generates a new persistent
@@ -118,18 +123,19 @@ public class TimbuctooActions implements AutoCloseable {
 
     int rev = dataStoreOperations.deleteEntity(collection, uuid, createChange(user));
 
-
-    afterSuccessTaskExecutor.addTask(
-      new AddPersistentUrlTask(
-        redirectionService,
-        uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), uuid, rev),
-        ImmutableEntityLookup.builder()
-          .rev(rev)
-          .timId(uuid)
-          .collection(collection.getCollectionName())
-          .build()
-      )
-    );
+    if (redirectionService != null) {
+      afterSuccessTaskExecutor.addTask(
+          new AddPersistentUrlTask(
+              redirectionService,
+              uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), uuid, rev),
+              ImmutableEntityLookup.builder()
+                  .rev(rev)
+                  .timId(uuid)
+                  .collection(collection.getCollectionName())
+                  .build()
+          )
+      );
+    }
   }
 
   /**
