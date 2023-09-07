@@ -4,9 +4,6 @@ import net.swisstech.bitly.BitlyClient;
 import net.swisstech.bitly.model.Response;
 import net.swisstech.bitly.model.v3.ShortenResponse;
 import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.timbuctoo.core.NotFoundException;
-import nl.knaw.huygens.timbuctoo.core.TransactionState;
-import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.AddTriplePatchRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -14,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.EntityLookup;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionService;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.RedirectionServiceParameters;
 import nl.knaw.huygens.timbuctoo.v5.redirectionservice.exceptions.RedirectionServiceException;
@@ -36,25 +34,6 @@ public class BitlyService extends RedirectionService {
   }
 
   @Override
-  protected void oldSavePid(RedirectionServiceParameters params) {
-    URI uri = params.getUrlToRedirectTo();
-    String persistentUrl = retrieveBitlyUri(uri.toString());
-    transactionEnforcer.execute(timbuctooActions -> {
-        try {
-          timbuctooActions.addPid(URI.create(persistentUrl), params.getEntityLookup());
-          LOG.info("committed pid");
-          return TransactionState.commit();
-        } catch (NotFoundException e) {
-          LOG.warn("Entity for entityLookup '{}' cannot be found", params.getEntityLookup());
-          bitlyClient.userLinkEdit().setArchived(true);
-
-          return TransactionState.rollback();
-        }
-      }
-    );
-  }
-
-  @Override
   protected void savePid(RedirectionServiceParameters params) throws PersistenceException,
     RedirectionServiceException {
     URI uri = params.getUrlToRedirectTo();
@@ -62,11 +41,11 @@ public class BitlyService extends RedirectionService {
     String persistentUrl = retrieveBitlyUri(uri.toString());
 
     EntityLookup entityLookup = params.getEntityLookup();
-    String dataSetId = entityLookup.getDataSetId().get();
+    String dataSetId = entityLookup.getDataSetId();
     Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(dataSetId);
 
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(
-      entityLookup.getUser().get(),
+      entityLookup.getUser(),
       ownerIdDataSetId.getLeft(),
       ownerIdDataSetId.getRight());
 
@@ -81,7 +60,7 @@ public class BitlyService extends RedirectionService {
       importManager.generateLog(
         dataSet.getMetadata().getBaseUri(), null,
         new AddTriplePatchRdfCreator(
-          entityLookup.getUri().get(),
+          entityLookup.getUri(),
           PERSISTENT_ID,
           persistentUrl,
           RdfConstants.STRING)

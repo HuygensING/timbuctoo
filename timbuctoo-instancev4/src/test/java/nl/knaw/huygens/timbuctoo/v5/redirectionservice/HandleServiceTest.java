@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.redirectionservice;
 
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
-import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -19,12 +18,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -104,9 +100,9 @@ public class HandleServiceTest {
 
   private EntityLookup createMockEntityLookup(User user) {
     EntityLookup entityLookup = mock(EntityLookup.class);
-    given(entityLookup.getDataSetId()).willReturn(Optional.of("testOwnerId__testDataSetId"));
-    given(entityLookup.getUser()).willReturn(Optional.of(user));
-    given(entityLookup.getUri()).willReturn(Optional.of("testEntityUri"));
+    given(entityLookup.getDataSetId()).willReturn("testOwnerId__testDataSetId");
+    given(entityLookup.getUser()).willReturn(user);
+    given(entityLookup.getUri()).willReturn("testEntityUri");
     return entityLookup;
   }
 

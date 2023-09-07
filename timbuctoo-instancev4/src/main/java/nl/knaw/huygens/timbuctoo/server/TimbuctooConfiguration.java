@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -11,12 +10,9 @@ import io.dropwizard.logging.common.LoggingFactory;
 import io.dropwizard.metrics.common.MetricsFactory;
 import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.core.server.ServerFactory;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
-import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
-import nl.knaw.huygens.timbuctoo.util.Timeout;
+import nl.knaw.huygens.timbuctoo.webhook.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
-import nl.knaw.huygens.timbuctoo.v5.backupforstaging.azureblob.dropwizardconfiguration.DatabaseBackupperFactory;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.Metadata;
@@ -44,8 +40,7 @@ import java.util.Optional;
 @Value.Immutable
 @JsonDeserialize(as = ImmutableTimbuctooConfiguration.class)
 @JsonSerialize(as = ImmutableTimbuctooConfiguration.class)
-public abstract class TimbuctooConfiguration extends Configuration implements SearchConfig {
-
+public abstract class TimbuctooConfiguration extends Configuration {
   @JsonProperty("rdfUriHelper")
   public abstract TimbuctooRdfIdHelper getRdfIdHelper();
 
@@ -57,9 +52,6 @@ public abstract class TimbuctooConfiguration extends Configuration implements Se
   public WebhookFactory getWebhooks() {
     return new WebhookFactory();
   }
-
-  @Valid
-  public abstract TinkerPopConfig getDatabaseConfiguration();
 
   @JsonProperty("searchResultAvailabilityTimeout")
   public abstract TimeoutFactory getSearchResultAvailabilityTimeoutFactory();
@@ -78,8 +70,6 @@ public abstract class TimbuctooConfiguration extends Configuration implements Se
   @DefaultValue("true")
   @JsonProperty("allowGremlinEndpoint")
   public abstract boolean isAllowGremlinEndpoint();
-
-  public abstract Optional<DatabaseBackupperFactory> getDatabaseBackupper();
 
   @Valid
   @Nullable
@@ -107,17 +97,10 @@ public abstract class TimbuctooConfiguration extends Configuration implements Se
 
   public abstract Map<String, CollectionFilter> getCollectionFilters();
 
-  @JsonIgnore
-  @Override
-  public Timeout getSearchResultAvailabilityTimeout() {
-    return getSearchResultAvailabilityTimeoutFactory().createTimeout();
-  }
-
   @Value.Default
   public boolean dataSetsArePublicByDefault() {
     return false;
   }
-
 
   //DROPWIZARD DEFAULT PROPERTIES:
   //Required to make immutables generate json-deserializers for the default properties
@@ -141,5 +124,4 @@ public abstract class TimbuctooConfiguration extends Configuration implements Se
   public MetricsFactory getMetricsFactory() {
     return new MetricsFactory();
   }
-
 }

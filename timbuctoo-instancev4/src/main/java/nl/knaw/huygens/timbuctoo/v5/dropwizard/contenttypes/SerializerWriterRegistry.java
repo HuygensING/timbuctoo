@@ -9,7 +9,7 @@ import java.util.Set;
 import static java.lang.String.format;
 
 public class SerializerWriterRegistry implements SupportedExportFormats {
-  private HashMap<String, SerializerWriter> supportedMimeTypes;
+  private final HashMap<String, SerializerWriter> supportedMimeTypes;
 
   public SerializerWriterRegistry(SerializerWriter... writers) {
     supportedMimeTypes = new HashMap<>();
@@ -17,7 +17,6 @@ public class SerializerWriterRegistry implements SupportedExportFormats {
       register(writer);
     }
   }
-
 
   @Override
   public Set<String> getSupportedMimeTypes() {

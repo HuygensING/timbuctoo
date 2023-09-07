@@ -36,7 +36,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
-import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.Graph;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
@@ -167,11 +166,6 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
         @Override
         public ImportManager getImportManager() {
-          throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-        }
-
-        @Override
-        public RdfDataSourceFactory getDataSource() {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
 

@@ -16,14 +16,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class JsonFileBackedData<T> implements JsonDataStore<T> {
-  private static ObjectMapper objectMapper = new ObjectMapper()
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .registerModule(new Jdk8Module())
     .registerModule(new JavaTimeModule())
     .registerModule(new GuavaModule())
     .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);
 
-  private static final Map<String, JsonFileBackedData> existing = new HashMap<>();
+  private static final Map<String, JsonFileBackedData> EXISTING = new HashMap<>();
 
   //We make sure that there's only one instance per file so that we don't have multiple simultaneous writes
   public static <T> JsonFileBackedData<T> getOrCreate(File file, Supplier<T> emptyValue, TypeReference<T> valueType)
@@ -34,9 +34,9 @@ public class JsonFileBackedData<T> implements JsonDataStore<T> {
   //We make sure that there's only one instance per file so that we don't have multiple simultaneous writes
   public static <T> JsonFileBackedData<T> getOrCreate(File file, Supplier<T> emptyValue, TypeReference<T> valueType,
                                                       Function<T, T> hydrator) throws IOException {
-    synchronized (existing) {
-      if (existing.containsKey(file.getCanonicalPath())) {
-        return existing.get(file.getCanonicalPath());
+    synchronized (EXISTING) {
+      if (EXISTING.containsKey(file.getCanonicalPath())) {
+        return EXISTING.get(file.getCanonicalPath());
       } else {
         return new JsonFileBackedData<>(file, emptyValue, valueType, hydrator);
       }
@@ -44,11 +44,10 @@ public class JsonFileBackedData<T> implements JsonDataStore<T> {
   }
 
   public static void remove(File file) throws IOException {
-    synchronized (existing) {
-      existing.remove(file.getCanonicalPath());
+    synchronized (EXISTING) {
+      EXISTING.remove(file.getCanonicalPath());
     }
   }
-
 
   private final File file;
   private T value;
@@ -57,24 +56,24 @@ public class JsonFileBackedData<T> implements JsonDataStore<T> {
       throws IOException {
     this.file = file;
     if (file.exists()) {
-      value = objectMapper.readValue(file, valueType);
+      value = OBJECT_MAPPER.readValue(file, valueType);
       if (hydrator != null) {
         value = hydrator.apply(value);
       }
     } else {
       file.getParentFile().mkdirs(); // make sure the directories exist
       value = emptyValue.get();
-      objectMapper.writeValue(file, value);
+      OBJECT_MAPPER.writeValue(file, value);
     }
     //is synchronized because ctor is called from a synchronized block
-    existing.put(file.getCanonicalPath(), this);
+    EXISTING.put(file.getCanonicalPath(), this);
   }
 
   @Override
   public void updateData(Function<T, T> mutator) throws IOException {
     synchronized (file) {
       value = mutator.apply(value);
-      objectMapper.writeValue(file, value);
+      OBJECT_MAPPER.writeValue(file, value);
     }
   }
 
@@ -84,8 +83,8 @@ public class JsonFileBackedData<T> implements JsonDataStore<T> {
   }
 
   static void regenerateSoWeCanTestHowWellLoadingWorks(File file) throws IOException {
-    synchronized (existing) {
-      existing.remove(file.getCanonicalPath());
+    synchronized (EXISTING) {
+      EXISTING.remove(file.getCanonicalPath());
     }
   }
 }

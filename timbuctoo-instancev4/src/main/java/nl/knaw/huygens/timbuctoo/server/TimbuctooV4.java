@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server;
 
 import com.codahale.metrics.health.HealthCheck;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.dropwizard.core.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.client.HttpClientBuilder;
@@ -11,65 +10,20 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
-import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
-import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
-import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
-import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
-import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
-import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
-import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.MoveIndicesToIsLatestVertexMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.PrepareForBiaImportMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.RemoveSearchResultsMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
-import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyIndexRedirect;
-import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacySingleEntityRedirect;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Import;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.ListVres;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.LambdaHealthCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
-import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
-import nl.knaw.huygens.timbuctoo.server.tasks.AddPidsToWomenWritersEntities;
-import nl.knaw.huygens.timbuctoo.server.tasks.AddTypeToNeo4JVertexTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BackupTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
-import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
-import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.MoveDefaultGraphsTask;
-import nl.knaw.huygens.timbuctoo.server.tasks.MoveEdgesTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.RebuildSchemaTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.ReimportDatasetsTask;
-import nl.knaw.huygens.timbuctoo.solr.Webhooks;
+import nl.knaw.huygens.timbuctoo.webhook.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rssource.RsDocumentBuilder;
@@ -84,15 +38,12 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntity;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntityInGraph;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RsEndpoint;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.healthchecks.CollectionFilterCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.healthchecks.DatabaseAvailabilityCheck;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.ReloadDataSet;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StagingBackup;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.tasks.StopBdbDataStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
@@ -110,10 +61,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.nio.channels.ServerSocketChannel;
-import java.time.Clock;
-import java.util.LinkedHashMap;
 import java.util.Properties;
 
 public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
@@ -160,32 +108,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Support services
     SecurityFactory securityConfig = configuration.getSecurityConfiguration().createNewSecurityFactory();
-
     securityConfig.getHealthChecks().forEachRemaining(check ->
             register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight())));
 
     configuration.getCollectionFilters().forEach((key, value) ->
             register(environment, key + "Check", new CollectionFilterCheck(value)));
 
-    // Database migration
-    LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
-
-    migrations.put("fix-dcarkeywords-displayname-migration", new FixDcarKeywordDisplayNameMigration());
-    migrations.put("fix-pids-migration", new MakePidsAbsoluteUrls());
-
     UriHelper uriHelper = configuration.getUriHelper();
     environment.lifecycle().addServerLifecycleListener(new BaseUriDeriver(configuration));
-
-    TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
-    final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
-
-    final UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
-      uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
-
-    final UrlGenerator pathWithoutVersionAndRevision =
-      (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, null).toString().replaceFirst("^/v2.1/", ""));
-    final UrlGenerator uriWithoutRev = (coll, id, rev) ->
-      uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
 
@@ -213,50 +143,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     RedirectionService redirectionService = redirectionServiceFactory != null ?
         redirectionServiceFactory.makeRedirectionService(dataSetRepository) : null;
 
-    // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
-    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
-      securityConfig.getPermissionFetcher(),
-      Clock.systemDefaultZone(),
-      redirectionService,
-      uriToRedirectToFromPersistentUrls,
-      () -> new TinkerPopOperations(graphManager)
-    );
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
-      timbuctooActionsFactory
-    );
-    graphManager.onGraph(g -> new ScaffoldMigrator(graphManager).execute());
-
-    if (redirectionService != null) {
-      redirectionService.init(transactionEnforcer);
-    }
-
-    final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
-    migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, graphManager));
-    migrations.put("give-existing-relationtypes-rdf-uris", new RelationTypeRdfUriMigration());
-    migrations.put("remove-search-results", new RemoveSearchResultsMigration());
-    migrations.put("move-indices-to-isLatest-vertex", new MoveIndicesToIsLatestVertexMigration(vres));
-
     HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
         .using(configuration.getHttpClientConfiguration());
     CloseableHttpClient httpClient = apacheHttpClientBuilder.build("httpclient");
 
     final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, new ResourceSyncContext());
-    final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
 
-    final AutocompleteService.AutocompleteServiceFactory autocompleteServiceFactory =
-      new AutocompleteService.AutocompleteServiceFactory(
-        uriWithoutRev
-      );
-
-    environment.lifecycle().manage(graphManager);
-
-    final CrudServiceFactory crudServiceFactory = new CrudServiceFactory(
-      vres,
-      securityConfig.getUserValidator(),
-      pathWithoutVersionAndRevision
-    );
-
-    ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     AuthCheck authCheck = new AuthCheck(
       securityConfig.getUserValidator(),
       securityConfig.getPermissionFetcher(),
@@ -264,17 +156,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
 
     register(environment, new RdfUpload(authCheck));
-
-    register(environment, new TabularUpload(
-      authCheck,
-      errorResponseHelper
-    ));
-
-    register(environment, new Rml(
-      dataSetRepository,
-      errorResponseHelper,
-      securityConfig.getUserValidator()
-    ));
 
     SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(
       new CsvWriter(),
@@ -313,41 +194,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     securityConfig.register(component -> register(environment, component));
 
-    register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
-
     register(environment, new Me(securityConfig.getUserValidator()));
-    register(environment, new Search(configuration, uriHelper, graphManager));
-    register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
-    register(
-      environment,
-      new Index(securityConfig.getUserValidator(), crudServiceFactory, transactionEnforcer)
-    );
-    register(
-      environment,
-      new SingleEntity(securityConfig.getUserValidator(), crudServiceFactory, transactionEnforcer)
-    );
-    register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
-    register(environment, new LegacySingleEntityRedirect(uriHelper));
-    register(environment, new LegacyIndexRedirect(uriHelper));
     register(environment, new Discover(resourceSyncService));
-
-    if (configuration.isAllowGremlinEndpoint()) {
-      register(environment, new Gremlin(graphManager));
-    }
-    register(environment, new Graph(graphManager, vres));
-
-    register(environment, new RelationTypes(graphManager));
-    register(environment, new Metadata());
-    register(environment, new nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.Metadata(jsonMetadata));
-    register(environment, new MyVres(
-        securityConfig.getUserValidator(),
-        securityConfig.getPermissionFetcher(),
-        transactionEnforcer,
-        uriHelper
-      )
-    );
-    register(environment, new ListVres(uriHelper, transactionEnforcer));
-    register(environment, new VreImage(transactionEnforcer));
 
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
@@ -367,66 +215,17 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Admin resources
     environment.admin().addTask(new ReloadDataSet(dataSetRepository));
-    environment.admin().addTask(
-      new DatabaseValidationTask(
-        new DatabaseValidator(
-          graphManager,
-          new LabelsAddedToVertexDatabaseCheck(),
-          new InvariantsCheck(vres),
-          new FullTextIndexCheck()
-        ),
-        Clock.systemUTC(),
-        5000
-      )
-    );
-    environment.admin().addTask(new DbLogCreatorTask(graphManager));
     environment.admin().addTask(new BdbDumpTask(configuration.getDatabases()));
-    if (configuration.getDatabaseBackupper().isPresent()) {
-      environment.admin().addTask(new StagingBackup(configuration.getDatabaseBackupper().get().create(
-        configuration.getDatabaseConfiguration().getDatabasePath(),
-        configuration.getDatabases().getDatabaseLocation()
-      )));
-    }
-
     environment.admin().addTask(new StopBdbDataStore(configuration.getDatabases()));
     environment.admin().addTask(new BackupTask(dataSetRepository));
     environment.admin().addTask(new MoveDefaultGraphsTask(dataSetRepository));
-    environment.admin().addTask(new AddTypeToNeo4JVertexTask(transactionEnforcer, crudServiceFactory));
-    environment.admin().addTask(new MoveEdgesTask(transactionEnforcer, crudServiceFactory));
-    environment.admin().addTask(new AddPidsToWomenWritersEntities(
-        graphManager,
-        redirectionService,
-        uriToRedirectToFromPersistentUrls)
-    );
     environment.admin().addTask(new ReimportDatasetsTask(dataSetRepository));
     environment.admin().addTask(new RebuildSchemaTask(dataSetRepository));
 
-    // register health checks
-    // Dropwizard Health checks are used to check whether requests should be routed to this instance
-    // For example, checking if neo4j is in a valid state is not a "HealthCheck" because if the database on one instance
-    // is in an invalid state, then this applies to all other instances too. So once the database is in an invalid state
-    // timbuctoo will be down.
-    //
-    // checking whether this instance is part of the neo4j quorum is a good HealthCheck because running a database query
-    // on those instances that are not part of the quorum will block forever, while the other instances will respond
-    // just fine.
-    register(environment, "Neo4j database connection", graphManager);
-
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
-    register(environment, new TransactionFilter(graphManager));
     //Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
-
-    setupObjectMapping(environment);
-  }
-
-  private void setupObjectMapping(Environment environment) {
-    // object mapping
-    SimpleModule module = new SimpleModule();
-    module.addDeserializer(FacetValue.class, new FacetValueDeserializer());
-
-    environment.getObjectMapper().registerModule(module);
   }
 
   private void register(Environment environment, String name, HealthCheck healthCheck) {
@@ -437,7 +236,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.jersey().register(component);
   }
 
-  private class BaseUriDeriver implements ServerLifecycleListener {
+  private static class BaseUriDeriver implements ServerLifecycleListener {
     private final TimbuctooConfiguration timbuctooConfiguration;
 
     public BaseUriDeriver(TimbuctooConfiguration timbuctooConfiguration) {

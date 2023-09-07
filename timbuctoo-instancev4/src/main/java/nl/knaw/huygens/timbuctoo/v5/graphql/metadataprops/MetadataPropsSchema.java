@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntityMetadataProp;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.MetadataProp;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.SimpleMetadataProp;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.UriMetadataProp;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 

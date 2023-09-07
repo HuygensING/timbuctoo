@@ -123,9 +123,6 @@ metadata:
 databases:
   databaseLocation: ${timbuctoo_dataPath}/datasets
 
-databaseConfiguration:
-  databasePath: ${timbuctoo_dataPath}/neo4j
-
 dataSet:
   dataStorage:
     "@class": nl.knaw.huygens.timbuctoo.v5.datastorage.implementations.filesystem.FileSystemDataStorage
@@ -146,8 +143,8 @@ searchResultAvailabilityTimeout:
   timeUnit: HOURS
 
 webhooks:
-  vreAdded: ${timbuctoo_search_url}
-  dataSetUpdated: ${timbuctoo_indexer_url}
+  dataSetUpdatedUrls:
+   - ${timbuctoo_indexer_url}
   httpClient:
     connectionRequestTimeout: 200ms
 

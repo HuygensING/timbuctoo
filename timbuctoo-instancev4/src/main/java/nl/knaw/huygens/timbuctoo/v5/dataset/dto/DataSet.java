@@ -33,7 +33,6 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.graphql.customschema.SchemaHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.CustomProvenance;
-import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.immutables.value.Value;
@@ -220,7 +219,6 @@ public abstract class DataSet {
         .patchVersionStore(patchVersionStore)
         .oldSubjectTypesStore(oldSubjectTypesStore)
         .rmlDataSourceStore(rmlDataSourceStore)
-        .dataSource(new RdfDataSourceFactory(rmlDataSourceStore))
         .importManager(importManager)
         .dataSetStorage(dataSetStorage)
         .currentStateRetriever(currentStateRetriever)
@@ -329,8 +327,6 @@ public abstract class DataSet {
   public abstract DefaultResourcesStore getDefaultResourcesStore();
 
   public abstract ImportManager getImportManager();
-
-  public abstract RdfDataSourceFactory getDataSource();
 
   public abstract QuadStore getQuadStore();
 

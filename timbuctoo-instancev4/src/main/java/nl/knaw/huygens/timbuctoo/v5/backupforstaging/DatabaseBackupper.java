@@ -16,12 +16,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class DatabaseBackupper {
-  private final String neo4jPath;
   private final String dataSetPath;
   private final BackupUploader uploader;
 
-  public DatabaseBackupper(String neo4jPath, String dataSetPath, BackupUploader uploader) {
-    this.neo4jPath = neo4jPath;
+  public DatabaseBackupper(String dataSetPath, BackupUploader uploader) {
     this.dataSetPath = dataSetPath;
     this.uploader = uploader;
   }
@@ -30,7 +28,6 @@ public class DatabaseBackupper {
     try {
       final File tempFile = File.createTempFile("stagingBackup", "zip");
       try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tempFile.getAbsolutePath()))) {
-        backupFolder(neo4jPath, zos);
         backupFolder(dataSetPath, zos);
       }
       uploader.storeBackup(tempFile);
@@ -41,7 +38,6 @@ public class DatabaseBackupper {
 
   private void backupFolder(String folder, ZipOutputStream zos) throws IOException {
     try (Stream<Path> fileStream = Files.walk(Paths.get(folder))) {
-
       final Iterator<Path> pathStream = fileStream.filter(Files::isRegularFile).iterator();
       while (pathStream.hasNext()) {
         String file = pathStream.next().toFile().getAbsolutePath();

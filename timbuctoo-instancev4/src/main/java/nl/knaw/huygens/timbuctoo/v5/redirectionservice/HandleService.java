@@ -2,9 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.redirectionservice;
 
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
-import nl.knaw.huygens.timbuctoo.core.NotFoundException;
-import nl.knaw.huygens.timbuctoo.core.TransactionState;
-import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.AddTriplePatchRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -32,30 +29,6 @@ public class HandleService extends RedirectionService {
     this.dataSetRepository = dataSetRepository;
   }
 
-  protected void oldSavePid(RedirectionServiceParameters params) throws PersistenceException, URISyntaxException {
-    URI uri = params.getUrlToRedirectTo();
-    LOG.info(String.format("Retrieving persistent url for '%s'", uri));
-    String persistentId = (manager.persistURL(uri.toString()));
-    URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
-
-    transactionEnforcer.execute(timbuctooActions -> {
-        try {
-          timbuctooActions.addPid(persistentUrl, params.getEntityLookup());
-          LOG.info("committed pid");
-          return TransactionState.commit();
-        } catch (NotFoundException e) {
-          LOG.warn("Entity for entityLookup '{}' cannot be found", params.getEntityLookup());
-          try {
-            manager.deletePersistentId(persistentId);
-          } catch (PersistenceException e1) {
-            LOG.error("Cannot remove handle with id '{}'", persistentId);
-          }
-          return TransactionState.rollback();
-        }
-      }
-    );
-  }
-
   @Override
   protected void savePid(RedirectionServiceParameters params) throws PersistenceException,
       URISyntaxException, RedirectionServiceException {
@@ -65,11 +38,11 @@ public class HandleService extends RedirectionService {
     URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
 
     EntityLookup entityLookup = params.getEntityLookup();
-    String dataSetId = entityLookup.getDataSetId().get();
+    String dataSetId = entityLookup.getDataSetId();
     Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(dataSetId);
 
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(
-        entityLookup.getUser().get(),
+        entityLookup.getUser(),
         ownerIdDataSetId.getLeft(),
         ownerIdDataSetId.getRight()
     );
@@ -85,7 +58,7 @@ public class HandleService extends RedirectionService {
       importManager.generateLog(
           dataSet.getMetadata().getBaseUri(), null,
           new AddTriplePatchRdfCreator(
-              entityLookup.getUri().get(),
+              entityLookup.getUri(),
               PERSISTENT_ID,
               persistentUrl.toString(),
               RdfConstants.STRING

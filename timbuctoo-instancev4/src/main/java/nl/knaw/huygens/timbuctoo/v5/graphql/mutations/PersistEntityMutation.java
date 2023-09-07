@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
 import graphql.schema.DataFetchingEnvironment;
 import com.google.common.collect.ImmutableMap;
-import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
-import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.EntityLookup;
+import nl.knaw.huygens.timbuctoo.v5.redirectionservice.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetMetaData;
