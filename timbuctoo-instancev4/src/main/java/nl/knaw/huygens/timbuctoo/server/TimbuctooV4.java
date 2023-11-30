@@ -33,7 +33,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntity;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetEntityInGraph;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
@@ -114,7 +113,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     configuration.getCollectionFilters().forEach((key, value) ->
             register(environment, key + "Check", new CollectionFilterCheck(value)));
 
-    UriHelper uriHelper = configuration.getUriHelper();
     environment.lifecycle().addServerLifecycleListener(new BaseUriDeriver(configuration));
 
     final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
@@ -164,6 +162,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new GraphVizWriter()
     );
 
+    final UriHelper uriHelper = configuration.getUriHelper();
     final PaginationArgumentsHelper argHelper = new PaginationArgumentsHelper(configuration.getCollectionFilters());
     final GraphQl graphQlEndpoint = new GraphQl(
       new RootQuery(
