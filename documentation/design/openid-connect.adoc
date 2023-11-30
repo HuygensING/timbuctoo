@@ -13,7 +13,7 @@ Security configuration excerpt form the Timbuctoo configuration.
 [source, yaml]
 ----
 securityConfiguration:
-  "@class": nl.knaw.huygens.timbuctoo.v5.security.openidconnect.OpenIdSecurityFactoryConfiguration
+  "@class": nl.knaw.huygens.timbuctoo.security.openidconnect.OpenIdSecurityFactoryConfiguration
   openIdClient:
     clientId: {client-id}
     clientSecret: {client-secret}
@@ -35,11 +35,11 @@ securityConfiguration:
 
 ### Endpoints
 
-Login endpoint: http://timbuctoo-host.org/v5/openid-connect/login
+Login endpoint: http://timbuctoo-host.org/openid-connect/login
 ----
-GET /v5/openid-connect/login?
+GET /openid-connect/login?
     redirect-uri=http%3A%2F%2Ftimbuctoo-frontend.example.org
 Host: http://timbuctoo-host.example.org
 ----
 
-OpenID Connect 'redirect_uri': http://timbuctoo-host.org/v5/openid-connect/callback
+OpenID Connect 'redirect_uri': http://timbuctoo-host.org/openid-connect/callback

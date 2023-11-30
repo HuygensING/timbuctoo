@@ -59,7 +59,7 @@ done
 docker-compose stop timbuctoo
 
 if [ -n "$USE_BAZEL" ]; then
-  bazel build //timbuctoo-instancev4:everything_deploy.jar || exit $?
+  bazel build //everything_deploy.jar || exit $?
 else
   if [ "$REBUILD" = 1 ]; then
     echo "Rebuilding"
@@ -68,13 +68,13 @@ else
     fi
     mvn package $skipTests -q
     if [ $? != 0 ]; then
-      xmllint --xpath //file[error] timbuctoo-instancev4/target/checkstyle-result.xml
+      xmllint --xpath //file[error] target/checkstyle-result.xml
       exit 1
     fi
   fi
 fi
 
-timbuctoo_dataPath="./timbuctoo-instancev4/temp_for_debugrun"
+timbuctoo_dataPath="./temp_for_debugrun"
 
 if [ "$CLEAN" = "true" ]; then
   echo "Removing database and auth dirs"
@@ -98,7 +98,7 @@ export JAVA_OPTS
 echo "JAVA_OPTS=\"$JAVA_OPTS\""
 
 if [ -n "$USE_BAZEL" ]; then
-  export CMD='sh -c "java $JAVA_OPTS -jar /app/bazel-bin/timbuctoo-instancev4/everything_deploy.jar server /app/example_config.yaml"'
+  export CMD='sh -c "java $JAVA_OPTS -jar /app/bazel-bin/everything_deploy.jar server /app/example_config.yaml"'
 fi
 
 echo $PWD

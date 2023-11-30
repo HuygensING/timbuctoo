@@ -8,7 +8,7 @@
 == 1. Upload tabular data
 
 ----
-curl -v -F "file=@2017_09_28_BIA_Boerhaave_DEF.xlsx;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" -F "encoding=UTF-8" -H "Authorization: fake" http://localhost:8080/v5/u33707283d426f900d4d33707283d426f900d4d0d/mappingdemo/upload/table?forceCreation=true
+curl -v -F "file=@2017_09_28_BIA_Boerhaave_DEF.xlsx;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" -F "encoding=UTF-8" -H "Authorization: fake" http://localhost:8080/u33707283d426f900d4d33707283d426f900d4d0d/mappingdemo/upload/table?forceCreation=true
 ----
 
 `33707283d426f900d4d33707283d426f900d4d0d` is the (default) user in the local hosted Timbuctoo.
@@ -64,9 +64,9 @@ First make sure to create the right mapping file the language is http://rml.io/[
         }
       },
       "rr:subjectMap": {
-        "rr:template": "http://timbuctoo.huygens.knaw.nl/v5/data/bia/Places/{persistent_id}",
+        "rr:template": "http://timbuctoo.huygens.knaw.nl/data/bia/Places/{persistent_id}",
         "rr:class": {
-          "@id": "http://timbuctoo.huygens.knaw.nl/v5/data/bia/Places"
+          "@id": "http://timbuctoo.huygens.knaw.nl/data/bia/Places"
         }
       },
       "rr:predicateObjectMap": [
@@ -139,7 +139,7 @@ NOTE: Only use hte collections that contain `rawData` in the uri and that do not
 When the mapping file is created the following curl command will execute the mapping:
 
 ----
-curl --header "Content-type: application/ld+json" --header "Authorization: fake" --data "@{name of mapping file}.json" http://localhost:8080/v5/u33707283d426f900d4d33707283d426f900d4d0d/mappingdemo/rml
+curl --header "Content-type: application/ld+json" --header "Authorization: fake" --data "@{name of mapping file}.json" http://localhost:8080/u33707283d426f900d4d33707283d426f900d4d0d/mappingdemo/rml
 ----
 
 You can find the

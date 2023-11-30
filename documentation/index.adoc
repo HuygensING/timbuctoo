@@ -1,7 +1,7 @@
 = Timbuctoo: Bridge to networked research data
 :toc: left
 :hide-uri-scheme:
-:javasourcesdir: ../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo
+:javasourcesdir: ../src/main/java/nl/knaw/huygens/timbuctoo
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :docinfo:
 

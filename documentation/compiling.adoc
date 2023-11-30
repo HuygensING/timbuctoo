@@ -22,7 +22,7 @@ To build your own version, you can either have 'java 8' and 'maven 3' installed 
  If you do not use docker the external services, such as solr won't be started. 
  Timbuctoo will still run and the API will run fine, but some urls in the web GUI won't work.
 
-To run a real version you'd run all services mentioned in the docker-compose.yml file yourself and start timbuctoo using `./timbuctoo-instancev4/target/appassembler/bin/timbuctoo server <your config>.yaml`.
+To run a real version you'd run all services mentioned in the docker-compose.yml file yourself and start timbuctoo using `./target/appassembler/bin/timbuctoo server <your config>.yaml`.
 You can use example_config.yaml for inspiration.
 
  1. After launching it you should be greated by a login page.
@@ -31,4 +31,4 @@ You can use example_config.yaml for inspiration.
 
 === 4. installing it
 
- * *install/package timbuctoo* by copying the target/appassembler folder wherever you like (i.e. `mv timbuctoo-instancev4/target/appassembler/ my-install-location`
+ * *install/package timbuctoo* by copying the target/appassembler folder wherever you like (i.e. `mv target/appassembler/ my-install-location`

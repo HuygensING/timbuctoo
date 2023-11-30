@@ -46,18 +46,18 @@ $ (sudo) docker-compose up
 === Uploading data
     - You can run a curl command of the following format to upload data into Timbuctoo:
 
-    curl -v -F "file=@/<complete_path_to_file>/<filename>;type=<filetype>" -F "encoding=UTF-8" -H "Authorization: fake" http://localhost:8080/v5/u33707283d426f900d4d33707283d426f900d4d0d/mydataset/upload/rdf?forceCreation=true
+    curl -v -F "file=@/<complete_path_to_file>/<filename>;type=<filetype>" -F "encoding=UTF-8" -H "Authorization: fake" http://localhost:8080/u33707283d426f900d4d33707283d426f900d4d0d/mydataset/upload/rdf?forceCreation=true
   
     `u33707283d426f900d4d33707283d426f900d4d0d` the user id of the user when no security is used.
     `mydataset` will be the name of the dataset
 
     - You can use the provided *_bia_clusius.ttl_* data as a example dataset. The <filetype> for this is "text/turtle". It is available in the following folder:
 
-    "/<complete path to timbuctoo>/timbuctoo-instancev4/src/test/resources/nl/knaw/huygens/timbuctoo/v5/bia_clusius.ttl"
+    "/<complete path to timbuctoo>/src/test/resources/nl/knaw/huygens/timbuctoo/bia_clusius.ttl"
 
     - Note that the above method forces a creation at upload time. Creating a dataset before doing the upload can be done at path:
 
-    "<host>/v5/dataSets/{userId}/{dataSetId}/create"
+    "<host>/dataSets/{userId}/{dataSetId}/create"
 
 
 === Querying data and Applying Mutations

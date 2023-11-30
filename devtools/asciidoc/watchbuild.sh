@@ -15,6 +15,6 @@ if ! which inotifywait; then
   fi
 fi
 ./build.sh
-while inotifywait -r ../../timbuctoo-instancev4/src ../; 
+while inotifywait -r ../../src ../;
   do ./build.sh
 done

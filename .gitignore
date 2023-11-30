@@ -1,16 +1,16 @@
 /reports
-/*/target
+/target
 .classpath
 .settings
 .project
-/timbuctoo-instancev4/generated-sources
+/generated-sources
 
 # intellij files and folders
 *.iml
 .idea
 
 # debug run state (database, known users, authorizations)
-/timbuctoo-instancev4/temp_for_debugrun
+/temp_for_debugrun
 
 /documentation/output
 

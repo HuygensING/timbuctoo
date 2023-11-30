@@ -10,7 +10,7 @@ services:
     environment:
       indexer_elasticsearch_host: "http://elasticsearch:9200"
       indexer_port: "80"
-      indexer_timbuctoo_graphql_endpoint: "http://timbuctoo/v5/graphql"
+      indexer_timbuctoo_graphql_endpoint: "http://timbuctoo/graphql"
       indexer_timbuctoo_login_endpoint: "http://timbuctoo/v2.1/authenticate"
       timbuctoo_user: ""
       timbuctoo_password: ""
@@ -33,13 +33,13 @@ services:
       timbuctoo_dataPath: ${timbuctoo_dataPath:-/mapped-data}
       timbuctoo_authPath: ${timbuctoo_authPath:-/mapped-data/auth}
     volumes:
-      - ./timbuctoo-instancev4/temp_for_debugrun/:/mapped-data
-      - ./timbuctoo-instancev4/example_config.yaml:/app/example_config.yaml
+      - ./temp_for_debugrun/:/mapped-data
+      - ./example_config.yaml:/app/example_config.yaml
 
       - ./bazel-bin/:/app/bazel-bin
 
-      - ./timbuctoo-instancev4/target/appassembler/bin:/app/bin
-      - ./timbuctoo-instancev4/target/appassembler/repo:/app/repo
+      - ./target/appassembler/bin:/app/bin
+      - ./target/appassembler/repo:/app/repo
     ports:
       - 8080:80
       - 8081:81

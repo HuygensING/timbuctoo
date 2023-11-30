@@ -12,4 +12,4 @@ if [ -z "${USERID:-}" ]; then
 fi
 
 
-http --timeout=3600 --form POST "${SERVER:-:8080}/v5/u${USERID}/${DATASETID}/upload/rdf?forceCreation=true" authorization:"${AUTHTOKEN:-DUMMY}" encoding=UTF-8 fileMimeTypeOverride=${MIMETYPE:-application/ld+json} file@"$1"
+http --timeout=3600 --form POST "${SERVER:-:8080}/u${USERID}/${DATASETID}/upload/rdf?forceCreation=true" authorization:"${AUTHTOKEN:-DUMMY}" encoding=UTF-8 fileMimeTypeOverride=${MIMETYPE:-application/ld+json} file@"$1"

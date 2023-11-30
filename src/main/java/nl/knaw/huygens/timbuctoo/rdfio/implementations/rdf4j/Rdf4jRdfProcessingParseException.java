@@ -1,0 +1,38 @@
+package nl.knaw.huygens.timbuctoo.rdfio.implementations.rdf4j;
+
+import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingParseException;
+import nl.knaw.huygens.timbuctoo.filestorage.dto.CachedLog;
+import org.eclipse.rdf4j.rio.RDFParseException;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.stream.Stream;
+
+public class Rdf4jRdfProcessingParseException extends RdfProcessingParseException {
+  public Rdf4jRdfProcessingParseException(RDFParseException exception, CachedLog log) {
+    super(createMessage(exception, log));
+  }
+
+  private static String createMessage(RDFParseException exception, CachedLog log) {
+    long lineNumber = exception.getLineNumber();
+    // get three lines before the error
+    long firstLineOfMessage = Math.max(lineNumber - 4, 0);
+    // get three lines before after the error
+    long lastLineOfMessage = lineNumber + 3;
+
+    StringBuilder message = new StringBuilder(exception.getMessage());
+    message.append("\n");
+    try (BufferedReader reader = new BufferedReader(log.getReader());
+         Stream<String> lines = reader.lines()) {
+      Iterator<String> lineIterator = lines.skip(firstLineOfMessage).iterator();
+
+      for (long line = firstLineOfMessage; line < lastLineOfMessage && lineIterator.hasNext(); line++) {
+        message.append("  ").append(line + 1).append(": ").append(lineIterator.next()).append("\n");
+      }
+      return message.toString();
+    } catch (IOException e) {
+      return exception.getMessage();
+    }
+  }
+}

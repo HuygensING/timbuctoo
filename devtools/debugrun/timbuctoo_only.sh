@@ -4,8 +4,6 @@ cd -P -- "$(dirname -- "$0")" #go to dir of script even if it was called as a sy
 
 cd "$(git rev-parse --show-toplevel)" #go to git root
 
-cd timbuctoo-instancev4
-
 COMMAND="server"
 YAML="./example_config.yaml"
 DEBUG_PORT="5005"
@@ -79,7 +77,7 @@ if [ "$REBUILD" = 1 ]; then
   fi
   mvn package $skipTests -q
   if [ $? != 0 ]; then
-    xmllint --xpath //file[error] timbuctoo-instancev4/target/checkstyle-result.xml
+    xmllint --xpath //file[error] target/checkstyle-result.xml
     exit 1
   fi
   cd -

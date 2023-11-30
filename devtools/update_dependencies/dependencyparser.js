@@ -233,17 +233,15 @@ function writeBazelScript(dependencies) {
 function writeTopLevelDependencies(dependencies) {
   let result = "";
   for (let project of dependencies.result) {
-    if (project.coords.artifactId == "timbuctoo-instancev4") {
-      let result = {}
-      for (let dependency of project.dependencies) {
-        if (dependency.localProject) {
-          continue;
-        }
-        result[dependency.coords.identifier.replace(/[^a-zA-Z0-9_]/g, "_")] = true
+    let result = {}
+    for (let dependency of project.dependencies) {
+      if (dependency.localProject) {
+        continue;
       }
-      for (var key in result) {
-        result += '        "//third_party:' + key + '",\n';
-      }
+      result[dependency.coords.identifier.replace(/[^a-zA-Z0-9_]/g, "_")] = true
+    }
+    for (var key in result) {
+      result += '        "//third_party:' + key + '",\n';
     }
   }
   return result;

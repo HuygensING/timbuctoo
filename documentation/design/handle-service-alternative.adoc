@@ -17,13 +17,13 @@ The user will be able to do so as follows:
 For example, Timbuctoo default (uses a *dummy* redirection service):
 ----
 redirectionService:
-    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.DummyRedirectionServiceFactory
+    "@class": nl.knaw.huygens.timbuctoo.redirectionService.DummyRedirectionServiceFactory
 ----
 
 can be changed to use *Handle* with the following configuration:
 ----
 redirectionService:
-    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.HandleRedirectionServiceFactory
+    "@class": nl.knaw.huygens.timbuctoo.redirectionService.HandleRedirectionServiceFactory
     privateKeyFile: <private_key_file>
     cypher: <cypher>
     namingAuthority: <naming_authority>
@@ -33,7 +33,7 @@ redirectionService:
 or, can be changed to use *Bit.ly* implementation as:
 ----
 redirectionService:
-    "@class": nl.knaw.huygens.timbuctoo.v5.redirectionService.Bitly.BitlyServiceFactory
+    "@class": nl.knaw.huygens.timbuctoo.redirectionService.Bitly.BitlyServiceFactory
     accessToken: <bitly_access_token>
 
 ----
@@ -185,7 +185,7 @@ The GraphQL endpoint will be tested manually by making sure that the persistentU
 
 A REST endpoint called getEntity will be created as well. It will have the structure:
 ----
-<timbuctoo_uri>/v5/{dataSetId}/{collection}/{id}
+<timbuctoo_uri>/{dataSetId}/{collection}/{id}
 ----
 
 NOTE: The 'id' should be Url-encoded.

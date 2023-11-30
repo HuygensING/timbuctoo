@@ -144,7 +144,7 @@ mutation SetCustomProvenance ($entity: CustomProvenanceInput!) {
 .. Add the mutation to the schema
 . Add custom provenance to edit mutation
 .. Change the GraphQL schema
-.. Make `nl.knaw.huygens.timbuctoo.v5.graphql.mutations.dto.ChangeLog` support provenance
+.. Make `nl.knaw.huygens.timbuctoo.graphql.mutations.dto.ChangeLog` support provenance
 .. Store the custom provenance
 .. Validate de custom provenance, make sure the `CustomProvenanceValueFieldInput` has a `valueType` or `object`.
 This is because GraphQL does not allow union types as input.

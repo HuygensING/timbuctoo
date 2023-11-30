@@ -1,14 +1,9 @@
 FROM huygensing/timbuctoo:buildbase-11
 
-COPY ./ContractDiff ./ContractDiff
-COPY ./HttpCommand ./HttpCommand
-COPY ./security-client-agnostic ./security-client-agnostic
-COPY ./timbuctoo-test-services ./timbuctoo-test-services
-COPY ./timbuctoo-instancev4/src ./timbuctoo-instancev4/src
-COPY ./timbuctoo-instancev4/pom.xml ./timbuctoo-instancev4/pom.xml
+COPY ./src ./src
 COPY ./pom.xml ./pom.xml
 
-COPY ./timbuctoo-instancev4/example_config.yaml ./timbuctoo-instancev4/example_config.yaml
+COPY ./example_config.yaml ./example_config.yaml
 RUN mvn clean package
 
 FROM openjdk:11-jre-slim
@@ -21,8 +16,8 @@ RUN mkdir -p /root/data/dataSets && \
   echo "[]" > /root/data/auth/logins.json && \
   echo "[]" > /root/data/auth/users.json
 
-COPY --from=0 /build/timbuctoo/timbuctoo-instancev4/target/appassembler .
-COPY --from=0 /build/timbuctoo/timbuctoo-instancev4/example_config.yaml .
+COPY --from=0 /build/timbuctoo/target/appassembler .
+COPY --from=0 /build/timbuctoo/example_config.yaml .
 
 CMD ["./bin/timbuctoo", "server", "./example_config.yaml"]
 
