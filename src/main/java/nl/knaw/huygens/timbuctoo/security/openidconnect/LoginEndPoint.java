@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Path("{v5:(/v5)?}/openid-connect")
+@Path("/openid-connect")
 public class LoginEndPoint {
   public static final Logger LOG = LoggerFactory.getLogger(LoginEndPoint.class);
   private final Map<UUID, LoginSessionData> loginSessions;
