@@ -6,15 +6,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>nl.knaw.huygens</groupId>
   <artifactId>timbuctoo</artifactId>
-  <version>4.4.0-SNAPSHOT</version><!--marker for release.sh-->
+  <version>4.4.0-SNAPSHOT</version>
 
-  <name>Timbuctoo-instance</name>
-  <description>Back-end software that provides different front-ends to share data and variations on that data.
+  <name>Timbuctoo</name>
+  <description>
+    Back-end software that provides different front-ends to share data and variations on that data.
   </description>
-  <url>http://repository.huygens.knaw.nl/static/search.html</url>
   <organization>
     <name>Huygens ING</name>
-    <url>http://www.huygens.knaw.nl/</url>
+    <url>https://www.huygens.knaw.nl/</url>
   </organization>
   <inceptionYear>2012</inceptionYear>
 
@@ -26,37 +26,12 @@
     </license>
   </licenses>
 
-  <issueManagement>
-    <system>Jira</system>
-    <url>http://jira.huygens.knaw.nl/secure/RapidBoard.jspa?rapidView=3</url>
-  </issueManagement>
-
-  <ciManagement>
-    <system>Jenkins</system>
-    <url>http://ci.huygens.knaw.nl/job/timbuctoo_develop</url>
-  </ciManagement>
-
-  <distributionManagement>
-    <repository>
-      <id>maven.huygens</id>
-      <name>Huygens Maven Repository</name>
-      <url>${huygens-repo}</url>
-    </repository>
-    <!-- use the following if you ARE using a snapshot version. -->
-    <snapshotRepository>
-      <id>maven.huygens</id>
-      <name>Huygens Maven Repository</name>
-      <url>${huygens-repo}</url>
-      <uniqueVersion>false</uniqueVersion>
-    </snapshotRepository>
-  </distributionManagement>
-
   <developers>
     <developer>
       <id>RA</id>
       <name>René van der Ark</name>
       <organization>Huygens ING</organization>
-      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+      <organizationUrl>https://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
       <id>HB</id>
@@ -68,25 +43,25 @@
       <id>RD</id>
       <name>Ronald Haentjens Dekker</name>
       <organization>Huygens ING</organization>
-      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+      <organizationUrl>https://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
       <id>MK</id>
       <name>Meindert Kroese</name>
       <organization>Huygens ING</organization>
-      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+      <organizationUrl>https://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
       <id>PJ</id>
       <name>Pratham Joshi</name>
       <organization>Huygens ING</organization>
-      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+      <organizationUrl>https://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
       <id>MM</id>
       <name>Martijn Maas</name>
       <organization>Huygens ING</organization>
-      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+      <organizationUrl>https://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
       <id>KM</id>
@@ -98,51 +73,19 @@
       <id>JN</id>
       <name>Jauco Noordzij</name>
       <organization>Huygens ING</organization>
-      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+      <organizationUrl>https://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
       <id>WR</id>
       <name>Walter Ravenek</name>
       <organization>Huygens ING</organization>
-      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+      <organizationUrl>https://www.huygens.knaw.nl</organizationUrl>
     </developer>
   </developers>
 
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <!-- don't generate javadoc -->
     <maven.javadoc.skip>true</maven.javadoc.skip>
-    <!-- test output -->
-    <concordion.output.dir>${basedir}/target/concordion</concordion.output.dir>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <rpm.app-home>/data/timbuctoo/app</rpm.app-home>
-
-    <!--version numbers-->
-    <maven-compiler.version>3.11.0</maven-compiler.version>
-    <!-- code dependencies -->
-    <concordion.version>3.1.3</concordion.version>
-    <dropwizard.version>3.0.1</dropwizard.version>
-    <jsonassert.version>1.5.1</jsonassert.version>
-    <hamcrest-library.version>2.2</hamcrest-library.version>
-    <vavr.version>0.10.4</vavr.version>
-    <huygens.persistence.version>2.3.0</huygens.persistence.version>
-    <junit.version>5.9.3</junit.version>
-    <jetty.version>10.0.15</jetty.version>
-    <mockito.version>5.3.1</mockito.version>
-    <rdf4j.version>4.3.3</rdf4j.version>
-    <xmlunit.version>2.9.1</xmlunit.version>
-    <jackson.version>2.14.1</jackson.version>
-    <!-- Maven plugins -->
-    <appassembler.version>2.1.0</appassembler.version>
-    <build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
-    <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
-    <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
-    <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -150,7 +93,7 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-bom</artifactId>
-        <version>${jetty.version}</version>
+        <version>10.0.17</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -158,7 +101,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
-        <version>${jackson.version}</version>
+        <version>2.15.3</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -166,7 +109,7 @@
       <dependency>
         <groupId>io.dropwizard</groupId>
         <artifactId>dropwizard-bom</artifactId>
-        <version>${dropwizard.version}</version>
+        <version>3.0.4</version>
         <type>pom</type>
         <scope>import</scope>
         <exclusions>
@@ -185,7 +128,7 @@
       <dependency>
         <groupId>org.eclipse.rdf4j</groupId>
         <artifactId>rdf4j-bom</artifactId>
-        <version>${rdf4j.version}</version>
+        <version>4.3.8</version>
         <scope>import</scope>
         <type>pom</type>
         <exclusions>
@@ -210,16 +153,19 @@
       <artifactId>jaxb-api</artifactId>
       <version>2.3.1</version>
     </dependency>
+
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-core</artifactId>
       <version>2.3.0.1</version>
     </dependency>
+
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
       <version>2.3.1</version>
     </dependency>
+
     <dependency>
       <groupId>javax.activation</groupId>
       <artifactId>activation</artifactId>
@@ -233,22 +179,24 @@
       <version>3.0.2</version>
     </dependency>
 
-    <!-- ## Main dependencies ## -->
     <!-- Dropwizard -->
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-core</artifactId>
     </dependency>
+
     <!--file uploads-->
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-forms</artifactId>
     </dependency>
+
     <!--make requests to other webservices-->
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-client</artifactId>
     </dependency>
+
     <!--serve static assets-->
     <dependency>
       <groupId>io.dropwizard</groupId>
@@ -267,17 +215,17 @@
       <version>18.3.12</version>
     </dependency>
 
-    <!-- ### handle ids ## -->
     <!-- SDK to create Handle persistent ids-->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>huygens-persistence</artifactId>
-      <version>${huygens.persistence.version}</version>
+      <version>2.3.0</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
+
         <exclusion>
           <groupId>org.mockito</groupId>
           <artifactId>mockito-all</artifactId>
@@ -285,40 +233,6 @@
       </exclusions>
     </dependency>
 
-    <!-- ### RML datasource expression implementation -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-jexl3</artifactId>
-      <version>3.2.1</version>
-    </dependency>
-
-    <!-- ### Uploads file handling ## -->
-    <!-- CSV -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-csv</artifactId>
-      <version>1.9.0</version>
-    </dependency>
-    <!-- Excel -->
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>4.1.2</version>
-    </dependency>
-    <!-- dataperfect -->
-    <dependency>
-      <groupId>com.github.DANS-KNAW</groupId>
-      <artifactId>dans-dp-lib</artifactId>
-      <version>36e6037f4b</version>
-    </dependency>
-    <!-- MS Access -->
-    <dependency>
-      <groupId>com.healthmarketscience.jackcess</groupId>
-      <artifactId>jackcess</artifactId>
-      <version>4.0.4</version>
-    </dependency>
-
-    <!-- ### Search API's ## -->
     <!-- ElasticSearch REST API -->
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
@@ -333,7 +247,6 @@
       <version>2.38</version>
     </dependency>
 
-    <!-- ### Logging and reporting ## -->
     <!--GELF logback handler for sending logs to a remote log server-->
     <dependency>
       <groupId>net.gini.dropwizard</groupId>
@@ -358,17 +271,9 @@
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>txw2</artifactId>
-      <version>4.0.1</version>
+      <version>4.0.2</version>
     </dependency>
 
-    <!--Azure libraries for using azure services when running there -->
-    <dependency>
-      <groupId>com.microsoft.azure</groupId>
-      <artifactId>azure-storage</artifactId>
-      <version>8.6.6</version>
-    </dependency>
-
-    <!-- ### RDF ## -->
     <!-- Apache Jena -->
     <dependency>
       <groupId>org.apache.jena</groupId>
@@ -403,19 +308,21 @@
       <version>2.9.3</version>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-guava</artifactId>
     </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
     </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
     </dependency>
-    <!-- ### Std lib additions ## -->
 
     <!-- Apache Commons -->
     <dependency>
@@ -434,7 +341,7 @@
     <dependency>
       <groupId>io.vavr</groupId>
       <artifactId>vavr</artifactId>
-      <version>${vavr.version}</version>
+      <version>0.10.4</version>
     </dependency>
 
     <!-- Bit.ly java client -->
@@ -444,44 +351,19 @@
       <version>0.8.0</version>
     </dependency>
 
-    <!-- gson used in TestableTinkerPopGraphManager -->
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.10.1</version>
-    </dependency>
-
-    <!-- ## End of main dependencies ## -->
-
-    <!-- ## Test dependencies ## -->
     <!-- Hamcrest dependency should be on top see http://stackoverflow.com/a/16735373 -->
     <!-- Hamcrest library -->
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
-      <version>${hamcrest-library.version}</version>
+      <version>2.2</version>
       <scope>test</scope>
-    </dependency>
-
-    <!-- Concordion acceptance test framework -->
-    <dependency>
-      <groupId>org.concordion</groupId>
-      <artifactId>concordion</artifactId>
-      <version>${concordion.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- Dropwizard test dependencies -->
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-testing</artifactId>
-      <version>${dropwizard.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -489,9 +371,10 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.version}</version>
+      <version>5.9.3</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
@@ -499,18 +382,11 @@
       <scope>test</scope>
     </dependency>
 
-    <!--hamcrest matcher for asserting json -->
-    <dependency>
-      <groupId>uk.co.datumedge</groupId>
-      <artifactId>hamcrest-json</artifactId>
-      <version>0.2</version>
-    </dependency>
-
     <!-- Mockito mocking framework -->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
+      <version>5.3.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -532,13 +408,14 @@
     <dependency>
       <groupId>org.xmlunit</groupId>
       <artifactId>xmlunit-core</artifactId>
-      <version>${xmlunit.version}</version>
+      <version>2.9.1</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.xmlunit</groupId>
       <artifactId>xmlunit-matchers</artifactId>
-      <version>${xmlunit.version}</version>
+      <version>2.9.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -548,56 +425,37 @@
       <version>3.24.2</version>
       <scope>test</scope>
     </dependency>
-    <!-- ## End of test dependencies ## -->
   </dependencies>
 
   <repositories>
-    <repository>
-      <id>oracleReleases</id>
-      <name>Oracle Released Java Packages</name>
-      <url>https://download.oracle.com/maven</url>
-      <layout>default</layout>
-    </repository>
     <repository>
       <id>central</id>
       <name>Central repository</name>
       <url>https://repo1.maven.org/maven2/</url>
     </repository>
-    <repository>
-      <id>sun-repo-2</id>
-      <url>https://download.java.net/maven/2/</url>
-    </repository>
+
     <repository>
       <id>apache</id>
       <url>https://repository.apache.org/content/repositories/public/</url>
     </repository>
-    <repository>
-      <id>oracle</id>
-      <url>https://download.oracle.com/maven/</url>
-    </repository>
+
     <repository>
       <id>Huygens</id>
       <url>https://maven.huygens.knaw.nl/repository/</url>
+
       <releases>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>
         <checksumPolicy>warn</checksumPolicy>
       </releases>
+
       <snapshots>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
-    <repository>
-      <id>mbknor</id>
-      <name>mbknor</name>
-      <url>https://raw.githubusercontent.com/mbknor/mbknor.github.com/master/m2repo/releases</url>
-    </repository>
-    <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
-    </repository>
+
     <repository>
       <id>jcenter</id>
       <name>bintray</name>
@@ -609,59 +467,27 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler.version}</version>
+        <version>3.11.0</version>
         <configuration>
           <release>11</release>
         </configuration>
       </plugin>
+
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.2</version>
         <configuration>
           <systemPropertyVariables>
             <logback.configurationFile>${basedir}/src/test/resources/disable-logging.xml</logback.configurationFile>
           </systemPropertyVariables>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${build-helper-maven-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>add-test-source</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${basedir}/src/spec/java</source>
-              </sources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>add-test-resource</id>
-            <phase>generate-test-resources</phase>
-            <goals>
-              <goal>add-test-resource</goal>
-            </goals>
-            <configuration>
-              <resources>
-                <resource>
-                  <directory>
-                    ${basedir}/src/spec/resources
-                  </directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>appassembler-maven-plugin</artifactId>
-        <version>${appassembler.version}</version>
+        <version>2.1.0</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -679,67 +505,12 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven-failsafe-plugin.version}</version>
-        <configuration>
-          <forkCount>1</forkCount>
-          <reuseForks>false</reuseForks>
-          <argLine>-Xms1024m -Xmx1024m</argLine>
-          <testFailureIgnore>false</testFailureIgnore>
-          <skip>false</skip>
-          <testSourceDirectory>${project.build.testOutputDirectory}</testSourceDirectory>
-          <includes>
-            <include>**/*Fixture.java</include>
-          </includes>
-          <systemPropertyVariables>
-            <concordion.output.dir>${concordion.output.dir}</concordion.output.dir>
-            <!--<dw.logging.level>OFF</dw.logging.level>&lt;!&ndash; Do you want no logging output from your tests? because that's how you get no logging output from your tests&ndash;&gt;-->
-          </systemPropertyVariables>
-        </configuration>
-        <executions>
-          <execution>
-            <id>run-integration-tests</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${maven-checkstyle-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>validate</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <configLocation>/src/main/resources/checkstyle_config.xml</configLocation>
-              <includeTestSourceDirectory>true</includeTestSourceDirectory>
-              <encoding>UTF-8</encoding>
-              <consoleOutput>true</consoleOutput>
-              <failsOnError>true</failsOnError>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>pl.project13.maven</groupId>
-        <artifactId>git-commit-id-plugin</artifactId>
-        <version>2.2.1</version>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <version>7.0.0</version>
+
         <executions>
           <execution>
             <goals>
@@ -749,7 +520,6 @@
         </executions>
 
         <configuration>
-          <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
           <prefix>git</prefix>
           <dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
           <generateGitPropertiesFile>true</generateGitPropertiesFile>
@@ -786,67 +556,6 @@
           </gitDescribe>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <echo>
-                  ======================================================================================================
-                  Done! now run
-
-                  ./target/appassembler/bin/timbuctoo server example_config.yaml
-
-                  to get a debug server up and running then go to http://localhost:8080
-                  ======================================================================================================
-                </echo>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>makeIndex</id>
-      <activation>
-        <os>
-          <family>unix</family>
-        </os>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>${exec-maven-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>build-docs</id>
-                <phase>post-integration-test</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <configuration>
-                  <executable>${basedir}/src/spec/scripts/builddoc</executable>
-                  <commandlineArgs>
-                    ${basedir}/src/spec/resources/ ${basedir}/target/concordion/
-                  </commandlineArgs>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
