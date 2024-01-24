@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.dropwizard.endpoints.auth;
 
-import io.vavr.control.Either;
 import nl.knaw.huygens.timbuctoo.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.util.Either;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.dataset.exceptions.DataSetCreationException;

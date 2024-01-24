@@ -12,10 +12,9 @@ import nl.knaw.huygens.timbuctoo.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.util.RdfConstants;
-import org.apache.jena.shared.PrefixMapping;
-import org.apache.jena.shared.impl.PrefixMappingImpl;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,14 +25,12 @@ public class BdbTypeNameStore implements TypeNameStore {
     .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);
 
-  protected final PrefixMapping prefixMapping;
   protected final TypeNames data;
   private final DataStorage dataStore;
   private final String dataStoreRdfPrefix;
 
   public BdbTypeNameStore(DataStorage dataStore, String dataStoreRdfPrefix) throws IOException {
     this.dataStoreRdfPrefix = dataStoreRdfPrefix;
-    prefixMapping = new PrefixMappingImpl();
     final String storedValue = dataStore.getValue();
     if (storedValue == null) {
       data = new TypeNames();
@@ -41,7 +38,6 @@ public class BdbTypeNameStore implements TypeNameStore {
     } else {
       data = OBJECT_MAPPER.readValue(storedValue, new TypeReference<>() {});
     }
-    prefixMapping.setNsPrefixes(data.prefixes);
     this.dataStore = dataStore;
   }
 
@@ -108,12 +104,15 @@ public class BdbTypeNameStore implements TypeNameStore {
 
   @Override
   public String shorten(String uri) {
-    return prefixMapping.shortForm(uri);
+    Optional<String> prefix = data.prefixes.keySet().stream()
+        .filter(key -> uri.startsWith(data.prefixes.get(key)))
+        .findAny();
+    return prefix.map(s -> s + ":" + uri.substring(data.prefixes.get(prefix.get()).length())).orElse(uri);
   }
 
   @Override
   public Map<String, String> getMappings() {
-    return prefixMapping.getNsPrefixMap();
+    return new HashMap<>(data.prefixes);
   }
 
   @Override
@@ -123,7 +122,6 @@ public class BdbTypeNameStore implements TypeNameStore {
 
   public void addPrefix(String prefix, String iri) {
     data.prefixes.put(prefix, iri);
-    prefixMapping.setNsPrefix(prefix, iri); //idempotent
   }
 
   public void commit() throws JsonProcessingException, DatabaseWriteException {

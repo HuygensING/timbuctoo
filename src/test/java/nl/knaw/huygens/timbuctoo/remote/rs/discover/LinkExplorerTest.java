@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
 
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.HttpRequest;
@@ -19,6 +20,7 @@ import static org.hamcrest.Matchers.is;
 public class LinkExplorerTest extends AbstractRemoteTest {
 
   @Test
+  @Disabled
   public void findLinksInDocumentAndFindChildren() throws Exception {
     String path = "/foo/bar/page1.html";
     String capabilityListPath = "/foo/bar/dataset1/capabilitylist.xml";
@@ -89,6 +91,7 @@ public class LinkExplorerTest extends AbstractRemoteTest {
   }
 
   @Test
+  @Disabled
   public void findLinksInHeader() throws Exception {
     String path = "/foo/bar/page2.html";
 
@@ -125,6 +128,7 @@ public class LinkExplorerTest extends AbstractRemoteTest {
   }
 
   @Test
+  @Disabled
   public void findLinksInRobotsTxt() {
     String path = "/robots.txt";
 

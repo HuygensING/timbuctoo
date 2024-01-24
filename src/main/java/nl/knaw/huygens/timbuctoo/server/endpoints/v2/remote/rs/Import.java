@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 
-import io.vavr.control.Either;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;
@@ -9,6 +8,9 @@ import nl.knaw.huygens.timbuctoo.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.ResourceSyncMutationFileHelper;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.dto.ResourceSyncReport;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.util.Either;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,10 +67,10 @@ public class Import {
             return Response.serverError().entity(e).build();
           }
         });
-    if (responses.isLeft()) {
+    if (responses.getLeft() != null) {
       return responses.getLeft();
     } else {
-      return responses.get();
+      return responses.getRight();
     }
   }
 

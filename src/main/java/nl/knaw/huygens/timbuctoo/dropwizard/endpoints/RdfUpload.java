@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.dropwizard.endpoints;
 
-import io.vavr.control.Either;
 import nl.knaw.huygens.timbuctoo.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.util.Either;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.dataset.ImportStatus;
@@ -115,10 +115,10 @@ public class RdfUpload {
         }
         return Response.accepted().build();
       });
-    if (result.isLeft()) {
+    if (result.getLeft() != null) {
       return result.getLeft();
     } else {
-      return result.get();
+      return result.getRight();
     }
   }
 

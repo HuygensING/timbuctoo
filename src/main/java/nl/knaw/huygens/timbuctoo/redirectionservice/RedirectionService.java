@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.redirectionservice;
 
 import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.redirectionservice.exceptions.RedirectionServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,7 @@ public abstract class RedirectionService {
     try {
       savePid(params);
     } catch (PersistenceException | URISyntaxException | RedirectionServiceException e) {
-      LOG.error(Logmarkers.serviceUnavailable, "Could not create handle", e);
+      LOG.error("Could not create handle", e);
       if (params.getRetries() < 5) {
         LOG.warn(String.format("Re-adding %s%s job to the queue for '%s' '%s'",
           params.getRetries() + 1, getOrdinalSuffix(params.getRetries() + 1),
