@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
-import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -71,27 +71,18 @@ import static org.hamcrest.core.Is.is;
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class IntegrationTest {
   public static final DropwizardAppExtension<TimbuctooConfiguration> APP = new CleaningDropwizardAppExtension(
-    "example_config.yaml",
-    Paths.get(resourceFilePath("integrationtest"), "datasets")
+    resourceFilePath("test_config.yaml"),
+    Paths.get(resourceFilePath("integrationtest"), "datasets"),
+    ConfigOverride.config("securityConfiguration.accessFactory.authorizationsPath", resourceFilePath("integrationtest") + "/datasets"),
+    ConfigOverride.config("securityConfiguration.accessFactory.permissionConfig", resourceFilePath("integrationtest/permissionConfig.json")),
+    ConfigOverride.config("securityConfiguration.accessFactory.usersFilePath", resourceFilePath("integrationtest/users.json")),
+    ConfigOverride.config("databases.databaseLocation", resourceFilePath("integrationtest") + "/datasets"),
+    ConfigOverride.config("dataSet.dataStorage.rootDir", resourceFilePath("integrationtest") + "/datasets")
   );
   private static final String AUTH = "FAKE_AUTH_TOKEN";
   private static final String USER_ID = "33707283d426f900d4d33707283d426f900d4d0d";
   private static final String PREFIX = "u" + USER_ID;
   private static Client client;
-
-  static {
-    EvilEnvironmentVariableHacker.setEnv(
-      "http://localhost",
-      "9200",
-      "elastic",
-      "changeme",
-      "http://127.0.0.1:0",
-      resourceFilePath("integrationtest"),
-      resourceFilePath("integrationtest"),
-      "0",
-      "0"
-    );
-  }
 
   @BeforeAll
   public static void beforeClass() throws IOException {

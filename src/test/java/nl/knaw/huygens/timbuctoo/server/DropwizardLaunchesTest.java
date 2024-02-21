@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.server;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
-import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -17,27 +16,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class DropwizardLaunchesTest {
-  static {
-    EvilEnvironmentVariableHacker.setEnv(
-      "http://localhost",
-      "9200",
-      "elastic",
-      "changeme",
-      "http://127.0.0.1:0",
-      resourceFilePath("testrunstate"),
-      resourceFilePath("testrunstate"),
-      "0",
-      "0"
-    );
-  }
-
   public static final DropwizardAppExtension<TimbuctooConfiguration> APP = new DropwizardAppExtension<>(
     TimbuctooV4.class,
-    "example_config.yaml",
+    resourceFilePath("test_config.yaml"),
     ConfigOverride.config(
         "collectionFilters.elasticsearch.@class",
         "nl.knaw.huygens.timbuctoo.server.TestCollectionFilter"
-    )
+    ),
+    ConfigOverride.config("securityConfiguration.accessFactory.authorizationsPath", resourceFilePath("testrunstate") + "/datasets"),
+    ConfigOverride.config("securityConfiguration.accessFactory.permissionConfig", resourceFilePath("testrunstate/permissionConfig.json")),
+    ConfigOverride.config("securityConfiguration.accessFactory.usersFilePath", resourceFilePath("testrunstate/users.json")),
+    ConfigOverride.config("databases.databaseLocation", resourceFilePath("testrunstate") + "/datasets"),
+    ConfigOverride.config("dataSet.dataStorage.rootDir", resourceFilePath("testrunstate") + "/datasets")
   );
 
   @Test

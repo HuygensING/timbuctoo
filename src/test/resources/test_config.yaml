@@ -1,0 +1,163 @@
+securityConfiguration:
+  "@class": nl.knaw.huygens.timbuctoo.security.dummy.DummySecurityFactoryConfiguration
+  accessFactory:
+    "@class": nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory
+    authorizationsPath: datasets
+    permissionConfig: permissionConfig.json
+    usersFilePath: users.json
+
+baseUri: http://127.0.0.1:0
+userRedirectUrl: ./static/graphiql
+
+collectionFilters:
+  elasticsearch:
+    "@class": nl.knaw.huygens.timbuctoo.elasticsearch.ElasticSearchFilter
+    hostname: http://localhost
+    port: 9200
+    username: elastic
+    password: changeme
+
+archetypesSchema: |
+  type Archetypes {
+    persons: PersonArchetypeList @fromCollection(uri: "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", listAll: true, indexName: "PersonArchetype")
+  }
+
+  type PersonArchetypeList {
+    prevCursor: ID
+    nextCursor: ID
+    items: [PersonArchetype!]!
+  }
+
+  type PersonArchetype {
+    names: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/properties/names", direction: "OUT", isValue: true, isObject: false, isList: false)
+  }
+
+defaultSummaryProps:
+  defaultTitles:
+  - path:
+    - http://timbuctoo.huygens.knaw.nl/static/predicate/names
+    type: SimplePath
+  - path:
+    - http://schema.org/name
+    type: SimplePath
+  - path:
+    - http://schema.org/title
+    type: SimplePath
+  - path:
+    - http://www.w3.org/2000/01/rdf-schema#label
+    type: SimplePath
+  - path:
+    - http://www.w3.org/2004/02/skos/core#prefLabel
+    type: SimplePath
+  defaultDescriptions:
+  - path:
+    - http://schema.org/description
+    type: SimplePath
+  defaultImages:
+  - path:
+    - http://xmlns.com/foaf/0.1/img
+    type: SimplePath
+  - path:
+    - http://xmlns.com/foaf/0.1/depiction
+    type: SimplePath
+  - path:
+    - http://schema.org/image
+    type: SimplePath
+
+metadata:
+  props:
+    title:
+      type: SimpleMetadataProp
+      predicate: http://purl.org/dc/terms/title
+    description:
+      type: SimpleMetadataProp
+      predicate: http://purl.org/dc/terms/description
+      valueType: https://daringfireball.net/projects/markdown/syntax
+    imageUrl:
+      type: SimpleMetadataProp
+      predicate: http://xmlns.com/foaf/0.1/depiction
+    license:
+      type: UriMetadataProp
+      predicate: http://purl.org/dc/terms/license
+    owner:
+      type: EntityMetadataProp
+      predicate: http://purl.org/dc/terms/rightsHolder
+      useBaseUri: true
+      entityUri: rightsHolder
+      properties:
+        name:
+          type: SimpleMetadataProp
+          predicate: http://schema.org/name
+        email:
+          type: SimpleMetadataProp
+          predicate: http://schema.org/email
+    contact:
+      type: EntityMetadataProp
+      predicate: http://schema.org/ContactPoint
+      useBaseUri: true
+      entityUri: ContactPoint
+      properties:
+        name:
+          type: SimpleMetadataProp
+          predicate: http://schema.org/name
+        email:
+          type: SimpleMetadataProp
+          predicate: http://schema.org/email
+    provenanceInfo:
+      type: EntityMetadataProp
+      predicate: http://purl.org/dc/terms/provenance
+      useBaseUri: true
+      entityUri: Provenance
+      properties:
+        title:
+          type: SimpleMetadataProp
+          predicate: http://purl.org/dc/terms/title
+        body:
+          type: SimpleMetadataProp
+          predicate: http://purl.org/dc/terms/description
+          valueType: https://daringfireball.net/projects/markdown/syntax
+
+databases:
+  databaseLocation: datasets
+
+dataSet:
+  dataStorage:
+    "@class": nl.knaw.huygens.timbuctoo.datastorage.implementations.filesystem.FileSystemDataStorage
+    rootDir: datasets
+    rdfIo:
+      "@class": nl.knaw.huygens.timbuctoo.rdfio.implementations.rdf4j.Rdf4jIoFactory
+      rdfFormat: application/n-quads
+
+rdfUriHelper:
+  rdfBaseUri: http://example.org/
+
+searchResultAvailabilityTimeout:
+  duration: 8
+  timeUnit: HOURS
+
+webhooks:
+  dataSetUpdatedUrls:
+   -
+  httpClient:
+    connectionRequestTimeout: 200ms
+
+redirectionService:
+  "@class": nl.knaw.huygens.timbuctoo.redirectionservice.DummyRedirectionServiceFactory
+
+allowGremlinEndpoint: true
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 0
+  adminConnectors:
+    - type: http
+      port: 0
+  requestLog:
+    appenders: []
+
+logging:
+  appenders:
+    - type: console
+      logFormat: "- %-5p  %m [%c{60}]%n"
+  level: INFO
