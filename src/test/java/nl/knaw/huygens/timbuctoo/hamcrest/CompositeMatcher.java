@@ -31,7 +31,6 @@ import org.hamcrest.internal.ReflectiveTypeFinder;
 import java.util.List;
 
 public class CompositeMatcher<T> extends TypeSafeDiagnosingMatcher<T> {
-
   private List<TypeSafeMatcher<T>> matchers;
 
   public CompositeMatcher() {

@@ -19,9 +19,9 @@ public class BasicDataSetMetaData implements DataSetMetaData {
   private final String baseUri;
   private final String uriPrefix;
   private final String combinedId;
-  private boolean promoted;
+  private final boolean promoted;
   private boolean published;
-  private List<ImportInfo> importInfo;
+  private final List<ImportInfo> importInfo;
 
   @JsonCreator
   public BasicDataSetMetaData(@JsonProperty("ownerId") String ownerId,

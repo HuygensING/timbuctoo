@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
 public class CapabilityTest {
-
   @Test
   public void forString() {
     for (Capability capa : Capability.values()) {
@@ -38,7 +37,6 @@ public class CapabilityTest {
 
   @Test
   public void verifyUpRelation() {
-
     assertThat(Capability.DESCRIPTION.verifyUpRelation(null), is(true));
     assertThat(Capability.DESCRIPTION.verifyUpRelation(Capability.CAPABILITYLIST), is(false));
 
@@ -49,12 +47,10 @@ public class CapabilityTest {
     assertThat(Capability.RESOURCELIST.verifyUpRelation(null), is(false));
     assertThat(Capability.RESOURCELIST.verifyUpRelation(Capability.DESCRIPTION), is(false));
     assertThat(Capability.RESOURCELIST.verifyUpRelation(Capability.CAPABILITYLIST), is(true));
-
   }
 
   @Test
   public void verifyIndexRelation() {
-
     assertThat(Capability.RESOURCELIST.verifyIndexRelation(null), is(false));
     assertThat(Capability.RESOURCELIST.verifyIndexRelation(Capability.CAPABILITYLIST), is(false));
     assertThat(Capability.RESOURCELIST.verifyIndexRelation(Capability.RESOURCELIST), is(true));
@@ -66,7 +62,6 @@ public class CapabilityTest {
 
   @Test
   public void verifyChildRelation() {
-
     assertThat(Capability.DESCRIPTION.verifyChildRelation(null), is(false));
     assertThat(Capability.DESCRIPTION.verifyChildRelation(Capability.DESCRIPTION), is(true));
     assertThat(Capability.DESCRIPTION.verifyChildRelation(Capability.CAPABILITYLIST), is(true));
@@ -83,6 +78,4 @@ public class CapabilityTest {
     assertThat(Capability.RESOURCEDUMP_MANIFEST.verifyChildRelation(null), is(true));
     assertThat(Capability.RESOURCEDUMP_MANIFEST.verifyChildRelation(Capability.RESOURCEDUMP_MANIFEST), is(false));
   }
-
-
 }

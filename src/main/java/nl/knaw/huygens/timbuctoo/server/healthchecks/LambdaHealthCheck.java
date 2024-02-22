@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class LambdaHealthCheck extends HealthCheck {
-
   private final Supplier<Optional<String>> checkFunction;
 
   public LambdaHealthCheck(Supplier<Optional<String>> checkFunction) {

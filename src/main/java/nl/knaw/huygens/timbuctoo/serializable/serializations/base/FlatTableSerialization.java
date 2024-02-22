@@ -31,7 +31,7 @@ public abstract class FlatTableSerialization implements Serialization {
 
   @Override
   public void serialize(SerializableResult data) throws IOException {
-    List<Serializable> list = findListRecurser(data.getData().getContents());
+    List<Serializable> list = findListRecurser(data.data().getContents());
 
     if (list != null) {
       // we found one list. We can now make the csv a bit nicer by starting from there and ignoring
@@ -46,12 +46,11 @@ public abstract class FlatTableSerialization implements Serialization {
       //
       // it's something ¯\_(ツ)_/¯
       TocItem toc;
-      toc = generateToc(data.getData());
+      toc = generateToc(data.data());
       initialize(getHeader(toc, ""));
-      writeBody(data.getData(), toc);
+      writeBody(data.data(), toc);
       finish();
     }
-
   }
 
   /**
@@ -75,17 +74,14 @@ public abstract class FlatTableSerialization implements Serialization {
     }
     if (data.size() == 1) {
       Serializable entry = data.values().iterator().next();
-      if (entry instanceof Entity) {
-        return findListRecurser(((Entity) entry).getContents());
-      } else if (entry instanceof SerializableList) {
-        return ((SerializableList) entry).getItems();
-      } else if (entry instanceof GraphqlIntrospectionList) {
-        return ((GraphqlIntrospectionList) entry).getItems();
-      } else if (entry instanceof GraphqlIntrospectionObject) {
-        return findListRecurser(((GraphqlIntrospectionObject) entry).getContents());
-      } else {
-        return null;
-      }
+      return switch (entry) {
+        case Entity entity -> findListRecurser(entity.getContents());
+        case SerializableList serializableList -> serializableList.getItems();
+        case GraphqlIntrospectionList graphqlIntrospectionList -> graphqlIntrospectionList.getItems();
+        case GraphqlIntrospectionObject graphqlIntrospectionObject ->
+            findListRecurser(graphqlIntrospectionObject.getContents());
+        case null, default -> null;
+      };
     } else {
       return null;
     }
@@ -140,9 +136,7 @@ public abstract class FlatTableSerialization implements Serialization {
     writeRow(result);
   }
 
-
-  private class GenerateTocDispatcher extends Dispatcher<TocItem> {
-
+  private static class GenerateTocDispatcher extends Dispatcher<TocItem> {
     @Override
     public void handleEntity(Entity entity, TocItem tocItem) throws IOException {
       for (Map.Entry<PredicateInfo, Serializable> entry : entity.getContents().entrySet()) {
@@ -184,27 +178,26 @@ public abstract class FlatTableSerialization implements Serialization {
     }
   }
 
-  private class WriteBodyDispatcher extends Dispatcher<Tuple<TocItem, List<Value>>> {
-
+  private static class WriteBodyDispatcher extends Dispatcher<Tuple<TocItem, List<Value>>> {
     @Override
     public void handleEntity(Entity entity, Tuple<TocItem, List<Value>> context) throws IOException {
-      for (Map.Entry<String, TocItem> tocEntry : context.getLeft().contents.entrySet()) {
+      for (Map.Entry<String, TocItem> tocEntry : context.left().contents.entrySet()) {
         dispatch(
           entity.getContentsUnderSafeName().get(tocEntry.getKey()),
-          tuple(tocEntry.getValue(), context.getRight())
+          tuple(tocEntry.getValue(), context.right())
         );
       }
     }
 
     @Override
     public void handleNull(Tuple<TocItem, List<Value>> context) throws IOException {
-      if (context.getLeft().contents.isEmpty()) {
-        context.getRight().add(null);
+      if (context.left().contents.isEmpty()) {
+        context.right().add(null);
       } else {
-        for (Map.Entry<String, TocItem> tocEntry : context.getLeft().contents.entrySet()) {
+        for (Map.Entry<String, TocItem> tocEntry : context.left().contents.entrySet()) {
           dispatch(
             null,
-            tuple(tocEntry.getValue(), context.getRight())
+            tuple(tocEntry.getValue(), context.right())
           );
         }
       }
@@ -213,15 +206,14 @@ public abstract class FlatTableSerialization implements Serialization {
     @Override
     public void handleList(SerializableList serializableList, Tuple<TocItem, List<Value>> context) throws IOException {
       List<Serializable> list = serializableList.getItems();
-      for (int i = 0; i <= context.getLeft().maxCount; i++) {
+      for (int i = 0; i <= context.left().maxCount; i++) {
         if (i < list.size()) {
           final Serializable o = list.get(i);
-          dispatch(o, tuple(context.getLeft().contents.get(i + ""), context.getRight()));
+          dispatch(o, tuple(context.left().contents.get(i + ""), context.right()));
         } else {
-          dispatch(null, tuple(context.getLeft().contents.get(i + ""), context.getRight()));
+          dispatch(null, tuple(context.left().contents.get(i + ""), context.right()));
         }
       }
-
     }
 
     @Override
@@ -243,11 +235,11 @@ public abstract class FlatTableSerialization implements Serialization {
 
     @Override
     public void handleValue(Value object, Tuple<TocItem, List<Value>> context) throws IOException {
-      context.getRight().add(object);
+      context.right().add(object);
     }
   }
 
-  class TocItem {
+  static class TocItem {
     public final Map<String, TocItem> contents = new LinkedHashMap<>();
     public int maxCount = 0;
 

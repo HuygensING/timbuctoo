@@ -7,12 +7,9 @@ import java.util.Optional;
 
 @Value.Immutable
 public interface PropertyList {
-
   Optional<String> getPrevCursor();
 
   Optional<String> getNextCursor();
 
   List<Property> getItems();
-
-
 }

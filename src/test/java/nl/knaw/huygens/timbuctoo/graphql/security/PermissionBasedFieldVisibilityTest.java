@@ -25,7 +25,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 public class PermissionBasedFieldVisibilityTest {
-
   private UserPermissionCheck userPermissionCheck;
 
   @BeforeEach

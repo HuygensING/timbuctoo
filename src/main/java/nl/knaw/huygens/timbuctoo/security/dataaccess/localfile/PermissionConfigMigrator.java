@@ -26,35 +26,36 @@ public class PermissionConfigMigrator {
     // nl.knaw.huygens.timbuctoo.graphql.security.UserPermissionCheck.OldGraphQlPermission
     LoggerFactory.getLogger(PermissionConfigMigrator.class).info("Setting up a minimal permission configuration");
     String permissions =
-      "[\n" +
-      "  {\n" +
-      "    \"roleName\": \"USER\",\n" +
-      "    \"permissions\": [\n" +
-      "      \"READ\",\n" +
-      "      \"WRITE\",\n" +
-      "      \"READ_IMPORT_STATUS\"\n" +
-      "    ]\n" +
-      "  },\n" +
-      "  {\n" +
-      "    \"roleName\": \"ADMIN\",\n" +
-      "    \"permissions\": [\n" +
-      "      \"IMPORT_DATA\",\n" +
-      "      \"REMOVE_DATASET\",\n" +
-      "      \"PUBLISH_DATASET\",\n" +
-      "      \"EDIT_COLLECTION_METADATA\",\n" +
-      "      \"EDIT_DATASET_METADATA\",\n" +
-      "      \"EXTEND_SCHEMA\",\n" +
-      "      \"CONFIG_INDEX\",\n" +
-      "      \"CONFIG_VIEW\",\n" +
-      "      \"CHANGE_SUMMARYPROPS\",\n" +
-      "      \"READ\",\n" +
-      "      \"WRITE\",\n" +
-      "      \"UPDATE_RESOURCESYNC\",\n" +
-      "      \"IMPORT_RESOURCESYNC\",\n" +
-      "      \"READ_IMPORT_STATUS\"\n" +
-      "    ]\n" +
-      "  }\n" +
-      "]";
+        """
+            [
+              {
+                "roleName": "USER",
+                "permissions": [
+                  "READ",
+                  "WRITE",
+                  "READ_IMPORT_STATUS"
+                ]
+              },
+              {
+                "roleName": "ADMIN",
+                "permissions": [
+                  "IMPORT_DATA",
+                  "REMOVE_DATASET",
+                  "PUBLISH_DATASET",
+                  "EDIT_COLLECTION_METADATA",
+                  "EDIT_DATASET_METADATA",
+                  "EXTEND_SCHEMA",
+                  "CONFIG_INDEX",
+                  "CONFIG_VIEW",
+                  "CHANGE_SUMMARYPROPS",
+                  "READ",
+                  "WRITE",
+                  "UPDATE_RESOURCESYNC",
+                  "IMPORT_RESOURCESYNC",
+                  "READ_IMPORT_STATUS"
+                ]
+              }
+            ]""";
 
     Files.write(permissionConfig, permissions.getBytes());
   }

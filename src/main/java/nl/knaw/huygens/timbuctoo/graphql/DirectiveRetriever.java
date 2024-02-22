@@ -13,7 +13,7 @@ public class DirectiveRetriever {
       return Optional.empty();
     }
 
-    return Optional.of(parentType.getDefinition().getDirectives(directiveName).get(0))
+    return Optional.of(parentType.getDefinition().getDirectives(directiveName).getFirst())
       .map(d -> d.getArgument(argumentName))
       .map(v -> (StringValue) v.getValue())
       .map(StringValue::getValue);
@@ -25,7 +25,7 @@ public class DirectiveRetriever {
       return Optional.empty();
     }
 
-    return Optional.of(field.getDefinition().getDirectives(directiveName).get(0))
+    return Optional.of(field.getDefinition().getDirectives(directiveName).getFirst())
       .map(d -> d.getArgument(argumentName))
       .map(v -> (StringValue) v.getValue())
       .map(StringValue::getValue);

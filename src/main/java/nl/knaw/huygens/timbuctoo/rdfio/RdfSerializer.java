@@ -7,7 +7,6 @@ import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
 
 public interface RdfSerializer extends AutoCloseable {
-
   MediaType getMediaType();
 
   Charset getCharset();

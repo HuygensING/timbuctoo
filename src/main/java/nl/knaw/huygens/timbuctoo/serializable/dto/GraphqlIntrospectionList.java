@@ -16,6 +16,4 @@ public interface GraphqlIntrospectionList extends Serializable {
       .items(data)
       .build();
   }
-
-
 }

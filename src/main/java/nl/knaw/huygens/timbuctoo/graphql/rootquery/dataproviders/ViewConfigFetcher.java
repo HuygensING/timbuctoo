@@ -118,7 +118,7 @@ public class ViewConfigFetcher implements DataFetcher {
     if (collectionType == null) {
       LOG.error(
           "The collectionUri " + collectionUri + " does not exist in the schema! (it does contain: [ " +
-              schema.keySet().stream().collect(Collectors.joining(", ")) + " ]"
+              String.join(", ", schema.keySet()) + " ]"
       );
       return result;
     }

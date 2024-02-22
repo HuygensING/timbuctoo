@@ -8,9 +8,7 @@ import nl.knaw.huygens.timbuctoo.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.ResourceSyncMutationFileHelper;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.dto.ResourceSyncReport;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Either;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +23,6 @@ import java.net.URI;
 
 @Path("/v2.1/remote/rs/import")
 public class Import {
-
   public static final Logger LOG = LoggerFactory.getLogger(Import.class);
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final AuthCheck authCheck;
@@ -43,12 +40,11 @@ public class Import {
                              @QueryParam("async") @DefaultValue("true") final boolean async,
                              ImportData importData)
       throws DataStoreCreationException {
-
     final Either<Response, Response> responses = authCheck
         .getOrCreate(authorization, importData.userId, importData.dataSetId, forceCreation)
-        .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.getLeft(), userAndDs.getRight()))
+        .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.left(), userAndDs.right()))
         .map(userAndDs -> {
-          final DataSet dataSet = userAndDs.getRight();
+          final DataSet dataSet = userAndDs.right();
           try {
             LOG.info("Loading files");
 
@@ -67,10 +63,10 @@ public class Import {
             return Response.serverError().entity(e).build();
           }
         });
-    if (responses.getLeft() != null) {
-      return responses.getLeft();
+    if (responses.left() != null) {
+      return responses.left();
     } else {
-      return responses.getRight();
+      return responses.right();
     }
   }
 

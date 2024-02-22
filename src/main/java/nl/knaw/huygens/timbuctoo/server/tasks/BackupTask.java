@@ -29,7 +29,7 @@ public class BackupTask extends Task {
     }
     for (DataSet dataSet : dataSetRepository.getDataSets()) {
       try {
-        dataSet.backupDatabases(parameters.get(BACKUP_PATH).iterator().next());
+        dataSet.backupDatabases(parameters.get(BACKUP_PATH).getFirst());
         LOG.info("backup dataset: {}", dataSet.getMetadata().getCombinedId());
         output.println("backup dataset: " + dataSet.getMetadata().getCombinedId());
         output.flush();

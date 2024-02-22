@@ -72,9 +72,8 @@ public class UserPermissionCheck {
     WRITE;
 
     public Collection<Permission> translateToPermission() {
-      switch (this) {
-        case ADMIN:
-          return Lists.newArrayList(
+      return switch (this) {
+        case ADMIN -> Lists.newArrayList(
             Permission.IMPORT_DATA,
             Permission.REMOVE_DATASET,
             Permission.PUBLISH_DATASET,
@@ -89,14 +88,10 @@ public class UserPermissionCheck {
             Permission.UPDATE_RESOURCESYNC,
             Permission.IMPORT_RESOURCESYNC,
             Permission.READ_IMPORT_STATUS
-          );
-        case READ:
-          return Lists.newArrayList(Permission.READ);
-        case WRITE:
-          return Lists.newArrayList(Permission.READ, Permission.WRITE, Permission.READ_IMPORT_STATUS);
-        default:
-          throw new RuntimeException("This cannot happen.");
-      }
+        );
+        case READ -> Lists.newArrayList(Permission.READ);
+        case WRITE -> Lists.newArrayList(Permission.READ, Permission.WRITE, Permission.READ_IMPORT_STATUS);
+      };
     }
   }
 }

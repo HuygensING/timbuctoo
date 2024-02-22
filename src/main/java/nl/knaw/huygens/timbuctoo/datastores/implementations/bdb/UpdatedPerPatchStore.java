@@ -32,9 +32,9 @@ public class UpdatedPerPatchStore {
   public Stream<String> ofVersion(int version) {
     return bdbWrapper.databaseGetter().getAll()
                      .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
-                     .filter(tuple -> !tuple.getLeft().equals(ALL_VERSIONS_KEY))
-                     .filter(tuple -> tuple.getRight() == version)
-                     .map(Tuple::getLeft);
+                     .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY))
+                     .filter(tuple -> tuple.right() == version)
+                     .map(Tuple::left);
   }
 
   public Stream<SubjectCursor> fromVersion(int version, String cursor) {
@@ -47,14 +47,14 @@ public class UpdatedPerPatchStore {
                          .skipOne()
                          .forwards()
                          .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
-                         .filter(tuple -> !tuple.getLeft().equals(ALL_VERSIONS_KEY));
+                         .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY));
     } else {
       stream = bdbWrapper.databaseGetter().getAll()
                          .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
-                         .filter(tuple -> !tuple.getLeft().equals(ALL_VERSIONS_KEY));
+                         .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY));
     }
 
-    return Streams.combine(stream, (scA, scB) -> scA.getLeft().equals(scB.getLeft()))
+    return Streams.combine(stream, (scA, scB) -> scA.left().equals(scB.left()))
                   .map(UpdatedPerPatchStore::makeSubjectCursor)
                   .filter(subjectCursor -> subjectCursor.getVersions().stream().anyMatch(v -> v >= version));
   }
@@ -92,8 +92,8 @@ public class UpdatedPerPatchStore {
   }
 
   private static SubjectCursor makeSubjectCursor(Set<Tuple<String, Integer>> subjectVersions) {
-    Optional<String> subject = subjectVersions.stream().findAny().map(Tuple::getLeft);
-    Set<Integer> versions = subjectVersions.stream().map(Tuple::getRight).collect(Collectors.toSet());
+    Optional<String> subject = subjectVersions.stream().findAny().map(Tuple::left);
+    Set<Integer> versions = subjectVersions.stream().map(Tuple::right).collect(Collectors.toSet());
     return subject.map(s -> SubjectCursor.create(s, versions)).orElse(null);
   }
 }

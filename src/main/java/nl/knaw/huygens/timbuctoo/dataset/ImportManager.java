@@ -229,7 +229,7 @@ public class ImportManager implements DataProvider {
             String msg = "******* " + processor.getClass().getSimpleName() + " Started importing full log...";
             LOG.info(msg);
             importStatus.setStatus(msg);
-            importStatus.setEntryName(log.getName());
+            importStatus.setEntryName(log.name());
             RdfParser rdfParser = serializerFactory.makeRdfParser(log);
             processor.start(index);
             rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph().orElse(null), processor);

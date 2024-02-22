@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.dataset.dto;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,7 +13,7 @@ import static nl.knaw.huygens.timbuctoo.dataset.dto.ImportStatusLabel.IMPORTING;
 
 public class EntryImportStatus {
   @JsonProperty
-  private Map<String, ProgressItem> progressItemMap = Maps.newHashMap();
+  private final Map<String, ProgressItem> progressItemMap = Maps.newHashMap();
 
   @JsonProperty
   private String date;
@@ -24,7 +23,7 @@ public class EntryImportStatus {
 
   private TimeWithUnit elapsedTime;
 
-  private List<String> errors = new ArrayList<>();
+  private final List<String> errors = new ArrayList<>();
 
   public synchronized String getStatus() {
     return status;

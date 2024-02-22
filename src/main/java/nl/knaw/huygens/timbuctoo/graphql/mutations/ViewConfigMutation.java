@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.security.dto.Permission;
 import java.util.concurrent.ExecutionException;
 
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.replace;
-import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.HAS_VIEW_CONFIG;
 
 public class ViewConfigMutation extends Mutation {
@@ -45,5 +44,4 @@ public class ViewConfigMutation extends Mutation {
       throw new RuntimeException(e);
     }
   }
-
 }

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DiscoverResourceSyncDataFetcher implements DataFetcher {
-  private ResourceSyncService resourceSyncService;
+  private final ResourceSyncService resourceSyncService;
 
   public DiscoverResourceSyncDataFetcher(ResourceSyncService resourceSyncService) {
     this.resourceSyncService = resourceSyncService;
@@ -42,11 +42,11 @@ public class DiscoverResourceSyncDataFetcher implements DataFetcher {
           JsonNode content = setDetail.getDescribedBy().getDescription().getContent();
           for (JsonNode node : content) {
             discoveryResults.add(new DiscoverRsResult(
-                setDetail.getLocation(),
-                node.get("http://purl.org/dc/terms/description").get(0).get("@value").asText(),
-                node.get("http://purl.org/dc/terms/license").get(0).get("@id").asText(),
-                node.get("http://purl.org/dc/terms/title").get(0).get("@value").asText()
-              )
+                    setDetail.getLocation(),
+                    node.get("http://purl.org/dc/terms/description").get(0).get("@value").asText(),
+                    node.get("http://purl.org/dc/terms/license").get(0).get("@id").asText(),
+                    node.get("http://purl.org/dc/terms/title").get(0).get("@value").asText()
+                )
             );
           }
         } else { //in case description is not available (Eg. for certain external resource sync)
@@ -64,34 +64,6 @@ public class DiscoverResourceSyncDataFetcher implements DataFetcher {
     }
   }
 
-  public class DiscoverRsResult {
-    private String location;
-    private String description;
-    private String license;
-    private String title;
-
-    public DiscoverRsResult(String location, String description, String license, String title) {
-      this.location = location;
-      this.description = description;
-      this.license = license;
-      this.title = title;
-    }
-
-
-    public String getLocation() {
-      return location;
-    }
-
-    public String getDescription() {
-      return description;
-    }
-
-    public String getLicense() {
-      return license;
-    }
-
-    public String getTitle() {
-      return title;
-    }
+  public record DiscoverRsResult(String location, String description, String license, String title) {
   }
 }

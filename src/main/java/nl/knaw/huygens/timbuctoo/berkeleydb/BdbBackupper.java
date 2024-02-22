@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.berkeleydb;
 
-
 import com.google.common.collect.Lists;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.util.DbBackup;
@@ -27,11 +26,10 @@ public class BdbBackupper {
         Files.copy(dbPath.resolve(logFile), backupPath.resolve(logFile), REPLACE_EXISTING);
       }
       final long lastFileInBackupSet = backupHelper.getLastFileInBackupSet();
-      Files.write(lastBackuppedFilePath, Lists.newArrayList("" + lastFileInBackupSet), UTF_8  );
+      Files.write(lastBackuppedFilePath, Lists.newArrayList("" + lastFileInBackupSet), UTF_8);
     } finally {
       backupHelper.endBackup();
     }
-
   }
 
   private long lastFile(Path lastBackuppedFilePath) throws IOException {

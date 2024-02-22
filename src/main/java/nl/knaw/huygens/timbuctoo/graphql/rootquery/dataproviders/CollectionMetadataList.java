@@ -7,11 +7,9 @@ import java.util.Optional;
 
 @Value.Immutable
 public interface CollectionMetadataList {
-
   Optional<String> getPrevCursor();
 
   Optional<String> getNextCursor();
 
   List<CollectionMetadata> getItems();
-
 }

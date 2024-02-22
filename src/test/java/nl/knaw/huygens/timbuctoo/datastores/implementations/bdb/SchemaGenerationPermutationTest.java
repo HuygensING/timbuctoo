@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.berkeleydb.exceptions.BdbDbCreationException;
-import nl.knaw.huygens.timbuctoo.util.ListPartitioner;
+import nl.knaw.huygens.timbuctoo.util.ListPartitionerTest;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringIntegerIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringStringIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.dataset.ImportStatus;
@@ -201,7 +201,7 @@ public class SchemaGenerationPermutationTest {
                                                            CursorQuad... quads) {
     List<Object[]> permutations = Lists.newArrayList();
 
-    List<List<List<CursorQuad>>> partitions = ListPartitioner.partition(Lists.newArrayList(quads));
+    List<List<List<CursorQuad>>> partitions = ListPartitionerTest.partition(Lists.newArrayList(quads));
     for (List<List<CursorQuad>> partition : partitions) {
       permutations.add(new Object[]{partition, result});
     }
@@ -215,7 +215,7 @@ public class SchemaGenerationPermutationTest {
 
     Collection<List<CursorQuad>> quadPerms = orderedPermutations(asList(quads), new CursorQuadComparator());
     quadPerms.forEach(quadPerm -> {
-      List<List<List<CursorQuad>>> partitions = ListPartitioner.partition(quadPerm);
+      List<List<List<CursorQuad>>> partitions = ListPartitionerTest.partition(quadPerm);
       for (List<List<CursorQuad>> partition : partitions) {
         permutations.add(new Object[]{partition, result});
       }

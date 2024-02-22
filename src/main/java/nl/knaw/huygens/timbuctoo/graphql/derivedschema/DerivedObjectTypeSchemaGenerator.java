@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.datastores.schemastore.dto.Predicate;
 import java.util.Set;
 
 public interface DerivedObjectTypeSchemaGenerator extends DerivedTypeSchemaGenerator {
-
   void objectField(String description, Predicate predicate, String typeUri);
 
   void unionField(String description, Predicate predicate, Set<String> typeUris);
@@ -18,5 +17,4 @@ public interface DerivedObjectTypeSchemaGenerator extends DerivedTypeSchemaGener
   void addMutationToSchema(StringBuilder schema);
 
   void addQueryToSchema(StringBuilder schema);
-
 }

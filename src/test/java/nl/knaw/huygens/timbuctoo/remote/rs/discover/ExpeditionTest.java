@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
-
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import org.junit.jupiter.api.Test;
 import org.mockserver.matchers.Times;
@@ -16,7 +15,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 
 public class ExpeditionTest extends AbstractRemoteTest {
-
   @Test
   public void createWellknownUri() throws Exception {
     String[][] expectations = {

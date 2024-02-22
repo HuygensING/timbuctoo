@@ -7,11 +7,11 @@ import java.util.Map;
 
 public class TypeNames {
   @JsonProperty
-  public Map<String, String> prefixes = new HashMap<>();
+  public final Map<String, String> prefixes = new HashMap<>();
 
   @JsonProperty
-  public Map<String, String> shorteneds = new HashMap<>();
+  public final Map<String, String> shorteneds = new HashMap<>();
 
   @JsonProperty
-  public Map<String, String> inverse = new HashMap<>();
+  public final Map<String, String> inverse = new HashMap<>();
 }

@@ -27,7 +27,6 @@ import java.util.Optional;
  * Ported by Tom Zellman <tzellman@gmail.com>.
  */
 public class MimeParser {
-
   /**
    * Parse results container
    */
@@ -108,9 +107,9 @@ public class MimeParser {
    */
   protected static class FitnessAndQuality implements
     Comparable<FitnessAndQuality> {
-    int fitness;
+    final int fitness;
 
-    float quality;
+    final float quality;
 
     String mimeType; // optionally used
 
@@ -224,7 +223,7 @@ public class MimeParser {
     }
     Collections.sort(weightedMatches);
 
-    FitnessAndQuality lastOne = weightedMatches.get(weightedMatches.size() - 1);
+    FitnessAndQuality lastOne = weightedMatches.getLast();
     return lastOne.quality != 0f ? Optional.of(lastOne.mimeType) : Optional.empty();
   }
 }

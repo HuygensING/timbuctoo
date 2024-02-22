@@ -17,7 +17,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 
-
 public class MergeExplicitSchemasTest {
   @Test
   public void mergeeExplicitSchemaMergesSchemasWithDifferentCollections() throws Exception {

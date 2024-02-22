@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.rdfio.RdfPatchSerializer;
 import java.util.function.Consumer;
 
 public class AddTriplePatchRdfCreator implements PatchRdfCreator {
-
   @JsonProperty
   private final String subject;
   @JsonProperty

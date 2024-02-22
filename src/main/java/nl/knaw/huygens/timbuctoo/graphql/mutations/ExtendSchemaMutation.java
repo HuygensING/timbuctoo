@@ -35,7 +35,6 @@ public class ExtendSchemaMutation extends Mutation {
     .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);
 
-
   public ExtendSchemaMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository) {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;

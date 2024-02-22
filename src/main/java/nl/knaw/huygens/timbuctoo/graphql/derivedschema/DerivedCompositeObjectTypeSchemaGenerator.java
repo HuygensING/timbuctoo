@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.graphql.mutations.dto.CustomProvenance;
 import java.util.Set;
 
 public class DerivedCompositeObjectTypeSchemaGenerator implements DerivedObjectTypeSchemaGenerator {
-
   private final DerivedQueryObjectTypeSchemaGenerator querySchemaGenerator;
   private final DerivedInputTypeSchemaGenerator mutationSchemaGenerator;
 
@@ -26,7 +25,6 @@ public class DerivedCompositeObjectTypeSchemaGenerator implements DerivedObjectT
   public void objectField(String description, Predicate predicate, String typeUri) {
     querySchemaGenerator.objectField(description, predicate, typeUri);
     mutationSchemaGenerator.objectField(description, predicate, typeUri);
-
   }
 
   @Override

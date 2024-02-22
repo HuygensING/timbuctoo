@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_HAS_PROPERTY;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_HAS_ROW;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
+import static org.apache.commons.text.StringEscapeUtils.escapeJava;
 
 public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   private static final Logger LOG = LoggerFactory.getLogger(BdbRmlDataSourceStore.class);

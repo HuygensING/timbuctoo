@@ -11,7 +11,6 @@ import java.io.PrintWriter;
 import java.util.List;
 
 public class CsvSerialization extends FlatTableSerialization {
-
   private final CSVPrinter csvPrinter;
 
   public CsvSerialization(OutputStream outputStream) throws IOException {
@@ -44,5 +43,4 @@ public class CsvSerialization extends FlatTableSerialization {
     csvPrinter.flush();
     csvPrinter.close();
   }
-
 }

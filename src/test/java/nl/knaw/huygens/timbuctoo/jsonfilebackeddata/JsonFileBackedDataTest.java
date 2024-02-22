@@ -67,6 +67,4 @@ public class JsonFileBackedDataTest {
       tmpFile.delete(); //the file must either not exist, or contain valid data
     }
   }
-
-
 }

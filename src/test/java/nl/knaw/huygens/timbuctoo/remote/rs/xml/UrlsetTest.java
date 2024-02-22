@@ -10,6 +10,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -17,7 +18,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 public class UrlsetTest {
-
   private static Marshaller jaxbMarshaller;
   private static Unmarshaller jaxbUnmarshaller;
 
@@ -32,12 +32,11 @@ public class UrlsetTest {
 
   @Test
   public void testSerializeDeserializeUrlset() throws Exception {
-
     Urlset urlset = createUrlset();
     String output1 = asXml(urlset);
     //System.out.println(output1);
 
-    InputStream in = IOUtils.toInputStream(output1);
+    InputStream in = IOUtils.toInputStream(output1, Charset.defaultCharset());
     RsRoot returned = (RsRoot) jaxbUnmarshaller.unmarshal(in);
     IOUtils.closeQuietly(in);
     String output2 = asXml(returned);
@@ -45,7 +44,6 @@ public class UrlsetTest {
 
     assertThat(output2, equalTo(output1));
   }
-
 
   @Test
   public void readValuesOfLinkCaseInsensitive() throws Exception {
@@ -55,7 +53,7 @@ public class UrlsetTest {
     assertThat(urlset.getLinkHref("describedby"), equalTo("http://example.com/info_about_source.xml"));
     assertThat(urlset.getLinkHref("describedBy"), equalTo("http://example.com/info_about_source.xml"));
 
-    UrlItem urlItem1 = urlset.getItemList().get(0);
+    UrlItem urlItem1 = urlset.getItemList().getFirst();
     assertThat(urlItem1.getLinkHref("describedby"),
       equalTo("http://example.com/info_about_set1_of_resources.xml"));
     assertThat(urlItem1.getLinkHref("describedBy"),
@@ -76,7 +74,6 @@ public class UrlsetTest {
   }
 
   private Urlset createUrlset() {
-
     RsMd rsMd = new RsMd("description")
       .withAt(ZonedDateTime.now(ZoneOffset.UTC))
       .withCompleted(ZonedDateTime.now(ZoneOffset.UTC))
@@ -112,7 +109,5 @@ public class UrlsetTest {
       .addLink(new RsLn("up", "http://example.com/attic"))
       .addItem(url1)
       .addItem(url2);
-
   }
-
 }

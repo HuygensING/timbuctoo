@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public class SummaryPropertiesDataFetcher implements DataFetcher<Map<String, SummaryProp>> {
-
   private static final Logger LOG = LoggerFactory.getLogger(SummaryPropertiesDataFetcher.class);
   private final ObjectMapper objectMapper;
 
@@ -38,7 +37,6 @@ public class SummaryPropertiesDataFetcher implements DataFetcher<Map<String, Sum
       summaryPropsMap.put("title", getData(source, quadStore, RdfConstants.TIM_SUMMARYTITLEPREDICATE));
       summaryPropsMap.put("description", getData(source, quadStore, RdfConstants.TIM_SUMMARYDESCRIPTIONPREDICATE));
       summaryPropsMap.put("image", getData(source, quadStore, RdfConstants.TIM_SUMMARYIMAGEPREDICATE));
-
     }
     return summaryPropsMap;
   }

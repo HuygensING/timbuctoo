@@ -186,7 +186,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         Tuple<String, String> splitCombinedId = DataSetMetaData.splitCombinedId(dataSetId);
 
         return dataSetRepository
-            .getDataSet(user, splitCombinedId.getLeft(), splitCombinedId.getRight())
+            .getDataSet(user, splitCombinedId.left(), splitCombinedId.right())
             .map(dataSet -> {
               UserPermissionCheck userPermissionCheck = env.getGraphQlContext().get("userPermissionCheck");
               return new DataSetWithDatabase(dataSet, userPermissionCheck);
@@ -385,8 +385,15 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       }
     });
     rootQuery.append("}\n\nextend type Query {\n  #The actual dataSets\n  dataSets: DataSets @passThrough\n}\n\n");
-    rootMut.append("}\n\nextend type Mutation {\n  #The actual dataSets\n" +
-      "  dataSets: DataSetMutations @passThrough\n}\n\n");
+    rootMut.append("""
+        }
+
+        extend type Mutation {
+          #The actual dataSets
+          dataSets: DataSetMutations @passThrough
+        }
+
+        """);
 
     if (dataSetAvailable[0]) {
       staticQuery.merge(schemaParser.parse(rootQuery.toString()));

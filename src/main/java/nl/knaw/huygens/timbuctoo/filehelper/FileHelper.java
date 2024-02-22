@@ -30,8 +30,7 @@ public class FileHelper {
    */
   public File pathInDataSet(String userId, String dataSetId, String pathToCreate) {
     File dataSetPath = dataSetPath(userId, dataSetId);
-    File path = createPathToFileSystem(dataSetPath, pathToCreate);
-    return path;
+    return createPathToFileSystem(dataSetPath, pathToCreate);
   }
 
   /**
@@ -52,5 +51,4 @@ public class FileHelper {
     path.mkdir();
     return path;
   }
-
 }

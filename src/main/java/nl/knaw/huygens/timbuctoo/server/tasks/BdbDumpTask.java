@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class BdbDumpTask extends Task {
-
   private static final String OWNER = "ownerId";
   private static final String DATA_SET = "dataSetName";
   private static final String DATABASE = "databaseName";
@@ -53,7 +52,6 @@ public class BdbDumpTask extends Task {
   }
 
   private String getParam(Map<String, List<String>> parameters, String key) {
-    return parameters.get(key).get(0);
+    return parameters.get(key).getFirst();
   }
-
 }

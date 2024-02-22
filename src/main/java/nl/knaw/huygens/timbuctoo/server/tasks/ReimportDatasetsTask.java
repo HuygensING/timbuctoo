@@ -31,7 +31,7 @@ public class ReimportDatasetsTask extends Task {
     } else {
       if (parameters.containsKey("userId") && parameters.containsKey("dataSetId")) {
         Optional<DataSet> dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(
-            parameters.get("userId").get(0), parameters.get("dataSetId").get(0));
+            parameters.get("userId").getFirst(), parameters.get("dataSetId").getFirst());
         if (dataSet.isPresent()) {
           reimportDataset(dataSet.get(), output);
         }

@@ -96,55 +96,6 @@ public class Change {
     return oldValues;
   }
 
-  public static class Value {
-    private final String rawValue;
-    private final String type;
-
-    public Value(String rawValue, String type) {
-      this.rawValue = rawValue;
-      this.type = type;
-    }
-
-    public String getRawValue() {
-      return rawValue;
-    }
-
-    public String getType() {
-      return type;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-      if (this == other) {
-        return true;
-      }
-
-      if (other == null || getClass() != other.getClass()) {
-        return false;
-      }
-
-      Value value = (Value) other;
-
-      return new EqualsBuilder()
-        .append(rawValue, value.rawValue)
-        .append(type, value.type)
-        .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-      return new HashCodeBuilder(17, 37)
-        .append(rawValue)
-        .append(type)
-        .toHashCode();
-    }
-
-    @Override
-    public String toString() {
-      return "Value{" +
-        "rawValue='" + rawValue + '\'' +
-        ", type='" + type + '\'' +
-        '}';
-    }
+  public record Value(String rawValue, String type) {
   }
 }

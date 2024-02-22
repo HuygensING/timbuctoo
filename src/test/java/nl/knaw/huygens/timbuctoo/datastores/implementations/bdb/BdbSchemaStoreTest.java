@@ -53,78 +53,79 @@ public class BdbSchemaStoreTest {
     schemaStore.onChangedSubject("obj", changeFetcher);
     schemaStore.finish();
 
-    assertThat(dataStore.getResult(), is("{\n" +
-      "  \"type\" : {\n" +
-      "    \"name\" : \"type\",\n" +
-      "    \"predicates\" : [ {\n" +
-      "      \"name\" : \"langPred\",\n" +
-      "      \"direction\" : \"OUT\",\n" +
-      "      \"valueTypes\" : {\n" +
-      "        \"http://www.w3.org/1999/02/22-rdf-syntax-ns#langString\" : 1\n" +
-      "      },\n" +
-      "      \"referenceTypes\" : { },\n" +
-      "      \"languages\" : [ \"en\" ],\n" +
-      "      \"subjectsWithThisPredicate\" : 1,\n" +
-      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"hasBeenList\" : false,\n" +
-      "      \"hasBeenSingular\" : true\n" +
-      "    }, {\n" +
-      "      \"name\" : \"http://www.w3.org/1999/02/22-rdf-syntax-ns#type\",\n" +
-      "      \"direction\" : \"OUT\",\n" +
-      "      \"valueTypes\" : { },\n" +
-      "      \"referenceTypes\" : {\n" +
-      "        \"http://www.w3.org/2000/01/rdf-schema#Resource\" : 1\n" +
-      "      },\n" +
-      "      \"languages\" : [ ],\n" +
-      "      \"subjectsWithThisPredicate\" : 1,\n" +
-      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"hasBeenList\" : false,\n" +
-      "      \"hasBeenSingular\" : true\n" +
-      "    }, {\n" +
-      "      \"name\" : \"pred\",\n" +
-      "      \"direction\" : \"OUT\",\n" +
-      "      \"valueTypes\" : { },\n" +
-      "      \"referenceTypes\" : {\n" +
-      "        \"http://www.w3.org/2000/01/rdf-schema#Resource\" : 1\n" +
-      "      },\n" +
-      "      \"languages\" : [ ],\n" +
-      "      \"subjectsWithThisPredicate\" : 1,\n" +
-      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"hasBeenList\" : false,\n" +
-      "      \"hasBeenSingular\" : true\n" +
-      "    } ],\n" +
-      "    \"subjectsWithThisType\" : 1\n" +
-      "  },\n" +
-      "  \"http://www.w3.org/2000/01/rdf-schema#Resource\" : {\n" +
-      "    \"name\" : \"http://www.w3.org/2000/01/rdf-schema#Resource\",\n" +
-      "    \"predicates\" : [ {\n" +
-      "      \"name\" : \"pred\",\n" +
-      "      \"direction\" : \"IN\",\n" +
-      "      \"valueTypes\" : { },\n" +
-      "      \"referenceTypes\" : {\n" +
-      "        \"type\" : 1\n" +
-      "      },\n" +
-      "      \"languages\" : [ ],\n" +
-      "      \"subjectsWithThisPredicate\" : 1,\n" +
-      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"hasBeenList\" : false,\n" +
-      "      \"hasBeenSingular\" : true\n" +
-      "    }, {\n" +
-      "      \"name\" : \"http://www.w3.org/1999/02/22-rdf-syntax-ns#type\",\n" +
-      "      \"direction\" : \"IN\",\n" +
-      "      \"valueTypes\" : { },\n" +
-      "      \"referenceTypes\" : {\n" +
-      "        \"type\" : 1\n" +
-      "      },\n" +
-      "      \"languages\" : [ ],\n" +
-      "      \"subjectsWithThisPredicate\" : 0,\n" +
-      "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
-      "      \"hasBeenList\" : false,\n" +
-      "      \"hasBeenSingular\" : true\n" +
-      "    } ],\n" +
-      "    \"subjectsWithThisType\" : 1\n" +
-      "  }\n" +
-      "}"));
+    assertThat(dataStore.getResult(), is("""
+        {
+          "type" : {
+            "name" : "type",
+            "predicates" : [ {
+              "name" : "langPred",
+              "direction" : "OUT",
+              "valueTypes" : {
+                "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString" : 1
+              },
+              "referenceTypes" : { },
+              "languages" : [ "en" ],
+              "subjectsWithThisPredicate" : 1,
+              "subjectsWithThisPredicateAsList" : 0,
+              "hasBeenList" : false,
+              "hasBeenSingular" : true
+            }, {
+              "name" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+              "direction" : "OUT",
+              "valueTypes" : { },
+              "referenceTypes" : {
+                "http://www.w3.org/2000/01/rdf-schema#Resource" : 1
+              },
+              "languages" : [ ],
+              "subjectsWithThisPredicate" : 1,
+              "subjectsWithThisPredicateAsList" : 0,
+              "hasBeenList" : false,
+              "hasBeenSingular" : true
+            }, {
+              "name" : "pred",
+              "direction" : "OUT",
+              "valueTypes" : { },
+              "referenceTypes" : {
+                "http://www.w3.org/2000/01/rdf-schema#Resource" : 1
+              },
+              "languages" : [ ],
+              "subjectsWithThisPredicate" : 1,
+              "subjectsWithThisPredicateAsList" : 0,
+              "hasBeenList" : false,
+              "hasBeenSingular" : true
+            } ],
+            "subjectsWithThisType" : 1
+          },
+          "http://www.w3.org/2000/01/rdf-schema#Resource" : {
+            "name" : "http://www.w3.org/2000/01/rdf-schema#Resource",
+            "predicates" : [ {
+              "name" : "pred",
+              "direction" : "IN",
+              "valueTypes" : { },
+              "referenceTypes" : {
+                "type" : 1
+              },
+              "languages" : [ ],
+              "subjectsWithThisPredicate" : 1,
+              "subjectsWithThisPredicateAsList" : 0,
+              "hasBeenList" : false,
+              "hasBeenSingular" : true
+            }, {
+              "name" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+              "direction" : "IN",
+              "valueTypes" : { },
+              "referenceTypes" : {
+                "type" : 1
+              },
+              "languages" : [ ],
+              "subjectsWithThisPredicate" : 0,
+              "subjectsWithThisPredicateAsList" : 0,
+              "hasBeenList" : false,
+              "hasBeenSingular" : true
+            } ],
+            "subjectsWithThisType" : 1
+          }
+        }"""));
   }
 
   @Test

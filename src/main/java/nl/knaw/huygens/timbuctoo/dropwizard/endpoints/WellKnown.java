@@ -9,7 +9,6 @@ import javax.ws.rs.core.UriBuilder;
 
 @Path(".well-known")
 public class WellKnown {
-
   @Path("resourcesync")
   @GET
   public Response resourceSync() {

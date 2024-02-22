@@ -14,7 +14,6 @@ import static java.util.stream.Collectors.toList;
 @Value.Immutable
 @JsonTypeName("SimplePath")
 public interface SimplePath extends SummaryProp {
-
   @JsonCreator
   static SimplePath create(@JsonProperty("path") List<String> simplePath) {
     return ImmutableSimplePath.builder().simplePath(simplePath).build();

@@ -16,7 +16,7 @@ public class ResourceFileBuilder {
   public Stream<String> retrieveData(CurrentStateRetriever currentStateRetriever) {
     return currentStateRetriever.retrieveData().map(quad -> {
         Optional<String> dataType = quad.getValuetype();
-        if (dataType == null || !dataType.isPresent()) {
+        if (dataType == null || dataType.isEmpty()) {
           return dataSetQuadGenerator.onRelation(quad.getSubject(), quad.getPredicate(),
               quad.getObject(), quad.getGraph().orElse(null));
         } else {

@@ -43,11 +43,11 @@ public class HandleService extends RedirectionService {
 
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(
         entityLookup.getUser(),
-        ownerIdDataSetId.getLeft(),
-        ownerIdDataSetId.getRight()
+        ownerIdDataSetId.left(),
+        ownerIdDataSetId.right()
     );
 
-    if (!maybeDataSet.isPresent()) {
+    if (maybeDataSet.isEmpty()) {
       throw new PersistenceException("Can't retrieve DataSet");
     }
 

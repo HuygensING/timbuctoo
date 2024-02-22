@@ -18,12 +18,13 @@ public class SummaryPropSerializationTest {
 
   @Test
   public void simplePathDeserialization() throws IOException {
-    String serializedValue = "{\n" +
-      "    \"path\": [\n" +
-      "      \"http://timbuctoo.huygens.knaw.nl/static/predicate/names\"\n" +
-      "    ],\n" +
-      "    \"type\": \"SimplePath\"\n" +
-      "  }";
+    String serializedValue = """
+        {
+            "path": [
+              "http://timbuctoo.huygens.knaw.nl/static/predicate/names"
+            ],
+            "type": "SimplePath"
+          }""";
     SummaryProp summaryProp = OBJECT_MAPPER.readValue(serializedValue, SummaryProp.class);
 
     assertThat(summaryProp, hasProperty("simplePath",
@@ -45,19 +46,20 @@ public class SummaryPropSerializationTest {
 
   @Test
   public void directionalPathDeserialization() throws IOException {
-    String serializedValue = "{\n" +
-      "      \"path\": [\n" +
-      "        {\n" +
-      "          \"step\": \"http://schema.org/Event/location_of_the_event/location_reference\",\n" +
-      "          \"direction\": \"IN\"\n" +
-      "        },\n" +
-      "        {\n" +
-      "          \"step\": \"http://schema.org/Event/location_of_the_event/location_reference_name\",\n" +
-      "          \"direction\": \"OUT\"\n" +
-      "        }\n" +
-      "      ],\n" +
-      "      \"type\": \"DirectionalPath\"\n" +
-      "    }";
+    String serializedValue = """
+        {
+              "path": [
+                {
+                  "step": "http://schema.org/Event/location_of_the_event/location_reference",
+                  "direction": "IN"
+                },
+                {
+                  "step": "http://schema.org/Event/location_of_the_event/location_reference_name",
+                  "direction": "OUT"
+                }
+              ],
+              "type": "DirectionalPath"
+            }""";
     SummaryProp summaryProp = OBJECT_MAPPER.readValue(serializedValue, SummaryProp.class);
 
     assertThat(summaryProp, hasProperty("path",

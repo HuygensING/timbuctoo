@@ -64,7 +64,7 @@ public interface CursorQuad extends CursorValue {
 
     Graph filterGraph = graph.get();
     return (getGraph().isEmpty() && filterGraph.isDefaultGraph()) ||
-        (getGraph().isPresent() && getGraph().get().equals(filterGraph.getUri()));
+        (getGraph().isPresent() && getGraph().get().equals(filterGraph.uri()));
   }
 
   default boolean equalsExcludeGraph(CursorQuad other) {

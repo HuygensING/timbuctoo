@@ -10,7 +10,6 @@ import java.util.ListIterator;
 import java.util.Optional;
 
 public class LogList {
-
   @JsonProperty
   private int processedUntil = -1;
 

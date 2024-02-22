@@ -8,10 +8,10 @@ class DerivedQueryObjectTypeSchemaGenerator {
   private static final String ENTITY_INTERFACE_NAME = "Entity";
 
   private final String typeUri;
-  private StringBuilder builder;
-  private StringBuilder predicates;
-  private GraphQlNameGenerator graphQlNameGenerator;
-  private String rootType;
+  private final StringBuilder builder;
+  private final StringBuilder predicates;
+  private final GraphQlNameGenerator graphQlNameGenerator;
+  private final String rootType;
   private final DerivedSchemaContainer derivedSchemaContainer;
 
   public DerivedQueryObjectTypeSchemaGenerator(String typeUri,

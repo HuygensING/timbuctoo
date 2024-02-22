@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
-
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class LinkExplorerTest extends AbstractRemoteTest {
-
   @Test
   @Disabled
   public void findLinksInDocumentAndFindChildren() throws Exception {
@@ -164,17 +162,16 @@ public class LinkExplorerTest extends AbstractRemoteTest {
   }
 
   private String createValidHtmlWithLinks() {
-    return "<html>\n" +
-      "  <head>\n" +
-      "    <link rel=\"resourcesync\"\n" +
-      "          href=\"dataset1/capabilitylist.xml\"/>\n" +
-      "    <link rel=\"resourcesync\"\n" +
-      "          href=\"http://www.example.com/dataset2/capabilitylist.xml\"/>\n" +
-      "    <link rel='stylesheet' id='style-css'  " +
-      "           href='https://www.example.com/mkyong/style.css?ver=1.4.7' type='text/css' media='all' />" +
-      "  </head>\n" +
-      "  <body>...</body>\n" +
-      "</html>";
+    return """
+        <html>
+          <head>
+            <link rel="resourcesync"
+                  href="dataset1/capabilitylist.xml"/>
+            <link rel="resourcesync"
+                  href="http://www.example.com/dataset2/capabilitylist.xml"/>
+            <link rel='stylesheet' id='style-css'             href='https://www.example.com/mkyong/style.css?ver=1.4.7' type='text/css' media='all' />  </head>
+          <body>...</body>
+        </html>""";
   }
 
   private String createValidHtml() {
@@ -182,40 +179,43 @@ public class LinkExplorerTest extends AbstractRemoteTest {
   }
 
   private String createRobotsTxt() {
-    return "User-agent: *\n" +
-      "Disallow: /cgi-bin/\n" +
-      "Disallow: /tmp/\n" +
-      "Sitemap: dataset1/resourcelist1.xml\n" +
-      "Sitemap: /dataset2/resourcelist.xml\n" +
-      "Sitemap: /some/other/just_a_sitemap.xml";
+    return """
+        User-agent: *
+        Disallow: /cgi-bin/
+        Disallow: /tmp/
+        Sitemap: dataset1/resourcelist1.xml
+        Sitemap: /dataset2/resourcelist.xml
+        Sitemap: /some/other/just_a_sitemap.xml""";
   }
 
   private String createCapabilityList() {
     return
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-      "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
-      "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
-      "  <rs:ln rel=\"describedby\"\n" +
-      "         href=\"http://example.com/info_about_set1_of_resources.xml\"/>\n" +
-      "  <rs:ln rel=\"up\"\n" +
-      "         href=\"http://example.com/resourcesync_description.xml\"/>\n" +
-      "  <rs:md capability=\"capabilitylist\"/>\n" +
-      "  <url>\n" +
-      "      <loc>http://example.com/dataset1/resourcelist.xml</loc>\n" +
-      "      <rs:md capability=\"resourcelist\"/>\n" +
-      "  </url>\n" +
-      "  <url>\n" +
-      "      <loc>http://example.com/dataset1/resourcedump.xml</loc>\n" +
-      "      <rs:md capability=\"resourcedump\"/>\n" +
-      "  </url>\n" +
-      "  <url>\n" +
-      "      <loc>http://example.com/dataset1/changelist.xml</loc>\n" +
-      "      <rs:md capability=\"changelist\"/>\n" +
-      "  </url>\n" +
-      "  <url>\n" +
-      "      <loc>http://example.com/dataset1/changedump.xml</loc>\n" +
-      "      <rs:md capability=\"changedump\"/>\n" +
-      "  </url>\n" +
-      "</urlset>\n";
+        """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+                    xmlns:rs="http://www.openarchives.org/rs/terms/">
+              <rs:ln rel="describedby"
+                     href="http://example.com/info_about_set1_of_resources.xml"/>
+              <rs:ln rel="up"
+                     href="http://example.com/resourcesync_description.xml"/>
+              <rs:md capability="capabilitylist"/>
+              <url>
+                  <loc>http://example.com/dataset1/resourcelist.xml</loc>
+                  <rs:md capability="resourcelist"/>
+              </url>
+              <url>
+                  <loc>http://example.com/dataset1/resourcedump.xml</loc>
+                  <rs:md capability="resourcedump"/>
+              </url>
+              <url>
+                  <loc>http://example.com/dataset1/changelist.xml</loc>
+                  <rs:md capability="changelist"/>
+              </url>
+              <url>
+                  <loc>http://example.com/dataset1/changedump.xml</loc>
+                  <rs:md capability="changedump"/>
+              </url>
+            </urlset>
+            """;
   }
 }

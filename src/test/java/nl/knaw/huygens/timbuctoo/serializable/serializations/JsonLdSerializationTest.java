@@ -8,7 +8,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class JsonLdSerializationTest {
-
   @Test
   public void performSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -16,154 +15,154 @@ public class JsonLdSerializationTest {
 
     cs.serialize(SourceData.simpleResult());
 
-    assertThat(out.toString(), is("{\n" +
-      "  \"data\" : {\n" +
-      "    \"Persons\" : {\n" +
-      "      \"items\" : [ {\n" +
-      "        \"@id\" : \"http://example.com/1\",\n" +
-      "        \"@type\" : \"http://example.com/Person\",\n" +
-      "        \"a\" : {\n" +
-      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#int\",\n" +
-      "          \"value\" : \"1\"\n" +
-      "        },\n" +
-      "        \"b\" : {\n" +
-      "          \"prevCursor\" : \"next\",\n" +
-      "          \"items\" : [ {\n" +
-      "            \"@id\" : \"http://example.com/11\",\n" +
-      "            \"@type\" : \"http://example.com/SubItem\",\n" +
-      "            \"c\" : {\n" +
-      "              \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "              \"value\" : \"2\"\n" +
-      "            },\n" +
-      "            \"d\" : {\n" +
-      "              \"items\" : [ {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"3\"\n" +
-      "              }, {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"4\"\n" +
-      "              }, null ]\n" +
-      "            }\n" +
-      "          }, {\n" +
-      "            \"@id\" : \"http://example.com/12\",\n" +
-      "            \"@type\" : \"http://example.com/SubItem\",\n" +
-      "            \"c\" : {\n" +
-      "              \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "              \"value\" : \"5\"\n" +
-      "            },\n" +
-      "            \"d\" : {\n" +
-      "              \"items\" : [ {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"6\"\n" +
-      "              }, {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"7\"\n" +
-      "              } ]\n" +
-      "            }\n" +
-      "          } ]\n" +
-      "        }\n" +
-      "      }, {\n" +
-      "        \"@id\" : \"http://example.com/2\",\n" +
-      "        \"@type\" : \"http://example.com/Person\",\n" +
-      "        \"a\" : {\n" +
-      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "          \"value\" : \"8\"\n" +
-      "        },\n" +
-      "        \"b\" : {\n" +
-      "          \"items\" : [ {\n" +
-      "            \"@id\" : \"http://example.com/11\",\n" +
-      "            \"@type\" : \"http://example.com/SubItem\",\n" +
-      "            \"c\" : {\n" +
-      "              \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "              \"value\" : \"9\"\n" +
-      "            },\n" +
-      "            \"d\" : {\n" +
-      "              \"items\" : [ {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#int\",\n" +
-      "                \"value\" : \"10\"\n" +
-      "              }, {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"11\"\n" +
-      "              } ]\n" +
-      "            }\n" +
-      "          }, {\n" +
-      "            \"@id\" : \"http://example.com/12\",\n" +
-      "            \"@type\" : \"http://example.com/SubItem\",\n" +
-      "            \"c\" : {\n" +
-      "              \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "              \"value\" : \"12\"\n" +
-      "            },\n" +
-      "            \"d\" : {\n" +
-      "              \"items\" : [ {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#double\",\n" +
-      "                \"value\" : \"13.0\"\n" +
-      "              }, {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"14\"\n" +
-      "              } ]\n" +
-      "            }\n" +
-      "          }, {\n" +
-      "            \"@id\" : \"http://example.com/13\",\n" +
-      "            \"@type\" : \"http://example.com/SubItem\",\n" +
-      "            \"c\" : {\n" +
-      "              \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "              \"value\" : \"15\"\n" +
-      "            },\n" +
-      "            \"d\" : {\n" +
-      "              \"items\" : [ {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"16\"\n" +
-      "              }, {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"17\"\n" +
-      "              }, {\n" +
-      "                \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "                \"value\" : \"18\"\n" +
-      "              } ]\n" +
-      "            }\n" +
-      "          } ]\n" +
-      "        }\n" +
-      "      }, {\n" +
-      "        \"@id\" : \"http://example.com/3\",\n" +
-      "        \"@type\" : \"http://example.com/Person\",\n" +
-      "        \"a\" : {\n" +
-      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "          \"value\" : \"19\"\n" +
-      "        },\n" +
-      "        \"b\" : {\n" +
-      "          \"@id\" : \"http://example.com/21\",\n" +
-      "          \"@type\" : \"http://example.com/OtherSubItem\",\n" +
-      "          \"e\" : {\n" +
-      "            \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "            \"value\" : \"20\"\n" +
-      "          },\n" +
-      "          \"f\" : {\n" +
-      "            \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
-      "            \"value\" : \"21\"\n" +
-      "          }\n" +
-      "        }\n" +
-      "      } ]\n" +
-      "    }\n" +
-      "  },\n" +
-      "  \"@context\" : {\n" +
-      "    \"data\" : {\n" +
-      "      \"@id\" : \"@graph\",\n" +
-      "      \"@container\" : \"@index\"\n" +
-      "    },\n" +
-      "    \"value\" : \"@value\",\n" +
-      "    \"type\" : \"@type\",\n" +
-      "    \"a\" : \"http://example.org/b\",\n" +
-      "    \"b\" : {\n" +
-      "      \"@reverse\" : \"http://example.org/b\"\n" +
-      "    },\n" +
-      "    \"c\" : \"http://example.org/c\",\n" +
-      "    \"d\" : \"http://example.org/d\",\n" +
-      "    \"a\" : \"http://example.org/a\",\n" +
-      "    \"b\" : \"http://example.org/b\",\n" +
-      "    \"e\" : \"http://example.org/e\",\n" +
-      "    \"f\" : \"http://example.org/f\"\n" +
-      "  }\n" +
-      "}"));
+    assertThat(out.toString(), is("""
+        {
+          "data" : {
+            "Persons" : {
+              "items" : [ {
+                "@id" : "http://example.com/1",
+                "@type" : "http://example.com/Person",
+                "a" : {
+                  "type" : "http://www.w3.org/2001/XMLSchema#int",
+                  "value" : "1"
+                },
+                "b" : {
+                  "prevCursor" : "next",
+                  "items" : [ {
+                    "@id" : "http://example.com/11",
+                    "@type" : "http://example.com/SubItem",
+                    "c" : {
+                      "type" : "http://www.w3.org/2001/XMLSchema#string",
+                      "value" : "2"
+                    },
+                    "d" : {
+                      "items" : [ {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "3"
+                      }, {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "4"
+                      }, null ]
+                    }
+                  }, {
+                    "@id" : "http://example.com/12",
+                    "@type" : "http://example.com/SubItem",
+                    "c" : {
+                      "type" : "http://www.w3.org/2001/XMLSchema#string",
+                      "value" : "5"
+                    },
+                    "d" : {
+                      "items" : [ {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "6"
+                      }, {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "7"
+                      } ]
+                    }
+                  } ]
+                }
+              }, {
+                "@id" : "http://example.com/2",
+                "@type" : "http://example.com/Person",
+                "a" : {
+                  "type" : "http://www.w3.org/2001/XMLSchema#string",
+                  "value" : "8"
+                },
+                "b" : {
+                  "items" : [ {
+                    "@id" : "http://example.com/11",
+                    "@type" : "http://example.com/SubItem",
+                    "c" : {
+                      "type" : "http://www.w3.org/2001/XMLSchema#string",
+                      "value" : "9"
+                    },
+                    "d" : {
+                      "items" : [ {
+                        "type" : "http://www.w3.org/2001/XMLSchema#int",
+                        "value" : "10"
+                      }, {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "11"
+                      } ]
+                    }
+                  }, {
+                    "@id" : "http://example.com/12",
+                    "@type" : "http://example.com/SubItem",
+                    "c" : {
+                      "type" : "http://www.w3.org/2001/XMLSchema#string",
+                      "value" : "12"
+                    },
+                    "d" : {
+                      "items" : [ {
+                        "type" : "http://www.w3.org/2001/XMLSchema#double",
+                        "value" : "13.0"
+                      }, {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "14"
+                      } ]
+                    }
+                  }, {
+                    "@id" : "http://example.com/13",
+                    "@type" : "http://example.com/SubItem",
+                    "c" : {
+                      "type" : "http://www.w3.org/2001/XMLSchema#string",
+                      "value" : "15"
+                    },
+                    "d" : {
+                      "items" : [ {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "16"
+                      }, {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "17"
+                      }, {
+                        "type" : "http://www.w3.org/2001/XMLSchema#string",
+                        "value" : "18"
+                      } ]
+                    }
+                  } ]
+                }
+              }, {
+                "@id" : "http://example.com/3",
+                "@type" : "http://example.com/Person",
+                "a" : {
+                  "type" : "http://www.w3.org/2001/XMLSchema#string",
+                  "value" : "19"
+                },
+                "b" : {
+                  "@id" : "http://example.com/21",
+                  "@type" : "http://example.com/OtherSubItem",
+                  "e" : {
+                    "type" : "http://www.w3.org/2001/XMLSchema#string",
+                    "value" : "20"
+                  },
+                  "f" : {
+                    "type" : "http://www.w3.org/2001/XMLSchema#string",
+                    "value" : "21"
+                  }
+                }
+              } ]
+            }
+          },
+          "@context" : {
+            "data" : {
+              "@id" : "@graph",
+              "@container" : "@index"
+            },
+            "value" : "@value",
+            "type" : "@type",
+            "a" : "http://example.org/b",
+            "b" : {
+              "@reverse" : "http://example.org/b"
+            },
+            "c" : "http://example.org/c",
+            "d" : "http://example.org/d",
+            "a" : "http://example.org/a",
+            "b" : "http://example.org/b",
+            "e" : "http://example.org/e",
+            "f" : "http://example.org/f"
+          }
+        }"""));
   }
-
 }

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
-
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 public class RsExplorerTest extends AbstractRemoteTest {
-
   @Test
   public void findSourceDescription() throws Exception {
     String path = "/.well-known/resourcesync";
@@ -111,7 +109,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(result.getUri(), equalTo(uri));
     assertThat(result.getStatusCode(), equalTo(200));
     assertThat(result.getErrors().isEmpty(), is(false));
-    assertThat(result.getErrors().get(0).getMessage(), containsString("invalid up relation:"));
+    assertThat(result.getErrors().getFirst().getMessage(), containsString("invalid up relation:"));
     assertThat(result.getContent().isPresent(), is(true));
     assertThat(result.getContent().map(RsRoot::getMetadata).flatMap(RsMd::getCapability).orElse("invalid"),
       equalTo("resourcedump"));
@@ -151,7 +149,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(result.getUri(), equalTo(composeUri(path)));
     assertThat(result.getStatusCode(), equalTo(200));
     assertThat(result.getErrors().isEmpty(), is(false));
-    assertThat(result.getErrors().get(0), instanceOf(JAXBException.class));
+    assertThat(result.getErrors().getFirst(), instanceOf(JAXBException.class));
     assertThat(result.getContent().isPresent(), is(false));
     //result.listErrors().forEach(Throwable::printStackTrace);
   }
@@ -178,7 +176,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(result.getUri(), equalTo(composeUri(path)));
     assertThat(result.getStatusCode(), equalTo(404));
     assertThat(result.getErrors().isEmpty(), is(false));
-    assertThat(result.getErrors().get(0), instanceOf(RemoteException.class));
+    assertThat(result.getErrors().getFirst(), instanceOf(RemoteException.class));
     assertThat(result.getContent().isPresent(), is(false));
     //result.getDataSetErrors().forEach(Throwable::printStackTrace);
   }
@@ -279,7 +277,6 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(descriptionResult2.getStatusCode(), is(404));
   }
 
-
   private String createValidSourceDescription() {
     return
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -326,38 +323,31 @@ public class RsExplorerTest extends AbstractRemoteTest {
   }
 
   private String createValidXml() {
-    return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-      "<funny xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
-      "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
-      "  <rs:md capability=\"description\"\n" +
-      "         at=\"2013-01-03T09:00:00Z\"/>\n" +
-      "</funny>";
+    return """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <funny xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+                xmlns:rs="http://www.openarchives.org/rs/terms/">
+          <rs:md capability="description"
+                 at="2013-01-03T09:00:00Z"/>
+        </funny>""";
   }
 
   private String createDescriptionDocument() {
-    return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-      "<rdf:RDF\n" +
-      "\txmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-      "\n" +
-      "<rdf:Description rdf:about=\"http://example" +
-      ".org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/\">\n" +
-      "\t<abstract xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/summaryProperties\"/>\n" +
-      "\t<description xmlns=\"http://purl.org/dc/terms/\" rdf:datatype=\"http://www" +
-      ".w3.org/2001/XMLSchema#string\">Biographical data of the Digital Web Centre for the History of Science (DWC)" +
-      "</description>\n" +
-      "\t<license xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"https://creativecommons" +
-      ".org/publicdomain/zero/1.0/\"/>\n" +
-      "\t<provenance xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"http://example" +
-      ".org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/provenance\"/>\n" +
-      "\t<rightsHolder xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"http://example" +
-      ".org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/rightsHolder\"/>\n" +
-      "\t<title xmlns=\"http://purl.org/dc/terms/\" rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC " +
-      "Data</title>\n" +
-      "\t<ContactPoint xmlns=\"http://schema.org/\" rdf:resource=\"http://example" +
-      ".org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/contactPerson\"/>\n" +
-      "</rdf:Description>\n" +
-      "\n" +
-      "</rdf:RDF>";
-  }
+    return """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+        \txmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 
+        <rdf:Description rdf:about="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/">
+        \t<abstract xmlns="http://purl.org/dc/terms/" rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/summaryProperties"/>
+        \t<description xmlns="http://purl.org/dc/terms/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Biographical data of the Digital Web Centre for the History of Science (DWC)</description>
+        \t<license xmlns="http://purl.org/dc/terms/" rdf:resource="https://creativecommons.org/publicdomain/zero/1.0/"/>
+        \t<provenance xmlns="http://purl.org/dc/terms/" rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/provenance"/>
+        \t<rightsHolder xmlns="http://purl.org/dc/terms/" rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/rightsHolder"/>
+        \t<title xmlns="http://purl.org/dc/terms/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DWC Data</title>
+        \t<ContactPoint xmlns="http://schema.org/" rdf:resource="http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/contactPerson"/>
+        </rdf:Description>
+
+        </rdf:RDF>""";
+  }
 }

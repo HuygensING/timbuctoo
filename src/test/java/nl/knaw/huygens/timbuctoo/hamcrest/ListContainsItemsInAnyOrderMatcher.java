@@ -40,7 +40,7 @@ public class ListContainsItemsInAnyOrderMatcher<T> extends TypeSafeMatcher<List<
   }
 
   public static <E> ListContainsItemsInAnyOrderMatcher<E> containsInAnyOrder(List<E> variations) {
-    return new ListContainsItemsInAnyOrderMatcher<E>(variations);
+    return new ListContainsItemsInAnyOrderMatcher<>(variations);
   }
 
   @Override
@@ -75,6 +75,4 @@ public class ListContainsItemsInAnyOrderMatcher<T> extends TypeSafeMatcher<List<
 
     return false;
   }
-
-
 }

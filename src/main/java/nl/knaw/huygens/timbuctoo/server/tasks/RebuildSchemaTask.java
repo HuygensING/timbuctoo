@@ -28,7 +28,7 @@ public class RebuildSchemaTask extends Task {
     } else {
       if (parameters.containsKey("userId") && parameters.containsKey("dataSetId")) {
         Optional<DataSet> dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(
-            parameters.get("userId").get(0), parameters.get("dataSetId").get(0));
+            parameters.get("userId").getFirst(), parameters.get("dataSetId").getFirst());
         dataSet.ifPresent(set -> rebuildSchemaFor(set, output));
       }
     }

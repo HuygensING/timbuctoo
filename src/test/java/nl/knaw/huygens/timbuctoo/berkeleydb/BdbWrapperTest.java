@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 public class BdbWrapperTest {
-
   private static final StringStringIsCleanHandler IS_CLEAN_HANDLER = new StringStringIsCleanHandler();
   private BdbNonPersistentEnvironmentCreator creator;
   private BdbWrapper<String, String> database;
@@ -300,6 +299,5 @@ public class BdbWrapperTest {
 
       assertThat(collect, not(hasItem(Tuple.tuple(IS_CLEAN_HANDLER.getKey(),IS_CLEAN_HANDLER.getValue()))));
     }
-
   }
 }

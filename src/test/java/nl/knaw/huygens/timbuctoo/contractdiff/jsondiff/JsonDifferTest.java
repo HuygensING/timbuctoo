@@ -11,7 +11,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class JsonDifferTest {
-
   @Test
   public void handlesEqualValues() throws Exception {
     JsonDiffer differ = jsonDiffer().build();
@@ -26,11 +25,12 @@ public class JsonDifferTest {
     );
     assertThat(result.wasSuccess(), is(true));
     assertThat(result.asConsoleAnsiStripped(),
-      is("{\n" +
-      "  \"match\": 1, //is 1\n" +
-      "}\n")
+      is("""
+          {
+            "match": 1, //is 1
+          }
+          """)
     );
-
   }
 
   @Test
@@ -47,9 +47,11 @@ public class JsonDifferTest {
     );
     assertThat(result.wasSuccess(), is(false));
     assertThat(result.asConsoleAnsiStripped(),
-      is("{\n" +
-        "  \"mismatch\": 1, //expected 3\n" +
-        "}\n")
+      is("""
+          {
+            "mismatch": 1, //expected 3
+          }
+          """)
     );
   }
 
@@ -65,12 +67,13 @@ public class JsonDifferTest {
       )
     );
     assertThat(result.asConsoleAnsiStripped(),
-      is("{\n" +
-        "  \"extra\": 2, //not part of contract\n" +
-        "}\n")
+      is("""
+          {
+            "extra": 2, //not part of contract
+          }
+          """)
     );
   }
-
 
   @Test
   public void handlesMissingValues() throws Exception {
@@ -84,9 +87,11 @@ public class JsonDifferTest {
       )
     );
     assertThat(result.asConsoleAnsiStripped(),
-      is("{\n" +
-        "  \"missing\": 2, //missing\n" +
-        "}\n")
+      is("""
+          {
+            "missing": 2, //missing
+          }
+          """)
     );
   }
 
@@ -105,10 +110,12 @@ public class JsonDifferTest {
       )
     );
     assertThat(result.asConsoleAnsiStripped(),
-      is("{\n" +
-        "  \"dynamicSuccess\": \"1\", //is a string\n" +
-        "  \"dynamicFail\": 1, //expected a string\n" +
-        "}\n")
+      is("""
+          {
+            "dynamicSuccess": "1", //is a string
+            "dynamicFail": 1, //expected a string
+          }
+          """)
     );
   }
 
@@ -131,12 +138,14 @@ public class JsonDifferTest {
       )
     );
     assertThat(result.asConsoleAnsiStripped(),
-      is("{\n" +
-        "  \"some_array\": [\n" +
-        "      \"foo\", //is a string\n" +
-        "      2, //expected a string\n" +
-        "  ],\n" +
-        "}\n")
+      is("""
+          {
+            "some_array": [
+                "foo", //is a string
+                2, //expected a string
+            ],
+          }
+          """)
     );
   }
 
@@ -158,12 +167,14 @@ public class JsonDifferTest {
       )
     );
     assertThat(result.asConsoleAnsiStripped(),
-      is("{\n" +
-        "  \"a\": {\n" +
-        "      \"b\": 2, //is 2\n" +
-        "      \"c\": \"superfluous\", //not part of contract\n" +
-        "  },\n" +
-        "}\n")
+      is("""
+          {
+            "a": {
+                "b": 2, //is 2
+                "c": "superfluous", //not part of contract
+            },
+          }
+          """)
     );
   }
 }

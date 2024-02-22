@@ -39,13 +39,12 @@ public class EditMutationChangeLogTest {
   private static final String GRAPH_QL_STRING = "xsd_string";
   private DataSet dataSet;
   private QuadStore quadStore;
-  private TypeNameStore typeNameStore;
 
   @BeforeEach
   public void setUp() throws Exception {
     dataSet = mock(DataSet.class);
     quadStore = mock(QuadStore.class);
-    typeNameStore = mock(TypeNameStore.class);
+    TypeNameStore typeNameStore = mock(TypeNameStore.class);
     when(typeNameStore.makeUriForPredicate(NAMES_FIELD)).thenReturn(Optional.of(tuple(NAMES_PRED, Direction.OUT)));
     when(typeNameStore.makeUri(GRAPH_QL_STRING)).thenReturn(STRING);
     when(dataSet.getQuadStore()).thenReturn(quadStore);

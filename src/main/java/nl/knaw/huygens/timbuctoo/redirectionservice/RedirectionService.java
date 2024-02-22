@@ -35,16 +35,12 @@ public abstract class RedirectionService {
     if (hunRem - tenRem == 10) {
       return "th";
     }
-    switch (tenRem) {
-      case 1:
-        return "st";
-      case 2:
-        return "nd";
-      case 3:
-        return "rd";
-      default:
-        return "th";
-    }
+    return switch (tenRem) {
+      case 1 -> "st";
+      case 2 -> "nd";
+      case 3 -> "rd";
+      default -> "th";
+    };
   }
 
   protected abstract void savePid(RedirectionServiceParameters params) throws

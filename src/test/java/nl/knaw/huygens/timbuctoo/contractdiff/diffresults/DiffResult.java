@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.contractdiff.diffresults;
 import com.google.common.xml.XmlEscapers;
 
 public abstract class DiffResult {
-
   protected static final String RESET = "\u001B[0m";
   protected static final String GOOD = "\u001B[32m";
   protected static final String BAD = "\u001B[31m";
@@ -41,5 +40,4 @@ public abstract class DiffResult {
   protected String esca(String val) {
     return xhtmlEscapeAttribute(val);
   }
-
 }

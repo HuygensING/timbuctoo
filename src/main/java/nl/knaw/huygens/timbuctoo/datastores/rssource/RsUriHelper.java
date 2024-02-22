@@ -8,9 +8,7 @@ import nl.knaw.huygens.timbuctoo.dataset.dto.DataSetMetaData;
 
 import static javax.ws.rs.core.UriBuilder.fromResource;
 
-
 public class RsUriHelper {
-
   private static final String RESOURCE_SYNC_PATH = fromResource(RsEndpoint.class).build().getPath();
   private static final String WELL_KNOWN_RESOURCESYNC = ".well-known/resourcesync";
   // We know that the FileSystemFileStorage implementation of FileStorage stores files in this location..
@@ -51,5 +49,4 @@ public class RsUriHelper {
       dataSetMetaData.getOwnerId(),
       dataSetMetaData.getDataSetId(), changeFileName);
   }
-
 }

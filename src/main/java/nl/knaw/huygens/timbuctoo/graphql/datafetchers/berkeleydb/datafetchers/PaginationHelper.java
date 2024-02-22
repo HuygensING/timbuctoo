@@ -72,7 +72,7 @@ public class PaginationHelper<S extends CursorValue, U> {
       prevCursor = subjects.size() == count ? "D\n" + cursors[1] : null;
       nextCursor = cursor.equals("LAST") ? null : "A\n" + cursors[0];
     } else {
-      prevCursor = cursor.equals("") ? null : "D\n" + cursors[0];
+      prevCursor = cursor.isEmpty() ? null : "D\n" + cursors[0];
       nextCursor = subjects.size() == count ? "A\n" + cursors[1] : null;
     }
 

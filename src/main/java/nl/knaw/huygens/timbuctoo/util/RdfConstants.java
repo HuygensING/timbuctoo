@@ -7,7 +7,6 @@ import java.util.UUID;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 
 public class RdfConstants {
-
   private static final String TIM = "http://timbuctoo.huygens.knaw.nl/static/";
   public static final String TIM_VOCAB = TIM + "vocabulary#"; // use for timbuctoo internal vocabulary
   public static final String TIM_PROP_DESC = TIM + "propertyDescription/";
@@ -60,7 +59,6 @@ public class RdfConstants {
   public static final String INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
   public static final String URI = "http://www.w3.org/2001/XMLSchema#anyURI";
   public static final String MARKDOWN = "https://daringfireball.net/projects/markdown/syntax";
-
 
   // helper methods
 

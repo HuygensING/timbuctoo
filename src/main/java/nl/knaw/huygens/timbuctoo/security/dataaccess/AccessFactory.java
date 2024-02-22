@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 public interface AccessFactory {
   UserAccess getUserAccess() throws AccessNotPossibleException;
 

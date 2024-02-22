@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.contractdiff.diffresults.DiffResult;
 import java.util.Map;
 
 public class HttpHeadersDiffResult extends DiffResult {
-  private LinkedListMultimap<String, DiffResult> innerResults;
+  private final LinkedListMultimap<String, DiffResult> innerResults;
   private boolean wasSuccess = true;
 
   public HttpHeadersDiffResult() {
@@ -15,41 +15,39 @@ public class HttpHeadersDiffResult extends DiffResult {
 
   @Override
   public String asHtml() {
-    String resultStr = "";
+    StringBuilder resultStr = new StringBuilder();
     for (Map.Entry<String, DiffResult> result: innerResults.entries()) {
-      resultStr += result.getValue().asHtml(result.getKey() + ": ", "", "") + "\n";
+      resultStr.append(result.getValue().asHtml(result.getKey() + ": ", "", "")).append("\n");
     }
-    return resultStr;
+    return resultStr.toString();
   }
 
   @Override
   public String asHtml(String key, String indent, String delimiter) {
-    String resultStr = indent + key;
+    StringBuilder resultStr = new StringBuilder(indent + key);
     for (Map.Entry<String, DiffResult> result: innerResults.entries()) {
-      resultStr += "\n" + result.getValue().asHtml(result.getKey() + ": ", indent + "  ", "");
+      resultStr.append("\n").append(result.getValue().asHtml(result.getKey() + ": ", indent + "  ", ""));
     }
     return resultStr + delimiter;
   }
 
-
   @Override
   public String asConsole() {
-    String resultStr = "";
+    StringBuilder resultStr = new StringBuilder();
     for (Map.Entry<String, DiffResult> result: innerResults.entries()) {
-      resultStr += RESET + result.getValue().asConsole(result.getKey() + ": ", "  ", "") + "\n";
+      resultStr.append(RESET).append(result.getValue().asConsole(result.getKey() + ": ", "  ", "")).append("\n");
     }
     return resultStr + RESET;
   }
 
   @Override
   public String asConsole(String key, String indent, String delimiter) {
-    String resultStr = indent + key;
+    StringBuilder resultStr = new StringBuilder(indent + key);
     for (Map.Entry<String, DiffResult> result: innerResults.entries()) {
-      resultStr += "\n" + RESET + result.getValue().asConsole(result.getKey() + ": ", indent + "  ", "");
+      resultStr.append("\n" + RESET).append(result.getValue().asConsole(result.getKey() + ": ", indent + "  ", ""));
     }
     return resultStr + delimiter + RESET;
   }
-
 
   @Override
   public boolean wasSuccess() {
@@ -68,7 +66,7 @@ public class HttpHeadersDiffResult extends DiffResult {
     wasSuccess = false;
   }
 
-  private class ExpectationContainsMultipleKeys extends DiffResult {
+  private static class ExpectationContainsMultipleKeys extends DiffResult {
     @Override
     public String asHtml() {
       return null;
@@ -80,7 +78,6 @@ public class HttpHeadersDiffResult extends DiffResult {
         "<span class=\"expected\"> //Only one expectaction per fieldname supported</span>" +
         "</span>";
     }
-
 
     @Override
     public String asConsole() {

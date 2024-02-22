@@ -19,7 +19,7 @@ public class ReloadDataSet extends Task {
   @Override
   public void execute(Map<String, List<String>> immutableMultimap, PrintWriter printWriter) throws Exception {
     if (immutableMultimap.containsKey(DATA_SET_ID_PARAM)) {
-      final String dataSetId = immutableMultimap.get(DATA_SET_ID_PARAM).iterator().next();
+      final String dataSetId = immutableMultimap.get(DATA_SET_ID_PARAM).getFirst();
       dataSetRepository.reloadDataSet(dataSetId);
     } else {
       printWriter.println(

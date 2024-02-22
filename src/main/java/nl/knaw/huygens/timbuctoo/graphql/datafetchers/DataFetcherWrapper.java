@@ -33,5 +33,4 @@ public class DataFetcherWrapper implements DataFetcher {
       throw new IllegalStateException("Source is not a SubjectReference");
     }
   }
-
 }

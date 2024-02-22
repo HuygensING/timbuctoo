@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public class BasicRdfPatchSerializer implements RdfPatchSerializer {
   private final Consumer<String> printer;
   private final PrintWriter printWriter;
-  String results = "";
+  final String results = "";
 
   public BasicRdfPatchSerializer(OutputStream output) {
     printWriter = new PrintWriter(new OutputStreamWriter(output, Charsets.UTF_8), true);

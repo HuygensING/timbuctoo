@@ -876,15 +876,7 @@ public class GraphQlToRdfPatchTest {
         (Answer<Stream<Change>>) invocation -> newArrayList(deletions).stream().map(Deletion::toChange));
   }
 
-  private static class Deletion {
-    private final String predicate;
-    private final List<Value> valuesToDelete;
-
-    Deletion(String predicate, List<Value> valuesToDelete) {
-      this.predicate = predicate;
-      this.valuesToDelete = valuesToDelete;
-    }
-
+  private record Deletion(String predicate, List<Value> valuesToDelete) {
     private Change toChange() {
       return new Change(new Graph(GRAPH), SUBJECT, predicate, newArrayList(), valuesToDelete.stream());
     }
@@ -895,17 +887,7 @@ public class GraphQlToRdfPatchTest {
         (Answer<Stream<Change>>) invocation -> newArrayList(replacements).stream().map(Replacement::toChange));
   }
 
-  private static class Replacement {
-    private final String predicate;
-    private final List<Value> newValues;
-    private final List<Value> oldValues;
-
-    Replacement(String predicate, List<Value> newValues, List<Value> oldValues) {
-      this.predicate = predicate;
-      this.newValues = newValues;
-      this.oldValues = oldValues;
-    }
-
+  private record Replacement(String predicate, List<Value> newValues, List<Value> oldValues) {
     private Change toChange() {
       return new Change(new Graph(GRAPH), SUBJECT, predicate, newValues, oldValues.stream());
     }
@@ -920,15 +902,7 @@ public class GraphQlToRdfPatchTest {
     when(changeLog.getProvenance(any(DataSet.class), any(String.class), any(String.class))).thenAnswer(answer);
   }
 
-  private static class Provenance {
-    private final String predicate;
-    private final List<Value> values;
-
-    Provenance(String predicate, List<Value> values) {
-      this.predicate = predicate;
-      this.values = values;
-    }
-
+  private record Provenance(String predicate, List<Value> values) {
     private Change toChange(String subject) {
       return new Change(new Graph(GRAPH), subject, predicate, values, Stream.empty());
     }

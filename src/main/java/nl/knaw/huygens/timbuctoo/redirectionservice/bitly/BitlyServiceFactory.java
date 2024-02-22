@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.redirectionservice.RedirectionServiceFactory;
 import nl.knaw.huygens.timbuctoo.redirectionservice.RedirectionService;
 
 public class BitlyServiceFactory implements RedirectionServiceFactory {
-
   @JsonProperty("accessToken")
   private final String accessToken;
 

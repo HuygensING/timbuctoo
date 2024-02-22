@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import java.util.stream.Stream;
 
 public class  CurrentStateRetriever {
-
   private final BdbQuadStore bdbQuadStore;
 
   public CurrentStateRetriever(BdbQuadStore bdbQuadStore) {

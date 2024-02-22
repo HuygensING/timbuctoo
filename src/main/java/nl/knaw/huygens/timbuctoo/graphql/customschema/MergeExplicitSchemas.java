@@ -8,17 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 public class MergeExplicitSchemas {
-  public MergeExplicitSchemas() {
-
-  }
-
   public Map<String, List<ExplicitField>> mergeExplicitSchemas(Map<String, List<ExplicitField>> explicitSchema1,
                                                                Map<String, List<ExplicitField>> explicitSchema2) {
-    Map<String, List<ExplicitField>> mergedExplicitSchema = new HashMap<>();
-
-    for (Map.Entry<String, List<ExplicitField>> entry : explicitSchema1.entrySet()) {
-      mergedExplicitSchema.put(entry.getKey(),entry.getValue());
-    }
+    Map<String, List<ExplicitField>> mergedExplicitSchema = new HashMap<>(explicitSchema1);
 
     explicitSchema2.forEach((collection, values) -> {
       if (mergedExplicitSchema.containsKey(collection)) {
@@ -46,9 +38,7 @@ public class MergeExplicitSchemas {
       } else {
         mergedExplicitSchema.put(collection, values);
       }
-
     });
-
 
     return mergedExplicitSchema;
   }

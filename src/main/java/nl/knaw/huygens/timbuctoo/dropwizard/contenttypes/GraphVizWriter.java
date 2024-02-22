@@ -6,7 +6,6 @@ import javax.ws.rs.Produces;
 
 @Produces(GraphVizWriter.MIME_TYPE)
 public class GraphVizWriter extends SerializerWriter {
-
   public static final String MIME_TYPE = "text/vnd.graphviz";
 
   public GraphVizWriter() {

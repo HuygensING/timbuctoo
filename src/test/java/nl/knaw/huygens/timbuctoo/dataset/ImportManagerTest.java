@@ -31,7 +31,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class ImportManagerTest {
-
   protected File logListLocation;
   protected ImportManager importManager;
   protected File filesDir;
@@ -78,7 +77,7 @@ public class ImportManagerTest {
     ImportStatus status = promise.get();
     assertThat(status.getErrorCount(), is((0)));
 
-    LogEntry logEntry = importManager.getLogEntries().get(0);
+    LogEntry logEntry = importManager.getLogEntries().getFirst();
     assertThat(logEntry.getBaseUri(), is(baseUri));
     assertThat(logEntry.getDefaultGraph().orElse(null), is(defaultGraph));
     //The first character is an @. if we can read that we apparently can access the file
@@ -123,7 +122,7 @@ public class ImportManagerTest {
     ImportStatus status = promise.get();
     assertThat(status.hasErrors(), is(false));
     assertThat(processor.getCounter(), is(3));
-    LogEntry logEntry = importManager.getLogEntries().get(0);
+    LogEntry logEntry = importManager.getLogEntries().getFirst();
     assertThat(logEntry.getBaseUri(), is(baseUri));
     assertThat(logEntry.getDefaultGraph().orElse(null), is(defaultGraph));
     //The first character is an < (start of a uri in nquads) if we can read that we apparently can access the file
@@ -141,16 +140,16 @@ public class ImportManagerTest {
 
     private static CachedFileMatcher cachedFile(CachedFile cachedFile) {
       return cachedFile()
-          .withFile(cachedFile.getFile())
-          .withMimeType(cachedFile.getMimeType())
-          .withName(cachedFile.getName());
+          .withFile(cachedFile.file())
+          .withMimeType(cachedFile.mimeType())
+          .withName(cachedFile.name());
     }
 
     public CachedFileMatcher withFile(File file) {
       this.addMatcher(new PropertyEqualityMatcher<>("file", file) {
         @Override
         protected File getItemValue(CachedFile item) {
-          return item.getFile();
+          return item.file();
         }
       });
       return this;
@@ -160,7 +159,7 @@ public class ImportManagerTest {
       this.addMatcher(new PropertyEqualityMatcher<>("name", name) {
         @Override
         protected String getItemValue(CachedFile item) {
-          return item.getName();
+          return item.name();
         }
       });
       return this;
@@ -170,7 +169,7 @@ public class ImportManagerTest {
       this.addMatcher(new PropertyEqualityMatcher<>("mimeType", mimeType) {
         @Override
         protected MediaType getItemValue(CachedFile item) {
-          return item.getMimeType();
+          return item.mimeType();
         }
       });
       return this;

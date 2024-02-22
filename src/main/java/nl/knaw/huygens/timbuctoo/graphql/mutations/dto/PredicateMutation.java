@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.CursorQuad.create;
 
 public class PredicateMutation {
-
   @JsonProperty
   private final List<CursorQuad> additions = new ArrayList<>();
 
@@ -27,7 +26,7 @@ public class PredicateMutation {
   private final List<CursorQuad> fullRetractions = new ArrayList<>();
 
   @JsonProperty
-  private Map<UUID, SubjectFinder> subjectFinders = new HashMap<>();
+  private final Map<UUID, SubjectFinder> subjectFinders = new HashMap<>();
 
   public List<CursorQuad> getFullRetractions() {
     return fullRetractions;
@@ -160,7 +159,7 @@ public class PredicateMutation {
       String first = null;
       try (Stream<CursorQuad> quads = quadStore.getQuads(startSubject, predicate, Direction.OUT, "")) {
         for (CursorQuad cursorQuad : (Iterable<CursorQuad>) quads::iterator) {
-          if (!cursorQuad.getValuetype().isPresent()) {
+          if (cursorQuad.getValuetype().isEmpty()) {
             if (first == null) {
               first = cursorQuad.getObject();
             }
@@ -177,5 +176,4 @@ public class PredicateMutation {
       }
     }
   }
-
 }

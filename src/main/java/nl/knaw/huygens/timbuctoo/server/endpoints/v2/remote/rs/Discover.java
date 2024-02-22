@@ -1,13 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 
-
 import com.codahale.metrics.annotation.Timed;
 import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.FrameworkBase;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.Interpreter;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.SetListBase;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.TreeBase;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +23,6 @@ import java.net.URISyntaxException;
 @Path("/v2.1/remote/rs/discover")
 @Produces(MediaType.APPLICATION_JSON)
 public class Discover {
-
   public static final Logger LOG = LoggerFactory.getLogger(Discover.class);
   private final ResourceSyncService resourceSyncService;
 

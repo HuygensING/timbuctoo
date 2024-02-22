@@ -13,7 +13,6 @@ import java.net.URI;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
 public abstract class AbstractRemoteTest {
-
   private static ClientAndServer mockServer;
   private static int port;
 

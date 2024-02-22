@@ -268,20 +268,20 @@ public class BdbWrapper<KeyT, ValueT> {
 
     @Override
     public FKeyT get(Tuple<FKeyT, ?> keyValue) {
-      return keyValue.getLeft();
+      return keyValue.left();
     }
   }
 
   private class CleanFilteringKeyRetriever<FKeyT> implements KeyRetriever<FKeyT> {
     @Override
     public boolean filter(Tuple<FKeyT, ?> keyValue) {
-      return !(isCleanHandler.getKey().equals(keyValue.getLeft()) &&
-        isCleanHandler.getValue().equals(keyValue.getRight()));
+      return !(isCleanHandler.getKey().equals(keyValue.left()) &&
+        isCleanHandler.getValue().equals(keyValue.right()));
     }
 
     @Override
     public FKeyT get(Tuple<FKeyT, ?> keyValue) {
-      return keyValue.getLeft();
+      return keyValue.left();
     }
   }
 
@@ -294,26 +294,26 @@ public class BdbWrapper<KeyT, ValueT> {
 
     @Override
     public boolean filter(Tuple<FKeyT, FValueT> keyValue) {
-      return !(isCleanHandler.getKey().equals(keyValue.getLeft()) &&
-        isCleanHandler.getValue().equals(keyValue.getRight()));
+      return !(isCleanHandler.getKey().equals(keyValue.left()) &&
+        isCleanHandler.getValue().equals(keyValue.right()));
     }
 
     @Override
     public U convert(Tuple<FKeyT, FValueT> keyValue) {
-      return converter.apply(keyValue.getLeft(), keyValue.getRight());
+      return converter.apply(keyValue.left(), keyValue.right());
     }
   }
 
   private class CleanFilteringValueRetriever<FValueT> implements ValueRetriever<FValueT> {
     @Override
     public boolean filter(Tuple<?, FValueT> keyValue) {
-      return !(isCleanHandler.getKey().equals(keyValue.getLeft()) &&
-        isCleanHandler.getValue().equals(keyValue.getRight()));
+      return !(isCleanHandler.getKey().equals(keyValue.left()) &&
+        isCleanHandler.getValue().equals(keyValue.right()));
     }
 
     @Override
     public FValueT get(Tuple<?, FValueT> keyValue) {
-      return keyValue.getRight();
+      return keyValue.right();
     }
   }
 
@@ -325,7 +325,7 @@ public class BdbWrapper<KeyT, ValueT> {
 
     @Override
     public FValueT get(Tuple<?, FValueT> keyValue) {
-      return keyValue.getRight();
+      return keyValue.right();
     }
   }
 }

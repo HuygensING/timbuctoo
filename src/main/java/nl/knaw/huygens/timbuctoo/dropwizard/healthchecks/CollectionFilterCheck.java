@@ -8,7 +8,6 @@ public class CollectionFilterCheck extends HealthCheck {
   private final CollectionFilter collectionFilter;
 
   public CollectionFilterCheck(CollectionFilter collectionFilter) {
-
     this.collectionFilter = collectionFilter;
   }
 
@@ -16,8 +15,8 @@ public class CollectionFilterCheck extends HealthCheck {
   protected Result check() throws Exception {
     Tuple<Boolean, String> isHealthyTuple = collectionFilter.isHealthy();
 
-    if (!isHealthyTuple.getLeft()) {
-      return Result.unhealthy(isHealthyTuple.getRight());
+    if (!isHealthyTuple.left()) {
+      return Result.unhealthy(isHealthyTuple.right());
     }
 
     return Result.healthy();

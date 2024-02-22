@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GraphVizSerialization extends CollectionsOfEntitiesSerialization {
-
   protected final PrintWriter writer;
 
   public GraphVizSerialization(OutputStream outputStream) {

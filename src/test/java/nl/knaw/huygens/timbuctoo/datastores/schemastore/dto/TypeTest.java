@@ -14,7 +14,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class TypeTest {
-
   @Test
   public void isSerializable() throws IOException {
     Type type = new Type("http://example.org/myType");

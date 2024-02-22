@@ -47,8 +47,8 @@ public class BdbPatchVersionStore {
                      // .dontSkip()
                      // .forwards()
                      .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::tuple))
-                     .filter(kv -> kv.getLeft().endsWith(assertions ? "1" : "0"))
-                     .map((value) -> makeCursorQuad(value.getLeft().split("\n")[0], assertions, value.getRight()));
+                     .filter(kv -> kv.left().endsWith(assertions ? "1" : "0"))
+                     .map((value) -> makeCursorQuad(value.left().split("\n")[0], assertions, value.right()));
   }
 
   public Stream<CursorQuad> getChanges(String subject, boolean assertions) {

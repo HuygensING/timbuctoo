@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.dataset;
 import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingFailedException;
 
 public class DummyDataProvider implements DataProvider {
-
   private RdfProcessor processor;
 
   @Override

@@ -33,7 +33,7 @@ public class ResourceSyncImportTest {
   private static final String GRAPH =
       "http://127.0.0.1:8080/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius";
 
-  private Metadata metadata = new Metadata();
+  private final Metadata metadata = new Metadata();
   private ImportManager importManager;
   private DataSet dataSet;
   private ResourceSyncFileLoader resourceSyncFileLoader;

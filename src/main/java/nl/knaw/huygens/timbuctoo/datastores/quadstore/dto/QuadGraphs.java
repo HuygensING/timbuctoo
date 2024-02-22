@@ -58,7 +58,7 @@ public interface QuadGraphs {
 
   static Stream<QuadGraphs> mapToQuadGraphs(Stream<CursorQuad> quadStream) {
     return Streams.combine(quadStream, CursorQuad::equalsExcludeGraph, ArrayList::new).map(quads -> {
-      CursorQuad quad = quads.get(0);
+      CursorQuad quad = quads.getFirst();
 
       Set<ChangeType> changeTypes = quads.stream().map(CursorQuad::getChangeType).collect(Collectors.toSet());
       ChangeType changeType = changeTypes.contains(ChangeType.ASSERTED) ?

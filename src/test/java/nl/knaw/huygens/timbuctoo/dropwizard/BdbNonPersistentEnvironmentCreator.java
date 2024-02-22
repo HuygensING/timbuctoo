@@ -151,7 +151,6 @@ public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator
                     })
                     .map(Database::getDatabaseName)
                     .collect(Collectors.toList());
-
   }
 
   @Override

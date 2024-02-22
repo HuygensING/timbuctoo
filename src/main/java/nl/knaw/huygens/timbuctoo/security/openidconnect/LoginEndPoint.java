@@ -50,8 +50,8 @@ public class LoginEndPoint {
 
     try {
       final LoginSessionData loginSessionData = loginSessions.remove(loginSession);
-      final Tokens userTokens = openIdClient.getUserTokens(code, loginSessionData.getNonce());
-      final URI userUri = UriBuilder.fromUri(loginSessionData.getUserRedirectUri())
+      final Tokens userTokens = openIdClient.getUserTokens(code, loginSessionData.nonce());
+      final URI userUri = UriBuilder.fromUri(loginSessionData.userRedirectUri())
                                     .queryParam("sessionToken", userTokens.getBearerAccessToken().getValue())
                                     .build();
       return Response.temporaryRedirect(userUri).build();
@@ -61,21 +61,6 @@ public class LoginEndPoint {
     }
   }
 
-  private static final class LoginSessionData {
-    private final String userRedirectUri;
-    private final String nonce;
-
-    public LoginSessionData(String userRedirectUri, String nonce) {
-      this.userRedirectUri = userRedirectUri;
-      this.nonce = nonce;
-    }
-
-    public String getUserRedirectUri() {
-      return userRedirectUri;
-    }
-
-    public String getNonce() {
-      return nonce;
-    }
+  private record LoginSessionData(String userRedirectUri, String nonce) {
   }
 }

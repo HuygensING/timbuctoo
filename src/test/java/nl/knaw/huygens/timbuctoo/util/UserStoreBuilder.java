@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class UserStoreBuilder {
-
   private final UserStore userStore;
 
   private UserStoreBuilder() {

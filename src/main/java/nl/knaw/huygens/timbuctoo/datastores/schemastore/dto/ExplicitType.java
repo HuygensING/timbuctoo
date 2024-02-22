@@ -8,8 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public class ExplicitType {
-
-  private String collectionId;
+  private final String collectionId;
   @JsonProperty("fields")
   private List<ExplicitField> fields;
 
@@ -48,5 +47,4 @@ public class ExplicitType {
     convertedType.setPredicates(predicates);
     return convertedType;
   }
-
 }

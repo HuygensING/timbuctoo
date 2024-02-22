@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.view;
 
-
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.Result;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.ResultIndex;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
@@ -20,7 +19,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 public class SetListBaseTest {
-
   @Test
   public void filterCapabilityListsReturnsEachCapabilityListOnce() {
     Urlset content1 = new Urlset(new RsMd(Capability.DESCRIPTION.xmlValue));
@@ -34,7 +32,6 @@ public class SetListBaseTest {
     content2.addItem(new UrlItem("http://example.org/rstest2/capabilitylist.xml"));
 
     Map<URI, Result<?>> resultMap = new HashMap<>();
-
 
     Result<Object> result1 = new Result<>(URI.create("http://localhost:7080/resourcesync/sourceDescription.xml"));
     result1.accept(content1);

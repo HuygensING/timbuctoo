@@ -108,7 +108,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // Support services
     SecurityFactory securityConfig = configuration.getSecurityConfiguration().createNewSecurityFactory();
     securityConfig.getHealthChecks().forEachRemaining(check ->
-            register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight())));
+            register(environment, check.left(), new LambdaHealthCheck(check.right())));
 
     configuration.getCollectionFilters().forEach((key, value) ->
             register(environment, key + "Check", new CollectionFilterCheck(value)));

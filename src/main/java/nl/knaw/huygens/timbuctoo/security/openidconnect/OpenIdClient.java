@@ -55,7 +55,7 @@ public class OpenIdClient {
       final Issuer issuer = new Issuer(discoveryUrl);
       final OIDCProviderConfigurationRequest configurationRequest = new OIDCProviderConfigurationRequest(issuer);
 
-      this.metadata = OIDCProviderMetadata.parse(configurationRequest.toHTTPRequest().send().getContentAsJSONObject());
+      this.metadata = OIDCProviderMetadata.parse(configurationRequest.toHTTPRequest().send().getBodyAsJSONObject());
       this.redirectUrl = fromUri(baseUri).port(port).path("openid-connect").path("callback").build();
       this.clientId = clientId;
       this.clientSecret = clientSecret;
@@ -94,7 +94,7 @@ public class OpenIdClient {
   public Tokens getUserTokens(String code, String nonce) throws OpenIdConnectException {
     try {
       final IDTokenValidator validator = new IDTokenValidator(metadata.getIssuer(), new ClientID(clientId),
-          metadata.getIDTokenJWSAlgs().get(0), metadata.getJWKSetURI().toURL());
+          metadata.getIDTokenJWSAlgs().getFirst(), metadata.getJWKSetURI().toURL());
       final ClientAuthentication basicAuth = new ClientSecretBasic(new ClientID(clientId), new Secret(clientSecret));
       final URI redirectUri = fromUri(redirectUrl).build();
       final AuthorizationCodeGrant authzGrant = new AuthorizationCodeGrant(new AuthorizationCode(code), redirectUri);

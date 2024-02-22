@@ -28,8 +28,8 @@ public class PersistEntityMutation extends Mutation {
     this.redirectionService = redirectionService;
     this.dataSetId = dataSetId;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
-    dataSetName = dataSetIdSplit.getRight();
-    ownerId = dataSetIdSplit.getLeft();
+    dataSetName = dataSetIdSplit.right();
+    ownerId = dataSetIdSplit.left();
     this.uriHelper = uriHelper;
   }
 

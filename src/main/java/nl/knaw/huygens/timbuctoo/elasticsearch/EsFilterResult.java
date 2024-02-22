@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EsFilterResult implements FilterResult {
-
   public final String idField;
 
   private final JsonNode queryNode;
@@ -24,7 +23,6 @@ public class EsFilterResult implements FilterResult {
     this.resultNode = resultNode;
     this.idField = idField;
   }
-
 
   String getQuery() {
     return queryNode.toString();
@@ -108,6 +106,4 @@ public class EsFilterResult implements FilterResult {
     }
     return result;
   }
-
-
 }

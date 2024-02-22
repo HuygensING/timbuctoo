@@ -12,7 +12,7 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonTypeIdResolver(UserTypeIdResolver.class) // be able to map the login java type and the serialized version
 @JsonIgnoreProperties(ignoreUnknown = true) // ignore the unknown properties
 @Value.Immutable
@@ -39,5 +39,4 @@ public interface User {
 
   @JsonProperty("_id")
   String getId();
-
 }

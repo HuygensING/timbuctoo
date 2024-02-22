@@ -5,9 +5,7 @@ import nl.knaw.huygens.timbuctoo.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasKey;
 
 public class PredicateMatcher extends CompositeMatcher<Predicate> {
   private PredicateMatcher() {

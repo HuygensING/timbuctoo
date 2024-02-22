@@ -11,7 +11,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 public class ElasticSearchFilterTest {
-
   private static ElasticSearchFilter eSearch;
 
   @BeforeAll
@@ -50,36 +49,38 @@ public class ElasticSearchFilterTest {
 
   @Test
   public void elaborateCompleteQuery() throws Exception {
-    String query = "{\n" +
-        "    \"size\": 3,\n" +
-        "    \"query\": {\n" +
-        "        \"match\" : {\n" +
-        "            \"gender\" : \"F\"\n" +
-        "        }\n" +
-        "    },\n" +
-        "    \"sort\": [\n" +
-        "        {\"balance\": \"asc\"},\n" +
-        "        {\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
-        "    ]\n" +
-        "}";
+    String query = String.format("""
+        {
+            "size": 3,
+            "query": {
+                "match" : {
+                    "gender" : "F"
+                }
+            },
+            "sort": [
+                {"balance": "asc"},
+                {"%s": "desc"}
+            ]
+        }""", ElasticSearchFilter.UNIQUE_FIELD_NAME);
     testElaborate(query);
   }
 
   @Test
   public void elaborateIncompleteQuery() throws Exception {
     // missing unique field.
-    String query = "{\n" +
-        "    \"size\": 3,\n" +
-        "    \"query\": {\n" +
-        "        \"match\" : {\n" +
-        "            \"gender\" : \"F\"\n" +
-        "        }\n" +
-        "    },\n" +
-        "    \"sort\": [\n" +
-        "        {\"balance\": \"asc\"}\n" +
-        "    ],\n" +
-        "    \"from\": 1314\n" +
-        "}";
+    String query = """
+        {
+            "size": 3,
+            "query": {
+                "match" : {
+                    "gender" : "F"
+                }
+            },
+            "sort": [
+                {"balance": "asc"}
+            ],
+            "from": 1314
+        }""";
     testElaborate(query);
   }
 
@@ -115,6 +116,4 @@ public class ElasticSearchFilterTest {
     assertThat(sortIter.next().toString(), equalTo(expectedSort2));
     assertThat(node.toString(), equalTo(expected));
   }
-
 }
-

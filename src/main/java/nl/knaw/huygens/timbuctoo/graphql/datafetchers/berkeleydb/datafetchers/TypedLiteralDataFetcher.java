@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.TypedLanguageValue;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.TypedValue;
 
 public class TypedLiteralDataFetcher extends WalkTriplesDataFetcher<TypedValue> {
-
   public TypedLiteralDataFetcher(String predicate) {
     super(predicate, Direction.OUT);
   }

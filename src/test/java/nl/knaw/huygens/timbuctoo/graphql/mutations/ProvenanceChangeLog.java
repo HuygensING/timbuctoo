@@ -28,7 +28,7 @@ public class ProvenanceChangeLog extends ChangeLog {
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
     return getProvenanceChanges(dataSet, new Graph(""), subjects,
-        dataSet.getCustomProvenance(), changeLog.getProvenance());
+        dataSet.getCustomProvenance(), changeLog.provenance());
   }
 
   @Override
@@ -46,16 +46,10 @@ public class ProvenanceChangeLog extends ChangeLog {
     return Stream.empty();
   }
 
-  public static class RawProvenanceChangeLog {
-    private LinkedHashMap<String, JsonNode> provenance;
-
+  public record RawProvenanceChangeLog(LinkedHashMap<String, JsonNode> provenance) {
     @JsonCreator
     public RawProvenanceChangeLog(@JsonProperty("provenance") LinkedHashMap<String, JsonNode> provenance) {
       this.provenance = provenance == null ? Maps.newLinkedHashMap() : provenance;
-    }
-
-    public LinkedHashMap<String, JsonNode> getProvenance() {
-      return provenance;
     }
   }
 }

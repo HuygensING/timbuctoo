@@ -79,18 +79,15 @@ public class DataSetMetadataMutation extends Mutation {
       if (metadataProp instanceof UriMetadataProp) {
         String uri = (String) md.get(name);
         return replace(metadataProp.getPredicate(), subject(uri));
-      } else if (metadataProp instanceof SimpleMetadataProp) {
+      } else if (metadataProp instanceof SimpleMetadataProp simpleMetadataProp) {
         String value = (String) md.get(name);
-        SimpleMetadataProp simpleMetadataProp = (SimpleMetadataProp) metadataProp;
-
         if (simpleMetadataProp.getLanguage().isPresent()) {
           return replace(metadataProp.getPredicate(), languageString(value, simpleMetadataProp.getLanguage().get()));
         } else {
           return replace(metadataProp.getPredicate(), value(value, simpleMetadataProp.getValueType()));
         }
-      } else if (metadataProp instanceof EntityMetadataProp) {
+      } else if (metadataProp instanceof EntityMetadataProp entityMetadataProp) {
         Map<?, ?> entityMd = (Map<?, ?>) md.get(name);
-        EntityMetadataProp entityMetadataProp = (EntityMetadataProp) metadataProp;
         String entityUri = entityMetadataProp.getEntityUriFor(baseUri);
         Map<String, MetadataProp> properties = entityMetadataProp.getProperties();
 

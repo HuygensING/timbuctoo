@@ -50,5 +50,4 @@ public abstract class PropertyEqualityMatcher<T, V> extends PropertyMatcher<T, V
   protected void describeField(Description description, String fieldName, Object value) {
     description.appendText(fieldName).appendText(" has value: ").appendValue(value);
   }
-
 }

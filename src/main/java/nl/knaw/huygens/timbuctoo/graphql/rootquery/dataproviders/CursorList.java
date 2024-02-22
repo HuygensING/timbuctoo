@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.graphql.rootquery.dataproviders;
 
 import com.google.common.base.Charsets;
-import org.immutables.value.Value;
 
 import java.util.Base64;
 import java.util.Optional;

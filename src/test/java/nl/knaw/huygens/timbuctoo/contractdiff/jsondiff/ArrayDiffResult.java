@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayDiffResult extends DiffResult {
-  private List<DiffResult> innerResults;
+  private final List<DiffResult> innerResults;
   private boolean wasSuccess = true;
 
   public ArrayDiffResult() {
@@ -15,40 +15,39 @@ public class ArrayDiffResult extends DiffResult {
 
   @Override
   public String asHtml() {
-    String resultStr = "[\n";
+    StringBuilder resultStr = new StringBuilder("[\n");
     for (DiffResult result: innerResults) {
-      resultStr += result.asHtml("", "  ", ",") + "\n";
+      resultStr.append(result.asHtml("", "  ", ",")).append("\n");
     }
     return resultStr + "]\n";
   }
 
   @Override
   public String asHtml(String key, String indent, String delimiter) {
-    String resultStr = indent + key + "[\n";
+    StringBuilder resultStr = new StringBuilder(indent + key + "[\n");
     for (DiffResult result: innerResults) {
-      resultStr += result.asHtml("", indent + "  ", ",") + "\n";
+      resultStr.append(result.asHtml("", indent + "  ", ",")).append("\n");
     }
     return resultStr + indent + "]" + delimiter;
   }
 
   @Override
   public String asConsole() {
-    String resultStr = RESET + "[\n";
+    StringBuilder resultStr = new StringBuilder(RESET + "[\n");
     for (DiffResult result: innerResults) {
-      resultStr += RESET + result.asConsole("", "  ", ",") + "\n";
+      resultStr.append(RESET).append(result.asConsole("", "  ", ",")).append("\n");
     }
     return resultStr + RESET + "]\n";
   }
 
   @Override
   public String asConsole(String key, String indent, String delimiter) {
-    String resultStr = indent + key + "[\n";
+    StringBuilder resultStr = new StringBuilder(indent + key + "[\n");
     for (DiffResult result: innerResults) {
-      resultStr += RESET + indent + result.asConsole("", indent + "  ", ",") + "\n";
+      resultStr.append(RESET).append(indent).append(result.asConsole("", indent + "  ", ",")).append("\n");
     }
     return resultStr + indent + "]" + delimiter;
   }
-
 
   @Override
   public boolean wasSuccess() {

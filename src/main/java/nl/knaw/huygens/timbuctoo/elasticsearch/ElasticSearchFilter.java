@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ElasticSearchFilter implements CollectionFilter {
-
   public static final String UNIQUE_FIELD_NAME = "_uid";
 
   private static final String METHOD_GET = "GET";
@@ -146,6 +145,4 @@ public class ElasticSearchFilter implements CollectionFilter {
     }
     return 0;
   }
-
-
 }

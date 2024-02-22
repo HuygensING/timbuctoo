@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.contractdiff.diffresults;
 
 public class SuperfluousPropertyDiffResult extends DiffResult {
-  private String value;
+  private final String value;
 
   public SuperfluousPropertyDiffResult(String value) {
     this.value = value;

@@ -39,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -108,17 +109,18 @@ public class IntegrationTest {
 
     Response graphqlCall = call("/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-        "  dataSets {\n" +
-        "    %1s__%2s {\n" +
-        "      clusius_ResidenceList {\n" +
-        "        items {\n" +
-        "          uri\n" +
-        "        }\n" +
-        "      }\n" +
-        "    }\n" +
-        "  }\n" +
-        "}", PREFIX, vreName), MediaType.valueOf("application/graphql")));
+      .post(Entity.entity(String.format("""
+          {
+            dataSets {
+              %1s__%2s {
+                clusius_ResidenceList {
+                  items {
+                    uri
+                  }
+                }
+              }
+            }
+          }""", PREFIX, vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(
       objectNode
@@ -132,24 +134,25 @@ public class IntegrationTest {
 
     graphqlCall = call("/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-        "  dataSets {\n" +
-        "    %1s__%2s {\n" +
-        "      clusius_ResidenceList {\n" +
-        "        items {\n" +
-        "          tim_hasLocation {\n" +
-        "            tim_name {value}\n" +
-        "            _inverse_tim_hasBirthPlaceList {\n" +
-        "              items {\n" +
-        "                tim_gender {value}\n" +
-        "              }\n" +
-        "            }\n" +
-        "          }\n" +
-        "        }\n" +
-        "      }\n" +
-        "    }\n" +
-        "  }\n" +
-        "}", PREFIX, vreName), MediaType.valueOf("application/graphql")));
+      .post(Entity.entity(String.format("""
+          {
+            dataSets {
+              %1s__%2s {
+                clusius_ResidenceList {
+                  items {
+                    tim_hasLocation {
+                      tim_name {value}
+                      _inverse_tim_hasBirthPlaceList {
+                        items {
+                          tim_gender {value}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }""", PREFIX, vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat( //every result has a value for name
       stream(objectNode
@@ -374,7 +377,7 @@ public class IntegrationTest {
     );
 
     assertThat(uploadResponse.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
-    String content = IOUtils.toString((InputStream) uploadResponse.getEntity());
+    String content = IOUtils.toString((InputStream) uploadResponse.getEntity(), Charset.defaultCharset());
     assertThat(content, containsString("Namespace prefix 'wrong_in_1' used but not defined"));
 
     uploadResponse = multipartPost(
@@ -387,7 +390,7 @@ public class IntegrationTest {
       )
     );
     assertThat(uploadResponse.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
-    content = IOUtils.toString((InputStream) uploadResponse.getEntity());
+    content = IOUtils.toString((InputStream) uploadResponse.getEntity(), Charset.defaultCharset());
     assertThat(content, containsString("Namespace prefix 'wrong_in_2' used but not defined"));
     assertThat(content.contains("Namespace prefix 'wrong_in_1' used but not defined"), is(false));
   }
@@ -407,15 +410,17 @@ public class IntegrationTest {
 
     Response graphqlCall = call("/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-          "  dataSetMetadata(dataSetId: \"%1s__%2s\")\n" +
-          "  {\n" +
-          "    importStatus(id: \"0\") {\n" +
-          "      status\n" +
-          "      errors\n" +
-          "    }\n" +
-          "  }\n" +
-          "}\n",
+      .post(Entity.entity(String.format("""
+              {
+                dataSetMetadata(dataSetId: "%1s__%2s")
+                {
+                  importStatus(id: "0") {
+                    status
+                    errors
+                  }
+                }
+              }
+              """,
         PREFIX, vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     String status = objectNode.get("data")
@@ -450,15 +455,16 @@ public class IntegrationTest {
 
     Response graphqlCall = call("/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-        "  dataSets {\n" +
-        "    %1s__%2s {\n" +
-        "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
-        "        items { uri }\n" +
-        "      }\n" +
-        "    }\n" +
-        "  }\n" +
-        "}", PREFIX, vreName), MediaType.valueOf("application/graphql")));
+      .post(Entity.entity(String.format("""
+          {
+            dataSets {
+              %1s__%2s {
+                http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {
+                  items { uri }
+                }
+              }
+            }
+          }""", PREFIX, vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(
       objectNode
@@ -473,21 +479,22 @@ public class IntegrationTest {
 
     graphqlCall = call("/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-        "  dataSets {\n" +
-        "    %1s__%2s {\n" +
-        "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
-        "        items {\n" +
-        "          http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
-        "            http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
-        "              value\n" +
-        "            }\n" +
-        "          }\n" +
-        "        }\n" +
-        "      }\n" +
-        "    }\n" +
-        "  }\n" +
-        "}", PREFIX, vreName), MediaType.valueOf("application/graphql")));
+      .post(Entity.entity(String.format("""
+          {
+            dataSets {
+              %1s__%2s {
+                http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {
+                  items {
+                    http___timbuctoo_huygens_knaw_nl_properties_hasLocation {
+                      http___timbuctoo_huygens_knaw_nl_properties_name {
+                        value
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }""", PREFIX, vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(
       stream(objectNode
@@ -618,10 +625,10 @@ public class IntegrationTest {
 
     String changes = getChangesCall.readEntity(String.class);
 
-    assertThat(changes, is("+<http://one.example/subject1> <http://one.example/predicate1>" +
-      " <http://one.example/object1> " + "<http://one.example/graph1>" + " .\n" +
-      "+<http://one.example/subject2> <http://one.example/predicate2>" +
-      " <http://one.example/object2> " + "<http://one.example/graph1>" + " .\n"));
+    assertThat(changes, is("""
+        +<http://one.example/subject1> <http://one.example/predicate1> <http://one.example/object1> <http://one.example/graph1> .
+        +<http://one.example/subject2> <http://one.example/predicate2> <http://one.example/object2> <http://one.example/graph1> .
+        """));
   }
 
   @Test
@@ -842,11 +849,10 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation extendSchema($dataSetId: String!, $customSchema: [CustomSchemaTypeInput!]!) { " +
-            "   extendSchema(dataSetId: $dataSetId, customSchema:$customSchema){\n" +
-            "    message\n" +
-            "   }" +
-            "}"),
+            """
+                mutation extendSchema($dataSetId: String!, $customSchema: [CustomSchemaTypeInput!]!) {    extendSchema(dataSetId: $dataSetId, customSchema:$customSchema){
+                    message
+                   }}"""),
         "variables",
         jsnO(
           "dataSetId", jsn(dataSetId),
@@ -867,19 +873,20 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(String.format(
-          "query retrieveExtendedSchema  {\n" +
-            "  dataSets {\n" +
-            "    %s {\n" +
-            "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList {\n" +
-            "        items {\n" +
-            "          test_test {\n" +
-            "            type\n" +
-            "          }\n" +
-            "        }\n" +
-            "      }\n" +
-            "    }\n" +
-            "  }\n" +
-            "}", dataSetId))
+            """
+                query retrieveExtendedSchema  {
+                  dataSets {
+                    %s {
+                      http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList {
+                        items {
+                          test_test {
+                            type
+                          }
+                        }
+                      }
+                    }
+                  }
+                }""", dataSetId))
       ).toString(), MediaType.valueOf("application/json")));
 
     assertThat(retrieveExtendedSchema.getStatus(), is(200));
@@ -907,11 +914,10 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation extendSchema($dataSetId: String!, $customSchema: [CustomSchemaTypeInput!]!) { " +
-            "   extendSchema(dataSetId: $dataSetId, customSchema:$customSchema){\n" +
-            "    message\n" +
-            "   }" +
-            "}"),
+            """
+                mutation extendSchema($dataSetId: String!, $customSchema: [CustomSchemaTypeInput!]!) {    extendSchema(dataSetId: $dataSetId, customSchema:$customSchema){
+                    message
+                   }}"""),
         "variables",
         jsnO(
           "dataSetId", jsn(dataSetId),
@@ -926,22 +932,23 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(String.format(
-          "query retrieveExtendedSchema  {\n" +
-            "  dataSets {\n" +
-            "    %s {\n" +
-            "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList {\n" +
-            "        items {\n" +
-            "          test_test {\n" +
-            "            type\n" +
-            "          },\n" +
-            "          test_test3 {\n" +
-            "            type\n" +
-            "          }\n" +
-            "        }\n" +
-            "      }\n" +
-            "    }\n" +
-            "  }\n" +
-            "}", dataSetId))
+            """
+                query retrieveExtendedSchema  {
+                  dataSets {
+                    %s {
+                      http___timbuctoo_huygens_knaw_nl_datasets_clusius_PersonsList {
+                        items {
+                          test_test {
+                            type
+                          },
+                          test_test3 {
+                            type
+                          }
+                        }
+                      }
+                    }
+                  }
+                }""", dataSetId))
       ).toString(), MediaType.valueOf("application/json")));
 
     assertThat(retrieveExtendedSchema2.getStatus(), is(200));
@@ -1199,14 +1206,15 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation SetIndexConfig($dataSetId: String!, $collectionUri: String!, $indexConfig: IndexConfigInput!) {\n" +
-            "  setIndexConfig(dataSetId: $dataSetId, collectionUri:$collectionUri, indexConfig: $indexConfig) {\n" +
-            "    facet {\n" +
-            "      paths\n" +
-            "      type\n" +
-            "    }\n" +
-            "  }\n" +
-            "}"),
+            """
+                mutation SetIndexConfig($dataSetId: String!, $collectionUri: String!, $indexConfig: IndexConfigInput!) {
+                  setIndexConfig(dataSetId: $dataSetId, collectionUri:$collectionUri, indexConfig: $indexConfig) {
+                    facet {
+                      paths
+                      type
+                    }
+                  }
+                }"""),
         "variables",
         jsnO(
           "dataSetId", jsn(dataSetId),
@@ -1244,26 +1252,27 @@ public class IntegrationTest {
         Entity.entity(
           jsnO(
             "query", jsn(
-              "query metadata($dataSetId: ID!) {\n" +
-                "  dataSetMetadata(dataSetId: $dataSetId) {\n" +
-                "    collectionList {\n" +
-                "      items {\n" +
-                "        uri\n" +
-                "        indexConfig {\n" +
-                "          facet {\n" +
-                "            paths\n" +
-                "            type\n" +
-                "          }\n" +
-                "          fullText {\n" +
-                "            fields {\n" +
-                "              path\n" +
-                "            }\n" +
-                "          }\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}"
+                  """
+                      query metadata($dataSetId: ID!) {
+                        dataSetMetadata(dataSetId: $dataSetId) {
+                          collectionList {
+                            items {
+                              uri
+                              indexConfig {
+                                facet {
+                                  paths
+                                  type
+                                }
+                                fullText {
+                                  fields {
+                                    path
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }"""
             ),
             "variables", jsnO(
               "dataSetId", jsn(dataSetId)
@@ -1335,11 +1344,11 @@ public class IntegrationTest {
         Entity.entity(
           jsnO(
             "query", jsn(
-              "query metadata($dataSetId: ID!) {\n" +
-                "  dataSetMetadata(dataSetId: $dataSetId) {\n" +
-                "    dataSetId" +
-                "  }\n" +
-                "}"
+                  """
+                      query metadata($dataSetId: ID!) {
+                        dataSetMetadata(dataSetId: $dataSetId) {
+                          dataSetId  }
+                      }"""
             ),
             "variables", jsnO(
               "dataSetId", jsn(dataSetId)
@@ -1400,11 +1409,12 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "{\n" +
-            "  allDataSets {\n" +
-            "    dataSetId\n" +
-            "  }\n" +
-            "}"
+            """
+                {
+                  allDataSets {
+                    dataSetId
+                  }
+                }"""
         ),
         "variables",
         jsnO(
@@ -1453,11 +1463,12 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "{\n" +
-            "  allDataSets {\n" +
-            "    dataSetId\n" +
-            "  }\n" +
-            "}"
+            """
+                {
+                  allDataSets {
+                    dataSetId
+                  }
+                }"""
         ),
         "variables",
         jsnO(
@@ -1569,17 +1580,17 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "mutation SetSummaryProps($dataSetId: String! $collectionUri: String! $data:SummaryPropertiesInput!) {\n" +
-            "  setSummaryProperties(dataSetId: $dataSetId, collectionUri: $collectionUri, summaryProperties: $data)" +
-            "{ \n" +
-            "    title {\n" +
-            "      path {\n" +
-            "        step\n" +
-            "        direction\n" +
-            "      }" +
-            "    }\n" +
-            "  }\n" +
-            "}\n"
+            """
+                mutation SetSummaryProps($dataSetId: String! $collectionUri: String! $data:SummaryPropertiesInput!) {
+                  setSummaryProperties(dataSetId: $dataSetId, collectionUri: $collectionUri, summaryProperties: $data){\s
+                    title {
+                      path {
+                        step
+                        direction
+                      }    }
+                  }
+                }
+                """
         ),
         "variables",
         jsnO(
@@ -2506,11 +2517,12 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "query {\n" +
-            "dataSetMetadataList(promotedOnly:false publishedOnly:false) {\n" +
-            "    dataSetId\n" +
-            "  }\n" +
-            "}"
+            """
+                query {
+                dataSetMetadataList(promotedOnly:false publishedOnly:false) {
+                    dataSetId
+                  }
+                }"""
         )
       ).toString(), MediaType.APPLICATION_JSON));
 
@@ -2550,11 +2562,12 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "query {\n" +
-            "dataSetMetadataList(promotedOnly:false publishedOnly:false) {\n" +
-            "    dataSetId\n" +
-            "  }\n" +
-            "}"
+            """
+                query {
+                dataSetMetadataList(promotedOnly:false publishedOnly:false) {
+                    dataSetId
+                  }
+                }"""
         )
       ).toString(), MediaType.APPLICATION_JSON));
 
@@ -2585,11 +2598,12 @@ public class IntegrationTest {
       .post(Entity.entity(jsnO(
         "query",
         jsn(
-          "query {\n" +
-            "dataSetMetadataList(promotedOnly:false publishedOnly:false) {\n" +
-            "    dataSetId\n" +
-            "  }\n" +
-            "}"
+            """
+                query {
+                dataSetMetadataList(promotedOnly:false publishedOnly:false) {
+                    dataSetId
+                  }
+                }"""
         )
       ).toString(), MediaType.APPLICATION_JSON));
 
@@ -2647,9 +2661,11 @@ public class IntegrationTest {
 
     final String data = queryData.readEntity(String.class);
     assertThat(data, is(
-        "schema_familyName,schema_givenNameList.0,schema_givenNameList.1,schema_givenNameList.2\r\n" +
-        "Jansen,Jan,,\r\n" +
-        "van Hasselt,Alexander,Michiel,Willem\r\n"
+        """
+            schema_familyName,schema_givenNameList.0,schema_givenNameList.1,schema_givenNameList.2\r
+            Jansen,Jan,,\r
+            van Hasselt,Alexander,Michiel,Willem\r
+            """
     ));
   }
 
@@ -2745,9 +2761,8 @@ public class IntegrationTest {
       MediaType.valueOf(mediaType)
     ));
 
-    Response result = call(path)
+    return call(path)
       .post(Entity.entity(formdata, "multipart/form-data; boundary=Boundary_1_498293219_1483974344746"));
-    return result;
   }
 
   private Invocation.Builder call(String path) {
@@ -2767,7 +2782,6 @@ public class IntegrationTest {
       .request()
       .header("Authorization", AUTH);
   }
-
 
   private Invocation.Builder callWithoutAuthentication(String path) {
     String server;

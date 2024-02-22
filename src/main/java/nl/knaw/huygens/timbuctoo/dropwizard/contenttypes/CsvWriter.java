@@ -6,7 +6,6 @@ import javax.ws.rs.Produces;
 
 @Produces(CsvWriter.MIME_TYPE)
 public class CsvWriter extends SerializerWriter {
-
   public static final String MIME_TYPE = "text/csv";
 
   public CsvWriter() {

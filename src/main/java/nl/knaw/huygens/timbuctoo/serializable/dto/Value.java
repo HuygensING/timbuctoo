@@ -43,31 +43,44 @@ public interface Value extends RdfData {
   }
 
   static Value fromRawJavaType(Object value) {
-    if (value == null) {
-      return null;
-    } else if (value instanceof Integer) {
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#int");
-    } else if (value instanceof Long) {
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#long");
-    } else if (value instanceof Short) {
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#short");
-    } else if (value instanceof Byte) {
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#byte");
-    } else if (value instanceof Double) {
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#double");
-    } else if (value instanceof BigInteger) {
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#integer");
-    } else if (value instanceof BigDecimal) {
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#decimal");
-    } else if (value instanceof String) {
-      return create((String) value, "http://www.w3.org/2001/XMLSchema#string");
-    } else if (value instanceof Boolean) {
-      return create((Boolean) value ? "true" : "false", "http://www.w3.org/2001/XMLSchema#boolean");
-    } else if (value instanceof Character) {
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#string");
-    } else {
-      LOG.error("Unknown type: " + value.getClass());
-      return create(value + "", "http://www.w3.org/2001/XMLSchema#string");
+    switch (value) {
+      case null -> {
+        return null;
+      }
+      case Integer i -> {
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#int");
+      }
+      case Long l -> {
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#long");
+      }
+      case Short i -> {
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#short");
+      }
+      case Byte b -> {
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#byte");
+      }
+      case Double v -> {
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#double");
+      }
+      case BigInteger bigInteger -> {
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#integer");
+      }
+      case BigDecimal bigDecimal -> {
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#decimal");
+      }
+      case String s -> {
+        return create(s, "http://www.w3.org/2001/XMLSchema#string");
+      }
+      case Boolean b -> {
+        return create(b ? "true" : "false", "http://www.w3.org/2001/XMLSchema#boolean");
+      }
+      case Character c -> {
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#string");
+      }
+      default -> {
+        LOG.error("Unknown type: " + value.getClass());
+        return create(value + "", "http://www.w3.org/2001/XMLSchema#string");
+      }
     }
   }
 }

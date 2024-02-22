@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.security.dto;
 import javax.annotation.Nullable;
 
 public class UserStubs {
-
   public static User userWithId(final String userId) {
     return new User() {
       @Nullable

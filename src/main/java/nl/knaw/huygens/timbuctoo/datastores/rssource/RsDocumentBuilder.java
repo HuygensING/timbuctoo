@@ -191,7 +191,7 @@ public class RsDocumentBuilder {
     Optional<DataSet> maybeDataSet = dataSetRepository.getDataSet(user, ownerId, dataSetId);
     if (maybeDataSet.isPresent()) {
       DataSet dataSet = maybeDataSet.get();
-      Integer version = getVersionFromFileId(fileId);
+      int version = getVersionFromFileId(fileId);
 
       UpdatedPerPatchStore updatedPerPatchStore = maybeDataSet.get().getUpdatedPerPatchStore();
       try (Stream<String> stream = updatedPerPatchStore.ofVersion(version)) {

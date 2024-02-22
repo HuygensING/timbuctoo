@@ -38,5 +38,4 @@ public class EntityImageFetcher implements DataFetcher<TypedValue> {
     }
     return null;
   }
-
 }

@@ -12,7 +12,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BdbTypeNameStoreTest {
-
   @Test
   public void test() throws IOException {
     BdbTypeNameStore store = new BdbTypeNameStore(

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 
 public class ImportInfo {
-
   @JsonProperty
   private String importSource;
 
@@ -19,7 +18,6 @@ public class ImportInfo {
     this.importSource = importSource;
     this.lastImportedOn = lastImportedOn;
   }
-
 
   public String getImportSource() {
     return importSource;

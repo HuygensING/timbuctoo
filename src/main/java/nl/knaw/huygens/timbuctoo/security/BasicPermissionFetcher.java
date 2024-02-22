@@ -62,29 +62,6 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  @Deprecated
-  public Set<Permission> getOldPermissions(User user, String vreId) {
-    Set<Permission> permissions = new HashSet<>();
-    permissions.add(Permission.READ);
-
-    try {
-      Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, user);
-      if (vreAuthorization.isPresent()) {
-        if (vreAuthorization.get().isAllowedToWrite()) {
-          permissions.add(Permission.WRITE);
-        }
-        if (vreAuthorization.get().hasAdminAccess()) {
-          permissions.add(Permission.IMPORT_DATA);
-          permissions.add(Permission.REMOVE_DATASET);
-        }
-      }
-      return permissions;
-    } catch (AuthorizationUnavailableException e) {
-      return permissions;
-    }
-  }
-
-  @Override
   public void initializeOwnerAuthorization(User user, String ownerId, String dataSetId)
     throws AuthorizationCreationException {
     String vreId = createCombinedId(ownerId, dataSetId);

@@ -34,7 +34,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class DataSetRepositoryTest {
-
   protected File tempFile;
   private DataSetRepository dataSetRepository;
   private PermissionFetcher permissionFetcher;
@@ -185,5 +184,4 @@ public class DataSetRepositoryTest {
 
     assertThat(metadata.isPublished(), is(true));
   }
-
 }

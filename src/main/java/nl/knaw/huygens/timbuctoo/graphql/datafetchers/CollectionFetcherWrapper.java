@@ -20,5 +20,4 @@ public class CollectionFetcherWrapper implements DataFetcher {
       ((DatabaseResult) environment.getSource()).getDataSet()
     );
   }
-
 }

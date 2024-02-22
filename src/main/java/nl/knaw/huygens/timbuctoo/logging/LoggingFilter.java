@@ -21,21 +21,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @PreMatching
 @Priority(Integer.MIN_VALUE)
 public final class LoggingFilter implements ContainerRequestFilter, ContainerResponseFilter {
-
-
   private static final Logger LOG = LoggerFactory.getLogger(LoggingFilter.class);
   private static final String STOPWATCH_PROPERTY = LoggingFilter.class.getName() + "stopwatch";
 
@@ -77,7 +75,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
       builder.append(header).append(": ");
       if (val.size() == 1) {
-        builder.append(val.get(0));
+        builder.append(val.getFirst());
       } else {
         boolean add = false;
         for (final Object s : val) {
@@ -203,7 +201,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     MDC.put(MDC_RESPONSE_HEADERS, formatHeaders(responseContext.getStringHeaders()));
 
     MDC.put(MDC_OUTPUT_BYTECOUNT, bytecount + "");
-    if (responseBody.length() > 0) {
+    if (!responseBody.isEmpty()) {
       MDC.put(MDC_OUTPUT_SNIPPET, responseBody);
     }
     String size = " (" + bytecount + " bytes)";
@@ -254,7 +252,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     private final Map<String, String> contextMap;
     private final boolean logResponseText;
     private long count = 0;
-    private ByteArrayOutputStream responseBody = new ByteArrayOutputStream(MAX_RESULT_SIZE);
+    private final ByteArrayOutputStream responseBody = new ByteArrayOutputStream(MAX_RESULT_SIZE);
     long firstByte = -1;
 
     public LoggingOutputStream(OutputStream out, Stopwatch stopwatch, String log,
@@ -309,7 +307,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
         requestContext,
         responseContext,
         contextMap,
-        responseBody.toString("UTF-8")
+        responseBody.toString(StandardCharsets.UTF_8)
       );
       responseBody.close();
     }

@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BasicRdfPatchSerializerTest {
   private String result;
-  BasicRdfPatchSerializer basicRdfPatchSerializer = new TestBasicRdfPatchSerializer(this::stringWriter);
+  final BasicRdfPatchSerializer basicRdfPatchSerializer = new TestBasicRdfPatchSerializer(this::stringWriter);
 
   public void stringWriter(String string) {
     result = string;

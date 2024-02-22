@@ -7,9 +7,9 @@ public interface CachedFile extends AutoCloseable {
   /**
    * @return the original name of the file
    */
-  String getName();
+  String name();
 
-  File getFile();
+  File file();
 
-  MediaType getMimeType();
+  MediaType mimeType();
 }

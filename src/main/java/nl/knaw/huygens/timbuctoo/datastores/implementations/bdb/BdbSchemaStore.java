@@ -242,7 +242,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       .flatMap(t -> t.getPredicates().stream())
       .mapToLong(p -> p.getValueTypes().values().size() + p.getReferenceTypes().values().size())
       .sum();
-    LOG.info("types-size is: " + totalPredicateCount + "");
+    LOG.info("types-size is: " + totalPredicateCount);
     importStatus.setStatus("types-size is: " + totalPredicateCount);
   }
 
@@ -373,7 +373,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     final ChangeFetcher getQuads = new ChangeFetcherImpl(quadStore);
     try (Stream<String> subjects = Streams
         .combine(quadStore.getAllQuads(), (cqA, cqB) -> cqA.getSubject().equals(cqB.getSubject()), ArrayList::new)
-        .map(cqs -> cqs.get(0).getSubject())) {
+        .map(cqs -> cqs.getFirst().getSubject())) {
       for (String subject : (Iterable<String>) subjects::iterator) {
         onChangedSubject(subject, getQuads);
       }

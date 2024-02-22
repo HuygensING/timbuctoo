@@ -15,7 +15,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 public class NquadsUdParserTest {
-
   private static final String BASE_URI = "http://example.org";
   private RdfProcessor rdfProcessor;
   private NQuadsUdParser instance;
@@ -110,5 +109,4 @@ public class NquadsUdParserTest {
       anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
     );
   }
-
 }

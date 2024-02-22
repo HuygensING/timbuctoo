@@ -27,8 +27,8 @@ public class SetCustomProvenanceMutation extends Mutation {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
-    dataSetName = dataSetIdSplit.getRight();
-    ownerId = dataSetIdSplit.getLeft();
+    dataSetName = dataSetIdSplit.right();
+    ownerId = dataSetIdSplit.left();
   }
 
   @Override

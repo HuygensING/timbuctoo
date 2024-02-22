@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.elasticsearch;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,6 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests in this class assume an elasticSearch instance at localhost:9200.
@@ -24,7 +24,6 @@ import static org.junit.Assume.assumeTrue;
   "This test will fail when you run your own elastic search server." +
   "So for now ignore this test, to make sure no test fails unexpectedly.")
 public class ElasticSearchFilterOnLineTest {
-
   private static final String hostname = "localhost";
   private static final int port = 9200;
   private static final String username = "elastic";
@@ -34,9 +33,9 @@ public class ElasticSearchFilterOnLineTest {
 
   @BeforeAll
   public static void initialize() throws Exception {
-    assumeTrue("No host at " + hostname + ":" + port + ", skipping tests." +
-      "\nPlease start an ElasticSearch instance at the specified host and port.", hostIsAvailable());
-    eSearch = new ElasticSearchFilter(hostname, port, Optional.ofNullable(username), Optional.ofNullable(password));
+    Assumptions.assumeTrue(hostIsAvailable(), "No host at " + hostname + ":" + port + ", skipping tests." +
+      "\nPlease start an ElasticSearch instance at the specified host and port.");
+    eSearch = new ElasticSearchFilter(hostname, port, Optional.of(username), Optional.of(password));
   }
 
   private static boolean hostIsAvailable() {
@@ -100,31 +99,33 @@ public class ElasticSearchFilterOnLineTest {
   }
 
   private String createQuery1() {
-    return "{\n" +
-      "    \"size\": 3,\n" +
-      "    \"query\": {\n" +
-      "        \"match\" : {\n" +
-      "            \"gender\" : \"F\"\n" +
-      "        }\n" +
-      "    },\n" +
-      "    \"sort\": [\n" +
-      "        {\"balance\": \"asc\"}\n" +
-      "    ]\n" +
-      "}";
+    return """
+        {
+            "size": 3,
+            "query": {
+                "match" : {
+                    "gender" : "F"
+                }
+            },
+            "sort": [
+                {"balance": "asc"}
+            ]
+        }""";
   }
 
   private String createQuery2() {
-    return "{\n" +
-      "    \"size\": 3,\n" +
-      "    \"query\": {\n" +
-      "        \"match\" : {\n" +
-      "            \"gender\" : \"U\"\n" +
-      "        }\n" +
-      "    },\n" +
-      "    \"sort\": [\n" +
-      "        {\"balance\": \"asc\"},\n" +
-      "        {\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
-      "    ]\n" +
-      "}";
+    return String.format("""
+        {
+            "size": 3,
+            "query": {
+                "match" : {
+                    "gender" : "U"
+                }
+            },
+            "sort": [
+                {"balance": "asc"},
+                {"%s": "desc"}
+            ]
+        }""", ElasticSearchFilter.UNIQUE_FIELD_NAME);
   }
 }

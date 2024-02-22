@@ -27,9 +27,8 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
 public abstract class PropertyMatcher<T, V> extends TypeSafeMatcher<T> {
-
-  protected String propertyName;
-  protected Matcher<V> matcher;
+  protected final String propertyName;
+  protected final Matcher<V> matcher;
 
   public PropertyMatcher(String propertyName, Matcher<V> matcher) {
     this.propertyName = propertyName;
@@ -51,10 +50,8 @@ public abstract class PropertyMatcher<T, V> extends TypeSafeMatcher<T> {
 
   @Override
   protected boolean matchesSafely(T item) {
-    boolean matches = matcher.matches(getItemValue(item));
-    return matches;
+    return matcher.matches(getItemValue(item));
   }
 
   protected abstract V getItemValue(T item);
-
 }

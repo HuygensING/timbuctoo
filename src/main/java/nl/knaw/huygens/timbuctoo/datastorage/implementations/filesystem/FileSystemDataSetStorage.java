@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 
 class FileSystemDataSetStorage implements DataSetStorage {
-
   private static final Logger LOG = LoggerFactory.getLogger(FileSystemDataStorage.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .registerModule(new Jdk8Module())

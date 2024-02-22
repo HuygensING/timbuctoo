@@ -32,5 +32,4 @@ class DerivedValueTypeSchemaGenerator implements DerivedTypeSchemaGenerator {
 
     return builder;
   }
-
 }

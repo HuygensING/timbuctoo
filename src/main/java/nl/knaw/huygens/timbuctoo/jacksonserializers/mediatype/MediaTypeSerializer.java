@@ -8,7 +8,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 
 public class MediaTypeSerializer extends StdSerializer<MediaType> {
-
   public MediaTypeSerializer() {
     super(MediaType.class);
   }

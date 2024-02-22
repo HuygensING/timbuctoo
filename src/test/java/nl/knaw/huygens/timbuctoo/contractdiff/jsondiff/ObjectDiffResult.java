@@ -6,10 +6,8 @@ import nl.knaw.huygens.timbuctoo.contractdiff.JsonBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.contractdiff.JsonBuilder.jsn;
-
 public class ObjectDiffResult extends DiffResult {
-  private Map<String, DiffResult> innerResults = new HashMap<>();
+  private final Map<String, DiffResult> innerResults = new HashMap<>();
   private boolean wasSuccess = true;
 
   public void add(String key, DiffResult propResult) {

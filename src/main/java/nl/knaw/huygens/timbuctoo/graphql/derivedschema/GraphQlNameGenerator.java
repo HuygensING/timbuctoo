@@ -7,7 +7,6 @@ public class GraphQlNameGenerator {
   private final TypeNameStore typeNameStore;
 
   public GraphQlNameGenerator(TypeNameStore typeNameStore) {
-
     this.typeNameStore = typeNameStore;
   }
 
@@ -37,5 +36,4 @@ public class GraphQlNameGenerator {
   public String shorten(String typeUri) {
     return typeNameStore.shorten(typeUri);
   }
-
 }

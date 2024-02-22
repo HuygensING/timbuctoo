@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 
 @Value.Immutable
 public interface DataSetConfiguration {
-
   @JsonCreator
   static DataSetConfiguration create(@JsonProperty("dataStorage") DataStorage dataStorage) {
     return ImmutableDataSetConfiguration.builder()

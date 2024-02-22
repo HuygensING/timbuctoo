@@ -50,7 +50,6 @@ public class ExplicitField {
   }
 
   public Predicate convertToPredicate() {
-
     Map<String, Long> valueTypes = new HashMap<>();
     Map<String, Long> referenceTypes = new HashMap<>();
 
@@ -59,7 +58,6 @@ public class ExplicitField {
         valueTypes.put(value, 0L);
       }
     }
-
 
     if (references != null) {
       for (String reference : references) {
@@ -72,7 +70,6 @@ public class ExplicitField {
     convertedPredicate.setIsList(isList);
     convertedPredicate.setValueTypes(valueTypes);
     convertedPredicate.setReferenceTypes(referenceTypes);
-
 
     return convertedPredicate;
   }
@@ -94,32 +91,18 @@ public class ExplicitField {
       throw new IllegalArgumentException("Explicit field URIs do not match.");
     }
 
-    if (this.isList() || explicitField.isList()) {
-      mergedExplicitField.setList(true);
-    } else {
-      mergedExplicitField.setList(false);
-    }
+    mergedExplicitField.setList(this.isList() || explicitField.isList());
 
     Set<String> values = this.getValues();
-
     if (explicitField.getValues() != null) {
-      for (String value : explicitField.getValues()) {
-        if (!values.contains(value)) {
-          values.add(value);
-        }
-      }
+      values.addAll(explicitField.getValues());
     }
 
     mergedExplicitField.setValues(values);
 
     Set<String> references = this.getReferences();
-
     if (explicitField.getReferences() != null) {
-      for (String reference : explicitField.getReferences()) {
-        if (!references.contains(reference)) {
-          references.add(reference);
-        }
-      }
+      references.addAll(explicitField.getReferences());
     }
 
     mergedExplicitField.setReferences(references);

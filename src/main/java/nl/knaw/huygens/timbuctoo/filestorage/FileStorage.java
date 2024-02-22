@@ -27,5 +27,4 @@ public interface FileStorage {
   Optional<CachedFile> getFile(String token) throws IOException;
 
   void clear() throws IOException;
-
 }

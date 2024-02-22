@@ -27,7 +27,7 @@ public class DatabaseAvailabilityCheck extends HealthCheck {
         ));
       }
     }
-    if (message.length() > 0) {
+    if (!message.isEmpty()) {
       return Result.unhealthy(message.toString());
     }
 

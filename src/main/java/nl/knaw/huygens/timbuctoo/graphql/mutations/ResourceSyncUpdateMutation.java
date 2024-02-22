@@ -45,8 +45,8 @@ public class ResourceSyncUpdateMutation extends Mutation {
     ResourceSyncReport resourceSyncReport = new ResourceSyncReport();
 
     try {
-      dataSetOpt = dataSetRepository.getDataSet(user, userAndDataSet.getLeft(), userAndDataSet.getRight());
-      if (!dataSetOpt.isPresent()) {
+      dataSetOpt = dataSetRepository.getDataSet(user, userAndDataSet.left(), userAndDataSet.right());
+      if (dataSetOpt.isEmpty()) {
         LOG.error("DataSet does not exist.");
         throw new RuntimeException("DataSet does not exist.");
       }
@@ -54,10 +54,10 @@ public class ResourceSyncUpdateMutation extends Mutation {
       DataSet dataSet = dataSetOpt.get();
       MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.UPDATE_RESOURCESYNC);
 
-      String capabilityListUri = dataSet.getMetadata().getImportInfo().get(0).getImportSource();
-      Date lastUpdate = dataSet.getMetadata().getImportInfo().get(0).getLastImportedOn();
+      String capabilityListUri = dataSet.getMetadata().getImportInfo().getFirst().getImportSource();
+      Date lastUpdate = dataSet.getMetadata().getImportInfo().getFirst().getLastImportedOn();
 
-      dataSet.getMetadata().getImportInfo().get(0).setLastImportedOn(Date.from(Instant.now()));
+      dataSet.getMetadata().getImportInfo().getFirst().setLastImportedOn(Date.from(Instant.now()));
       ResourceSyncMutationFileHelper fileHelper = new ResourceSyncMutationFileHelper(dataSet, resourceSyncReport);
 
       ResourceSyncImport resourceSyncImport = new ResourceSyncImport(resourceSyncFileLoader, false);

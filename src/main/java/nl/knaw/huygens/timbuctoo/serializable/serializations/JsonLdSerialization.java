@@ -39,7 +39,7 @@ public class JsonLdSerialization implements Serialization {
     generator.writeStartObject();
     generator.writeFieldName("data");
     generator.writeStartObject();
-    for (Map.Entry<String, Serializable> entry : serializableResult.getData().getContents().entrySet()) {
+    for (Map.Entry<String, Serializable> entry : serializableResult.data().getContents().entrySet()) {
       generator.writeFieldName(entry.getKey());
       dispatcher.dispatch(entry.getValue(), context);
     }
@@ -83,7 +83,6 @@ public class JsonLdSerialization implements Serialization {
   }
 
   private class SerializeDispatcher extends Dispatcher<Set<PredicateInfo>> {
-
     @Override
     public void handleEntity(Entity entity, Set<PredicateInfo> context) throws IOException {
       generator.writeStartObject();

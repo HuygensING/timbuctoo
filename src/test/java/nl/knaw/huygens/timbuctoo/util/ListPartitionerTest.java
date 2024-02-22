@@ -9,10 +9,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
-public class ListPartitioner {
+public class ListPartitionerTest {
   @Test
   public void returnsAllThePartitionsOfAList() {
-    List<List<List<String>>> partitions = ListPartitioner.partition(Lists.newArrayList("A", "B", "C", "D"));
+    List<List<List<String>>> partitions = ListPartitionerTest.partition(Lists.newArrayList("A", "B", "C", "D"));
 
     assertThat(partitions, containsInAnyOrder(
         contains(contains("A", "B", "C", "D")),
@@ -33,7 +33,7 @@ public class ListPartitioner {
       result.add(partition);
       return result;
     } else {
-      T head = input.get(0);
+      T head = input.getFirst();
       List<List<List<T>>> result = Lists.newArrayList();
       List<List<List<T>>> subPartitions = partition(input.subList(1, input.size()));
       for (List<List<T>> subPartition : subPartitions ) {
@@ -43,7 +43,7 @@ public class ListPartitioner {
         result.add(subResult);
 
         List<T> subList = Lists.newArrayList(head);
-        subList.addAll(subPartition.get(0));
+        subList.addAll(subPartition.getFirst());
         List<List<T>> subResult2 = Lists.newArrayList();
         subResult2.add(subList);
         subResult2.addAll(subPartition.subList(1, subPartition.size()));
@@ -51,8 +51,6 @@ public class ListPartitioner {
       }
       return result;
     }
-
-
   }
 
   private static <T> List<List<T>> createPartition(List<T> input) {

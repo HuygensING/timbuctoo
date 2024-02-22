@@ -10,7 +10,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class UserStoreMockBuilder {
-
   private final UserStore userStore;
 
   private UserStoreMockBuilder() throws AuthenticationUnavailableException {
@@ -30,5 +29,4 @@ public class UserStoreMockBuilder {
     when(userStore.userFor(pid)).thenReturn(Optional.of(User.create("", "")));
     return this;
   }
-
 }

@@ -140,7 +140,6 @@ public class LocalFileVreAuthorizationAccessTest {
     assertThat(new File(authorizationsFolder.resolve(AUTH_FILE).toString()).exists(), equalTo(false));
   }
 
-
   @Test
   public void getAuthorizationCheckesTheGeneralAccessOfTheUserWhenHeHasNoAccessOnTheDataSet() throws Exception {
     File file = new File(authorizationsFolder.toFile(), "authorizations.json");

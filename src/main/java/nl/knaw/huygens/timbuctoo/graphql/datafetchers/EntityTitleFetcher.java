@@ -16,7 +16,6 @@ import static nl.knaw.huygens.timbuctoo.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_SUMMARYTITLEPREDICATE;
 
 public class EntityTitleFetcher implements DataFetcher<TypedValue> {
-
   private final SummaryPropDataRetriever summaryPropDataRetriever;
 
   public EntityTitleFetcher(List<SummaryProp> defaultTitles) {
@@ -44,5 +43,4 @@ public class EntityTitleFetcher implements DataFetcher<TypedValue> {
     }
     return null;
   }
-
 }

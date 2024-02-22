@@ -109,5 +109,4 @@ public class VreAuthorizationTest {
 
     assertThat(allowedToWrite, is(false));
   }
-
 }

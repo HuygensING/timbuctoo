@@ -6,7 +6,6 @@ import javax.ws.rs.Produces;
 
 @Produces(JsonWriter.MIME_TYPE)
 public class JsonWriter extends SerializerWriter {
-
   public static final String MIME_TYPE = "application/json";
 
   public JsonWriter() {

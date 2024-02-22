@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.replace;
-import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.RDFS_LABEL;
 
 public class CollectionMetadataMutation extends Mutation {
@@ -51,5 +50,4 @@ public class CollectionMetadataMutation extends Mutation {
   private Optional<String> getValue(Map viewConfig, String valueName) {
     return Optional.ofNullable((String) viewConfig.get(valueName));
   }
-
 }

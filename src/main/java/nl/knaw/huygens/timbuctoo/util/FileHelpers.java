@@ -9,7 +9,6 @@ import static com.google.common.io.Resources.getResource;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileHelpers {
-
   public static Path getFileFromResource(Class sourceClass, String resourcePath) throws IOException {
     Path result = makeTempFilePath(true);
     Files.copy(getResource(sourceClass, resourcePath).openStream(), result, REPLACE_EXISTING);
@@ -34,5 +33,4 @@ public class FileHelpers {
     Files.createDirectory(result);
     return result;
   }
-
 }

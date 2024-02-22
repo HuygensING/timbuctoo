@@ -28,7 +28,6 @@ public class UriHelperTest {
     assertThat(uri, is("http://acme.org/path1/path2?foo=bar"));
   }
 
-
   @Test
   public void normalizesSlashes() {
     UriHelper helperOpen = new UriHelper(URI.create("http://example.com/path1"));
@@ -58,6 +57,4 @@ public class UriHelperTest {
     assertThat(helperSlash.fromResourceUri(resourceSlash).toString(), is(expectation));
     assertThat(helperSlash.fromResourceUri(resourceOpen).toString(), is(expectation));
   }
-
-
 }

@@ -27,7 +27,7 @@ class OpenIdConnectUserValidator implements UserValidator {
   }
 
   private static Cache<String, User> createCache(Timeout timeout) {
-    return CacheBuilder.newBuilder().expireAfterAccess(timeout.duration, timeout.timeUnit).build();
+    return CacheBuilder.newBuilder().expireAfterAccess(timeout.duration(), timeout.timeUnit()).build();
   }
 
   @Override

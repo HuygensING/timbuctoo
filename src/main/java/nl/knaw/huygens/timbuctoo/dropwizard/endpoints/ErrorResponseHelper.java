@@ -13,7 +13,6 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class ErrorResponseHelper {
-
   private static final Logger LOG = LoggerFactory.getLogger(ErrorResponseHelper.class);
 
   public Response dataSetNotFound(String userId, String dataSetId) {
@@ -50,7 +49,5 @@ public class ErrorResponseHelper {
       LOG.error("import result failure", e);
       return Response.serverError().build();
     }
-
   }
-
 }

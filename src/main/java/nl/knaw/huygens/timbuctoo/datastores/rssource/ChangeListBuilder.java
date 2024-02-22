@@ -25,7 +25,7 @@ public class ChangeListBuilder {
   public Stream<String> retrieveChanges(Stream<CursorQuad> quads) {
     return quads.map(quad -> {
       Optional<String> dataType = quad.getValuetype();
-      if (dataType == null || !dataType.isPresent()) {
+      if (dataType == null || dataType.isEmpty()) {
         if (quad.getChangeType() == ChangeType.ASSERTED) {
           return changesQuadGenerator.onRelation(quad.getSubject(), quad.getPredicate(),
               quad.getObject(), quad.getGraph().orElse(null));

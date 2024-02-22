@@ -9,14 +9,12 @@ import nl.knaw.huygens.timbuctoo.graphql.collectionfilter.FilterResult;
 import java.io.IOException;
 import java.util.Optional;
 
-// Used as replacement filter in the DropwizrardLaunchesTest
+// Used as replacement filter in the DropwizardLaunchesTest
 public class TestCollectionFilter implements CollectionFilter {
-
   @JsonCreator
   public TestCollectionFilter(@JsonProperty("hostname") String hostname, @JsonProperty("port") int port,
                              @JsonProperty("username") Optional<String> username,
                              @JsonProperty("password") Optional<String> password) {
-
   }
 
   @Override

@@ -72,9 +72,10 @@ public class DerivedSchemaContainerTest {
     String schema = instance.getSchema();
 
     assertThat(schema, containsString(
-      "type rootTypeMutations{\n" +
-        "  setCustomProvenance(customProvenance: CustomProvenanceInput!): Message!" +
-        " @setCustomProvenanceMutation(dataSet: \"rootType\")\n"
+        """
+            type rootTypeMutations{
+              setCustomProvenance(customProvenance: CustomProvenanceInput!): Message! @setCustomProvenanceMutation(dataSet: "rootType")
+            """
     ));
   }
 
@@ -142,13 +143,15 @@ public class DerivedSchemaContainerTest {
     String schema = instance.getSchema();
 
     assertThat(schema, containsString(
-      "input rootTypeProvenanceInput{\n" +
-        "  schema_name: rootType_value_schema_Person!\n" +
-        "}\n\n" +
-        "input rootType_value_schema_Person{\n" +
-        "  uri: String\n" +
-        "  schema_name_first: xsd_stringPropertyInput!\n" +
-        "}"
+        """
+            input rootTypeProvenanceInput{
+              schema_name: rootType_value_schema_Person!
+            }
+
+            input rootType_value_schema_Person{
+              uri: String
+              schema_name_first: xsd_stringPropertyInput!
+            }"""
     ));
   }
 
@@ -176,13 +179,15 @@ public class DerivedSchemaContainerTest {
     String schema = instance.getSchema();
 
     assertThat(schema, containsString(
-      "input rootTypeProvenanceInput{\n" +
-        "  schema_name: [rootType_value_schema_Person!]!\n" +
-        "}\n\n" +
-        "input rootType_value_schema_Person{\n" +
-        "  uri: String\n" +
-        "  schema_name_first: xsd_stringPropertyInput!\n" +
-        "}"
+        """
+            input rootTypeProvenanceInput{
+              schema_name: [rootType_value_schema_Person!]!
+            }
+
+            input rootType_value_schema_Person{
+              uri: String
+              schema_name_first: xsd_stringPropertyInput!
+            }"""
     ));
   }
 

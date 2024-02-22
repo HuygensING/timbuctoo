@@ -11,5 +11,4 @@ public interface UserValidator {
   Optional<User> getUserFromUserId(String userId) throws UserValidationException;
 
   Optional<User> getUserFromPersistentId(String persistentId) throws UserValidationException;
-
 }

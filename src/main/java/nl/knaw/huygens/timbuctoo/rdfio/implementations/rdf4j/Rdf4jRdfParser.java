@@ -21,13 +21,13 @@ public class Rdf4jRdfParser implements RdfParser {
     throws RdfProcessingFailedException, RdfProcessingParseException {
 
     try {
-      RDFFormat format = Rio.getParserFormatForMIMEType(input.getMimeType().toString())
+      RDFFormat format = Rio.getParserFormatForMIMEType(input.mimeType().toString())
         .orElseThrow(
-          () -> new UnsupportedRDFormatException(input.getMimeType() + " is not a supported rdf type.")
+          () -> new UnsupportedRDFormatException(input.mimeType() + " is not a supported rdf type.")
         );
       RDFParser rdfParser = Rio.createParser(format);
       rdfParser.setPreserveBNodeIDs(true);
-      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, baseUri, defaultGraph, input.getFile().getName()));
+      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, baseUri, defaultGraph, input.file().getName()));
       rdfParser.parse(input.getReader(), baseUri);
     } catch (IOException | UnsupportedRDFormatException e) {
       throw new RdfProcessingFailedException(e);

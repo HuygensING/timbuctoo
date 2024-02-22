@@ -37,8 +37,8 @@ public class CreateMutation extends Mutation {
     this.dataSetRepository = dataSetRepository;
     this.subjectFetcher = subjectFetcher;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
-    dataSetName = dataSetIdSplit.getRight();
-    ownerId = dataSetIdSplit.getLeft();
+    dataSetName = dataSetIdSplit.right();
+    ownerId = dataSetIdSplit.left();
     this.typeUri = typeUri;
     userUriCreator = new UserUriCreator(uriHelper);
   }
@@ -79,7 +79,7 @@ public class CreateMutation extends Mutation {
     try {
       dataSet.getImportManager().generateLog(
         dataSet.getMetadata().getBaseUri(), null,
-        new GraphQlToRdfPatch(graph.getUri(), uri, userUriCreator.create(user),
+        new GraphQlToRdfPatch(graph.uri(), uri, userUriCreator.create(user),
             new CreateMutationChangeLog(graph, uri, typeUri, entity))
       ).get(); // Wait until the data is processed
     } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {

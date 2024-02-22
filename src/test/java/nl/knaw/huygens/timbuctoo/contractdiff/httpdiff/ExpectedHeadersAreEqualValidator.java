@@ -17,13 +17,11 @@ import java.util.Objects;
 import static nl.knaw.huygens.timbuctoo.contractdiff.JsonBuilder.jsn;
 
 public class ExpectedHeadersAreEqualValidator {
-
   private enum DiffType {
     MATCH,
     SUPERFLUOUS,
     MISMATCH
   }
-
 
   private static class DoDiff {
     private final List<String> actuals;
@@ -38,16 +36,16 @@ public class ExpectedHeadersAreEqualValidator {
       this.actuals = actuals;
       headersDone = 0;
 
-      if (expectation == null || expectation.size() == 0) {
+      if (expectation == null || expectation.isEmpty()) {
         type = DiffType.SUPERFLUOUS;
         restType = DiffType.SUPERFLUOUS;
         headerToMark = 0;
-      } else if (Strings.isNullOrEmpty(expectation.get(0))) {
+      } else if (Strings.isNullOrEmpty(expectation.getFirst())) {
         type = DiffType.MATCH;
         restType = DiffType.SUPERFLUOUS;
         headerToMark = 0;
       } else {
-        expectedValue = expectation.get(0);
+        expectedValue = expectation.getFirst();
         type = DiffType.MISMATCH;
         restType = DiffType.MISMATCH;
         for (int i = 0; i < actuals.size(); i++) {
@@ -115,7 +113,7 @@ public class ExpectedHeadersAreEqualValidator {
     }
     for (String key : expectation.keySet()) {
       if (!reality.containsKey(key)) {
-        result.add(key, new MissingPropertyDiffResult(expectation.get(key).get(0)));
+        result.add(key, new MissingPropertyDiffResult(expectation.get(key).getFirst()));
       }
     }
     return result;

@@ -33,8 +33,8 @@ public class MutationHelpers {
 
     User user = getUser(env);
 
-    String ownerId = userAndDataSet.getLeft();
-    String dataSetName = userAndDataSet.getRight();
+    String ownerId = userAndDataSet.left();
+    String dataSetName = userAndDataSet.right();
 
     return fetcher.getDataSet(user, ownerId, dataSetName)
       .orElseThrow(() -> new RuntimeException("Dataset does not exist"));

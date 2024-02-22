@@ -97,11 +97,14 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
     String schema = instanceNoProv.getSchema().toString();
 
-    assertThat(schema, containsString("input TypeEditInput {\n" +
-      "  additions: TypeAdditionsInput\n" +
-      "  deletions: TypeDeletionsInput\n" +
-      "  replacements: TypeReplacementsInput\n" +
-      "}\n\n"));
+    assertThat(schema, containsString("""
+        input TypeEditInput {
+          additions: TypeAdditionsInput
+          deletions: TypeDeletionsInput
+          replacements: TypeReplacementsInput
+        }
+
+        """));
   }
 
   @Test
@@ -121,12 +124,15 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
     String schema = instanceProv.getSchema().toString();
 
-    assertThat(schema, containsString("input TypeEditInput {\n" +
-      "  additions: TypeAdditionsInput\n" +
-      "  deletions: TypeDeletionsInput\n" +
-      "  replacements: TypeReplacementsInput\n" +
-      "  provenance: rootTypeProvenanceInput\n" +
-      "}\n\n"));
+    assertThat(schema, containsString("""
+        input TypeEditInput {
+          additions: TypeAdditionsInput
+          deletions: TypeDeletionsInput
+          replacements: TypeReplacementsInput
+          provenance: rootTypeProvenanceInput
+        }
+
+        """));
   }
 
   @Test
@@ -145,9 +151,12 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
     String schema = instanceNoProv.getSchema().toString();
 
-    assertThat(schema, containsString("input TypeCreateInput {\n" +
-      "  creations: TypeCreationsInput\n" +
-      "}\n\n"));
+    assertThat(schema, containsString("""
+        input TypeCreateInput {
+          creations: TypeCreationsInput
+        }
+
+        """));
   }
 
   @Test
@@ -166,10 +175,13 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
     String schema = instanceProv.getSchema().toString();
 
-    assertThat(schema, containsString("input TypeCreateInput {\n" +
-      "  creations: TypeCreationsInput\n" +
-      "  provenance: rootTypeProvenanceInput\n" +
-      "}\n\n"));
+    assertThat(schema, containsString("""
+        input TypeCreateInput {
+          creations: TypeCreationsInput
+          provenance: rootTypeProvenanceInput
+        }
+
+        """));
   }
 
   @Test
@@ -188,9 +200,12 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
     String schema = instanceProv.getSchema().toString();
 
-    assertThat(schema, containsString("input TypeDeleteInput {\n" +
-      "  provenance: rootTypeProvenanceInput\n" +
-      "}\n\n"));
+    assertThat(schema, containsString("""
+        input TypeDeleteInput {
+          provenance: rootTypeProvenanceInput
+        }
+
+        """));
   }
 
   private void graphQlNameForPredicate(String predName, boolean asList, String graphQlName) {
@@ -216,16 +231,25 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
-      containsString("input TypeAdditionsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n"),
-      containsString("input TypeDeletionsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n"),
-      containsString("input TypeReplacementsInput {\n" +
-        "  short_singleValue: PropertyInput\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n")
+      containsString("""
+          input TypeAdditionsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """),
+      containsString("""
+          input TypeDeletionsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """),
+      containsString("""
+          input TypeReplacementsInput {
+            short_singleValue: PropertyInput
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """)
     ));
   }
 
@@ -248,10 +272,13 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
-      containsString("input TypeCreationsInput {\n" +
-        "  short_singleValue: PropertyInput\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n")
+      containsString("""
+          input TypeCreationsInput {
+            short_singleValue: PropertyInput
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """)
     ));
   }
 
@@ -273,16 +300,28 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
-      not(containsString("input TypeAdditionsInput {\n" +
-        "}\n\n")),
-      not(containsString("input TypeDeletionsInput {\n" +
-        "}\n\n")),
-      containsString("input TypeReplacementsInput {\n" +
-        "  short_singleValue: PropertyInput\n" +
-        "}\n\n"),
-      containsString("input TypeEditInput {\n" +
-        "  replacements: TypeReplacementsInput\n" +
-        "}\n\n")
+      not(containsString("""
+          input TypeAdditionsInput {
+          }
+
+          """)),
+      not(containsString("""
+          input TypeDeletionsInput {
+          }
+
+          """)),
+      containsString("""
+          input TypeReplacementsInput {
+            short_singleValue: PropertyInput
+          }
+
+          """),
+      containsString("""
+          input TypeEditInput {
+            replacements: TypeReplacementsInput
+          }
+
+          """)
     ));
   }
 
@@ -300,11 +339,13 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
-      containsString("input TypeReplacementsInput {\n" +
-        "  short_wasSingleList: [PropertyInput!]\n" +
-        "  short_wasSingle: PropertyInput" +
-        " @deprecated(reason: \"This property only returns the first value of the list. Use the *List version\")\n" +
-        "}\n\n")
+      containsString("""
+          input TypeReplacementsInput {
+            short_wasSingleList: [PropertyInput!]
+            short_wasSingle: PropertyInput @deprecated(reason: "This property only returns the first value of the list. Use the *List version")
+          }
+
+          """)
     ));
   }
 
@@ -321,10 +362,12 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
-      containsString("input TypeReplacementsInput {\n" +
-        "  short_wasListList: [PropertyInput!]" +
-        " @deprecated(reason: \"There used to be entities with this property, but that is no longer the case.\")\n" +
-        "}\n\n")
+      containsString("""
+          input TypeReplacementsInput {
+            short_wasListList: [PropertyInput!] @deprecated(reason: "There used to be entities with this property, but that is no longer the case.")
+          }
+
+          """)
     ));
   }
 
@@ -340,11 +383,12 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
     String schema = instanceNoProv.getSchema().toString();
 
-    assertThat(schema,containsString("input TypeReplacementsInput {\n" +
-        "  short_unUsed: PropertyInput" +
-        " @deprecated(reason: \"There used to be entities with this property, but that is no " +
-        "longer the case.\")\n" +
-        "}\n\n"));
+    assertThat(schema,containsString("""
+        input TypeReplacementsInput {
+          short_unUsed: PropertyInput @deprecated(reason: "There used to be entities with this property, but that is no longer the case.")
+        }
+
+        """));
   }
 
   @Test
@@ -361,9 +405,12 @@ public class DerivedInputTypeSchemaGeneratorTest {
 
     String schema = instanceNoProv.getSchema().toString();
 
-    assertThat(schema,containsString("input TypeReplacementsInput {\n" +
-      "  short_unUsed: PropertyInput\n" +
-      "}\n\n"));
+    assertThat(schema,containsString("""
+        input TypeReplacementsInput {
+          short_unUsed: PropertyInput
+        }
+
+        """));
   }
 
   @Test
@@ -378,18 +425,30 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
-      containsString("input TypeCreationsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n"),
-      containsString("input TypeAdditionsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n"),
-      containsString("input TypeDeletionsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n"),
-      containsString("input TypeReplacementsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n")
+      containsString("""
+          input TypeCreationsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """),
+      containsString("""
+          input TypeAdditionsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """),
+      containsString("""
+          input TypeDeletionsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """),
+      containsString("""
+          input TypeReplacementsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """)
     ));
   }
 
@@ -409,18 +468,30 @@ public class DerivedInputTypeSchemaGeneratorTest {
     String schema = instanceNoProv.getSchema().toString();
 
     assertThat(schema, allOf(
-      containsString("input TypeCreationsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n"),
-      containsString("input TypeAdditionsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n"),
-      containsString("input TypeDeletionsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n"),
-      containsString("input TypeReplacementsInput {\n" +
-        "  short_multiValueList: [PropertyInput!]\n" +
-        "}\n\n")
+      containsString("""
+          input TypeCreationsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """),
+      containsString("""
+          input TypeAdditionsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """),
+      containsString("""
+          input TypeDeletionsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """),
+      containsString("""
+          input TypeReplacementsInput {
+            short_multiValueList: [PropertyInput!]
+          }
+
+          """)
     ));
   }
 

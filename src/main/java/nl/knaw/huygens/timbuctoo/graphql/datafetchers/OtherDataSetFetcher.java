@@ -53,10 +53,10 @@ public class OtherDataSetFetcher implements DataFetcher<List<Map>> {
             return tuple(d, quads.findAny());
           }
         })
-        .filter(i -> i.getRight().isPresent())
+        .filter(i -> i.right().isPresent())
         .map(i -> ImmutableMap.of(
-          "metadata", new DataSetWithDatabase(i.getLeft(), userPermissionCheck),
-          "entity", new LazyTypeSubjectReference(i.getRight().get().getSubject(), source.getGraph(), i.getLeft())
+          "metadata", new DataSetWithDatabase(i.left(), userPermissionCheck),
+          "entity", new LazyTypeSubjectReference(i.right().get().getSubject(), source.getGraph(), i.left())
         ))
         .collect(toList());
     }

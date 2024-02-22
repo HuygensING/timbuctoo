@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import static nl.knaw.huygens.timbuctoo.contractdiff.httpdiff.ExpectedHeadersAreEqualValidator.validate;
 
 public class ExpectedHeadersAreEqualValidatorTest {
-
   private LinkedListMultimap<String, String> multimap(String... contents) {
     LinkedListMultimap<String, String> result = LinkedListMultimap.create(contents.length / 2);
     for (int i = 0; i < contents.length; i += 2) {
@@ -95,5 +94,4 @@ public class ExpectedHeadersAreEqualValidatorTest {
 
     System.out.print(result.asConsole());
   }
-
 }

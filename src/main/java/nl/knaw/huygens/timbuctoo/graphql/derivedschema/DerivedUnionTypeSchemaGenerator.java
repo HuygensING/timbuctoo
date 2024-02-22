@@ -15,7 +15,6 @@ class DerivedUnionTypeSchemaGenerator implements DerivedTypeSchemaGenerator {
   public StringBuilder getSchema() {
     StringBuilder builder = new StringBuilder();
 
-
     builder.append("union ").append(unionName).append(" = ");
 
     boolean needsJoinChar = false;

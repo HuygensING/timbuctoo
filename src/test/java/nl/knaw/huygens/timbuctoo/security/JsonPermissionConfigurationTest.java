@@ -13,23 +13,21 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class JsonPermissionConfigurationTest {
-
-  @Test
+ @Test
   public void returnsThePermissionsOfTheRoles() throws Exception {
-    String rolePermissions = "[" +
-      "{\n" +
-      "\t\"roleName\": \"USER\",\n" +
-      "\t\"permissions\": [\"REMOVE_DATASET\"]\n" +
-      "},\n" +
-      "{\n" +
-      "\t\"roleName\": \"ADMIN\",\n" +
-      "\t\"permissions\": [\"IMPORT_DATA\"]\n" +
-      "},\n" +
-      "{\n" +
-      "\t\"roleName\": \"OTHER_ROLE\",\n" +
-      "\t\"permissions\": [\"EDIT_COLLECTION_METADATA\"]\n" +
-      "}" +
-      "]";
+    String rolePermissions = """
+        [{
+        \t"roleName": "USER",
+        \t"permissions": ["REMOVE_DATASET"]
+        },
+        {
+        \t"roleName": "ADMIN",
+        \t"permissions": ["IMPORT_DATA"]
+        },
+        {
+        \t"roleName": "OTHER_ROLE",
+        \t"permissions": ["EDIT_COLLECTION_METADATA"]
+        }]""";
     ByteArrayInputStream configuration = new ByteArrayInputStream(rolePermissions.getBytes());
     JsonPermissionConfiguration instance = new JsonPermissionConfiguration(configuration);
 

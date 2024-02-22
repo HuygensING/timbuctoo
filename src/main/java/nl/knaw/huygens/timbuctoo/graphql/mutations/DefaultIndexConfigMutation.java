@@ -19,18 +19,18 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.replace;
-import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class DefaultIndexConfigMutation extends Mutation {
-  private static final String INDEX_TITLE = "{\n" +
-      "\t\"facet\": [],\n" +
-      "\t\"fullText\": [{\n" +
-      "\t\t\"fields\": [{\n" +
-      "\t\t\t\"path\": \"[[\\\"%s\\\", \\\"title\\\"], [\\\"Value\\\", \\\"value\\\"]]\"\n" +
-      "\t\t}]\n" +
-      "\t}]\n" +
-      "}";
+  private static final String INDEX_TITLE = """
+      {
+      \t"facet": [],
+      \t"fullText": [{
+      \t\t"fields": [{
+      \t\t\t"path": "[[\\"%s\\", \\"title\\"], [\\"Value\\", \\"value\\"]]"
+      \t\t}]
+      \t}]
+      }""";
   private final DataSetRepository dataSetRepository;
   private final String dataSetName;
   private final String ownerId;
@@ -39,8 +39,8 @@ public class DefaultIndexConfigMutation extends Mutation {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
-    dataSetName = dataSetIdSplit.getRight();
-    ownerId = dataSetIdSplit.getLeft();
+    dataSetName = dataSetIdSplit.right();
+    ownerId = dataSetIdSplit.left();
   }
 
   @Override

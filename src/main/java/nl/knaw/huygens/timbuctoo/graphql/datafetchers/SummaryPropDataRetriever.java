@@ -97,7 +97,7 @@ public class SummaryPropDataRetriever {
      * See https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html#StreamOps for more info.
      */
     Optional<CursorQuad> foundQuad;
-    DirectionalStep firstStep = path.get(0);
+    DirectionalStep firstStep = path.getFirst();
     try (Stream<CursorQuad> quads =
              quadStore.getQuadsInGraph(uri, firstStep.getStep(), firstStep.getDirection(), "", graph)) {
       foundQuad = quads.map(quad -> {

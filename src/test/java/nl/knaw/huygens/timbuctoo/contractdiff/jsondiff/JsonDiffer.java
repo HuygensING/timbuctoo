@@ -21,9 +21,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import static nl.knaw.huygens.timbuctoo.contractdiff.JsonBuilder.jsn;
-import static nl.knaw.huygens.timbuctoo.contractdiff.JsonBuilder.jsnO;
-
 public class JsonDiffer {
   private final Map<String, Matcher> handlers;
   private final String handleArraysWith;
@@ -51,14 +48,12 @@ public class JsonDiffer {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode expected = mapper.readTree(expectedStr);
     return diff(actual, expected);
-
   }
 
   public DiffResult diff(String actualStr, JsonNode expected) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode actual = mapper.readTree(actualStr);
     return diff(actual, expected);
-
   }
 
   public DiffResult checkNodes(JsonNode actual, JsonNode expected) {
@@ -147,7 +142,7 @@ public class JsonDiffer {
   }
 
   public static class JsonDifferBuilder {
-    Map<String, Matcher> handlers;
+    final Map<String, Matcher> handlers;
     private String handleArraysWith = "/*IS_SAME_ARRAY*/";
     private Function<JsonNode, ObjectNode> arrayMatcherConfigAdapter = (config) -> JsonBuilder.jsnO("array", config);
 
@@ -268,7 +263,6 @@ public class JsonDiffer {
           return new MisMatchDiffResult("a string containing 0-9 or a -", actual.toString());
         }
       });
-
     }
 
     public JsonDifferBuilder withCustomHandler(String token, Function<JsonNode, DiffResult> handler) {

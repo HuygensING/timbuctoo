@@ -19,7 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class Rdf4jRdfParserTest {
-
   private static final boolean DELETE = false;
   private static final boolean ADD = true;
 
@@ -99,12 +98,12 @@ public class Rdf4jRdfParserTest {
       }
 
       @Override
-      public String getName() {
+      public String name() {
         return "http://example.com";
       }
 
       @Override
-      public File getFile() {
+      public File file() {
         return tempFile;
       }
 
@@ -114,7 +113,7 @@ public class Rdf4jRdfParserTest {
       }
 
       @Override
-      public MediaType getMimeType() {
+      public MediaType mimeType() {
         return new MediaType("application", "vnd.timbuctoo-rdf.nquads_unified_diff");
       }
 

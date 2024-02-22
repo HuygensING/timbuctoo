@@ -7,13 +7,11 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 public interface DataStorage {
-
   boolean dataSetExists(String ownerId, String dataSetName);
 
   DataSetStorage getDataSetStorage(String ownerId, String dataSetName);
 
   Map<String, Set<DataSetMetaData>> loadDataSetMetaData() throws IOException;
-
 }

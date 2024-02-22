@@ -46,8 +46,6 @@ import nl.knaw.huygens.timbuctoo.redirectionservice.RedirectionService;
 import java.util.Map;
 import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction.valueOf;
-
 public class RdfWiringFactory implements WiringFactory {
   private final UriFetcher uriFetcher;
   private final GraphsFetcher graphsFetcher;
@@ -139,7 +137,7 @@ public class RdfWiringFactory implements WiringFactory {
     if (!environment.getFieldDefinition().getDirectives("passThrough").isEmpty()) {
       return DataFetchingEnvironment::getSource;
     } else if (!environment.getFieldDefinition().getDirectives("related").isEmpty()) {
-      final Directive directive = environment.getFieldDefinition().getDirectives("related").get(0);
+      final Directive directive = environment.getFieldDefinition().getDirectives("related").getFirst();
       String source = ((StringValue) directive.getArgument("source").getValue()).getValue();
       String predicate = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
       String direction = ((StringValue) directive.getArgument("direction").getValue()).getValue();
@@ -151,11 +149,11 @@ public class RdfWiringFactory implements WiringFactory {
     } else if (!environment.getFieldDefinition().getDirectives("lookupUri").isEmpty()) {
       return lookupFetcher;
     } else if (!environment.getFieldDefinition().getDirectives("fromCollection").isEmpty()) {
-      final Directive directive = environment.getFieldDefinition().getDirectives("fromCollection").get(0);
+      final Directive directive = environment.getFieldDefinition().getDirectives("fromCollection").getFirst();
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
       return new CollectionFetcherWrapper(argumentsHelper, new CollectionDataFetcher(uri));
     } else if (!environment.getFieldDefinition().getDirectives("rdf").isEmpty()) {
-      final Directive directive = environment.getFieldDefinition().getDirectives("rdf").get(0);
+      final Directive directive = environment.getFieldDefinition().getDirectives("rdf").getFirst();
       String uri = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
       Direction direction = Direction.valueOf(((StringValue) directive.getArgument("direction").getValue()).getValue());
       boolean isList = ((BooleanValue) directive.getArgument("isList").getValue()).isValue();
@@ -175,7 +173,7 @@ public class RdfWiringFactory implements WiringFactory {
     } else if (!environment.getFieldDefinition().getDirectives("graphs").isEmpty()) {
       return graphsFetcher;
     } else if (!environment.getFieldDefinition().getDirectives("dataSet").isEmpty()) {
-      final Directive directive = environment.getFieldDefinition().getDirectives("dataSet").get(0);
+      final Directive directive = environment.getFieldDefinition().getDirectives("dataSet").getFirst();
       String userId = ((StringValue) directive.getArgument("userId").getValue()).getValue();
       String dataSetId = ((StringValue) directive.getArgument("dataSetId").getValue()).getValue();
       final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(userId, dataSetId)
@@ -192,7 +190,7 @@ public class RdfWiringFactory implements WiringFactory {
     } else if (!environment.getFieldDefinition().getDirectives("getAllOfPredicate").isEmpty()) {
       return dynamicRelationDataFetcher;
     } else if (!environment.getFieldDefinition().getDirectives("createMutation").isEmpty()) {
-      Directive directive = environment.getFieldDefinition().getDirectives("createMutation").get(0);
+      Directive directive = environment.getFieldDefinition().getDirectives("createMutation").getFirst();
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       StringValue typeUri = (StringValue) directive.getArgument("typeUri").getValue();
 
@@ -208,7 +206,7 @@ public class RdfWiringFactory implements WiringFactory {
         typeUriName
       ));
     } else if (!environment.getFieldDefinition().getDirectives("editMutation").isEmpty()) {
-      Directive directive = environment.getFieldDefinition().getDirectives("editMutation").get(0);
+      Directive directive = environment.getFieldDefinition().getDirectives("editMutation").getFirst();
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
 
       String dataSetName = dataSet.getValue();
@@ -216,7 +214,7 @@ public class RdfWiringFactory implements WiringFactory {
       return editMutationMap.computeIfAbsent(dataSetName,
         s -> new EditMutation(schemaUpdater, dataSetRepository, uriHelper, subjectFetcher, dataSetName));
     } else if (!environment.getFieldDefinition().getDirectives("deleteMutation").isEmpty()) {
-      Directive directive = environment.getFieldDefinition().getDirectives("deleteMutation").get(0);
+      Directive directive = environment.getFieldDefinition().getDirectives("deleteMutation").getFirst();
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
 
       String dataSetName = dataSet.getValue();
@@ -224,18 +222,18 @@ public class RdfWiringFactory implements WiringFactory {
       return deleteMutationMap.computeIfAbsent(dataSetName,
         s -> new DeleteMutation(schemaUpdater, dataSetRepository, uriHelper, dataSetName));
     } else if (!environment.getFieldDefinition().getDirectives("persistEntityMutation").isEmpty()) {
-      Directive directive = environment.getFieldDefinition().getDirectives("persistEntityMutation").get(0);
+      Directive directive = environment.getFieldDefinition().getDirectives("persistEntityMutation").getFirst();
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       String dataSetName = dataSet.getValue();
       return new PersistEntityMutation(schemaUpdater, redirectionService, dataSetName, uriHelper);
     } else if (!environment.getFieldDefinition().getDirectives("setCustomProvenanceMutation").isEmpty()) {
       Directive directive = environment.getFieldDefinition()
-              .getDirectives("setCustomProvenanceMutation").get(0);
+              .getDirectives("setCustomProvenanceMutation").getFirst();
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       String dataSetId = dataSet.getValue();
       return new SetCustomProvenanceMutation(schemaUpdater, dataSetRepository, dataSetId);
     } else if (!environment.getFieldDefinition().getDirectives("resetIndex").isEmpty()) {
-      final Directive resetIndex = environment.getFieldDefinition().getDirectives("resetIndex").get(0);
+      final Directive resetIndex = environment.getFieldDefinition().getDirectives("resetIndex").getFirst();
       final StringValue dataSet = (StringValue) resetIndex.getArgument("dataSet").getValue();
       return new DefaultIndexConfigMutation(schemaUpdater, dataSetRepository, dataSet.getValue());
     } else if (!environment.getFieldDefinition().getDirectives("oldItems").isEmpty()) {
@@ -254,20 +252,18 @@ public class RdfWiringFactory implements WiringFactory {
     public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
       String typeName;
       Object object = environment.getObject();
-      if (object instanceof TypedValue) {
-        final TypedValue typedValue = (TypedValue) object;
+      if (object instanceof TypedValue typedValue) {
         final String typeUri = typedValue.getType();
         final String prefix = typedValue.getDataSet().getMetadata().getCombinedId();
         typeName =
           prefix +
             "_" +
             typedValue.getDataSet().getTypeNameStore().makeGraphQlValuename(typeUri);
-      } else if (object instanceof SubjectReference) {
+      } else if (object instanceof SubjectReference subjectReference) {
         //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
         //In rdf things can have more then one type though (types are like java interfaces)
         //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types
         //that the user actually requested
-        final SubjectReference subjectReference = (SubjectReference) object;
         final String prefix = subjectReference.getDataSet().getMetadata().getCombinedId();
         Set<String> typeUris = subjectReference.getTypes();
         final TypeNameStore typeNameStore = subjectReference.getDataSet().getTypeNameStore();
@@ -276,8 +272,7 @@ public class RdfWiringFactory implements WiringFactory {
         } else {
           typeName = null;
           for (Selection selection : environment.getField().getSingleField().getSelectionSet().getSelections()) {
-            if (selection instanceof InlineFragment) {
-              InlineFragment fragment = (InlineFragment) selection;
+            if (selection instanceof InlineFragment fragment) {
               final String typeConditionName = fragment.getTypeCondition().getName();
               String typeUri = typeNameStore.makeUri(
                 typeConditionName.startsWith(prefix) ?
@@ -307,8 +302,7 @@ public class RdfWiringFactory implements WiringFactory {
         throw new RuntimeException("Expected either a 'TypedValue' or a 'SubjectReference', but was: " +
           (object == null ? "null" : object.getClass()));
       }
-      final GraphQLObjectType type = (GraphQLObjectType) environment.getSchema().getType(typeName);
-      return type;
+      return (GraphQLObjectType) environment.getSchema().getType(typeName);
     }
   }
 }

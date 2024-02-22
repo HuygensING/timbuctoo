@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -71,11 +70,9 @@ public class SummaryPropsMutation extends Mutation {
         List<String> predicates = dataSet.getSchemaStore().getStableTypes().values().stream()
                                             .flatMap(type -> type.getPredicates().stream())
                                             .map(Predicate::getName)
-                                            .collect(Collectors.toList());
+                                            .toList();
 
-        List<String> unknownPredicates =
-          undirectedPath.stream().filter(step -> !predicates.contains(step)).collect(Collectors.toList());
-
+        List<String> unknownPredicates = undirectedPath.stream().filter(step -> !predicates.contains(step)).toList();
         if (!unknownPredicates.isEmpty()) {
           throw new RuntimeException(valueName + " contains predicates unknown in the data set: " + unknownPredicates);
         }

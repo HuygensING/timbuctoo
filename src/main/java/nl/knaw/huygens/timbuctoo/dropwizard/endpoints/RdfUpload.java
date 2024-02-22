@@ -65,10 +65,10 @@ public class RdfUpload {
     final Either<Response, Response> result = authCheck
       .getOrCreate(authHeader, userId, dataSetId,
           Optional.ofNullable(baseUri != null ? baseUri.toString() : null), forceCreation)
-      .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.getLeft(), userAndDs.getRight()))
+      .flatMap(userAndDs -> authCheck.allowedToImport(userAndDs.left(), userAndDs.right()))
       .map((Tuple<User, DataSet> userDataSetTuple) -> {
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
-        final DataSet dataSet = userDataSetTuple.getRight();
+        final DataSet dataSet = userDataSetTuple.right();
         ImportManager importManager = dataSet.getImportManager();
 
         if (mediaType == null || !importManager.isRdfTypeSupported(mediaType)) {
@@ -115,10 +115,10 @@ public class RdfUpload {
         }
         return Response.accepted().build();
       });
-    if (result.getLeft() != null) {
-      return result.getLeft();
+    if (result.left() != null) {
+      return result.left();
     } else {
-      return result.getRight();
+      return result.right();
     }
   }
 

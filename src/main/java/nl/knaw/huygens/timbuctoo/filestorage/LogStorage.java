@@ -27,5 +27,4 @@ public interface LogStorage {
    * @return A CachedFile for the file that was stored
    */
   CachedLog getLog(String token) throws IOException;
-
 }

@@ -5,7 +5,6 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.SubjectReference;
 
 public class UriFetcher implements DataFetcher {
-
   @Override
   public Object get(DataFetchingEnvironment environment) {
     if (environment.getSource() instanceof SubjectReference) {

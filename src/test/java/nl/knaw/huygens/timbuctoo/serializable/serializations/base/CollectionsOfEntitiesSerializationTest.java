@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 
 public class CollectionsOfEntitiesSerializationTest {
-
   @Test
   public void performSerialization() throws Exception {
     CollectionsOfEntitiesSerialization sut = new CollectionsOfEntitiesSerialization(){};
@@ -44,5 +43,4 @@ public class CollectionsOfEntitiesSerializationTest {
     assertThat(subItem11.relations.get("http://example.org/b"), containsInAnyOrder("http://example.com/1"));
     assertThat(subItem12.relations.get("http://example.org/b"), containsInAnyOrder("http://example.com/1"));
   }
-
 }

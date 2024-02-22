@@ -17,5 +17,4 @@ class DerivedListTypeSchemaGenerator implements DerivedTypeSchemaGenerator {
     builder.append(argumentsHelper.makePaginatedListDefinition(typeName));
     return builder;
   }
-
 }

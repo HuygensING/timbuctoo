@@ -19,7 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class StoreUpdaterTest {
-
   @Test
   public void startAddsProgressForThePrimaryStores() throws Exception {
     ImportStatus importStatus = mock(ImportStatus.class);

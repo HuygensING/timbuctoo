@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.is;
  * Created on 2017-12-11 11:21.
  */
 public class TimeWithUnitTest {
-
   @Test
   public void convertFromSecondsToMilliseconds() {
     TimeWithUnit twu = new TimeWithUnit(TimeUnit.SECONDS, 123);

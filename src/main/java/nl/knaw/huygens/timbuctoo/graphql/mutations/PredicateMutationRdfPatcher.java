@@ -28,7 +28,6 @@ public class PredicateMutationRdfPatcher implements PatchRdfCreator {
     }
   }
 
-
   @Override
   public void sendQuads(RdfPatchSerializer saver, Consumer<String> importStatusConsumer, DataSet dataSet)
       throws LogStorageFailedException {

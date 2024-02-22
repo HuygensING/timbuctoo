@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.is;
 
 public class DataSetMetaDataTest {
-
   @Test
   public void testRegex() throws Exception {
     List<String> ok = Lists.newArrayList(
@@ -45,5 +44,4 @@ public class DataSetMetaDataTest {
       is(emptyIterable())
     );
   }
-
 }

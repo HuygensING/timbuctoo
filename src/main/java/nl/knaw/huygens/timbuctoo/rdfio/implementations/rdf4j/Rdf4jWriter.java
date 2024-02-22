@@ -55,7 +55,6 @@ public class Rdf4jWriter implements RdfSerializer {
     }
   }
 
-
   @Override
   public void onRelation(String subject, String predicate, String object, String graph) {
     rdfWriter.handleStatement(

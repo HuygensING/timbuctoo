@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.contractdiff.diffresults;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MissingPropertyDiffResult extends DiffResult {
-  private String value;
+  private final String value;
 
   public MissingPropertyDiffResult(String value) {
     this.value = value;

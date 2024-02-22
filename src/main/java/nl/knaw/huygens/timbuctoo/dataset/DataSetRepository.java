@@ -158,10 +158,10 @@ public class DataSetRepository {
    */
   public void reloadDataSet(String dataSetId) throws IOException, DataStoreCreationException {
     final Tuple<String, String> userDataSet = DataSetMetaData.splitCombinedId(dataSetId);
-    final String userId = userDataSet.getLeft();
+    final String userId = userDataSet.left();
     if (dataSetMap.containsKey(userId)) {
       final Map<String, DataSet> userSets = dataSetMap.get(userId);
-      final String dataSetName = userDataSet.getRight();
+      final String dataSetName = userDataSet.right();
       if (userSets.containsKey(dataSetName)) {
         final DataSet dataSet = userSets.remove(dataSetName);
         final DataSetMetaData dataSetMetaData = dataSet.getMetadata();
@@ -435,7 +435,7 @@ public class DataSetRepository {
     this.getDataSets().forEach(dataSet -> dataSet.subscribeToDataChanges(dataSetsUpdatedListener));
   }
 
-  public class DataSetDoesNotExistException extends Exception {
+  public static class DataSetDoesNotExistException extends Exception {
     DataSetDoesNotExistException(String dataSetName, String ownerId) {
       super(String.format("DataSet '%s' of user with id '%s' does not exist", dataSetName, ownerId));
     }

@@ -64,7 +64,7 @@ public class DeleteMutationChangeLog extends ChangeLog {
 
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
-    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.provenance());
   }
 
   @Override
@@ -80,7 +80,7 @@ public class DeleteMutationChangeLog extends ChangeLog {
           quad.getPredicate(),
           new Change.Value(quad.getObject(), quad.getValuetype().orElse(null))
         ))
-        .collect(groupingBy(Tuple::getLeft, mapping(Tuple::getRight, toList())))
+        .collect(groupingBy(Tuple::left, mapping(Tuple::right, toList())))
         .entrySet().stream()
         .map(predValues ->
           new Change(graph, subject, predValues.getKey(), Lists.newArrayList(), predValues.getValue().stream()));
@@ -92,16 +92,10 @@ public class DeleteMutationChangeLog extends ChangeLog {
     return Stream.empty();
   }
 
-  public static class RawDeleteChangeLog {
-    private final LinkedHashMap<String, JsonNode> provenance;
-
+  public record RawDeleteChangeLog(LinkedHashMap<String, JsonNode> provenance) {
     @JsonCreator
     public RawDeleteChangeLog(@JsonProperty("provenance") LinkedHashMap<String, JsonNode> provenance) {
       this.provenance = provenance == null ? Maps.newLinkedHashMap() : provenance;
-    }
-
-    public LinkedHashMap<String, JsonNode> getProvenance() {
-      return provenance;
     }
   }
 }

@@ -19,7 +19,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
 public class DataSetImportStatusFetcher implements DataFetcher<List<LogEntryImportStatus>> {
-
   private final DataSetRepository dataSetRepository;
 
   public DataSetImportStatusFetcher(DataSetRepository dataSetRepository) {

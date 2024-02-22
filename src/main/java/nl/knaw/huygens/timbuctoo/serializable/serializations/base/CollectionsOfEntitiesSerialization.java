@@ -20,8 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class CollectionsOfEntitiesSerialization implements Serialization {
-
-  protected Map<String, Map<String, AggregatedEntity>> allEntities;
+  protected final Map<String, Map<String, AggregatedEntity>> allEntities;
 
   public CollectionsOfEntitiesSerialization() {
     allEntities = new HashMap<>();
@@ -30,7 +29,7 @@ public abstract class CollectionsOfEntitiesSerialization implements Serializatio
   @Override
   public void serialize(SerializableResult serializableResult) throws IOException {
     CollectDistinctEntities collector = new CollectDistinctEntities();
-    for (Serializable serializable : serializableResult.getData().getContents().values()) {
+    for (Serializable serializable : serializableResult.data().getContents().values()) {
       collector.dispatch(serializable, null);
     }
   }
@@ -111,20 +110,12 @@ public abstract class CollectionsOfEntitiesSerialization implements Serializatio
 
   }
 
-  public class AggregatedEntity {
+  public static class AggregatedEntity {
     public final Map<String, Set<Value>> attributes = new HashMap<>();
     public final Map<String, Set<String>> relations = new HashMap<>();
   }
 
-  private class Setter {
-    private final AggregatedEntity entity;
-    private final String predicateUri;
-
-    public Setter(AggregatedEntity entity, String predicateUri) {
-      this.entity = entity;
-      this.predicateUri = predicateUri;
-    }
-
+  private record Setter(AggregatedEntity entity, String predicateUri) {
     public void addAttribute(Value value) {
       entity.attributes.computeIfAbsent(predicateUri, k -> new HashSet<>()).add(value);
     }

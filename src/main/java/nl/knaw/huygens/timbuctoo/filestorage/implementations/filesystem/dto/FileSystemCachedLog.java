@@ -30,7 +30,7 @@ public class FileSystemCachedLog implements CachedLog {
 
   public FileSystemCachedLog(MediaType mimeType, Optional<Charset> charset, String name, File file) {
     this.mimeType = mimeType;
-    if (!charset.isPresent()) {
+    if (charset.isEmpty()) {
       try {
         byte[] buf = new byte[4096];
         final UniversalDetector detector;
@@ -64,12 +64,12 @@ public class FileSystemCachedLog implements CachedLog {
   }
 
   @Override
-  public String getName() {
+  public String name() {
     return name;
   }
 
   @Override
-  public File getFile() {
+  public File file() {
     return file;
   }
 
@@ -99,7 +99,7 @@ public class FileSystemCachedLog implements CachedLog {
   }
 
   @Override
-  public MediaType getMimeType() {
+  public MediaType mimeType() {
     return mimeType;
   }
 

@@ -4,7 +4,6 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 public interface License {
-
   String getUri();
 
   static License license(String uri) {

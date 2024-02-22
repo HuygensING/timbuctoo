@@ -34,13 +34,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static nl.knaw.huygens.timbuctoo.graphql.DirectiveRetriever.getDirectiveArgument;
 import static nl.knaw.huygens.timbuctoo.serializable.dto.SerializableList.serializableList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
   private static final Logger LOG = getLogger(SerializerExecutionStrategy.class);
-
 
   @Override
   public CompletableFuture<ExecutionResult> execute(ExecutionContext executionContext,
@@ -106,8 +104,7 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
           sourceResult.getErrors(),
           sourceResult.getExtensions()
         );
-      } else if (parameters.getSource() instanceof PaginatedList) {
-        PaginatedList<? extends DatabaseResult> source = (PaginatedList) parameters.getSource();
+      } else if (parameters.getSource() instanceof PaginatedList source) {
         return new ExecutionResultImpl(
           serializableList(
             source.getPrevCursor().orElse(null),
@@ -140,15 +137,12 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
         );
       }
     });
-
   }
 
   @Override
   protected FieldValueInfo completeValueForList(ExecutionContext executionContext,
                                                 ExecutionStrategyParameters parameters,
                                                 Iterable<Object> result) {
-
-
     final FieldValueInfo fieldValueInfo = super.completeValueForList(executionContext, parameters, result);
     final CompletableFuture<ExecutionResult> value =
         fieldValueInfo.getFieldValue().thenApply(completedResult -> {
@@ -171,5 +165,4 @@ public class SerializerExecutionStrategy extends AsyncExecutionStrategy {
                          .fieldValueInfos(fieldValueInfo.getFieldValueInfos())
                          .build();
   }
-
 }

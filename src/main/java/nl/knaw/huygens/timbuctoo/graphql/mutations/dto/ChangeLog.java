@@ -41,7 +41,7 @@ public abstract class ChangeLog {
 
   protected String getPredicate(DataSet dataSet, String graphQlpred) {
     TypeNameStore typeNameStore = dataSet.getTypeNameStore();
-    return typeNameStore.makeUriForPredicate(graphQlpred).get().getLeft();
+    return typeNameStore.makeUriForPredicate(graphQlpred).get().left();
   }
 
   protected Stream<Change.Value> getOldValues(DataSet dataSet, Graph graph, String subject, String pred) {

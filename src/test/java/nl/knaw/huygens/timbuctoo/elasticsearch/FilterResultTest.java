@@ -14,7 +14,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
  * Created on 2017-10-04 11:13.
  */
 public class FilterResultTest {
-
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Test
@@ -50,128 +49,131 @@ public class FilterResultTest {
   }
 
   private JsonNode createQuery() throws IOException {
-    String queryString = "{\n" +
-      "    \"size\": 3,\n" +
-      "    \"query\": {\n" +
-      "        \"match\" : {\n" +
-      "            \"gender\" : \"F\"\n" +
-      "        }\n" +
-      "    },\n" +
-      "    \"search_after\": [1464, \"account#174\"],\n" +
-      "    \"sort\": [\n" +
-      "        {\"balance\": \"asc\"},\n" +
-      "        {\"_uid\": \"desc\"}\n" +
-      "    ]\n" +
-      "}";
+    String queryString = """
+        {
+            "size": 3,
+            "query": {
+                "match" : {
+                    "gender" : "F"
+                }
+            },
+            "search_after": [1464, "account#174"],
+            "sort": [
+                {"balance": "asc"},
+                {"_uid": "desc"}
+            ]
+        }""";
     return mapper.readTree(queryString);
   }
 
   private JsonNode createResult() throws IOException {
-    String resultString = "{\n" +
-      "  \"took\" : 25,\n" +
-      "  \"timed_out\" : false,\n" +
-      "  \"_shards\" : {\n" +
-      "    \"total\" : 5,\n" +
-      "    \"successful\" : 5,\n" +
-      "    \"skipped\" : 0,\n" +
-      "    \"failed\" : 0\n" +
-      "  },\n" +
-      "  \"hits\" : {\n" +
-      "    \"total\" : 1000,\n" +
-      "    \"max_score\" : null,\n" +
-      "    \"hits\" : [\n" +
-      "      {\n" +
-      "        \"_index\" : \"bank\",\n" +
-      "        \"_type\" : \"account\",\n" +
-      "        \"_id\" : \"348\",\n" +
-      "        \"_score\" : null,\n" +
-      "        \"_source\" : {\n" +
-      "          \"account_number\" : 348,\n" +
-      "          \"balance\" : 1360,\n" +
-      "          \"firstname\" : \"Karina\",\n" +
-      "          \"lastname\" : \"Russell\",\n" +
-      "          \"age\" : 37,\n" +
-      "          \"gender\" : \"M\",\n" +
-      "          \"address\" : \"797 Moffat Street\",\n" +
-      "          \"employer\" : \"Limozen\",\n" +
-      "          \"email\" : \"karinarussell@limozen.com\",\n" +
-      "          \"city\" : \"Riegelwood\",\n" +
-      "          \"state\" : \"RI\"\n" +
-      "        },\n" +
-      "        \"sort\" : [\n" +
-      "          1360,\n" +
-      "          \"account#348\"\n" +
-      "        ]\n" +
-      "      },\n" +
-      "      {\n" +
-      "        \"_index\" : \"bank\",\n" +
-      "        \"_type\" : \"account\",\n" +
-      "        \"_id\" : \"490\",\n" +
-      "        \"_score\" : null,\n" +
-      "        \"_source\" : {\n" +
-      "          \"account_number\" : 490,\n" +
-      "          \"balance\" : 1447,\n" +
-      "          \"firstname\" : \"Strong\",\n" +
-      "          \"lastname\" : \"Hendrix\",\n" +
-      "          \"age\" : 26,\n" +
-      "          \"gender\" : \"F\",\n" +
-      "          \"address\" : \"134 Beach Place\",\n" +
-      "          \"employer\" : \"Duoflex\",\n" +
-      "          \"email\" : \"stronghendrix@duoflex.com\",\n" +
-      "          \"city\" : \"Allentown\",\n" +
-      "          \"state\" : \"ND\"\n" +
-      "        },\n" +
-      "        \"sort\" : [\n" +
-      "          1447,\n" +
-      "          \"account#490\"\n" +
-      "        ]\n" +
-      "      },\n" +
-      "      {\n" +
-      "        \"_index\" : \"bank\",\n" +
-      "        \"_type\" : \"account\",\n" +
-      "        \"_id\" : \"427\",\n" +
-      "        \"_score\" : null,\n" +
-      "        \"_source\" : {\n" +
-      "          \"account_number\" : 427,\n" +
-      "          \"balance\" : 1463,\n" +
-      "          \"firstname\" : \"Rebekah\",\n" +
-      "          \"lastname\" : \"Garrison\",\n" +
-      "          \"age\" : 36,\n" +
-      "          \"gender\" : \"F\",\n" +
-      "          \"address\" : \"837 Hampton Avenue\",\n" +
-      "          \"employer\" : \"Niquent\",\n" +
-      "          \"email\" : \"rebekahgarrison@niquent.com\",\n" +
-      "          \"city\" : \"Zarephath\",\n" +
-      "          \"state\" : \"NY\"\n" +
-      "        },\n" +
-      "        \"sort\" : [\n" +
-      "          1463,\n" +
-      "          \"account#427\"\n" +
-      "        ]\n" +
-      "      }\n" +
-      "    ]\n" +
-      "  }\n" +
-      "}\n";
+    String resultString = """
+        {
+          "took" : 25,
+          "timed_out" : false,
+          "_shards" : {
+            "total" : 5,
+            "successful" : 5,
+            "skipped" : 0,
+            "failed" : 0
+          },
+          "hits" : {
+            "total" : 1000,
+            "max_score" : null,
+            "hits" : [
+              {
+                "_index" : "bank",
+                "_type" : "account",
+                "_id" : "348",
+                "_score" : null,
+                "_source" : {
+                  "account_number" : 348,
+                  "balance" : 1360,
+                  "firstname" : "Karina",
+                  "lastname" : "Russell",
+                  "age" : 37,
+                  "gender" : "M",
+                  "address" : "797 Moffat Street",
+                  "employer" : "Limozen",
+                  "email" : "karinarussell@limozen.com",
+                  "city" : "Riegelwood",
+                  "state" : "RI"
+                },
+                "sort" : [
+                  1360,
+                  "account#348"
+                ]
+              },
+              {
+                "_index" : "bank",
+                "_type" : "account",
+                "_id" : "490",
+                "_score" : null,
+                "_source" : {
+                  "account_number" : 490,
+                  "balance" : 1447,
+                  "firstname" : "Strong",
+                  "lastname" : "Hendrix",
+                  "age" : 26,
+                  "gender" : "F",
+                  "address" : "134 Beach Place",
+                  "employer" : "Duoflex",
+                  "email" : "stronghendrix@duoflex.com",
+                  "city" : "Allentown",
+                  "state" : "ND"
+                },
+                "sort" : [
+                  1447,
+                  "account#490"
+                ]
+              },
+              {
+                "_index" : "bank",
+                "_type" : "account",
+                "_id" : "427",
+                "_score" : null,
+                "_source" : {
+                  "account_number" : 427,
+                  "balance" : 1463,
+                  "firstname" : "Rebekah",
+                  "lastname" : "Garrison",
+                  "age" : 36,
+                  "gender" : "F",
+                  "address" : "837 Hampton Avenue",
+                  "employer" : "Niquent",
+                  "email" : "rebekahgarrison@niquent.com",
+                  "city" : "Zarephath",
+                  "state" : "NY"
+                },
+                "sort" : [
+                  1463,
+                  "account#427"
+                ]
+              }
+            ]
+          }
+        }
+        """;
     return mapper.readTree(resultString);
   }
 
   private JsonNode createEmptyResult() throws IOException {
-    String resultString = "{\n" +
-      "  \"took\" : 5,\n" +
-      "  \"timed_out\" : false,\n" +
-      "  \"_shards\" : {\n" +
-      "    \"total\" : 5,\n" +
-      "    \"successful\" : 5,\n" +
-      "    \"skipped\" : 0,\n" +
-      "    \"failed\" : 0\n" +
-      "  },\n" +
-      "  \"hits\" : {\n" +
-      "    \"total\" : 0,\n" +
-      "    \"max_score\" : null,\n" +
-      "    \"hits\" : [ ]\n" +
-      "  }\n" +
-      "}";
+    String resultString = """
+        {
+          "took" : 5,
+          "timed_out" : false,
+          "_shards" : {
+            "total" : 5,
+            "successful" : 5,
+            "skipped" : 0,
+            "failed" : 0
+          },
+          "hits" : {
+            "total" : 0,
+            "max_score" : null,
+            "hits" : [ ]
+          }
+        }""";
     return mapper.readTree(resultString);
   }
-
 }

@@ -19,7 +19,7 @@ public class WebhookFactory {
   @Valid
   @NotNull
   @JsonProperty("httpClient")
-  private HttpClientConfiguration httpClientConfig = new HttpClientConfiguration();
+  private final HttpClientConfiguration httpClientConfig = new HttpClientConfiguration();
 
   @JsonSetter("dataSetUpdatedUrls")
   public void setDataSetUpdatedUrls(List<String> dataSetUpdatedUrls) {

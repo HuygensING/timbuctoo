@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 public class DeleteDataSetMutation extends Mutation {
-
-
   private static final Logger LOG = LoggerFactory.getLogger(DeleteDataSetMutation.class);
   private final DataSetRepository dataSetRepository;
 
@@ -29,7 +27,7 @@ public class DeleteDataSetMutation extends Mutation {
     User user = MutationHelpers.getUser(environment);
 
     try {
-      dataSetRepository.removeDataSet(userAndDataSet.getLeft(), userAndDataSet.getRight(), user);
+      dataSetRepository.removeDataSet(userAndDataSet.left(), userAndDataSet.right(), user);
       return new RemovedDataSet(combinedId);
     } catch (IOException e) {
       LOG.error("Data set deletion exception", e);
@@ -41,15 +39,6 @@ public class DeleteDataSetMutation extends Mutation {
     }
   }
 
-  public static class RemovedDataSet {
-    private final String dataSetId;
-
-    public RemovedDataSet(String dataSetId) {
-      this.dataSetId = dataSetId;
-    }
-
-    public String getDataSetId() {
-      return dataSetId;
-    }
+  public record RemovedDataSet(String dataSetId) {
   }
 }

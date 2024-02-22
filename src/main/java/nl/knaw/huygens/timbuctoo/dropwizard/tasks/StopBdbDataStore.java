@@ -22,12 +22,12 @@ public class StopBdbDataStore extends Task {
   @Override
   public void execute(Map<String, List<String>> immutableMultimap, PrintWriter printWriter) throws Exception {
     if (immutableMultimap.containsKey(DATA_SET_ID_PARAM) && immutableMultimap.containsKey(DATA_STORE_PARAM)) {
-      final String dataSetId = immutableMultimap.get(DATA_SET_ID_PARAM).iterator().next();
-      final String dataStore = immutableMultimap.get(DATA_STORE_PARAM).iterator().next();
+      final String dataSetId = immutableMultimap.get(DATA_SET_ID_PARAM).getFirst();
+      final String dataStore = immutableMultimap.get(DATA_STORE_PARAM).getFirst();
 
       final Tuple<String, String> ownerDataSet = DataSetMetaData.splitCombinedId(dataSetId);
 
-      environmentCreator.closeDatabase(ownerDataSet.getLeft(), ownerDataSet.getRight(), dataStore);
+      environmentCreator.closeDatabase(ownerDataSet.left(), ownerDataSet.right(), dataStore);
     } else {
       printWriter.println(
           String.format("Make sure your request contains the params '%s' and '%s'", DATA_SET_ID_PARAM, DATA_STORE_PARAM)

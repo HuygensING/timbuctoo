@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.ChangeMatcher.likeChange;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.RDF_TYPE;
@@ -45,14 +44,12 @@ public class ProvenanceChangeLogTest {
 
   private static final String GRAPH_QL_STRING = "xsd_string";
   private DataSet dataSet;
-  private DataSetMetaData dataSetMetaData;
-  private TypeNameStore typeNameStore;
 
   @BeforeEach
   public void setUp() throws Exception {
     dataSet = mock(DataSet.class);
-    dataSetMetaData = mock(DataSetMetaData.class);
-    typeNameStore = mock(TypeNameStore.class);
+    DataSetMetaData dataSetMetaData = mock(DataSetMetaData.class);
+    TypeNameStore typeNameStore = mock(TypeNameStore.class);
 
     when(dataSet.getTypeNameStore()).thenReturn(typeNameStore);
     when(dataSet.getMetadata()).thenReturn(dataSetMetaData);
@@ -98,10 +95,10 @@ public class ProvenanceChangeLogTest {
     entity.put("provenance", provenance);
     ProvenanceChangeLog instance = new ProvenanceChangeLog(entity);
 
-    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).collect(toList());
+    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).toList();
 
     assertThat(provChanges.size(), is(1));
-    assertThat(provChanges.get(0), is(likeChange()
+    assertThat(provChanges.getFirst(), is(likeChange()
       .withSubject(SUBJECT)
       .withPredicate(NAME_URI)
       .withValues(new Value(value, STRING))
@@ -130,10 +127,10 @@ public class ProvenanceChangeLogTest {
     entity.put("provenance", provenance);
     ProvenanceChangeLog instance = new ProvenanceChangeLog(entity);
 
-    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).collect(toList());
+    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).toList();
 
     assertThat(provChanges.size(), is(1));
-    assertThat(provChanges.get(0), is(likeChange()
+    assertThat(provChanges.getFirst(), is(likeChange()
       .withSubject(SUBJECT)
       .withPredicate(NAME_URI)
       .withValues(new Value(value1, STRING), new Value(value2, STRING))
@@ -173,7 +170,7 @@ public class ProvenanceChangeLogTest {
     entity.put("provenance", provenance);
     ProvenanceChangeLog instance = new ProvenanceChangeLog(entity);
 
-    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).collect(toList());
+    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).toList();
 
     assertThat(provChanges.size(), is(3));
     assertThat(provChanges.get(0), is(likeChange()
@@ -234,7 +231,7 @@ public class ProvenanceChangeLogTest {
     entity.put("provenance", provenance);
     ProvenanceChangeLog instance = new ProvenanceChangeLog(entity);
 
-    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).collect(toList());
+    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).toList();
 
     assertThat(provChanges.size(), is(6));
     assertThat(provChanges.get(0), is(likeChange()
@@ -306,7 +303,7 @@ public class ProvenanceChangeLogTest {
     entity.put("provenance", provenance);
     ProvenanceChangeLog instance = new ProvenanceChangeLog(entity);
 
-    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).collect(toList());
+    List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).toList();
 
     assertThat(provChanges.get(1).getSubject(), startsWith("http://example.org/datasets/rootType/schema_Person/"));
     assertThat(provChanges.get(2).getSubject(), startsWith("http://example.org/datasets/rootType/schema_Person/"));

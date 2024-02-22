@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.concurrent.TimeUnit;
 
 public class TimeWithUnit {
-
   @JsonProperty
   private String timeUnit;
 

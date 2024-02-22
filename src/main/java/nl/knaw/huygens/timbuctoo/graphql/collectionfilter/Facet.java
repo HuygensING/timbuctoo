@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Facet {
-
   private static final Logger LOG = LoggerFactory.getLogger(Facet.class);
 
   final LinkedHashMap<String, FacetOption> options = new LinkedHashMap<>();

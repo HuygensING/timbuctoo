@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 public class SchemaHelper {
-
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .registerModule(new Jdk8Module())
     .registerModule(new GuavaModule())
@@ -23,7 +22,6 @@ public class SchemaHelper {
     .enable(SerializationFeature.INDENT_OUTPUT);
 
   private SchemaHelper() {
-
   }
 
   public static Map<String, List<ExplicitField>> readExistingSchema(File schemaFile) {
@@ -39,7 +37,6 @@ public class SchemaHelper {
 
     return customSchema;
   }
-
 
   public static void saveSchema(Map<String, List<ExplicitField>> schema, File schemaFile)
     throws IOException {

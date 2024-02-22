@@ -2,29 +2,13 @@ package nl.knaw.huygens.timbuctoo.util;
 
 import java.util.function.Function;
 
-public class Either<L, R> {
-  private final L left;
-  private final R right;
-
-  public Either(L left, R right) {
-    this.left = left;
-    this.right = right;
-  }
-
+public record Either<L, R>(L left, R right) {
   public static <L, R> Either<L, R> right(R right) {
     return new Either<>(null, right);
   }
 
   public static <L, R> Either<L, R> left(L left) {
     return new Either<>(left, null);
-  }
-
-  public L getLeft() {
-    return left;
-  }
-
-  public R getRight() {
-    return right;
   }
 
   public <U> Either<L, U> flatMap(Function<? super R, ? extends Either<L, ? extends U>> mapper) {

@@ -110,7 +110,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   }
 
   private static class MockEnv implements DataFetchingEnvironment {
-    Map<String, Object> arguments = new HashMap<>();
+    final Map<String, Object> arguments = new HashMap<>();
 
     public MockEnv(String uri) {
       arguments.put("uri", uri);

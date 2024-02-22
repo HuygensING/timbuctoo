@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 
 @Path("resourcesync")
 public class RsEndpoint {
-
   private static final Logger LOG = LoggerFactory.getLogger(RsEndpoint.class);
   private final RsDocumentBuilder rsDocumentBuilder;
   private final UserValidator userValidator;
@@ -153,9 +152,9 @@ public class RsEndpoint {
     Optional<CachedFile> maybeFile = rsDocumentBuilder.getCachedFile(user, owner, dataSetName, fileId);
     if (maybeFile.isPresent()) {
       CachedFile cachedFile = maybeFile.get();
-      File file = cachedFile.getFile();
+      File file = cachedFile.file();
       if (file != null && file.exists()) {
-        return Response.ok(cachedFile.getFile(), cachedFile.getMimeType()).build();
+        return Response.ok(cachedFile.file(), cachedFile.mimeType()).build();
       } else {
         return Response.status(Response.Status.NOT_FOUND).build();
       }
@@ -195,5 +194,4 @@ public class RsEndpoint {
     }
     return user;
   }
-
 }

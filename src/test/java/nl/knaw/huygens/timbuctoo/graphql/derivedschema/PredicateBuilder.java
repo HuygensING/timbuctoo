@@ -44,7 +44,6 @@ public class PredicateBuilder {
     return this;
   }
 
-
   public Predicate build() {
     Predicate predicate = mock(Predicate.class);
     when(predicate.getName()).thenReturn(name);

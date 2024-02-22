@@ -21,12 +21,14 @@ public class HandleServiceFactory implements RedirectionServiceFactory {
       Strings.isNullOrEmpty(cypher) ||
       Strings.isNullOrEmpty(namingAuthority) ||
       Strings.isNullOrEmpty(prefix)) {
-      System.err.println("Configuration must have: \n" +
-        "    persistenceManager:\n" +
-        "      privateKeyFile: ...\n" +
-        "      cypher: ...\n" +
-        "      namingAuthority: ...\n" +
-        "      prefix: ...\n");
+      System.err.println("""
+          Configuration must have:\s
+              persistenceManager:
+                privateKeyFile: ...
+                cypher: ...
+                namingAuthority: ...
+                prefix: ...
+          """);
       throw new IllegalArgumentException(
         "'privateKeyFile', 'cypher', 'namingAuthority' and 'prefix' must be provided"
       );

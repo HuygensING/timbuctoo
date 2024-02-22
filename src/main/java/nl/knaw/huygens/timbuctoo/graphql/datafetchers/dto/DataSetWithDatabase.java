@@ -23,7 +23,6 @@ public class DataSetWithDatabase implements DataSetMetaData, SubjectReference {
   private final Set<String> userPermissions;
   private Set<String> types;
 
-
   public DataSetWithDatabase(DataSet dataSet, UserPermissionCheck userPermissionCheck) {
     this.dataSet = dataSet;
     this.dataSetMetaData = dataSet.getMetadata();

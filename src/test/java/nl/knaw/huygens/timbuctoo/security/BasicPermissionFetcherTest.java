@@ -31,9 +31,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-
 public class BasicPermissionFetcherTest {
-
   private VreAuthorizationCrud vreAuthorizationCrud;
   private PermissionFetcher permissionFetcher;
   private UserValidator userValidator;
@@ -193,5 +191,4 @@ public class BasicPermissionFetcherTest {
 
     verify(vreAuthorizationCrud).deleteVreAuthorizations("testownerid__testdatasetid");
   }
-
 }

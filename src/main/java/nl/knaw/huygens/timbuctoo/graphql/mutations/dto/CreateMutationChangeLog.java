@@ -64,7 +64,7 @@ public class CreateMutationChangeLog extends ChangeLog {
 
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
-    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.provenance());
   }
 
   @Override
@@ -72,9 +72,9 @@ public class CreateMutationChangeLog extends ChangeLog {
     Change typeAddition =
       new Change(graph, subject, RDF_TYPE, Collections.singletonList(new Value(typeUri, null)), Stream.empty());
 
-    Stream<Change> additions = changeLog.getCreations().entrySet().stream()
+    Stream<Change> additions = changeLog.creations().entrySet().stream()
                                         .filter(entry -> !entry.getValue().isNull() &&
-                                          !(entry.getValue().isArray() && entry.getValue().size() == 0))
+                                          !(entry.getValue().isArray() && entry.getValue().isEmpty()))
                                         .map(entry -> createChange(dataSet, entry.getKey(), entry.getValue()));
 
     return Stream.concat(Stream.of(typeAddition), additions);
@@ -97,23 +97,13 @@ public class CreateMutationChangeLog extends ChangeLog {
     return new Change(graph, subject, pred, values, Stream.empty());
   }
 
-  public static class RawCreateChangeLog {
-    private LinkedHashMap<String, JsonNode> creations;
-    private LinkedHashMap<String, JsonNode> provenance;
-
+  public record RawCreateChangeLog(LinkedHashMap<String, JsonNode> creations,
+                                   LinkedHashMap<String, JsonNode> provenance) {
     @JsonCreator
     public RawCreateChangeLog(@JsonProperty("creations") LinkedHashMap<String, JsonNode> creations,
                               @JsonProperty("provenance") LinkedHashMap<String, JsonNode> provenance) {
       this.creations = creations == null ? Maps.newLinkedHashMap() : creations;
       this.provenance = provenance == null ? Maps.newLinkedHashMap() : provenance;
-    }
-
-    public LinkedHashMap<String, JsonNode> getCreations() {
-      return creations;
-    }
-
-    public LinkedHashMap<String, JsonNode> getProvenance() {
-      return provenance;
     }
   }
 }

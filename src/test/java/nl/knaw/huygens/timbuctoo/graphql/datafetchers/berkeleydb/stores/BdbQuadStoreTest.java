@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
-
 public class BdbQuadStoreTest {
   public static final String EX = "http://example.org/";
   protected BdbNonPersistentEnvironmentCreator databaseCreator;

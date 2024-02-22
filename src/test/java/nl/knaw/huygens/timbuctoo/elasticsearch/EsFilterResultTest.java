@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 public class EsFilterResultTest {
-
   @Test
   public void getNextTokenReturnsATokenWhenTheSizePlusTheCurrentFromAreLessThanTheTotal() {
     final ObjectNode queryNode = jsnO("from", jsn(0), "size", jsn(10));
@@ -77,5 +76,4 @@ public class EsFilterResultTest {
 
     assertThat(prevToken, is("0"));
   }
-
 }

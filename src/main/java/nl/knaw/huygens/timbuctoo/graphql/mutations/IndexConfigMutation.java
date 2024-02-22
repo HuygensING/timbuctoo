@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.security.dto.Permission;
 import java.util.concurrent.ExecutionException;
 
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.replace;
-import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class IndexConfigMutation extends Mutation {
@@ -26,7 +25,6 @@ public class IndexConfigMutation extends Mutation {
 
   @Override
   public Object executeAction(DataFetchingEnvironment env) {
-
     String collectionUri = env.getArgument("collectionUri");
     Object indexConfig = env.getArgument("indexConfig");
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);

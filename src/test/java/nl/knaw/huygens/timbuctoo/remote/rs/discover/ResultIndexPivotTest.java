@@ -19,7 +19,6 @@ import static org.hamcrest.Matchers.equalTo;
  * Created on 2016-09-19 16:32.
  */
 public class ResultIndexPivotTest {
-
   @SuppressWarnings("unchecked")
   @Test
   public void testSelections() throws Exception {
@@ -103,6 +102,4 @@ public class ResultIndexPivotTest {
     //capabilityListResults.stream().forEach(rsRootResult -> System.out.println(rsRootResult.getUri()));
     assertThat(capabilityListResults.size(), equalTo(0));
   }
-
-
 }

@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.dataset.dto.MetadataProp;
 import nl.knaw.huygens.timbuctoo.dataset.dto.SimpleMetadataProp;
 import nl.knaw.huygens.timbuctoo.dataset.dto.UriMetadataProp;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.builder.Input;
@@ -24,7 +25,6 @@ import java.util.TreeMap;
 
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.MARKDOWN;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
 public class RdfDescriptionSaverTest {
@@ -32,16 +32,13 @@ public class RdfDescriptionSaverTest {
   private RdfDescriptionSaver testRdfDescriptionSaver;
   private String descriptionFileName;
   private File descriptionFile;
-  private LogList logList;
-  private ImportStatus importStatus;
-  private Metadata metadata;
 
   @BeforeEach
   public void setUp() throws Exception {
     descriptionFileName = "description.xml";
     descriptionFile = new File(descriptionFileName);
-    logList = new LogList();
-    importStatus = new ImportStatus(logList);
+    LogList logList = new LogList();
+    ImportStatus importStatus = new ImportStatus(logList);
 
     Map<String, MetadataProp> owner = new TreeMap<>();
     owner.put("name", SimpleMetadataProp.create("http://schema.org/name"));
@@ -64,7 +61,7 @@ public class RdfDescriptionSaverTest {
     props.put("contact", EntityMetadataProp.create("http://schema.org/ContactPoint", true, "ContactPoint", contact));
     props.put("provenanceInfo", EntityMetadataProp.create("http://purl.org/dc/terms/provenance", true, "Provenance", provenanceInfo));
 
-    metadata = Metadata.create(Optional.empty(), props);
+    Metadata metadata = Metadata.create(Optional.empty(), props);
 
     testRdfDescriptionSaver = new RdfDescriptionSaver(metadata, descriptionFile, BASE_URI, importStatus);
     testRdfDescriptionSaver.start(0);
@@ -82,12 +79,13 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "DWC Data</title> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <title xmlns="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">DWC Data</title>\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -107,13 +105,14 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <description xmlns=\"http://purl.org/dc/terms/\">" +
-                "Biographical data of the Digital Web Centre for the History of Science (DWC)</description> \n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\">DWC Data</title> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <description xmlns="http://purl.org/dc/terms/">Biographical data of the Digital Web Centre for the History of Science (DWC)</description>\s
+                    <title xmlns="http://purl.org/dc/terms/">DWC Data</title>\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -134,14 +133,15 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-                ">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <description xmlns=\"http://purl.org/dc/terms/\">" +
-                "Biographical data of the Digital Web Centre for the History of Science (DWC)</description>\n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\">DWC Data</title>\n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                >
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <description xmlns="http://purl.org/dc/terms/">Biographical data of the Digital Web Centre for the History of Science (DWC)</description>
+                    <title xmlns="http://purl.org/dc/terms/">DWC Data</title>
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -150,7 +150,6 @@ public class RdfDescriptionSaverTest {
         isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
     );
   }
-
 
   @Test
   public void addsMultipleValuesToSamePredicate() throws Exception {
@@ -162,15 +161,15 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-                ">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "DWC Data</title> \n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "DWC Data 2</title> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                >
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <title xmlns="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">DWC Data</title>\s
+                    <title xmlns="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">DWC Data 2</title>\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -190,13 +189,14 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-                ">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "DWC Data</title> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                >
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <title xmlns="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">DWC Data</title>\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -214,12 +214,13 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <rightsHolder xmlns=\"http://purl.org/dc/terms/\" " +
-                "       rdf:resource=\"http://example.com/rightsHolder\" /> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <rightsHolder xmlns="http://purl.org/dc/terms/"        rdf:resource="http://example.com/rightsHolder" />\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -242,15 +243,15 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <description xmlns=\"http://purl.org/dc/terms/\" " +
-                "       rdf:resource=\"http://example.com/summaryProperties\" /> \n" +
-                "    <provenance xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"http://example.com/provenance\" /> \n" +
-                "    <rightsHolder xmlns=\"http://purl.org/dc/terms/\" " +
-                "       rdf:resource=\"http://example.com/rightsHolder\" /> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <description xmlns="http://purl.org/dc/terms/"        rdf:resource="http://example.com/summaryProperties" />\s
+                    <provenance xmlns="http://purl.org/dc/terms/" rdf:resource="http://example.com/provenance" />\s
+                    <rightsHolder xmlns="http://purl.org/dc/terms/"        rdf:resource="http://example.com/rightsHolder" />\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -270,12 +271,13 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <rightsHolder xmlns=\"http://purl.org/dc/terms/\" " +
-                "       rdf:resource=\"http://example.com/rightsHolder\" /> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <rightsHolder xmlns="http://purl.org/dc/terms/"        rdf:resource="http://example.com/rightsHolder" />\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -286,7 +288,6 @@ public class RdfDescriptionSaverTest {
     );
   }
 
-
   @Test
   public void doesNotAddValueWhenSubjectUriDoesNotMatchBaseUri() throws Exception {
     testRdfDescriptionSaver.addValue("http://example.org/datasets/DUMMY/test",
@@ -296,12 +297,12 @@ public class RdfDescriptionSaverTest {
     File file = new File(descriptionFileName);
     String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
-    assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<rdf:RDF\n" +
-        "\txmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-        "\n" +
-        "</rdf:RDF>", descriptionFile);
+    Assertions.assertEquals("""
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+        \txmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 
+        </rdf:RDF>""", descriptionFile);
   }
 
   @Test
@@ -312,11 +313,12 @@ public class RdfDescriptionSaverTest {
     File file = new File(descriptionFileName);
     String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
-    assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<rdf:RDF\n" +
-        "\txmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-        "\n" +
-        "</rdf:RDF>", descriptionFile);
+    Assertions.assertEquals("""
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+        \txmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+        </rdf:RDF>""", descriptionFile);
   }
 
   @Test
@@ -327,11 +329,12 @@ public class RdfDescriptionSaverTest {
     File file = new File(descriptionFileName);
     String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
-    assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<rdf:RDF\n" +
-        "\txmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-        "\n" +
-        "</rdf:RDF>", descriptionFile);
+    Assertions.assertEquals("""
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+        \txmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+        </rdf:RDF>""", descriptionFile);
   }
 
   @Test
@@ -343,11 +346,12 @@ public class RdfDescriptionSaverTest {
     File file = new File(descriptionFileName);
     String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
-    assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<rdf:RDF\n" +
-        "\txmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-        "\n" +
-        "</rdf:RDF>", descriptionFile);
+    Assertions.assertEquals("""
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+        \txmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+        </rdf:RDF>""", descriptionFile);
   }
 
   @Test
@@ -359,11 +363,12 @@ public class RdfDescriptionSaverTest {
     File file = new File(descriptionFileName);
     String descriptionFile = Files.asCharSource(file, Charsets.UTF_8).read();
 
-    assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<rdf:RDF\n" +
-        "\txmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-        "\n" +
-        "</rdf:RDF>", descriptionFile);
+    Assertions.assertEquals("""
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rdf:RDF
+        \txmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+        </rdf:RDF>""", descriptionFile);
   }
 
   @Test
@@ -376,8 +381,11 @@ public class RdfDescriptionSaverTest {
     testRdfDescriptionSaver.commit();
 
     Source expected = Input.fromByteArray(
-        ("<rdf:RDF xmlns=\"http://purl.org/dc/terms/\"\n xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-            "</rdf:RDF>\n"
+        ("""
+            <rdf:RDF xmlns="http://purl.org/dc/terms/"
+             xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+            </rdf:RDF>
+            """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -386,7 +394,6 @@ public class RdfDescriptionSaverTest {
     assertThat(actual,
         isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
     );
-
   }
 
   @Test
@@ -399,12 +406,13 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <rightsHolder xmlns=\"http://purl.org/dc/terms/\" " +
-                "       rdf:resource=\"http://example.com/rightsHolder\" /> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <rightsHolder xmlns="http://purl.org/dc/terms/"        rdf:resource="http://example.com/rightsHolder" />\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -412,7 +420,6 @@ public class RdfDescriptionSaverTest {
     assertThat(actual,
         isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
     );
-
   }
 
   @Test
@@ -425,12 +432,13 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <rightsHolder xmlns=\"http://purl.org/dc/terms/\" " +
-                "       rdf:resource=\"http://example.com/rightsHolder\" /> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <rightsHolder xmlns="http://purl.org/dc/terms/"        rdf:resource="http://example.com/rightsHolder" />\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -438,7 +446,6 @@ public class RdfDescriptionSaverTest {
     assertThat(actual,
         isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
     );
-
   }
 
   @Test
@@ -449,8 +456,11 @@ public class RdfDescriptionSaverTest {
     testRdfDescriptionSaver.commit();
 
     Source expected = Input.fromByteArray(
-        ("<rdf:RDF xmlns=\"http://purl.org/dc/terms/\"\n xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-            "</rdf:RDF>\n"
+        ("""
+            <rdf:RDF xmlns="http://purl.org/dc/terms/"
+             xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+            </rdf:RDF>
+            """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -459,7 +469,6 @@ public class RdfDescriptionSaverTest {
     assertThat(actual,
         isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
     );
-
   }
 
   @Test
@@ -470,13 +479,14 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-                ">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "DWC Data</title> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                >
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <title xmlns="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">DWC Data</title>\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -495,13 +505,14 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-                ">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "DWC Data</title> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                >
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <title xmlns="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">DWC Data</title>\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -520,13 +531,14 @@ public class RdfDescriptionSaverTest {
 
     Source expected = Input.fromByteArray(
         (
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-                ">\n" +
-                "  <rdf:Description rdf:about=\"http://example.org/datasets/DUMMY/clusius2\">\n" +
-                "    <title xmlns=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "DWC Data New</title> \n" +
-                "  </rdf:Description>\n" +
-                "</rdf:RDF>\n"
+            """
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                >
+                  <rdf:Description rdf:about="http://example.org/datasets/DUMMY/clusius2">
+                    <title xmlns="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">DWC Data New</title>\s
+                  </rdf:Description>
+                </rdf:RDF>
+                """
         ).getBytes(StandardCharsets.UTF_8)
     ).build();
 
@@ -535,5 +547,4 @@ public class RdfDescriptionSaverTest {
         isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
     );
   }
-
 }

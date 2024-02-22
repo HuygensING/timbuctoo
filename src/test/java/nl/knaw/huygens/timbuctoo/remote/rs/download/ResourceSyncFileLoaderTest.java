@@ -15,8 +15,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 public class ResourceSyncFileLoaderTest {
-
-  private String baseUrl = "http://127.0.0.1:8080/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/";
+  private final String baseUrl = "http://127.0.0.1:8080/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/";
 
   @Test
   public void getRemoteFilesListListsAllChangelistAndResourcelistFilesInAnObject() throws Exception {
@@ -88,7 +87,6 @@ public class ResourceSyncFileLoaderTest {
     given(remoteFileRetriever.getFile(baseUrl + "changelist.xml", null)
     ).willReturn(changeListStream);
 
-
     ResourceSyncFileLoader resourceSyncFileLoader = new ResourceSyncFileLoader(remoteFileRetriever);
 
     ResourceSyncFileLoader.RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(
@@ -103,7 +101,6 @@ public class ResourceSyncFileLoaderTest {
       hasProperty("url", is(baseUrl + "files/dataset.nq")),
       hasProperty("mimeType", is("application/n-quads"))
     )));
-
   }
 
   @Test
@@ -136,7 +133,6 @@ public class ResourceSyncFileLoaderTest {
       "  </url>\n" +
       "</urlset>\n";
 
-
     InputStream capabilityListStream = new ByteArrayInputStream(capabilityList.getBytes());
 
     InputStream resourceListStream = new ByteArrayInputStream(resourceList.getBytes());
@@ -152,7 +148,7 @@ public class ResourceSyncFileLoaderTest {
     ResourceSyncFileLoader resourceSyncFileLoader = new ResourceSyncFileLoader(remoteFileRetriever);
 
     ResourceSyncFileLoader.RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(
-      baseUrl + "capabilitylist.xml", null);;
+      baseUrl + "capabilitylist.xml", null);
 
     assertThat(remoteFilesList.getResourceList(), containsInAnyOrder(
       allOf(
@@ -192,7 +188,6 @@ public class ResourceSyncFileLoaderTest {
       "  </url>\n" +
       "</urlset>\n";
 
-
     InputStream capabilityListStream = new ByteArrayInputStream(capabilityList.getBytes());
 
     InputStream resourceListStream = new ByteArrayInputStream(resourceList.getBytes());
@@ -209,7 +204,6 @@ public class ResourceSyncFileLoaderTest {
 
     ResourceSyncFileLoader.RemoteFilesList remoteFilesList = resourceSyncFileLoader.getRemoteFilesList(
       baseUrl + "capabilitylist.xml", null);
-    ;
 
     assertThat(remoteFilesList.getResourceList(), contains(
       allOf(
@@ -218,5 +212,4 @@ public class ResourceSyncFileLoaderTest {
       )
     ));
   }
-
 }

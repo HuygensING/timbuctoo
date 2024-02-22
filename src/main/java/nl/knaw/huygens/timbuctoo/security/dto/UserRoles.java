@@ -45,5 +45,4 @@ public class UserRoles {
   public static List<String> getVerified() {
     return Lists.newArrayList(ADMIN_ROLE, USER_ROLE);
   }
-
 }

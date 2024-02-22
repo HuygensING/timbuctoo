@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import java.util.stream.Stream;
 
 public class JsonBuilder {
-  public static JsonNodeFactory factory = JsonNodeFactory.instance;
+  public static final JsonNodeFactory factory = JsonNodeFactory.instance;
 
   public static ObjectNode jsnO() {
     return factory.objectNode();

@@ -85,7 +85,6 @@ public class Type {
     }
   }
 
-
   public Predicate getPredicate(String name, Direction direction) {
     return predicates.get(direction.name() + "\n" + name);
   }

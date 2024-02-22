@@ -9,7 +9,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 
 public class MediaTypeDeSerializer extends StdDeserializer<MediaType> {
-
   public MediaTypeDeSerializer() {
     super(MediaType.class);
   }
@@ -18,7 +17,6 @@ public class MediaTypeDeSerializer extends StdDeserializer<MediaType> {
   public MediaType deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
     throws IOException {
     TextNode node = jsonParser.getCodec().readTree(jsonParser);
-
     return MediaType.valueOf(node.asText());
   }
 }

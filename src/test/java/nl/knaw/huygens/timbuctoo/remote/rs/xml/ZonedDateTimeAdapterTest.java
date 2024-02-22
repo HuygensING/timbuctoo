@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 public class ZonedDateTimeAdapterTest {
-
   @Test
   public void testMarshalUnmarshal() throws Exception {
     ZonedDateTimeAdapter adapter = new ZonedDateTimeAdapter();
@@ -77,5 +76,4 @@ public class ZonedDateTimeAdapterTest {
     ZonedDateTime zdt = null;
     assertThat(adapter.marshal(zdt), nullValue(String.class));
   }
-
 }

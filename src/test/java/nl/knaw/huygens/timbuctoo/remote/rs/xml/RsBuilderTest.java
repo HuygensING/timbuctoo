@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -14,14 +15,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class RsBuilderTest {
-
   @Test
   public void buildAndSuccess() throws Exception {
     RsBuilder rsBuilder = new RsBuilder(new ResourceSyncContext());
 
     String sitemapindexXml = rsBuilder.toXml(createSitemapIndex(), true);
     //System.out.println(sitemapindexXml);
-    InputStream sitemapindexIs = IOUtils.toInputStream(sitemapindexXml);
+    InputStream sitemapindexIs = IOUtils.toInputStream(sitemapindexXml, Charset.defaultCharset());
     RsRoot root = rsBuilder.setInputStream(sitemapindexIs).build().get();
     IOUtils.closeQuietly(sitemapindexIs);
 
@@ -33,7 +33,7 @@ public class RsBuilderTest {
     // RsBuilder can be reused
     String urlsetXml = rsBuilder.toXml(createUrlset(), true);
     //System.out.println(urlsetXml);
-    InputStream urlsetIs = IOUtils.toInputStream(urlsetXml);
+    InputStream urlsetIs = IOUtils.toInputStream(urlsetXml, Charset.defaultCharset());
     root = rsBuilder.setInputStream(urlsetIs).build().get();
     IOUtils.closeQuietly(urlsetIs);
 
@@ -41,21 +41,19 @@ public class RsBuilderTest {
     assertThat(root, equalTo(urlset));
     assertThat(rsBuilder.getQName().get(), equalTo(Urlset.QNAME));
     assertThat(rsBuilder.getSitemapindex().isPresent(), is(false));
-
   }
 
   @Test
   public void buildAndFailure() throws Exception {
     Assertions.assertThrows(JAXBException.class, () -> {
       String invalidXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"><foo>bar</foo>";
-      InputStream invalidIs = IOUtils.toInputStream(invalidXml);
+      InputStream invalidIs = IOUtils.toInputStream(invalidXml, Charset.defaultCharset());
       RsBuilder rsBuilder = new RsBuilder(new ResourceSyncContext());
       rsBuilder.setInputStream(invalidIs).build();
     });
   }
 
   private Sitemapindex createSitemapIndex() {
-
     return new Sitemapindex(new RsMd("resourcelist"))
       .addLink(new RsLn("up", "http://example.com/dataset1/capabilitylist.xml"))
       .addItem(new SitemapItem("http://example.com/resourcelist1.xml")
@@ -65,7 +63,6 @@ public class RsBuilderTest {
   }
 
   private Urlset createUrlset() {
-
     RsMd rsMd = new RsMd("description")
       .withAt(ZonedDateTime.now(ZoneOffset.UTC))
       .withCompleted(ZonedDateTime.now(ZoneOffset.UTC))
@@ -101,6 +98,5 @@ public class RsBuilderTest {
       .addLink(new RsLn("up", "http://example.com/attic"))
       .addItem(url1)
       .addItem(url2);
-
   }
 }

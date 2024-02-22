@@ -19,7 +19,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class JsonBasedAuthorizerTest {
-
   public static final String VRE_ID = "vreId";
   public static final String USER_PID = "userPid";
   private VreAuthorizationAccess authorizationAccess;
@@ -59,5 +58,4 @@ public class JsonBasedAuthorizerTest {
 
     verify(authorizationAccess).deleteVreAuthorizations(VRE_ID);
   }
-  
 }

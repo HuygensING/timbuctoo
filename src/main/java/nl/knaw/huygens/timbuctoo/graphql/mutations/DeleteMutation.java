@@ -32,8 +32,8 @@ public class DeleteMutation extends Mutation {
     super(schemaUpdater);
     this.dataSetRepository = dataSetRepository;
     Tuple<String, String> dataSetIdSplit = DataSetMetaData.splitCombinedId(dataSetId);
-    dataSetName = dataSetIdSplit.getRight();
-    ownerId = dataSetIdSplit.getLeft();
+    dataSetName = dataSetIdSplit.right();
+    ownerId = dataSetIdSplit.left();
     userUriCreator = new UserUriCreator(uriHelper);
   }
 
@@ -73,31 +73,16 @@ public class DeleteMutation extends Mutation {
     try {
       dataSet.getImportManager().generateLog(
         dataSet.getMetadata().getBaseUri(), null,
-        new GraphQlToRdfPatch(graph.getUri(), uri, userUriCreator.create(user),
+        new GraphQlToRdfPatch(graph.uri(), uri, userUriCreator.create(user),
             new DeleteMutationChangeLog(graph, uri, entity))
       ).get(); // Wait until the data is processed
     } catch (LogStorageFailedException | JsonProcessingException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }
 
-    return new RemovedEntity(graph.getUri(), uri);
+    return new RemovedEntity(graph.uri(), uri);
   }
 
-  public static class RemovedEntity {
-    private final String graph;
-    private final String uri;
-
-    public RemovedEntity(String graph, String uri) {
-      this.graph = graph;
-      this.uri = uri;
-    }
-
-    public String getGraph() {
-      return graph;
-    }
-
-    public String getUri() {
-      return uri;
-    }
+  public record RemovedEntity(String graph, String uri) {
   }
 }

@@ -19,7 +19,6 @@ public class ErrorObject {
     this.error = error;
   }
 
-
   public static ErrorObject parse(String errorString) {
     String dateStamp = errorString.substring(0, errorString.indexOf("; ")).trim();
     String file = errorString.contains("file") ? errorString.substring(

@@ -4,11 +4,9 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 public abstract class Mutation<T> implements DataFetcher<T> {
-
   private final Runnable schemaUpdater;
 
   public Mutation(Runnable schemaUpdater) {
-
     this.schemaUpdater = schemaUpdater;
   }
 
@@ -20,5 +18,4 @@ public abstract class Mutation<T> implements DataFetcher<T> {
   }
 
   protected abstract T executeAction(DataFetchingEnvironment environment);
-
 }

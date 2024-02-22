@@ -232,7 +232,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
       for (Iterator<Change> changes = customProvChanges.iterator(); changes.hasNext(); ) {
         Change change = changes.next();
         for (Change.Value value : change.getValues()) {
-          saver.addDelQuad(true, change.getSubject(), change.getPredicate(), value.getRawValue(), value.getType(), null,
+          saver.addDelQuad(true, change.getSubject(), change.getPredicate(), value.rawValue(), value.type(), null,
               graphUri);
         }
       }
@@ -243,10 +243,10 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
                               String uri) throws LogStorageFailedException {
     saver.addDelQuad(true, uri, RDF_TYPE, timType("OldValue"), null, null, graphUri);
     saver.addDelQuad(true, changeUri, timPredicate("hadValue"), uri, null, null, graphUri);
-    if (value.getType() != null) {
-      saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, graphUri);
+    if (value.type() != null) {
+      saver.addDelQuad(true, uri, timPredicate("type"), value.type(), STRING, null, graphUri);
     }
-    saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, graphUri);
+    saver.addDelQuad(true, uri, timPredicate("rawValue"), value.rawValue(), STRING, null, graphUri);
     if (prefValueUri != null) {
       saver.addDelQuad(true, prefValueUri, timPredicate("nextOldValue"), uri, null, null, graphUri);
     }
@@ -256,10 +256,10 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
                            String uri) throws LogStorageFailedException {
     saver.addDelQuad(true, uri, RDF_TYPE, timType("Value"), null, null, graphUri);
     saver.addDelQuad(true, changeUri, timPredicate("hasValue"), uri, null, null, graphUri);
-    if (value.getType() != null) {
-      saver.addDelQuad(true, uri, timPredicate("type"), value.getType(), STRING, null, graphUri);
+    if (value.type() != null) {
+      saver.addDelQuad(true, uri, timPredicate("type"), value.type(), STRING, null, graphUri);
     }
-    saver.addDelQuad(true, uri, timPredicate("rawValue"), value.getRawValue(), STRING, null, graphUri);
+    saver.addDelQuad(true, uri, timPredicate("rawValue"), value.rawValue(), STRING, null, graphUri);
     if (prefValueUri != null) {
       saver.addDelQuad(true, prefValueUri, timPredicate("nextValue"), uri, null, null, graphUri);
     }
@@ -273,7 +273,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         try (Stream<Change.Value> oldValues = change.getOldValues()) {
           for (Iterator<Change.Value> iterator = oldValues.iterator(); iterator.hasNext(); ) {
             Change.Value value = iterator.next();
-            saver.addDelQuad(false, subjectUri, predicate, value.getRawValue(), value.getType(), null, graphUri);
+            saver.addDelQuad(false, subjectUri, predicate, value.rawValue(), value.type(), null, graphUri);
           }
         }
       }
@@ -286,11 +286,11 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         try (Stream<Change.Value> oldValues = change.getOldValues()) {
           for (Iterator<Change.Value> iterator = oldValues.iterator(); iterator.hasNext(); ) {
             Change.Value value = iterator.next();
-            saver.addDelQuad(false, subjectUri, predicate, value.getRawValue(), value.getType(), null, graphUri);
+            saver.addDelQuad(false, subjectUri, predicate, value.rawValue(), value.type(), null, graphUri);
           }
         }
         for (Change.Value value : change.getValues()) {
-          saver.addDelQuad(true, subjectUri, predicate, value.getRawValue(), value.getType(), null, graphUri);
+          saver.addDelQuad(true, subjectUri, predicate, value.rawValue(), value.type(), null, graphUri);
         }
       }
     }
@@ -300,7 +300,7 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
         Change change = changes.next();
         for (Change.Value value : change.getValues()) {
           saver.addDelQuad(true, subjectUri, change.getPredicate(),
-              value.getRawValue(), value.getType(), null, graphUri);
+              value.rawValue(), value.type(), null, graphUri);
         }
       }
     }

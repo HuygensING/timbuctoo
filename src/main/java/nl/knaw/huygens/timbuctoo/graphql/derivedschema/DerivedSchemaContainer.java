@@ -82,7 +82,6 @@ public class DerivedSchemaContainer {
     return argumentsHelper.makeCollectionListField(fieldName + "List", typeName, !fieldName.equals("rdfs_Resource"));
   }
 
-
   String unionType(Set<String> refs) {
     StringBuilder unionName = new StringBuilder("Union_");
     for (String type : refs) {
@@ -105,7 +104,6 @@ public class DerivedSchemaContainer {
     }
     return name;
   }
-
 
   DerivedObjectTypeSchemaGenerator addObjectType(String typeUri) {
     if (!topLevelTypes.containsKey(typeUri)) {
@@ -139,7 +137,7 @@ public class DerivedSchemaContainer {
     StringBuilder mutationsSchema = new StringBuilder();
     topLevelTypes.values().forEach(schemaGenerator -> schemaGenerator.addMutationToSchema(mutationsSchema));
 
-    return mutationsSchema.length() > 0;
+    return !mutationsSchema.isEmpty();
   }
 
   private void addRootTypeMutations(StringBuilder total) {

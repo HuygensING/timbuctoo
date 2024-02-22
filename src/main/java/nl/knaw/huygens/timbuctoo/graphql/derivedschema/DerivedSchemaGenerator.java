@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class DerivedSchemaGenerator {
-
   private static final Logger LOG = LoggerFactory.getLogger(DerivedSchemaGenerator.class);
   private final PaginationArgumentsHelper argumentsHelper;
 
@@ -48,8 +47,8 @@ public class DerivedSchemaGenerator {
   private static void fieldForDerivedType(Predicate pred, DerivedSchemaContainer typesContainer,
                                           DerivedObjectTypeSchemaGenerator typeSchemaGenerator,
                                           GraphQlNameGenerator nameGenerator, String rootType) {
-    if (pred.getReferenceTypes().size() == 0) {
-      if (pred.getValueTypes().size() == 0) {
+    if (pred.getReferenceTypes().isEmpty()) {
+      if (pred.getValueTypes().isEmpty()) {
         LOG.error(
           "This shouldn't happen! The predicate '{}' has no value types and no reference types!",
           pred.getName()
@@ -68,7 +67,7 @@ public class DerivedSchemaGenerator {
         typeSchemaGenerator.unionField(null, pred, types);
       }
     } else {
-      if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
+      if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().isEmpty()) {
         typeSchemaGenerator.objectField(
           null,
           pred,
@@ -91,6 +90,4 @@ public class DerivedSchemaGenerator {
       }
     }
   }
-
-
 }

@@ -58,7 +58,7 @@ public class MoveDefaultGraphsTask extends Task {
 
           Optional<String> dataType = quad.getValuetype();
           Optional<String> language = quad.getLanguage();
-          if (dataType == null || !dataType.isPresent()) {
+          if (dataType == null || dataType.isEmpty()) {
             output.println(DATASET_QUAD_GENERATOR.onRelation(
                 quad.getSubject(),
                 quad.getPredicate(),

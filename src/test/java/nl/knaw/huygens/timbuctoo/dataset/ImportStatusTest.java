@@ -13,7 +13,6 @@ import static org.hamcrest.Matchers.is;
  * Created on 2017-12-08 16:40.
  */
 public class ImportStatusTest {
-
   @Test
   public void jsonSerialization() throws Exception {
     LogList logList = new LogList();
@@ -26,14 +25,14 @@ public class ImportStatusTest {
 
     status.addError("This error is recorded in logList", new RuntimeException("list"));
     assertThat(status.getStatus().contains("This error is recorded in logList"), is(true));
-    assertThat(logList.getListErrors().get(0).contains("This error is recorded in logList"), is(true));
+    assertThat(logList.getListErrors().getFirst().contains("This error is recorded in logList"), is(true));
 
     status.startEntry(entry);
     assertThat(status.getStatus(), is("Adding entry with token token"));
 
     status.addError("This error is recorded in logEntry", new RuntimeException("entry"));
     assertThat(status.getStatus().contains("This error is recorded in logEntry"), is(true));
-    assertThat(entry.getImportStatus().getErrors().get(0).contains("This error is recorded in logEntry"),
+    assertThat(entry.getImportStatus().getErrors().getFirst().contains("This error is recorded in logEntry"),
       is(true));
 
     status.finishEntry();
@@ -45,5 +44,4 @@ public class ImportStatusTest {
     //System.out.println(json);
     assertThat(json.contains("\"@type\" : \"ImportStatus\""), is(true));
   }
-
 }

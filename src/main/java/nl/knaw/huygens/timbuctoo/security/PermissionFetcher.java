@@ -13,9 +13,6 @@ public interface PermissionFetcher {
 
   boolean hasPermission(User user, DataSetMetaData dataSet, Permission permission) throws PermissionFetchingException;
 
-  Set<Permission> getOldPermissions(User user, String vreId)
-    throws PermissionFetchingException;
-
   void initializeOwnerAuthorization(User user, String ownerId, String dataSetId)
     throws PermissionFetchingException, AuthorizationCreationException;
 

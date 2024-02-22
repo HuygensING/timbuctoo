@@ -40,7 +40,6 @@ public class MergeSchemasTest {
     assertThat(mergedSchema, hasEntry(is("GeneratedType"), hasProperty("name", is("TypeName"))));
   }
 
-
   @Test
   public void mergeSchemaReturnsMergedSchemeWithAllPredicates() throws Exception {
     MergeSchemas mergeSchemas = new MergeSchemas();
@@ -59,7 +58,6 @@ public class MergeSchemasTest {
       predicate().withName("custom").withDirection(Direction.IN)
     ))));
   }
-
 
   @Test
   public void mergeSchemaReturnsMergedSchemaWithAllPredicatesForSingleType() throws Exception {
@@ -131,5 +129,4 @@ public class MergeSchemasTest {
     generatedType.getPredicate(generated,direction).setIsExplicit(true);
     return generatedType;
   }
-
 }

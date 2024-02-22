@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto;
 
-
 import nl.knaw.huygens.timbuctoo.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.dataset.dto.LogEntry;
@@ -77,5 +76,4 @@ public class LogEntryImportStatus {
   public List<ProgressStep> getProgress() {
     return progress;
   }
-
 }

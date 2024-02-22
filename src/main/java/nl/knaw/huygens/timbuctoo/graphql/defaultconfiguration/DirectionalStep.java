@@ -7,7 +7,6 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 public interface DirectionalStep {
-
   String getStep();
 
   Direction getDirection();
@@ -16,5 +15,4 @@ public interface DirectionalStep {
   static DirectionalStep create(@JsonProperty("step") String step, @JsonProperty("direction") Direction direction) {
     return ImmutableDirectionalStep.builder().step(step).direction(direction).build();
   }
-
 }

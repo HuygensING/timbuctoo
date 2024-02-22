@@ -65,7 +65,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
     File file = getFileOfVre(vreId);
     authorizationValue = getAuthorization(userId, authorizationValue, file);
 
-    if (!authorizationValue.isPresent()) {
+    if (authorizationValue.isEmpty()) {
       file = authorizationsFolder.resolve("authorizations.json").toFile();
       authorizationValue = getAuthorization(userId, authorizationValue, file);
     }
@@ -104,8 +104,8 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
 
   private File getFileOfVre(String vreId) {
     Tuple<String, String> ownerIdDataSetId = DataSetMetaData.splitCombinedId(vreId);
-    File directory = authorizationsFolder.resolve(ownerIdDataSetId.getLeft())
-        .resolve(ownerIdDataSetId.getRight().replace("__", ""))
+    File directory = authorizationsFolder.resolve(ownerIdDataSetId.left())
+        .resolve(ownerIdDataSetId.right().replace("__", ""))
         .toFile();
 
     directory.mkdirs();

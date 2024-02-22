@@ -59,20 +59,20 @@ public class EditMutationChangeLog extends ChangeLog {
 
   @Override
   public Stream<Change> getProvenance(DataSet dataSet, String... subjects) {
-    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.getProvenance());
+    return getProvenanceChanges(dataSet, graph, subjects, dataSet.getCustomProvenance(), changeLog.provenance());
   }
 
   @Override
   public Stream<Change> getAdditions(DataSet dataSet) {
     Stream<Change> additions =
-      changeLog.getAdditions().entrySet().stream()
+      changeLog.additions().entrySet().stream()
                .map(entry -> createAdditionsChange(dataSet, entry.getKey(), entry.getValue()));
 
     Stream<Change> replacementAdditions =
-      changeLog.getReplacements().entrySet().stream()
+      changeLog.replacements().entrySet().stream()
                .filter(entry -> !hasOldValues(dataSet, entry))
                .filter(entry -> !entry.getValue().isNull() &&
-                 !(entry.getValue().isArray() && entry.getValue().size() == 0))
+                 !(entry.getValue().isArray() && entry.getValue().isEmpty()))
                .map(entry -> createAdditionsChange(dataSet, entry.getKey(), entry.getValue()));
 
     return Stream.concat(additions, replacementAdditions);
@@ -81,14 +81,14 @@ public class EditMutationChangeLog extends ChangeLog {
   @Override
   public Stream<Change> getDeletions(DataSet dataSet) {
     Stream<Change> deletions =
-      changeLog.getDeletions().entrySet().stream()
+      changeLog.deletions().entrySet().stream()
                .map(entry -> createDeletionsChange(dataSet, entry.getKey(), entry.getValue()));
 
     Stream<Change> replacementDeletions =
-      changeLog.getReplacements().entrySet().stream()
+      changeLog.replacements().entrySet().stream()
                .filter(entry -> hasOldValues(dataSet, entry))
                .filter(entry -> entry.getValue().isNull() ||
-                 (entry.getValue().isArray() && entry.getValue().size() == 0))
+                 (entry.getValue().isArray() && entry.getValue().isEmpty()))
                .map(entry -> createDeletionsChange(dataSet, entry.getKey(), entry.getValue()));
 
     return Stream.concat(deletions, replacementDeletions);
@@ -96,17 +96,17 @@ public class EditMutationChangeLog extends ChangeLog {
 
   @Override
   public Stream<Change> getReplacements(DataSet dataSet) {
-    return changeLog.getReplacements().entrySet().stream()
+    return changeLog.replacements().entrySet().stream()
                     .filter(entry -> hasOldValues(dataSet, entry))
                     .filter(entry -> !entry.getValue().isNull() &&
-                      !(entry.getValue().isArray() && entry.getValue().size() == 0))
+                      !(entry.getValue().isArray() && entry.getValue().isEmpty()))
                     .map((entry) -> createReplacementsChange(dataSet, entry.getKey(), entry.getValue()));
   }
 
   private boolean hasOldValues(DataSet dataSet, Map.Entry<String, JsonNode> entry) {
     try (Stream<CursorQuad> quads = dataSet.getQuadStore().getQuadsInGraph(
       subject,
-      dataSet.getTypeNameStore().makeUriForPredicate(entry.getKey()).get().getLeft(),
+      dataSet.getTypeNameStore().makeUriForPredicate(entry.getKey()).get().left(),
       Direction.OUT,
       "",
       Optional.of(graph)
@@ -140,39 +140,20 @@ public class EditMutationChangeLog extends ChangeLog {
     return new Change(graph, subject, pred, values, oldValues);
   }
 
-  public static class RawEditChangeLog {
-    private LinkedHashMap<String, ArrayNode> additions;
-    private LinkedHashMap<String, ArrayNode> deletions;
-    private LinkedHashMap<String, JsonNode> replacements;
-    private LinkedHashMap<String, JsonNode> provenance;
-
+  public record RawEditChangeLog(LinkedHashMap<String, ArrayNode> additions,
+                                 LinkedHashMap<String, ArrayNode> deletions,
+                                 LinkedHashMap<String, JsonNode> replacements,
+                                 LinkedHashMap<String, JsonNode> provenance) {
     @JsonCreator
     public RawEditChangeLog(
-      @JsonProperty("additions") LinkedHashMap<String, ArrayNode> additions,
-      @JsonProperty("deletions") LinkedHashMap<String, ArrayNode> deletions,
-      @JsonProperty("replacements") LinkedHashMap<String, JsonNode> replacements,
-      @JsonProperty("provenance") LinkedHashMap<String, JsonNode> provenance) {
+        @JsonProperty("additions") LinkedHashMap<String, ArrayNode> additions,
+        @JsonProperty("deletions") LinkedHashMap<String, ArrayNode> deletions,
+        @JsonProperty("replacements") LinkedHashMap<String, JsonNode> replacements,
+        @JsonProperty("provenance") LinkedHashMap<String, JsonNode> provenance) {
       this.additions = additions == null ? Maps.newLinkedHashMap() : additions;
       this.deletions = deletions == null ? Maps.newLinkedHashMap() : deletions;
       this.replacements = replacements == null ? Maps.newLinkedHashMap() : replacements;
       this.provenance = provenance == null ? Maps.newLinkedHashMap() : provenance;
-    }
-
-
-    public LinkedHashMap<String, ArrayNode> getAdditions() {
-      return additions;
-    }
-
-    public LinkedHashMap<String, ArrayNode> getDeletions() {
-      return deletions;
-    }
-
-    public LinkedHashMap<String, JsonNode> getReplacements() {
-      return replacements;
-    }
-
-    public LinkedHashMap<String, JsonNode> getProvenance() {
-      return provenance;
     }
   }
 }

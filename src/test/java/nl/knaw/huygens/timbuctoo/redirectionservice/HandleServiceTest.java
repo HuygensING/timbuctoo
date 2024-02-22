@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.redirectionservice;
 
-
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.dataset.DataSetRepository;
@@ -115,7 +114,7 @@ public class HandleServiceTest {
   }
 
   private static class LogListJsonDataStore implements JsonDataStore<LogList> {
-    LogList logList = new LogList();
+    final LogList logList = new LogList();
 
     @Override
     public void updateData(Function<LogList, LogList> mutator) throws IOException {

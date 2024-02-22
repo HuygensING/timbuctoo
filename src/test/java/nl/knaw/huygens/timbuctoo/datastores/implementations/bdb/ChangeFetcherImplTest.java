@@ -16,7 +16,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ChangeFetcherImplTest {
-
   @Test
   public void showsAdditions() throws Exception {
     UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);

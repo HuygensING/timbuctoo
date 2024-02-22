@@ -43,7 +43,7 @@ public class JsonBuilder {
     It will output a string with the builder java code.
    */
 
-  public static JsonNodeFactory factory = JsonNodeFactory.instance;
+  public static final JsonNodeFactory factory = JsonNodeFactory.instance;
 
   public static ObjectNode jsnO(String prop1, JsonNode contents1) {
     ObjectNode result = factory.objectNode();
@@ -133,7 +133,7 @@ public class JsonBuilder {
     ObjectNode result = factory.objectNode();
 
     for (Tuple<String, JsonNode> prop: props) {
-      result.set(prop.getLeft(), prop.getRight());
+      result.set(prop.left(), prop.right());
     }
     return result;
   }
@@ -179,5 +179,4 @@ public class JsonBuilder {
   public static Tuple<String, JsonNode> prp(String key, JsonNode value) {
     return Tuple.tuple(key, value);
   }
-
 }
