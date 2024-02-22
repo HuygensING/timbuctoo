@@ -1,27 +1,24 @@
-FROM huygensing/timbuctoo:buildbase-11
-
-COPY ./src ./src
-COPY ./pom.xml ./pom.xml
-
-COPY ./example_config.yaml ./example_config.yaml
-RUN mvn clean package
-
-FROM openjdk:11-jre-slim
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-RUN mkdir -p /root/data/dataSets && \
-  mkdir -p /root/data/neo4j && \
-  mkdir -p /root/data/auth/authorizations && \
-  echo "[]" > /root/data/auth/logins.json && \
-  echo "[]" > /root/data/auth/users.json
+COPY ./src ./src
+COPY ./pom.xml ./pom.xml
+COPY ./example_config.yaml ./example_config.yaml
 
-COPY --from=0 /build/timbuctoo/target/appassembler .
-COPY --from=0 /build/timbuctoo/example_config.yaml .
+RUN mvn clean package
+
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+COPY --from=builder /app/target/appassembler .
+COPY --from=builder /app/example_config.yaml .
 
 CMD ["./bin/timbuctoo", "server", "./example_config.yaml"]
 
 EXPOSE 80 81
+
 ENV timbuctoo_port="80"
 ENV timbuctoo_adminPort="81"
 ENV base_uri=http://localhost:8080
