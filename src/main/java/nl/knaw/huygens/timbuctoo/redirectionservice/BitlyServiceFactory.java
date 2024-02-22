@@ -1,10 +1,8 @@
-package nl.knaw.huygens.timbuctoo.redirectionservice.bitly;
+package nl.knaw.huygens.timbuctoo.redirectionservice;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.redirectionservice.RedirectionServiceFactory;
-import nl.knaw.huygens.timbuctoo.redirectionservice.RedirectionService;
 
 public class BitlyServiceFactory implements RedirectionServiceFactory {
   @JsonProperty("accessToken")
