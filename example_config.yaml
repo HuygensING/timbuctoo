@@ -135,13 +135,6 @@ dataSet:
 rdfUriHelper:
   rdfBaseUri: http://example.org/
 
-# Timeouts
-# the 'duration' is a number
-# the timeUnit is a 'java.util.concurrent.TimeUnit'
-searchResultAvailabilityTimeout:
-  duration: 8
-  timeUnit: HOURS
-
 webhooks:
   dataSetUpdatedUrls:
    - ${timbuctoo_indexer_url}
@@ -157,9 +150,6 @@ redirectionService:
 #  prefix:
 # If using BitlyServiceFactory you need:
 #  accessToken:
-
-#Note! disable this for production builds
-allowGremlinEndpoint: true
 
 server:
   applicationConnectors:

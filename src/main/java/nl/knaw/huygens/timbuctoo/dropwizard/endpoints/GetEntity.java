@@ -17,7 +17,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-@Path("/{ownerId}/{dataSetId}/{id}")
+@Path("/{ver:(v5/)?}{ownerId}/{dataSetId}/{id}")
 public class GetEntity extends AbstractGetEntity {
   public GetEntity(DataSetRepository dataSetRepository, UserValidator userValidator) {
     super(dataSetRepository, userValidator);

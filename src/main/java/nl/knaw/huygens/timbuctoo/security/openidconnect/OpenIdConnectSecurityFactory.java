@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AccessNotPossibleException;
 
+import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Optional;
@@ -50,6 +51,11 @@ public class OpenIdConnectSecurityFactory implements SecurityFactory {
         new JsonBasedAuthorizer(accessFactory.getVreAuthorizationAccess()),
         accessFactory.getPermissionConfig()
     );
+  }
+
+  @Override
+  public URI getLoginEndpoint() {
+    return URI.create("/openid-connect/login");
   }
 
   @Override

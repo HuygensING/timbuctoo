@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
 
-@Path("/{userId}/{dataSet}/upload/rdf")
+@Path("/{ver:(v5/)?}{userId}/{dataSet}/upload/rdf")
 public class RdfUpload {
   private final AuthCheck authCheck;
 

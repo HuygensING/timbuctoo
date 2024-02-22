@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.security;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 
+import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ public interface SecurityFactory {
 
   PermissionFetcher getPermissionFetcher() throws AccessNotPossibleException, NoSuchAlgorithmException;
 
-  default void register(Consumer<Object> registerToJersey) throws NoSuchAlgorithmException, AccessNotPossibleException {
-  }
+  URI getLoginEndpoint();
+
+  void register(Consumer<Object> registerToJersey) throws NoSuchAlgorithmException, AccessNotPossibleException;
 }

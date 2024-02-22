@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@Path("resourcesync")
+@Path("/{ver:(v5/)?}resourcesync")
 public class RsEndpoint {
   private static final Logger LOG = LoggerFactory.getLogger(RsEndpoint.class);
   private final RsDocumentBuilder rsDocumentBuilder;
@@ -96,7 +96,7 @@ public class RsEndpoint {
 
   @GET
   @Path("{ownerId}/{dataSetName}/changes/{fileId}")
-  @Produces(MediaType.TEXT_PLAIN)
+  @Produces("application/vnd.timbuctoo-rdf.nquads_unified_diff")
   public Response getChanges(@HeaderParam("authorization") String authHeader,
                              @PathParam("ownerId") String owner,
                              @PathParam("dataSetName") String dataSetName,
@@ -113,6 +113,7 @@ public class RsEndpoint {
 
   @GET
   @Path("{ownerId}/{dataSetName}/dataset.nq")
+  @Produces("application/n-quads")
   public Response getDataSet(@HeaderParam("authorization") String authHeader,
                              @PathParam("ownerId") String owner,
                              @PathParam("dataSetName") String dataSetName) {

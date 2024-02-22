@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
+import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Import;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
@@ -193,6 +194,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     securityConfig.register(component -> register(environment, component));
 
+    register(environment, new RootEndpoint(uriHelper,
+        configuration.getUserRedirectUrl(), securityConfig.getLoginEndpoint()));
+
     register(environment, new Me(securityConfig.getUserValidator()));
     register(environment, new Discover(resourceSyncService));
 
@@ -221,9 +225,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.admin().addTask(new ReimportDatasetsTask(dataSetRepository));
     environment.admin().addTask(new RebuildSchemaTask(dataSetRepository));
 
-    //Log all http requests
+    // Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
-    //Allow all CORS requests
+    // Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
   }
 

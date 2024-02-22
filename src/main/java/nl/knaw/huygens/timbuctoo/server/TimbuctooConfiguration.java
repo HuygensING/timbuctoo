@@ -11,7 +11,6 @@ import io.dropwizard.metrics.common.MetricsFactory;
 import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.core.server.ServerFactory;
 import nl.knaw.huygens.timbuctoo.webhook.WebhookFactory;
-import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.dataset.DataSetConfiguration;
@@ -25,18 +24,10 @@ import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
-import javax.ws.rs.DefaultValue;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-/*
- *TODO: add good default environment for Timbuctoo
- *  - example logins
- *  - example users
- *  - example authorization
- *  - example database
- */
 @Value.Immutable
 @JsonDeserialize(as = ImmutableTimbuctooConfiguration.class)
 @JsonSerialize(as = ImmutableTimbuctooConfiguration.class)
@@ -53,9 +44,6 @@ public abstract class TimbuctooConfiguration extends Configuration {
     return new WebhookFactory();
   }
 
-  @JsonProperty("searchResultAvailabilityTimeout")
-  public abstract TimeoutFactory getSearchResultAvailabilityTimeoutFactory();
-
   @JsonProperty("httpClient")
   @Valid
   @Value.Default
@@ -66,10 +54,6 @@ public abstract class TimbuctooConfiguration extends Configuration {
   @Valid
   @JsonProperty("baseUri")
   public abstract UriHelper getUriHelper();
-
-  @DefaultValue("true")
-  @JsonProperty("allowGremlinEndpoint")
-  public abstract boolean isAllowGremlinEndpoint();
 
   @Valid
   @Nullable

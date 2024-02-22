@@ -8,6 +8,10 @@ import nl.knaw.huygens.timbuctoo.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AccessNotPossibleException;
 
+import java.net.URI;
+import java.security.NoSuchAlgorithmException;
+import java.util.function.Consumer;
+
 public class DummySecurityFactory implements SecurityFactory {
   private final AccessFactory accessFactory;
 
@@ -26,5 +30,15 @@ public class DummySecurityFactory implements SecurityFactory {
         new JsonBasedAuthorizer(accessFactory.getVreAuthorizationAccess()),
         accessFactory.getPermissionConfig()
     );
+  }
+
+  @Override
+  public URI getLoginEndpoint() {
+    return URI.create("/dummylogin");
+  }
+
+  @Override
+  public void register(Consumer<Object> registerToJersey) throws NoSuchAlgorithmException, AccessNotPossibleException {
+    registerToJersey.accept(new DummyLoginEndPoint());
   }
 }

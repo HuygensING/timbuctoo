@@ -13,7 +13,7 @@ public class WellKnown {
   @GET
   public Response resourceSync() {
     // Permanent redirect
-    return Response.seeOther(UriBuilder.fromResource(RsEndpoint.class)
+    return Response.seeOther(UriBuilder.fromPath("/resourcesync")
                                        .path(RsDocumentBuilder.SOURCE_DESCRIPTION_PATH)
                                        .build()
     ).build();

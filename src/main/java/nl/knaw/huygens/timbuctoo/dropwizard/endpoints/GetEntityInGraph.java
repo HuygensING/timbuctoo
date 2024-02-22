@@ -19,7 +19,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-@Path("/{ownerId}/{dataSetId}/{graph}/{id}")
+@Path("/{ver:(v5/)?}{ownerId}/{dataSetId}/{graph}/{id}")
 public class GetEntityInGraph extends AbstractGetEntity {
   public GetEntityInGraph(DataSetRepository dataSetRepository, UserValidator userValidator) {
     super(dataSetRepository, userValidator);

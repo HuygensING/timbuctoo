@@ -131,10 +131,6 @@ dataSet:
 rdfUriHelper:
   rdfBaseUri: http://example.org/
 
-searchResultAvailabilityTimeout:
-  duration: 8
-  timeUnit: HOURS
-
 webhooks:
   dataSetUpdatedUrls:
    -
@@ -143,8 +139,6 @@ webhooks:
 
 redirectionService:
   "@class": nl.knaw.huygens.timbuctoo.redirectionservice.DummyRedirectionServiceFactory
-
-allowGremlinEndpoint: true
 
 server:
   applicationConnectors:

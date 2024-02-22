@@ -42,7 +42,7 @@ import static graphql.ExecutionInput.newExecutionInput;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
-@Path("/graphql")
+@Path("/{ver:(v5/)?}graphql")
 public class GraphQl {
   private final Supplier<GraphQLSchema> graphqlGetter;
   private final SerializerWriterRegistry serializerWriterRegistry;

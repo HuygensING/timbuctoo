@@ -1,15 +1,12 @@
 package nl.knaw.huygens.timbuctoo.datastores.rssource;
 
-import nl.knaw.huygens.timbuctoo.dropwizard.endpoints.RsEndpoint;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncConstants;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSetMetaData;
 
-import static javax.ws.rs.core.UriBuilder.fromResource;
-
 public class RsUriHelper {
-  private static final String RESOURCE_SYNC_PATH = fromResource(RsEndpoint.class).build().getPath();
+  private static final String RESOURCE_SYNC_PATH = "resourcesync";
   private static final String WELL_KNOWN_RESOURCESYNC = ".well-known/resourcesync";
   // We know that the FileSystemFileStorage implementation of FileStorage stores files in this location..
   private static final String FILES_DIR = "files";
@@ -33,7 +30,6 @@ public class RsUriHelper {
   }
 
   public String uriForToken(DataSetMetaData dataSetMetaData, String token) {
-
     return String.format("%s/%s/%s/%s/%s/%s", uriHelper.getBaseUri(), RESOURCE_SYNC_PATH, dataSetMetaData.getOwnerId(),
       dataSetMetaData.getDataSetId(), FILES_DIR, token);
   }
