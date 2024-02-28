@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableEx
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Optional;
 
 public class JsonBasedUserStore implements UserStore {
@@ -22,13 +23,13 @@ public class JsonBasedUserStore implements UserStore {
   }
 
   @Override
-  public Optional<User> userForId(String userId) throws AuthenticationUnavailableException {
-    return userAccess.getUserForTimLocalId(userId);
+  public Optional<User> userForApiKey(String apiKey) throws AuthenticationUnavailableException {
+    return userAccess.getUserForApiKey(apiKey);
   }
 
   @Override
-  public User saveNew(String displayName, String persistentId) throws AuthenticationUnavailableException {
-    User nw = User.create(displayName, persistentId);
+  public User saveNew(String displayName, String persistentId, Map<String, String> properties) throws AuthenticationUnavailableException {
+    User nw = User.create(displayName, persistentId, properties);
     userAccess.addUser(nw);
     return nw;
   }

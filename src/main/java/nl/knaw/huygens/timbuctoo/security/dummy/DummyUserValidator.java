@@ -7,16 +7,11 @@ import java.util.Optional;
 
 class DummyUserValidator implements UserValidator {
   private static final String ID = "33707283d426f900d4d33707283d426f900d4d0d";
-  private static final User DUMMY = User.create("{{Mr. Test User}}", ID, ID);
+  private static final User DUMMY = User.create("{{Mr. Test User}}", ID);
 
   @Override
   public Optional<User> getUserFromAccessToken(String accessToken) {
     return accessToken != null && !accessToken.isBlank() ? Optional.of(DUMMY) : Optional.empty();
-  }
-
-  @Override
-  public Optional<User> getUserFromUserId(String userId) {
-    return ID.equals(userId) ? Optional.of(DUMMY) : Optional.empty();
   }
 
   @Override

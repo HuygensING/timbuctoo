@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.userWithId;
+import static nl.knaw.huygens.timbuctoo.security.dto.UserStubs.user;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -44,8 +44,8 @@ public class BasicPermissionFetcherTest {
     vreAuthorizationCrud = mock(VreAuthorizationCrud.class);
     userValidator = mock(UserValidator.class);
     testUser = mock(User.class);
-    given(testUser.getId()).willReturn("testownerid");
-    given(userValidator.getUserFromUserId("testownerid")).willReturn(Optional.of(testUser));
+    given(testUser.getPersistentId()).willReturn("testownerid");
+    given(userValidator.getUserFromPersistentId("testownerid")).willReturn(Optional.of(testUser));
     permissionConfig = mock(PermissionConfiguration.class);
     permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, permissionConfig);
     publishedDataSetMetaData = mock(BasicDataSetMetaData.class);
@@ -156,14 +156,14 @@ public class BasicPermissionFetcherTest {
     given(dataSetMetaData2.getOwnerId()).willReturn("testownerid");
     given(dataSetMetaData2.isPublished()).willReturn(false);
 
-    Set<Permission> permissions = permissionFetcher.getPermissions(userWithId("testWriterId"), dataSetMetaData2);
+    Set<Permission> permissions = permissionFetcher.getPermissions(user(), dataSetMetaData2);
 
     assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.WRITE));
   }
 
   @Test
   public void initializeOwnerAuthorizationCreatesAdminAuthorization() throws Exception {
-    User user = userWithId("testuserid");
+    User user = user();
     permissionFetcher.initializeOwnerAuthorization(user,"testownerid", "testdatasetid");
 
     verify(vreAuthorizationCrud).createAuthorization("testownerid__testdatasetid", user, "ADMIN");
@@ -172,7 +172,7 @@ public class BasicPermissionFetcherTest {
   @Test
   public void initializeOwnerAuthorizationThrowsExceptionWhenVreAuthorizationCrudFails() throws Exception {
     Assertions.assertThrows(AuthorizationCreationException.class, () -> {
-      User user = userWithId("testuserid");
+      User user = user();
       doThrow(AuthorizationCreationException.class).when(vreAuthorizationCrud).createAuthorization(
           "testownerid__testdatasetid",
           user,

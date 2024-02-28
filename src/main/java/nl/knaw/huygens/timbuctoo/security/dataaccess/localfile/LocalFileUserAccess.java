@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
@@ -21,7 +22,7 @@ public class LocalFileUserAccess implements UserAccess {
   public LocalFileUserAccess(Path usersFile) {
     this.usersFile = usersFile;
     objectMapper = new ObjectMapper();
-    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    objectMapper.enable(SerializationFeature.INDENT_OUTPUT).registerModule(new GuavaModule());
   }
 
   @Override
@@ -29,7 +30,8 @@ public class LocalFileUserAccess implements UserAccess {
     final List<User> users;
     try {
       synchronized (usersFile) {
-        users = objectMapper.readValue(usersFile.toFile(), new TypeReference<>() { });
+        users = objectMapper.readValue(usersFile.toFile(), new TypeReference<>() {
+        });
       }
       users.add(user);
       objectMapper.writeValue(usersFile.toFile(), users.toArray(new User[users.size()]));
@@ -42,16 +44,12 @@ public class LocalFileUserAccess implements UserAccess {
 
   @Override
   public Optional<User> getUserForPid(String pid) throws AuthenticationUnavailableException {
-    List<User> users = getUsers();
-
-    return users.stream().filter(user -> Objects.equals(user.getPersistentId(), pid)).findFirst();
+    return getUsers().stream().filter(user -> Objects.equals(user.getPersistentId(), pid)).findFirst();
   }
 
   @Override
-  public Optional<User> getUserForTimLocalId(String userId) throws AuthenticationUnavailableException {
-    List<User> users = getUsers();
-
-    return users.stream().filter(user -> user.getId().equals(userId)).findFirst();
+  public Optional<User> getUserForApiKey(String apiKey) throws AuthenticationUnavailableException {
+    return getUsers().stream().filter(user -> Objects.equals(user.getApiKey(), apiKey)).findFirst();
   }
 
   private List<User> getUsers() throws AuthenticationUnavailableException {

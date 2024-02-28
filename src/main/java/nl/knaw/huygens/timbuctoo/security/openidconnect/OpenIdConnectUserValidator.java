@@ -13,7 +13,9 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.UserValidationException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 class OpenIdConnectUserValidator implements UserValidator {
   private final Cache<String, User> users;
@@ -42,34 +44,34 @@ class OpenIdConnectUserValidator implements UserValidator {
     }
 
     try {
+      Optional<User> user = userStore.userForApiKey(accessToken);
+      if (user.isPresent()) {
+        user.ifPresent(value -> users.put(accessToken, value));
+        return user;
+      }
+
       final Optional<UserInfo> userInfoOpt = openIdClient.getUserInfo(accessToken);
       if (userInfoOpt.isEmpty()) {
         return Optional.empty();
       }
 
       final UserInfo userInfo = userInfoOpt.get();
-
       final String subject = userInfo.getSubject().getValue();
-      final Optional<User> user = userStore.userFor(subject);
+
+      user = userStore.userFor(subject);
       if (user.isPresent()) {
         user.ifPresent(value -> users.put(accessToken, value));
         return user;
       } else {
-        final User newUser = userStore.saveNew(userInfo.getNickname(), subject);
+        Map<String, String> properties = openIdClient.getProperties().stream()
+            .collect(Collectors.toMap(key -> key,
+                key -> userInfo.getStringListClaim(key) != null
+                    ? userInfo.getStringListClaim(key).getFirst() : userInfo.getStringClaim(key)));
+        final User newUser = userStore.saveNew(userInfo.getNickname(), subject, properties);
         users.put(subject, newUser);
         return Optional.of(newUser);
       }
-
     } catch (AuthenticationUnavailableException | IOException | ParseException e) {
-      throw new UserValidationException(e);
-    }
-  }
-
-  @Override
-  public Optional<User> getUserFromUserId(String userId) throws UserValidationException {
-    try {
-      return userStore.userForId(userId);
-    } catch (AuthenticationUnavailableException e) {
       throw new UserValidationException(e);
     }
   }

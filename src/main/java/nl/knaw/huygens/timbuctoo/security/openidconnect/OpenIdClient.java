@@ -30,7 +30,10 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static javax.ws.rs.core.UriBuilder.fromUri;
@@ -43,26 +46,35 @@ public class OpenIdClient {
   private final String clientId;
   private final String clientSecret;
   private final String scope;
+  private final String claims;
+  private final Set<String> properties;
 
   @JsonCreator
   public OpenIdClient(@JsonProperty("discoveryUrl") String discoveryUrl,
                       @JsonProperty("clientId") String clientId,
                       @JsonProperty("clientSecret") String clientSecret,
                       @JsonProperty("scope") String scope,
-                      @JsonProperty("baseUri") String baseUri,
-                      @JsonProperty("port") int port) throws OpenIdConnectException {
+                      @JsonProperty("claims") String claims,
+                      @JsonProperty("properties") Set<String> properties,
+                      @JsonProperty("baseUri") String baseUri) throws OpenIdConnectException {
     try {
       final Issuer issuer = new Issuer(discoveryUrl);
       final OIDCProviderConfigurationRequest configurationRequest = new OIDCProviderConfigurationRequest(issuer);
 
       this.metadata = OIDCProviderMetadata.parse(configurationRequest.toHTTPRequest().send().getBodyAsJSONObject());
-      this.redirectUrl = fromUri(baseUri).port(port).path("openid-connect").path("callback").build();
+      this.redirectUrl = fromUri(baseUri).path("openid-connect").path("callback").build();
       this.clientId = clientId;
       this.clientSecret = clientSecret;
       this.scope = scope;
+      this.claims = claims;
+      this.properties = properties;
     } catch (IOException | ParseException e) {
       throw new OpenIdConnectException("Couldn't read metadata from OIDC provider!");
     }
+  }
+
+  public Set<String> getProperties() {
+    return properties;
   }
 
   public Optional<UserInfo> getUserInfo(String accessToken) throws IOException, ParseException {
@@ -84,11 +96,12 @@ public class OpenIdClient {
                                        .queryParam("client_id", clientId)
                                        .queryParam("redirect_uri", redirectUrl)
                                        .queryParam("scope", scope)
+                                       .queryParam("claims", URLEncoder.encode(claims, StandardCharsets.UTF_8))
                                        .queryParam("state", sessionId)
                                        .queryParam("nonce", nonce)
                                        .build();
 
-    return Response.status(308).location(openIdServer).build();
+    return Response.temporaryRedirect(openIdServer).build();
   }
 
   public Tokens getUserTokens(String code, String nonce) throws OpenIdConnectException {

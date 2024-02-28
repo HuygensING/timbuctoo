@@ -10,5 +10,5 @@ public interface UserAccess {
 
   Optional<User> getUserForPid(String pid) throws AuthenticationUnavailableException;
 
-  Optional<User> getUserForTimLocalId(String userId) throws AuthenticationUnavailableException;
+  Optional<User> getUserForApiKey(String apiKey) throws AuthenticationUnavailableException;
 }

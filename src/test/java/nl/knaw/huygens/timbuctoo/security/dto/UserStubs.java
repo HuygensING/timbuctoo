@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.security.dto;
 import javax.annotation.Nullable;
 
 public class UserStubs {
-  public static User userWithId(final String userId) {
+  public static User user() {
     return new User() {
       @Nullable
       @Override
@@ -17,9 +17,10 @@ public class UserStubs {
         throw new UnsupportedOperationException("Not implemented yet");
       }
 
+      @Nullable
       @Override
-      public String getId() {
-        return userId;
+      public String getApiKey() {
+        throw new UnsupportedOperationException("Not implemented yet");
       }
     };
   }
@@ -38,30 +39,10 @@ public class UserStubs {
         return pid;
       }
 
+      @Nullable
       @Override
-      public String getId() {
+      public String getApiKey() {
         throw new UnsupportedOperationException("Not implemented yet");
-      }
-    };
-  }
-
-  public static User anyUser() {
-    return new User() {
-      @Nullable
-      @Override
-      public String getDisplayName() {
-        return null;
-      }
-
-      @Nullable
-      @Override
-      public String getPersistentId() {
-        return null;
-      }
-
-      @Override
-      public String getId() {
-        return null;
       }
     };
   }

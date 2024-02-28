@@ -1,34 +1,34 @@
 package nl.knaw.huygens.timbuctoo.security.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
-import nl.knaw.huygens.timbuctoo.security.dto.ImmutableUser;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
-@JsonTypeIdResolver(UserTypeIdResolver.class) // be able to map the login java type and the serialized version
-@JsonIgnoreProperties(ignoreUnknown = true) // ignore the unknown properties
 @Value.Immutable
 @JsonSerialize(as = ImmutableUser.class)
 @JsonDeserialize(as = ImmutableUser.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public interface User {
-  static User create(String displayname, String persistentId, String id) {
+  static User create(String displayName, String persistentId, String apiKey, Map<String, String> properties) {
     return ImmutableUser.builder()
-      .displayName(displayname)
-      .persistentId(persistentId)
-      .id(id)
-      .build();
+        .displayName(displayName)
+        .persistentId(persistentId)
+        .apiKey(apiKey)
+        .properties(properties)
+        .build();
   }
 
-  static User create(String displayname, String persistentId) {
-    return create(displayname, persistentId, UUID.randomUUID().toString());
+  static User create(String displayName, String persistentId, Map<String, String> properties) {
+    return create(displayName, persistentId, null, properties);
+  }
+
+  static User create(String displayName, String persistentId) {
+    return create(displayName, persistentId, new HashMap<>());
   }
 
   @Nullable
@@ -37,6 +37,12 @@ public interface User {
   @Nullable
   String getPersistentId();
 
-  @JsonProperty("_id")
-  String getId();
+  @Nullable
+  String getApiKey();
+
+  @Nullable
+  @Value.Default
+  default Map<String, String> getProperties() {
+    return new HashMap<>();
+  }
 }

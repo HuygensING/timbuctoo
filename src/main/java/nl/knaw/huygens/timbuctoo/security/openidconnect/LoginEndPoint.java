@@ -11,9 +11,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Path("/openid-connect")
 public class LoginEndPoint {
@@ -23,13 +23,12 @@ public class LoginEndPoint {
 
   public LoginEndPoint(OpenIdClient openIdClient) {
     this.openIdClient = openIdClient;
-    loginSessions = new HashMap<>();
+    loginSessions = new ConcurrentHashMap<>();
   }
 
   @GET
   @Path("/login")
   public Response login(@QueryParam("redirect-uri") String clientRedirectUri) {
-    LOG.info("login");
     if (StringUtils.isBlank(clientRedirectUri)) {
       return Response.status(400).entity("expected a query param redirect-uri").build();
     }
