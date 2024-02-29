@@ -12,17 +12,9 @@ securityConfiguration:
 baseUri: ${base_uri} #specifying 0 as port will replace it with the port that timbuctoo ends up listening on
 userRedirectUrl: ./static/graphiql
 
-collectionFilters:
-  elasticsearch:
-    "@class": nl.knaw.huygens.timbuctoo.elasticsearch.ElasticSearchFilter
-    hostname: ${timbuctoo_elasticsearch_host}
-    port: ${timbuctoo_elasticsearch_port}
-    username: ${timbuctoo_elasticsearch_user}
-    password: ${timbuctoo_elasticsearch_password}
-
 archetypesSchema: |
   type Archetypes {
-    persons: PersonArchetypeList @fromCollection(uri: "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", listAll: true, indexName: "PersonArchetype")
+    persons: PersonArchetypeList @fromCollection(uri: "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", listAll: true)
   }
 
   type PersonArchetypeList {

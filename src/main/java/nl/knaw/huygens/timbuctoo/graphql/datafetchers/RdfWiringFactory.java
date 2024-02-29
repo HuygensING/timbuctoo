@@ -34,7 +34,6 @@ import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.graphql.defaultconfiguration.DefaultSummaryProps;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.CreateMutation;
-import nl.knaw.huygens.timbuctoo.graphql.mutations.DefaultIndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.DeleteMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.EditMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.PersistEntityMutation;
@@ -128,7 +127,6 @@ public class RdfWiringFactory implements WiringFactory {
       !environment.getFieldDefinition().getDirectives("deleteMutation").isEmpty() ||
       !environment.getFieldDefinition().getDirectives("persistEntityMutation").isEmpty() ||
       !environment.getFieldDefinition().getDirectives("setCustomProvenanceMutation").isEmpty() ||
-      !environment.getFieldDefinition().getDirectives("resetIndex").isEmpty() ||
       !environment.getFieldDefinition().getDirectives("oldItems").isEmpty();
   }
 
@@ -232,10 +230,6 @@ public class RdfWiringFactory implements WiringFactory {
       StringValue dataSet = (StringValue) directive.getArgument("dataSet").getValue();
       String dataSetId = dataSet.getValue();
       return new SetCustomProvenanceMutation(schemaUpdater, dataSetRepository, dataSetId);
-    } else if (!environment.getFieldDefinition().getDirectives("resetIndex").isEmpty()) {
-      final Directive resetIndex = environment.getFieldDefinition().getDirectives("resetIndex").getFirst();
-      final StringValue dataSet = (StringValue) resetIndex.getArgument("dataSet").getValue();
-      return new DefaultIndexConfigMutation(schemaUpdater, dataSetRepository, dataSet.getValue());
     } else if (!environment.getFieldDefinition().getDirectives("oldItems").isEmpty()) {
       return oldItemsDataFetcher;
     }

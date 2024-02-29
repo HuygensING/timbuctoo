@@ -11,7 +11,7 @@ userRedirectUrl: ./static/graphiql
 
 archetypesSchema: |
   type Archetypes {
-    persons: PersonArchetypeList @fromCollection(uri: "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", listAll: true, indexName: "PersonArchetype")
+    persons: PersonArchetypeList @fromCollection(uri: "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", listAll: true)
   }
 
   type PersonArchetypeList {

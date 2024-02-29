@@ -30,8 +30,6 @@ import nl.knaw.huygens.timbuctoo.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.dataset.dto.Metadata;
 import nl.knaw.huygens.timbuctoo.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.datastores.quadstore.QuadStore;
-import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.datastores.schemastore.dto.ExplicitField;
 import nl.knaw.huygens.timbuctoo.datastores.schemastore.dto.ExplicitType;
@@ -40,7 +38,6 @@ import nl.knaw.huygens.timbuctoo.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.SummaryPropertiesDataFetcher;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.berkeleydb.datafetchers.GraphsDataFetcher;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.DataSetWithDatabase;
-import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.graphql.derivedschema.DerivedSchemaContainer;
 import nl.knaw.huygens.timbuctoo.graphql.derivedschema.DerivedSchemaGenerator;
 import nl.knaw.huygens.timbuctoo.graphql.metadataprops.MetadataPropsSchema;
@@ -49,7 +46,6 @@ import nl.knaw.huygens.timbuctoo.graphql.mutations.CreateDataSetMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.DataSetMetadataMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.DeleteDataSetMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.ExtendSchemaMutation;
-import nl.knaw.huygens.timbuctoo.graphql.mutations.IndexConfigMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.MakePublicMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.ResourceSyncImportMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.SummaryPropsMutation;
@@ -66,7 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +75,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.getResource;
-import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class RootQuery implements Supplier<GraphQLSchema> {
   private static final Logger LOG = LoggerFactory.getLogger(RootQuery.class);
@@ -256,29 +250,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.type("CollectionMetadata", builder -> builder
-      .dataFetcher("indexConfig", env -> {
-        SubjectReference source = env.getSource();
-        final QuadStore qs = source.getDataSet().getQuadStore();
-        try (Stream<CursorQuad> quads = qs.getQuads(source.getSubjectUri(), TIM_HASINDEXERCONFIG, Direction.OUT, "")) {
-          final Map result = quads.findFirst()
-            .map(q -> {
-              try {
-                return objectMapper.readValue(q.getObject(), Map.class);
-              } catch (IOException e) {
-                LOG.error("Value not a Map", e);
-                return new HashMap<>();
-              }
-            })
-            .orElse(new HashMap());
-          if (!result.containsKey("facet") || !(result.get("facet") instanceof List)) {
-            result.put("facet", new ArrayList<>());
-          }
-          if (!result.containsKey("fullText") || !(result.get("fullText") instanceof List)) {
-            result.put("fullText", new ArrayList<>());
-          }
-          return result;
-        }
-      })
       .dataFetcher("viewConfig", new ViewConfigFetcher(objectMapper))
       .dataFetcher("summaryProperties", new SummaryPropertiesDataFetcher(objectMapper))
     );
@@ -301,7 +272,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     wiring.type("Mutation", builder -> builder
       .dataFetcher("setViewConfig", new ViewConfigMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("setSummaryProperties", new SummaryPropsMutation(this::scheduleRebuild, dataSetRepository))
-      .dataFetcher("setIndexConfig", new IndexConfigMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("createDataSet", new CreateDataSetMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("deleteDataSet", new DeleteDataSetMutation(this::scheduleRebuild, dataSetRepository))
       .dataFetcher("publish", new MakePublicMutation(this::scheduleRebuild, dataSetRepository))
