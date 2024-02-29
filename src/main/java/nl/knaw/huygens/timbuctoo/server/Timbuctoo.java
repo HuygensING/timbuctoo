@@ -15,9 +15,9 @@ import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Import;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
+import nl.knaw.huygens.timbuctoo.server.endpoints.remote.rs.Discover;
+import nl.knaw.huygens.timbuctoo.server.endpoints.remote.rs.Import;
+import nl.knaw.huygens.timbuctoo.server.endpoints.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.LambdaHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.tasks.BackupTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
@@ -41,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.dropwizard.endpoints.RsEndpoint;
 import nl.knaw.huygens.timbuctoo.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.dropwizard.endpoints.auth.AuthCheck;
-import nl.knaw.huygens.timbuctoo.dropwizard.healthchecks.CollectionFilterCheck;
 import nl.knaw.huygens.timbuctoo.dropwizard.healthchecks.DatabaseAvailabilityCheck;
 import nl.knaw.huygens.timbuctoo.dropwizard.tasks.ReloadDataSet;
 import nl.knaw.huygens.timbuctoo.dropwizard.tasks.StopBdbDataStore;
@@ -64,11 +63,11 @@ import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.util.Properties;
 
-public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
-  private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
+public class Timbuctoo extends Application<TimbuctooConfiguration> {
+  private static final Logger LOG = LoggerFactory.getLogger(Timbuctoo.class);
 
   public static void main(String[] args) throws Exception {
-    new TimbuctooV4().run(args);
+    new Timbuctoo().run(args);
   }
 
   @Override
@@ -110,9 +109,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     SecurityFactory securityConfig = configuration.getSecurityConfiguration().createNewSecurityFactory();
     securityConfig.getHealthChecks().forEachRemaining(check ->
             register(environment, check.left(), new LambdaHealthCheck(check.right())));
-
-    configuration.getCollectionFilters().forEach((key, value) ->
-            register(environment, key + "Check", new CollectionFilterCheck(value)));
 
     environment.lifecycle().addServerLifecycleListener(new BaseUriDeriver(configuration));
 
@@ -164,7 +160,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
 
     final UriHelper uriHelper = configuration.getUriHelper();
-    final PaginationArgumentsHelper argHelper = new PaginationArgumentsHelper(configuration.getCollectionFilters());
+    final PaginationArgumentsHelper argHelper = new PaginationArgumentsHelper();
     final GraphQl graphQlEndpoint = new GraphQl(
       new RootQuery(
         dataSetRepository,

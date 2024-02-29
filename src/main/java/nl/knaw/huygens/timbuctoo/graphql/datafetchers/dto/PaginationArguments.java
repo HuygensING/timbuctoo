@@ -27,23 +27,15 @@ public interface PaginationArguments {
   int getCount();
 
   /**
-   * If filter is present, it contains a configured function that returns Uri's of objects matching a query as provided
-   * by the user
-   */
-  Optional<ConfiguredFilter> getFilter();
-
-  /**
    * If a timestamp is present, only the uri's that were changed since the given timestamp are returned
    */
   Optional<ZonedDateTime> getTimeSince();
 
   static PaginationArguments create(Optional<Graph> graph, int count,
-                                    String cursor,
-                                    Optional<ConfiguredFilter> filter, Optional<ZonedDateTime> timeSince) {
+                                    String cursor, Optional<ZonedDateTime> timeSince) {
     return ImmutablePaginationArguments.builder()
       .graph(graph)
       .count(count)
-      .filter(filter)
       .timeSince(timeSince)
       .cursor(cursor)
       .build();

@@ -2,31 +2,16 @@ package nl.knaw.huygens.timbuctoo.graphql.datafetchers;
 
 import com.google.common.base.Charsets;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.graphql.collectionfilter.CollectionFilter;
-import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.ConfiguredFilter;
-import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.PaginationArguments;
 import nl.knaw.huygens.timbuctoo.util.Graph;
 
 import java.time.ZonedDateTime;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class PaginationArgumentsHelper {
   public static final int DEFAULT_COUNT = 20;
-  private final Map<String, CollectionFilter> collectionFilters;
   private static final Base64.Decoder DECODER = Base64.getDecoder();
-
-  public PaginationArgumentsHelper() {
-    this.collectionFilters = new HashMap<>();
-  }
-
-  public PaginationArgumentsHelper(Map<String, CollectionFilter> collectionFilters) {
-    this.collectionFilters = collectionFilters;
-  }
 
   public PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
     String cursor = "";
@@ -44,20 +29,6 @@ public class PaginationArgumentsHelper {
       graph = Optional.of(new Graph(environment.getArgument("graph")));
     }
 
-    ConfiguredFilter filter = null;
-    for (Map.Entry<String, CollectionFilter> entry : collectionFilters.entrySet()) {
-      if (environment.containsArgument(entry.getKey())) {
-        String searchQuery = environment.getArgument(entry.getKey());
-        String cursorArg = cursor;
-        int countArg = count;
-        String dataSetId = ((DatabaseResult) environment.getSource()).getDataSet().getMetadata().getCombinedId();
-        String fieldName = environment.getFieldDefinition().getName();
-
-        filter = () -> entry.getValue().query(dataSetId, fieldName, searchQuery, cursorArg, countArg);
-        break;
-      }
-    }
-
     ZonedDateTime timeSince = null;
     if (environment.containsArgument("updatedSince")) {
       timeSince = ZonedDateTime.parse(environment.getArgument("updatedSince"));
@@ -65,8 +36,7 @@ public class PaginationArgumentsHelper {
       timeSince = ZonedDateTime.parse(environment.getArgument("deletedSince"));
     }
 
-    return PaginationArguments.create(graph, count, cursor,
-        Optional.ofNullable(filter), Optional.ofNullable(timeSince));
+    return PaginationArguments.create(graph, count, cursor, Optional.ofNullable(timeSince));
   }
 
   public String makeListName(String outputTypeName) {
@@ -87,10 +57,10 @@ public class PaginationArgumentsHelper {
 
   public String makePaginatedListDefinition(String outputType) {
     return "type " + makeListName(outputType) + " {\n" +
-      "  prevCursor: ID\n" +
-      "  nextCursor: ID\n" +
-      "  items: [" + outputType + "!]!\n" +
-      "}\n\n";
+        "  prevCursor: ID\n" +
+        "  nextCursor: ID\n" +
+        "  items: [" + outputType + "!]!\n" +
+        "}\n\n";
   }
 
   public String makeCollectionListName(String outputTypeName) {
@@ -99,22 +69,16 @@ public class PaginationArgumentsHelper {
 
   public String makeCollectionListField(String fieldName, String outputTypeName, boolean graphFilterAllowed) {
     String withGraphs = graphFilterAllowed ? "graph: String, " : "";
-    String customFilters = collectionFilters.keySet().stream()
-                                            .map(k -> k + ": String").collect(Collectors.joining(", "));
-    if (!customFilters.isEmpty()) {
-      customFilters = ", " + customFilters;
-    }
-    return fieldName + "(" + withGraphs + "cursor: ID, count: Int" + customFilters + ", updatedSince: String): " +
+    return fieldName + "(" + withGraphs + "cursor: ID, count: Int, updatedSince: String): " +
         makeCollectionListName(outputTypeName);
   }
 
   public String makeCollectionListDefinition(String outputType) {
     return "type " + makeCollectionListName(outputType) + " {\n" +
-      "  total: Int\n" +
-      "  prevCursor: ID\n" +
-      "  nextCursor: ID\n" +
-      "  facets: [Facet!]!\n" +
-      "  items: [" + outputType + "!]!\n" +
-      "}\n\n";
+        "  total: Int\n" +
+        "  prevCursor: ID\n" +
+        "  nextCursor: ID\n" +
+        "  items: [" + outputType + "!]!\n" +
+        "}\n\n";
   }
 }

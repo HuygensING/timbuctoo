@@ -8,7 +8,6 @@ public class UserUriCreator {
   private final UriHelper uriHelper;
 
   public UserUriCreator(UriHelper uriHelper) {
-
     this.uriHelper = uriHelper;
   }
 

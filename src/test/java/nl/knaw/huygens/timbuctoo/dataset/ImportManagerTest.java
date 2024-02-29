@@ -3,13 +3,10 @@ package nl.knaw.huygens.timbuctoo.dataset;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import nl.knaw.huygens.timbuctoo.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.timbuctoo.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import nl.knaw.huygens.timbuctoo.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.filestorage.implementations.filesystem.FileSystemFileStorage;
 import nl.knaw.huygens.timbuctoo.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.rdfio.implementations.rdf4j.Rdf4jIoFactory;
@@ -127,53 +124,6 @@ public class ImportManagerTest {
     assertThat(logEntry.getDefaultGraph().orElse(null), is(defaultGraph));
     //The first character is an < (start of a uri in nquads) if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(60));
-  }
-
-  private static class CachedFileMatcher extends CompositeMatcher<CachedFile> {
-    private CachedFileMatcher() {
-
-    }
-
-    public static CachedFileMatcher cachedFile() {
-      return new CachedFileMatcher();
-    }
-
-    private static CachedFileMatcher cachedFile(CachedFile cachedFile) {
-      return cachedFile()
-          .withFile(cachedFile.file())
-          .withMimeType(cachedFile.mimeType())
-          .withName(cachedFile.name());
-    }
-
-    public CachedFileMatcher withFile(File file) {
-      this.addMatcher(new PropertyEqualityMatcher<>("file", file) {
-        @Override
-        protected File getItemValue(CachedFile item) {
-          return item.file();
-        }
-      });
-      return this;
-    }
-
-    public CachedFileMatcher withName(String name) {
-      this.addMatcher(new PropertyEqualityMatcher<>("name", name) {
-        @Override
-        protected String getItemValue(CachedFile item) {
-          return item.name();
-        }
-      });
-      return this;
-    }
-
-    public CachedFileMatcher withMimeType(MediaType mimeType) {
-      this.addMatcher(new PropertyEqualityMatcher<>("mimeType", mimeType) {
-        @Override
-        protected MediaType getItemValue(CachedFile item) {
-          return item.mimeType();
-        }
-      });
-      return this;
-    }
   }
 
   private static class CountingProcessor implements RdfProcessor {

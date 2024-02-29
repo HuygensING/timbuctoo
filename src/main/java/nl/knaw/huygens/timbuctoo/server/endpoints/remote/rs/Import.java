@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
+package nl.knaw.huygens.timbuctoo.server.endpoints.remote.rs;
 
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
@@ -21,7 +21,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
-@Path("/v2.1/remote/rs/import")
+@Path("/remote/rs/import")
 public class Import {
   public static final Logger LOG = LoggerFactory.getLogger(Import.class);
   private final ResourceSyncFileLoader resourceSyncFileLoader;

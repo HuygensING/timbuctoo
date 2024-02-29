@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
-import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
+import nl.knaw.huygens.timbuctoo.server.Timbuctoo;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -18,7 +18,7 @@ public class CleaningDropwizardAppExtension extends DropwizardAppExtension<Timbu
   private final Path dataPath;
 
   public CleaningDropwizardAppExtension(String configPath, Path dataPath, ConfigOverride... configOverrides) {
-    super(TimbuctooV4.class, configPath, configOverrides);
+    super(Timbuctoo.class, configPath, configOverrides);
     this.dataPath = dataPath;
   }
 

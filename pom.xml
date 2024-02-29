@@ -233,13 +233,6 @@
       </exclusions>
     </dependency>
 
-    <!-- ElasticSearch REST API -->
-    <dependency>
-      <groupId>org.elasticsearch.client</groupId>
-      <artifactId>rest</artifactId>
-      <version>5.5.3</version>
-    </dependency>
-
     <!-- ### Xml indenting ## -->
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
@@ -483,7 +476,7 @@
               <programs>
                 <program>
                   <id>timbuctoo</id>
-                  <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
+                  <mainClass>nl.knaw.huygens.timbuctoo.server.Timbuctoo</mainClass>
                 </program>
               </programs>
             </configuration>

@@ -25,7 +25,6 @@ public class ExpectedHeadersAreEqualValidator {
 
   private static class DoDiff {
     private final List<String> actuals;
-    int headerCount;
     int headersDone;
     DiffType type;
     DiffType restType;

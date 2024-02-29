@@ -551,7 +551,7 @@ public class IntegrationTest {
       dataSetName
     );
 
-    Response resourceSyncCall = call("/v2.1/remote/rs/import?forceCreation=true&async=false")
+    Response resourceSyncCall = call("/remote/rs/import?forceCreation=true&async=false")
       .accept(MediaType.APPLICATION_JSON)
       .header("authorization", "fake")
       .post(Entity.entity(jsnO(

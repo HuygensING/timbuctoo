@@ -6,18 +6,15 @@ import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.CursorUri;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.datastores.updatedperpatchstore.SubjectCursor;
-import nl.knaw.huygens.timbuctoo.graphql.collectionfilter.FilterResult;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.PaginationArguments;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.SubjectReference;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.util.Streams.distinctByKey;
@@ -34,43 +31,22 @@ public class CollectionDataFetcher implements CollectionFetcher {
 
   @Override
   public PaginatedList<SubjectReference> getList(PaginationArguments arguments, DataSet dataSet) {
-    try {
-      if (arguments.getFilter().isPresent()) {
-        return getFilteredPaginatedList(arguments.getFilter().get().query(), arguments, dataSet);
-      }
-
-      if (arguments.getTimeSince().isPresent()) {
-        return getUpdatedPaginatedList(arguments.getTimeSince().get(), arguments, dataSet);
-      }
-
-      Optional<Long> total = Optional.empty();
-      if (arguments.getGraph().isEmpty() &&
-          dataSet.getSchemaStore().getStableTypes() != null &&
-          dataSet.getSchemaStore().getStableTypes().get(collectionUri) != null) {
-        total = Optional.of(dataSet.getSchemaStore().getStableTypes().get(collectionUri).getSubjectsWithThisType());
-      }
-
-      if (collectionUri.equals(RDFS_RESOURCE)) {
-        return getRdfResourcePaginatedList(total, arguments, dataSet);
-      }
-
-      return getDefaultPaginatedList(total, arguments, dataSet);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    if (arguments.getTimeSince().isPresent()) {
+      return getUpdatedPaginatedList(arguments.getTimeSince().get(), arguments, dataSet);
     }
-  }
 
-  private PaginatedList<SubjectReference> getFilteredPaginatedList(FilterResult result,
-                                                                   PaginationArguments arguments, DataSet dataSet) {
-    return PaginatedList.create(
-        result.getPrevToken(),
-        result.getNextToken(),
-        result.getUriList().stream()
-              .map(x -> new LazyTypeSubjectReference(x, arguments.getGraph(), dataSet))
-              .collect(Collectors.toList()),
-        Optional.of((long) result.getTotal()),
-        result.getFacets()
-    );
+    Optional<Long> total = Optional.empty();
+    if (arguments.getGraph().isEmpty() &&
+        dataSet.getSchemaStore().getStableTypes() != null &&
+        dataSet.getSchemaStore().getStableTypes().get(collectionUri) != null) {
+      total = Optional.of(dataSet.getSchemaStore().getStableTypes().get(collectionUri).getSubjectsWithThisType());
+    }
+
+    if (collectionUri.equals(RDFS_RESOURCE)) {
+      return getRdfResourcePaginatedList(total, arguments, dataSet);
+    }
+
+    return getDefaultPaginatedList(total, arguments, dataSet);
   }
 
   private PaginatedList<SubjectReference> getUpdatedPaginatedList(ZonedDateTime updatedSince,
@@ -83,9 +59,9 @@ public class CollectionDataFetcher implements CollectionFetcher {
     try (Stream<SubjectCursor> subjectStream =
              dataSet.getUpdatedPerPatchStore().fromVersion(version, arguments.getCursor())) {
       return PaginationHelper.getUpdatedPaginatedList(
-        subjectStream.filter(subjectCursor -> this.isSubjectInCollection(dataSet, subjectCursor.getSubject())),
-        subjectCursor -> new LazyTypeSubjectReference(subjectCursor.getSubject(), arguments.getGraph(), dataSet),
-        arguments);
+          subjectStream.filter(subjectCursor -> this.isSubjectInCollection(dataSet, subjectCursor.getSubject())),
+          subjectCursor -> new LazyTypeSubjectReference(subjectCursor.getSubject(), arguments.getGraph(), dataSet),
+          arguments);
     }
   }
 
@@ -94,10 +70,10 @@ public class CollectionDataFetcher implements CollectionFetcher {
                                                                       PaginationArguments arguments, DataSet dataSet) {
     try (Stream<CursorUri> uriStream = dataSet.getDefaultResourcesStore().getDefaultResources(arguments.getCursor())) {
       return getPaginatedList(
-        uriStream,
-        cursorUri -> new LazyTypeSubjectReference(cursorUri.getUri(), arguments.getGraph(), dataSet),
-        arguments,
-        total
+          uriStream,
+          cursorUri -> new LazyTypeSubjectReference(cursorUri.getUri(), arguments.getGraph(), dataSet),
+          arguments,
+          total
       );
     }
   }
@@ -109,10 +85,10 @@ public class CollectionDataFetcher implements CollectionFetcher {
         .getQuadsInGraph(collectionUri, RDF_TYPE, Direction.IN, arguments.getCursor(), arguments.getGraph(), true)
         .filter(distinctByKey(CursorQuad::getObject))) {
       return PaginationHelper.getPaginatedList(
-        quadStream,
-        cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), arguments.getGraph(), dataSet),
-        arguments,
-        total
+          quadStream,
+          cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), arguments.getGraph(), dataSet),
+          arguments,
+          total
       );
     }
   }

@@ -16,8 +16,6 @@ public class MissingPropertyDiffResult extends DiffResult {
 
   @Override
   public String asHtml(String key, String indent, String delimiter) {
-    ObjectMapper mapper = new ObjectMapper();
-
     return indent + String.format("<span class='missing'>%s%s%s" +
       "<span class=\"expected\"> //missing</span></span>", escc(key), escc(value), delimiter);
   }

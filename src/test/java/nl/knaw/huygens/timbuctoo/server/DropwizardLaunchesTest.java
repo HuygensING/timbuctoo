@@ -17,12 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class DropwizardLaunchesTest {
   public static final DropwizardAppExtension<TimbuctooConfiguration> APP = new DropwizardAppExtension<>(
-    TimbuctooV4.class,
+    Timbuctoo.class,
     resourceFilePath("test_config.yaml"),
-    ConfigOverride.config(
-        "collectionFilters.elasticsearch.@class",
-        "nl.knaw.huygens.timbuctoo.server.TestCollectionFilter"
-    ),
     ConfigOverride.config("securityConfiguration.accessFactory.authorizationsPath", resourceFilePath("testrunstate") + "/datasets"),
     ConfigOverride.config("securityConfiguration.accessFactory.permissionConfig", resourceFilePath("testrunstate/permissionConfig.json")),
     ConfigOverride.config("securityConfiguration.accessFactory.usersFilePath", resourceFilePath("testrunstate/users.json")),

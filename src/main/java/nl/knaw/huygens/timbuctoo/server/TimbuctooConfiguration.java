@@ -16,7 +16,6 @@ import nl.knaw.huygens.timbuctoo.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.dataset.dto.Metadata;
 import nl.knaw.huygens.timbuctoo.dropwizard.config.SecurityFactoryConfiguration;
-import nl.knaw.huygens.timbuctoo.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.graphql.defaultconfiguration.DefaultSummaryProps;
 import nl.knaw.huygens.timbuctoo.redirectionservice.RedirectionServiceFactory;
 import nl.knaw.huygens.timbuctoo.util.TimbuctooRdfIdHelper;
@@ -25,7 +24,6 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.Map;
 import java.util.Optional;
 
 @Value.Immutable
@@ -78,8 +76,6 @@ public abstract class TimbuctooConfiguration extends Configuration {
   @JsonProperty("metadata")
   @Valid
   public abstract Metadata getMetadata();
-
-  public abstract Map<String, CollectionFilter> getCollectionFilters();
 
   @Value.Default
   public boolean dataSetsArePublicByDefault() {
