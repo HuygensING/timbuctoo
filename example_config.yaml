@@ -30,7 +30,7 @@ archetypesSchema: |
 defaultSummaryProps:
   defaultTitles:
   - path:
-    - http://timbuctoo.huygens.knaw.nl/static/predicate/names
+    - http://timbuctoo.huygens.knaw.nl/static/v5/predicate/names
     type: SimplePath
   - path:
     - http://schema.org/name
@@ -129,7 +129,6 @@ rdfUriHelper:
 
 webhooks:
   dataSetUpdatedUrls:
-   - ${timbuctoo_indexer_url}
   httpClient:
     connectionRequestTimeout: 200ms
 

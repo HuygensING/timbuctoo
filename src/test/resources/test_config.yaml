@@ -125,7 +125,6 @@ rdfUriHelper:
 
 webhooks:
   dataSetUpdatedUrls:
-   -
   httpClient:
     connectionRequestTimeout: 200ms
 

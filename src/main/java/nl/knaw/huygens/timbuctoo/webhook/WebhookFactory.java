@@ -9,6 +9,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,13 +24,13 @@ public class WebhookFactory {
 
   @JsonSetter("dataSetUpdatedUrls")
   public void setDataSetUpdatedUrls(List<String> dataSetUpdatedUrls) {
-    this.dataSetUpdatedUrls = dataSetUpdatedUrls.stream()
+    this.dataSetUpdatedUrls = dataSetUpdatedUrls != null ? dataSetUpdatedUrls.stream()
       .filter(Objects::nonNull)
-      .collect(Collectors.toList());
+      .collect(Collectors.toList()) : new ArrayList<>();
   }
 
   public Webhooks getWebHook(Environment environment) {
-    if (dataSetUpdatedUrls != null && !dataSetUpdatedUrls.isEmpty()) {
+    if (!dataSetUpdatedUrls.isEmpty()) {
       final CloseableHttpClient httpClient = new HttpClientBuilder(environment)
         .using(httpClientConfig)
         .build("webhook-client");

@@ -6,11 +6,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>nl.knaw.huygens</groupId>
   <artifactId>timbuctoo</artifactId>
-  <version>4.4.0-SNAPSHOT</version>
+  <version>7.15</version>
 
   <name>Timbuctoo</name>
   <description>
-    Back-end software that provides different front-ends to share data and variations on that data.
+    An RDF datastore that gives researchers control over the sharing of data between datasets
   </description>
   <organization>
     <name>Huygens ING</name>

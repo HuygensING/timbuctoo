@@ -23,13 +23,5 @@ ENV timbuctoo_port="80"
 ENV timbuctoo_adminPort="81"
 ENV base_uri=http://localhost:8080
 
-ENV timbuctoo_elasticsearch_host=http://example.com/elasticsearchhost
-ENV timbuctoo_elasticsearch_port=80
-ENV timbuctoo_elasticsearch_user=user
-ENV timbuctoo_elasticsearch_password=password
-
 ENV timbuctoo_dataPath="/root/data"
 ENV timbuctoo_authPath="/root/data/auth"
-
-ENV timbuctoo_search_url=http://localhost:8082
-ENV timbuctoo_indexer_url=http://indexer
