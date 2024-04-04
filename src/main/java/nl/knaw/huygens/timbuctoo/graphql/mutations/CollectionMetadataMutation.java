@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.replace;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.RDFS_LABEL;
 
-public class CollectionMetadataMutation extends Mutation {
+public class CollectionMetadataMutation extends Mutation<LazyTypeSubjectReference> {
   private final DataSetRepository dataSetRepository;
 
   public CollectionMetadataMutation(Runnable schemaUpdater, DataSetRepository dataSetRepository) {
@@ -25,12 +25,12 @@ public class CollectionMetadataMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment env) {
+  public LazyTypeSubjectReference executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.EDIT_COLLECTION_METADATA);
     try {
       String collectionUri = env.getArgument("collectionUri");
-      Map data = env.getArgument("metadata");
+      Map<String, Object> data = env.getArgument("metadata");
       final PredicateMutation mutation = new PredicateMutation();
       mutation.entity(
           collectionUri,
@@ -40,14 +40,14 @@ public class CollectionMetadataMutation extends Mutation {
           )
       );
 
-      MutationHelpers.addMutation(dataSet, mutation);
+      MutationHelpers.addMutations(dataSet, mutation);
       return new LazyTypeSubjectReference(collectionUri, Optional.empty(), dataSet);
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Optional<String> getValue(Map viewConfig, String valueName) {
+  private Optional<String> getValue(Map<String, Object> viewConfig, String valueName) {
     return Optional.ofNullable((String) viewConfig.get(valueName));
   }
 }

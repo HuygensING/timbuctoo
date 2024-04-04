@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.replace;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.HAS_VIEW_CONFIG;
 
-public class ViewConfigMutation extends Mutation {
+public class ViewConfigMutation extends Mutation<Object> {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final DataSetRepository dataSetRepository;
 
@@ -31,7 +31,7 @@ public class ViewConfigMutation extends Mutation {
 
     MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.CONFIG_VIEW);
     try {
-      MutationHelpers.addMutation(
+      MutationHelpers.addMutations(
         dataSet,
         new PredicateMutation()
           .entity(

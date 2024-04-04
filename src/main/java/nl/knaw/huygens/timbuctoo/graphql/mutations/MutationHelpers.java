@@ -27,31 +27,28 @@ public class MutationHelpers {
     }
   }
 
+  public static DataSet getDataSet(DataFetchingEnvironment env, DataSetFetcher fetcher,
+                                   String ownerId, String dataSetName) {
+    User user = getUser(env);
+    return fetcher.getDataSet(user, ownerId, dataSetName)
+        .orElseThrow(() -> new RuntimeException("Dataset does not exist"));
+  }
+
   public static DataSet getDataSet(DataFetchingEnvironment env, DataSetFetcher fetcher) {
     String dataSetId = env.getArgument("dataSetId");
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(dataSetId);
 
-    User user = getUser(env);
-
     String ownerId = userAndDataSet.left();
     String dataSetName = userAndDataSet.right();
 
-    return fetcher.getDataSet(user, ownerId, dataSetName)
-      .orElseThrow(() -> new RuntimeException("Dataset does not exist"));
+    return getDataSet(env, fetcher, ownerId, dataSetName);
   }
 
-  public static void addMutation(DataSet dataSet, PredicateMutation mutation)
-    throws LogStorageFailedException, ExecutionException, InterruptedException {
-
-    final String baseUri = dataSet.getMetadata().getBaseUri();
-    dataSet.getImportManager().generateLog(baseUri, null, new PredicateMutationRdfPatcher(mutation)).get();
-  }
-
-  public static void addMutations(DataSet dataSet, PredicateMutation... mutations)
+  public static void addMutations(DataSet dataSet, PredicateMutation... mutation)
       throws LogStorageFailedException, ExecutionException, InterruptedException {
 
     final String baseUri = dataSet.getMetadata().getBaseUri();
-    dataSet.getImportManager().generateLog(baseUri, null, new PredicateMutationRdfPatcher(mutations)).get();
+    dataSet.getImportManager().generateLog(baseUri, null, new PredicateMutationRdfPatcher(mutation)).get();
   }
 
   public interface DataSetFetcher {

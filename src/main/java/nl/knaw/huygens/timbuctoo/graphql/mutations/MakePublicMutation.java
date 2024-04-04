@@ -10,7 +10,7 @@ import nl.knaw.huygens.timbuctoo.graphql.security.UserPermissionCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MakePublicMutation extends Mutation {
+public class MakePublicMutation extends Mutation<DataSetWithDatabase> {
   private static final Logger LOG = LoggerFactory.getLogger(MakePublicMutation.class);
   private final DataSetRepository dataSetRepository;
 
@@ -20,7 +20,7 @@ public class MakePublicMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment env) {
+  public DataSetWithDatabase executeAction(DataFetchingEnvironment env) {
     User user = MutationHelpers.getUser(env);
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     UserPermissionCheck userPermissionCheck = env.getGraphQlContext().get("userPermissionCheck");

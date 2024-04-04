@@ -6,17 +6,17 @@ import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.dto.CustomProvenance;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSetMetaData;
-import nl.knaw.huygens.timbuctoo.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.security.dto.Permission;
 
 import java.io.IOException;
-import java.util.Optional;
 
-public class SetCustomProvenanceMutation extends Mutation {
+import static nl.knaw.huygens.timbuctoo.graphql.mutations.MutationHelpers.getDataSet;
+import static nl.knaw.huygens.timbuctoo.graphql.mutations.MutationHelpers.checkPermission;
+
+public class SetCustomProvenanceMutation extends Mutation<ImmutableMap<String, String>> {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final DataSetRepository dataSetRepository;
   private final String dataSetName;
@@ -32,22 +32,9 @@ public class SetCustomProvenanceMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment environment) {
-    Optional<User> userOpt = environment.getGraphQlContext().get("user");
-    if (userOpt.isEmpty()) {
-      throw new RuntimeException("User should be logged in.");
-    }
-    User user = userOpt.get();
-    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(user, ownerId, dataSetName);
-    if (dataSetOpt.isEmpty()) {
-      throw new RuntimeException("Data set is not available.");
-    }
-
-    DataSet dataSet = dataSetOpt.get();
-    UserPermissionCheck userPermissionCheck = environment.getGraphQlContext().get("userPermissionCheck");
-    if (!userPermissionCheck.hasPermission(dataSet.getMetadata(), Permission.SET_CUSTOM_PROV)) {
-      throw new RuntimeException("User should have permissions to set the custom provenance.");
-    }
+  public ImmutableMap<String, String> executeAction(DataFetchingEnvironment environment) {
+    DataSet dataSet = getDataSet(environment, dataSetRepository::getDataSet, ownerId, dataSetName);
+    checkPermission(environment, dataSet.getMetadata(), Permission.SET_CUSTOM_PROV);
 
     TreeNode customProvenanceNode = OBJECT_MAPPER.valueToTree(environment.getArgument("customProvenance"));
     try {
@@ -64,7 +51,7 @@ public class SetCustomProvenanceMutation extends Mutation {
   private void validateCustomProvenance(CustomProvenance customProvenance) {
     for (CustomProvenance.CustomProvenanceValueFieldInput field : customProvenance.getFields()) {
       if (((field.getValueType() == null) && (field.getObject() == null)) ||
-        ((field.getValueType() != null) && (field.getObject() != null))) {
+          ((field.getValueType() != null) && (field.getObject() != null))) {
         throw new RuntimeException("Specify either a value type or an object.");
       }
 

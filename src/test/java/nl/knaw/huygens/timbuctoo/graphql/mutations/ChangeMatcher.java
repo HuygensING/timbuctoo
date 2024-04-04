@@ -25,7 +25,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
     this.addMatcher(new PropertyEqualityMatcher<>("subject", subject) {
       @Override
       protected String getItemValue(Change item) {
-        return item.getSubject();
+        return item.subject();
       }
     });
     return this;
@@ -35,7 +35,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
     this.addMatcher(new PropertyEqualityMatcher<>("predicate", predicate) {
       @Override
       protected String getItemValue(Change item) {
-        return item.getPredicate();
+        return item.predicate();
       }
     });
     return this;
@@ -45,7 +45,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
     this.addMatcher(new PropertyEqualityMatcher<Change, List<Value>>("values", Lists.newArrayList(values)) {
       @Override
       protected List<Value> getItemValue(Change item) {
-        return item.getValues();
+        return item.values();
       }
     });
     return this;
@@ -55,7 +55,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
     this.addMatcher(new PropertyEqualityMatcher<Change, List<Value>>("oldValues", Lists.newArrayList(oldValues)) {
       @Override
       protected List<Value> getItemValue(Change item) {
-        return item.getOldValues().collect(Collectors.toList());
+        return item.oldValues().collect(Collectors.toList());
       }
     });
     return this;
@@ -65,7 +65,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
     this.addMatcher(new PropertyMatcher<Change, Collection<? extends Value>>("values", empty()) {
       @Override
       protected Collection<Value> getItemValue(Change item) {
-        return item.getValues();
+        return item.values();
       }
     });
     return this;
@@ -75,7 +75,7 @@ public class ChangeMatcher extends CompositeMatcher<Change> {
     this.addMatcher(new PropertyEqualityMatcher<>("oldValues", false) {
       @Override
       protected Boolean getItemValue(Change item) {
-        return item.getOldValues().findAny().isPresent();
+        return item.oldValues().findAny().isPresent();
       }
     });
     return this;

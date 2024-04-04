@@ -145,11 +145,11 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
           String changeUri = dataSetObjectUri(dataSet, "addition");
           saver.addDelQuad(true, actionPluralUri, timPredicate("hasAddition"), changeUri, null, null, graphUri);
           saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Addition"), null, null, graphUri);
-          String predicate = change.getPredicate();
+          String predicate = change.predicate();
           saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, graphUri);
           saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, graphUri);
           String prefValueUri = null;
-          for (Change.Value value : change.getValues()) {
+          for (Change.Value value : change.values()) {
             String uri = dataSetObjectUri(dataSet, "value");
             createValue(saver, changeUri, prefValueUri, value, uri);
             prefValueUri = uri;
@@ -172,11 +172,11 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
           String changeUri = dataSetObjectUri(dataSet, "deletion");
           saver.addDelQuad(true, actionPluralUri, timPredicate("hasDeletion"), changeUri, null, null, graphUri);
           saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Deletion"), null, null, graphUri);
-          String predicate = change.getPredicate();
+          String predicate = change.predicate();
           saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, graphUri);
           saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, graphUri);
           String prefValueUri = null;
-          try (Stream<Change.Value> oldValues = change.getOldValues()) {
+          try (Stream<Change.Value> oldValues = change.oldValues()) {
             for (Iterator<Change.Value> values = oldValues.iterator(); values.hasNext(); ) {
               Change.Value value = values.next();
               String uri = dataSetObjectUri(dataSet, "value");
@@ -202,16 +202,16 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
           String changeUri = dataSetObjectUri(dataSet, "replacement");
           saver.addDelQuad(true, actionPluralUri, timPredicate("hasReplacement"), changeUri, null, null, graphUri);
           saver.addDelQuad(true, changeUri, RDF_TYPE, timType("Replacement"), null, null, graphUri);
-          String predicate = change.getPredicate();
+          String predicate = change.predicate();
           saver.addDelQuad(true, changeUri, timPredicate("hasKey"), predicate, null, null, graphUri);
           saver.addDelQuad(true, predicate, RDF_TYPE, timType("ChangeKey"), null, null, graphUri);
           String prefValueUri = null;
-          for (Change.Value value : change.getValues()) {
+          for (Change.Value value : change.values()) {
             String uri = dataSetObjectUri(dataSet, "value");
             createValue(saver, changeUri, prefValueUri, value, uri);
             prefValueUri = uri;
           }
-          try (Stream<Change.Value> oldValues = change.getOldValues()) {
+          try (Stream<Change.Value> oldValues = change.oldValues()) {
             for (Iterator<Change.Value> values = oldValues.iterator(); values.hasNext(); ) {
               Change.Value value = values.next();
               String uri = dataSetObjectUri(dataSet, "oldValue");
@@ -231,8 +231,8 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
       Stream<Change> customProvChanges = changeLog.getProvenance(dataSet, newRevision, customProvUri);
       for (Iterator<Change> changes = customProvChanges.iterator(); changes.hasNext(); ) {
         Change change = changes.next();
-        for (Change.Value value : change.getValues()) {
-          saver.addDelQuad(true, change.getSubject(), change.getPredicate(), value.rawValue(), value.type(), null,
+        for (Change.Value value : change.values()) {
+          saver.addDelQuad(true, change.subject(), change.predicate(), value.rawValue(), value.type(), null,
               graphUri);
         }
       }
@@ -269,8 +269,8 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     try (Stream<Change> deletions = changeLog.getDeletions(dataSet)) {
       for (Iterator<Change> changes = deletions.iterator(); changes.hasNext(); ) {
         Change change = changes.next();
-        String predicate = change.getPredicate();
-        try (Stream<Change.Value> oldValues = change.getOldValues()) {
+        String predicate = change.predicate();
+        try (Stream<Change.Value> oldValues = change.oldValues()) {
           for (Iterator<Change.Value> iterator = oldValues.iterator(); iterator.hasNext(); ) {
             Change.Value value = iterator.next();
             saver.addDelQuad(false, subjectUri, predicate, value.rawValue(), value.type(), null, graphUri);
@@ -282,14 +282,14 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     try (Stream<Change> replacements = changeLog.getReplacements(dataSet)) {
       for (Iterator<Change> changes = replacements.iterator(); changes.hasNext(); ) {
         Change change = changes.next();
-        String predicate = change.getPredicate();
-        try (Stream<Change.Value> oldValues = change.getOldValues()) {
+        String predicate = change.predicate();
+        try (Stream<Change.Value> oldValues = change.oldValues()) {
           for (Iterator<Change.Value> iterator = oldValues.iterator(); iterator.hasNext(); ) {
             Change.Value value = iterator.next();
             saver.addDelQuad(false, subjectUri, predicate, value.rawValue(), value.type(), null, graphUri);
           }
         }
-        for (Change.Value value : change.getValues()) {
+        for (Change.Value value : change.values()) {
           saver.addDelQuad(true, subjectUri, predicate, value.rawValue(), value.type(), null, graphUri);
         }
       }
@@ -298,8 +298,8 @@ public class GraphQlToRdfPatch implements PatchRdfCreator {
     try (Stream<Change> additions = changeLog.getAdditions(dataSet)) {
       for (Iterator<Change> changes = additions.iterator(); changes.hasNext(); ) {
         Change change = changes.next();
-        for (Change.Value value : change.getValues()) {
-          saver.addDelQuad(true, subjectUri, change.getPredicate(),
+        for (Change.Value value : change.values()) {
+          saver.addDelQuad(true, subjectUri, change.predicate(),
               value.rawValue(), value.type(), null, graphUri);
         }
       }

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class DeleteDataSetMutation extends Mutation {
+public class DeleteDataSetMutation extends Mutation<DeleteDataSetMutation.RemovedDataSet> {
   private static final Logger LOG = LoggerFactory.getLogger(DeleteDataSetMutation.class);
   private final DataSetRepository dataSetRepository;
 
@@ -21,7 +21,7 @@ public class DeleteDataSetMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment environment) {
+  public RemovedDataSet executeAction(DataFetchingEnvironment environment) {
     String combinedId = environment.getArgument("dataSetId");
     Tuple<String, String> userAndDataSet = DataSetMetaData.splitCombinedId(combinedId);
     User user = MutationHelpers.getUser(environment);

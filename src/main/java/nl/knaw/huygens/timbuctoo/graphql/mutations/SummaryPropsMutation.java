@@ -26,7 +26,7 @@ import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_SUMMARYDESCRIPTION
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_SUMMARYIMAGEPREDICATE;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.TIM_SUMMARYTITLEPREDICATE;
 
-public class SummaryPropsMutation extends Mutation {
+public class SummaryPropsMutation extends Mutation<LazyTypeSubjectReference> {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new GuavaModule());
   private final DataSetRepository dataSetRepository;
 
@@ -36,7 +36,7 @@ public class SummaryPropsMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment env) {
+  public LazyTypeSubjectReference executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     MutationHelpers.checkPermission(env, dataSet.getMetadata(),Permission.CHANGE_SUMMARYPROPS);
     try {
@@ -50,7 +50,7 @@ public class SummaryPropsMutation extends Mutation {
         getValue(data, "description", dataSet).map(v -> replace(TIM_SUMMARYDESCRIPTIONPREDICATE, value(v))).orElse(null)
       );
 
-      MutationHelpers.addMutation(dataSet, mutation);
+      MutationHelpers.addMutations(dataSet, mutation);
       return new LazyTypeSubjectReference(collectionUri, Optional.empty(), dataSet);
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);

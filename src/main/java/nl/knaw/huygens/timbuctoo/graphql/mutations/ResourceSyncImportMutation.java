@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 
-public class ResourceSyncImportMutation extends Mutation {
+public class ResourceSyncImportMutation extends Mutation<ResourceSyncReport> {
   private static final Logger LOG = LoggerFactory.getLogger(ResourceSyncImportMutation.class);
   private final DataSetRepository dataSetRepository;
   private final ResourceSyncFileLoader resourceSyncFileLoader;
@@ -35,7 +35,7 @@ public class ResourceSyncImportMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment env) {
+  public ResourceSyncReport executeAction(DataFetchingEnvironment env) {
     User user = MutationHelpers.getUser(env);
 
     String dataSetName = env.getArgument("dataSetName");

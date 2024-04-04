@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import static nl.knaw.huygens.timbuctoo.graphql.mutations.MutationHelpers.addMutation;
+import static nl.knaw.huygens.timbuctoo.graphql.mutations.MutationHelpers.addMutations;
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.getOrCreate;
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.languageString;
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.replace;
@@ -28,7 +28,7 @@ import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.dto.PredicateMutation.value;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.RDF_TYPE;
 
-public class DataSetMetadataMutation extends Mutation {
+public class DataSetMetadataMutation extends Mutation<DataSetWithDatabase> {
   private final DataSetRepository dataSetRepository;
   private final Metadata metadata;
 
@@ -40,7 +40,7 @@ public class DataSetMetadataMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment env) {
+  public DataSetWithDatabase executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     UserPermissionCheck userPermissionCheck = env.getGraphQlContext().get("userPermissionCheck");
     MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.EDIT_DATASET_METADATA);
@@ -56,7 +56,7 @@ public class DataSetMetadataMutation extends Mutation {
         mutationOperations.add(replace(RDF_TYPE, subject(metadata.getRdfType().get())));
       }
 
-      addMutation(dataSet, new PredicateMutation().entity(baseUri, mutationOperations));
+      addMutations(dataSet, new PredicateMutation().entity(baseUri, mutationOperations));
 
       return new DataSetWithDatabase(dataSet, userPermissionCheck);
     } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {

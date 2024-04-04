@@ -305,8 +305,8 @@ public class ProvenanceChangeLogTest {
 
     List<Change> provChanges = instance.getProvenance(dataSet, SUBJECT).toList();
 
-    assertThat(provChanges.get(1).getSubject(), startsWith("http://example.org/datasets/rootType/schema_Person/"));
-    assertThat(provChanges.get(2).getSubject(), startsWith("http://example.org/datasets/rootType/schema_Person/"));
+    assertThat(provChanges.get(1).subject(), startsWith("http://example.org/datasets/rootType/schema_Person/"));
+    assertThat(provChanges.get(2).subject(), startsWith("http://example.org/datasets/rootType/schema_Person/"));
   }
 
   private Map<Object, Object> createPropertyInput(String value) {

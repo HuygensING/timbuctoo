@@ -15,7 +15,7 @@ import nl.knaw.huygens.timbuctoo.redirectionservice.RedirectionService;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
-public class PersistEntityMutation extends Mutation {
+public class PersistEntityMutation extends Mutation<ImmutableMap<String, String>> {
   private final RedirectionService redirectionService;
   private final String dataSetId;
   private final String dataSetName;
@@ -34,7 +34,7 @@ public class PersistEntityMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment env) {
+  public ImmutableMap<String, String> executeAction(DataFetchingEnvironment env) {
     if (redirectionService != null) {
       User user = MutationHelpers.getUser(env);
       String graph = env.getArgument("graph");

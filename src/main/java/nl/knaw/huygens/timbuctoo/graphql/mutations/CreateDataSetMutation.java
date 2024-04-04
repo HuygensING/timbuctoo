@@ -14,7 +14,7 @@ import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.graphql.mutations.MutationHelpers.getUser;
 
-public class CreateDataSetMutation extends Mutation {
+public class CreateDataSetMutation extends Mutation<DataSetWithDatabase> {
   private static final Logger LOG = LoggerFactory.getLogger(CreateDataSetMutation.class);
 
   private final DataSetRepository dataSetRepository;
@@ -25,7 +25,7 @@ public class CreateDataSetMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment env) {
+  public DataSetWithDatabase executeAction(DataFetchingEnvironment env) {
     User currentUser = getUser(env);
 
     String dataSetName = env.getArgument("dataSetName");

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ExtendSchemaMutation extends Mutation {
+public class ExtendSchemaMutation extends Mutation<ImmutableMap<String, String>> {
   private static final Logger LOG = LoggerFactory.getLogger(ExtendSchemaMutation.class);
 
   private final DataSetRepository dataSetRepository;
@@ -41,7 +41,7 @@ public class ExtendSchemaMutation extends Mutation {
   }
 
   @Override
-  public Object executeAction(DataFetchingEnvironment env) {
+  public ImmutableMap<String, String> executeAction(DataFetchingEnvironment env) {
     DataSet dataSet = MutationHelpers.getDataSet(env, dataSetRepository::getDataSet);
     MutationHelpers.checkPermission(env, dataSet.getMetadata(), Permission.EXTEND_SCHEMA);
     final SchemaStore generatedSchema = dataSet.getSchemaStore();
