@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.datastores.implementations.RdfDescriptionSaver;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbBackedData;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbPatchVersionStore;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbQuadStore;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbRmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbSchemaStore;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbTypeNameStore;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.DefaultResourcesStore;
@@ -177,19 +176,6 @@ public abstract class DataSet {
           stringStringIsCleanHandler
       ));
 
-      final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
-        dataStoreFactory.getDatabase(
-          userId,
-          dataSetId,
-          "rmlSource",
-          true,
-          stringBinding,
-          stringBinding,
-          stringStringIsCleanHandler
-        ),
-        importManager.getImportStatus()
-      );
-
       final StoreUpdater storeUpdater = new StoreUpdater(
         quadStore,
         graphStore,
@@ -197,7 +183,7 @@ public abstract class DataSet {
         patchVersionStore,
         updatedPerPatchStore,
         oldSubjectTypesStore,
-        Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
+        Lists.newArrayList(schema, defaultResourcesStore),
         importManager.getImportStatus(),
         dataSetStorage.getChangeLogStorage()
       );
@@ -218,7 +204,6 @@ public abstract class DataSet {
         .updatedPerPatchStore(updatedPerPatchStore)
         .patchVersionStore(patchVersionStore)
         .oldSubjectTypesStore(oldSubjectTypesStore)
-        .rmlDataSourceStore(rmlDataSourceStore)
         .importManager(importManager)
         .dataSetStorage(dataSetStorage)
         .currentStateRetriever(currentStateRetriever)
@@ -228,7 +213,7 @@ public abstract class DataSet {
 
       if (!quadStore.isClean() || !graphStore.isClean() || !defaultResourcesStore.isClean() ||
         !typeNameStore.isClean() || !schema.isClean() || !patchVersionStore.isClean() ||
-        !updatedPerPatchStore.isClean() || !oldSubjectTypesStore.isClean() || !rmlDataSourceStore.isClean()) {
+        !updatedPerPatchStore.isClean() || !oldSubjectTypesStore.isClean()) {
         LOG.error("Data set '{}__{}' data is corrupted, starting to reimport.", userId, dataSetId);
         quadStore.empty();
         graphStore.empty();
@@ -238,7 +223,6 @@ public abstract class DataSet {
         patchVersionStore.empty();
         updatedPerPatchStore.empty();
         oldSubjectTypesStore.empty();
-        rmlDataSourceStore.empty();
 
         importManager.reprocessLogs();
       } else {
@@ -331,8 +315,6 @@ public abstract class DataSet {
   public abstract QuadStore getQuadStore();
 
   public abstract GraphStore getGraphStore();
-
-  public abstract BdbRmlDataSourceStore getRmlDataSourceStore();
 
   public abstract DataSetMetaData getMetadata();
 

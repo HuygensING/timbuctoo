@@ -341,19 +341,6 @@ public class SchemaGenerationPermutationTest {
         )
     );
 
-    final BdbRmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
-      dataStoreFactory.getDatabase(
-        USER,
-        DATA_SET,
-        "rmlSource",
-        true,
-        STRING_BINDING,
-        STRING_BINDING,
-        STRING_IS_CLEAN_HANDLER
-      ),
-      mock(ImportStatus.class)
-    );
-
     final OldSubjectTypesStore oldSubjectTypesStore = new OldSubjectTypesStore(dataStoreFactory.getDatabase(
         USER,
         DATA_SET,
@@ -374,7 +361,7 @@ public class SchemaGenerationPermutationTest {
       patchVersionStore,
       updatedPerPatchStore,
       oldSubjectTypesStore,
-      Lists.newArrayList(schema, rmlDataSourceStore, defaultResourcesStore),
+      Lists.newArrayList(schema, defaultResourcesStore),
       mock(ImportStatus.class),
       changeLogStorage
     );

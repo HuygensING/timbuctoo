@@ -23,7 +23,6 @@ import nl.knaw.huygens.timbuctoo.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.datastorage.DataSetStorage;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbRmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbPatchVersionStore;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.DefaultResourcesStore;
 import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.GraphStore;
@@ -156,11 +155,6 @@ public class LookUpSubjectByUriFetcherWrapperTest {
 
         @Override
         public GraphStore getGraphStore() {
-          throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-        }
-
-        @Override
-        public BdbRmlDataSourceStore getRmlDataSourceStore() {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
 
