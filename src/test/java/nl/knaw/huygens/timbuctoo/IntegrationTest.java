@@ -513,58 +513,6 @@ public class IntegrationTest {
   }
 
   @Test
-  public void resourcesyncImportsValidDatasets() throws Exception {
-    String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
-    Response uploadResponse = multipartPost(
-      "/" + PREFIX + "/" + dataSetName + "/upload/rdf?forceCreation=true",
-      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
-      "text/turtle",
-      ImmutableMap.of(
-        "encoding", "UTF-8"
-      )
-    );
-
-    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
-
-    String dataSetId = createDataSetId(dataSetName);
-
-    call("/graphql")
-      .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(jsnO(
-        "query",
-        jsn(
-          "mutation Publish($dataSetId: String!) {" +
-            "  publish(dataSetId: $dataSetId) {" +
-            "    dataSetId" +
-            "  }" +
-            "}"
-        ),
-        "variables",
-        jsnO(
-          "dataSetId", jsn(dataSetId)
-        )
-      ).toString(), MediaType.valueOf("application/json")));
-
-    String capabilityListUri = format("http://localhost:%d/resourcesync/%s/%s/capabilitylist.xml",
-      APP.getLocalPort(),
-      PREFIX,
-      dataSetName
-    );
-
-    Response resourceSyncCall = call("/remote/rs/import?forceCreation=true&async=false")
-      .accept(MediaType.APPLICATION_JSON)
-      .header("authorization", "fake")
-      .post(Entity.entity(jsnO(
-        "source", jsn(capabilityListUri),
-        "userId", jsn(PREFIX),
-        "dataSetId", jsn("datasettest")
-      ).toString(), MediaType.valueOf("application/json")));
-
-    assertThat("Successful resourcesync import", resourceSyncCall.getStatus(), is(200));
-
-  }
-
-  @Test
   public void resourceSyncChangeListGenerationTest() throws Exception {
     String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(

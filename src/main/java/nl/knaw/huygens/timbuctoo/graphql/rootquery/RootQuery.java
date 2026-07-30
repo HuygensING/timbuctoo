@@ -14,9 +14,7 @@ import nl.knaw.huygens.timbuctoo.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.graphql.customschema.MergeSchemas;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.DataMetaDataListFetcher;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.DataSetImportStatusFetcher;
-import nl.knaw.huygens.timbuctoo.graphql.datafetchers.DiscoverResourceSyncDataFetcher;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.ImportStatusFetcher;
-import nl.knaw.huygens.timbuctoo.graphql.mutations.ResourceSyncUpdateMutation;
 import nl.knaw.huygens.timbuctoo.graphql.rootquery.dataproviders.CollectionMetadata;
 import nl.knaw.huygens.timbuctoo.graphql.rootquery.dataproviders.CollectionMetadataList;
 import nl.knaw.huygens.timbuctoo.graphql.rootquery.dataproviders.MimeTypeDescription;
@@ -47,7 +45,6 @@ import nl.knaw.huygens.timbuctoo.graphql.mutations.DataSetMetadataMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.DeleteDataSetMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.ExtendSchemaMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.MakePublicMutation;
-import nl.knaw.huygens.timbuctoo.graphql.mutations.ResourceSyncImportMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.SummaryPropsMutation;
 import nl.knaw.huygens.timbuctoo.graphql.mutations.ViewConfigMutation;
 import nl.knaw.huygens.timbuctoo.graphql.rootquery.dataproviders.ImmutableCollectionMetadata;
@@ -86,8 +83,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final RdfWiringFactory wiringFactory;
   private final DerivedSchemaGenerator typeGenerator;
   private final ObjectMapper objectMapper;
-  private final ResourceSyncFileLoader resourceSyncFileLoader;
-  private final ResourceSyncService resourceSyncService;
   private final ExecutorService schemaAccessQueue;
   private final SchemaParser schemaParser;
   private final String staticQuery;
@@ -106,8 +101,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     this.wiringFactory = wiringFactory.apply(this::scheduleRebuild);
     this.typeGenerator = typeGenerator;
     this.objectMapper = objectMapper;
-    this.resourceSyncFileLoader = resourceSyncFileLoader;
-    this.resourceSyncService = resourceSyncService;
     this.schemaAccessQueue = schemaAccessQueue;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
     schemaParser = new SchemaParser();
@@ -149,7 +142,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     final RuntimeWiring.Builder wiring = RuntimeWiring.newRuntimeWiring();
 
     wiring.type("Query", builder -> builder
-      .dataFetcher("discoverResourceSync", new DiscoverResourceSyncDataFetcher(resourceSyncService))
       .dataFetcher("promotedDataSets", env -> dataSetRepository.getPromotedDataSets()
         .stream()
         .map(dataSet -> {
@@ -280,10 +272,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         new DataSetMetadataMutation(this::scheduleRebuild, dataSetRepository, metadata))
       .dataFetcher("setCollectionMetadata",
         new CollectionMetadataMutation(this::scheduleRebuild, dataSetRepository))
-      .dataFetcher("resourceSyncImport",
-        new ResourceSyncImportMutation(this::scheduleRebuild, dataSetRepository, resourceSyncFileLoader))
-      .dataFetcher("resourceSyncUpdate",
-        new ResourceSyncUpdateMutation(this::scheduleRebuild, dataSetRepository, resourceSyncFileLoader))
     );
 
     wiring.wiringFactory(wiringFactory);

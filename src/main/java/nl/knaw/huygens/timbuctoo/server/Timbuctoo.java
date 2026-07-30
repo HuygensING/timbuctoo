@@ -15,8 +15,6 @@ import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.endpoints.remote.rs.Discover;
-import nl.knaw.huygens.timbuctoo.server.endpoints.remote.rs.Import;
 import nl.knaw.huygens.timbuctoo.server.endpoints.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.LambdaHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.tasks.BackupTask;
@@ -194,12 +192,6 @@ public class Timbuctoo extends Application<TimbuctooConfiguration> {
         configuration.getUserRedirectUrl(), securityConfig.getLoginEndpoint()));
 
     register(environment, new Me(securityConfig.getUserValidator()));
-    register(environment, new Discover(resourceSyncService));
-
-    register(environment, new Import(
-      new ResourceSyncFileLoader(httpClient),
-      authCheck
-    ));
 
     register(environment, new WellKnown());
     RsDocumentBuilder rsDocumentBuilder =
