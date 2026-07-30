@@ -11,6 +11,8 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.berkeleydb.exceptions.BdbDbCreationException;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.IsCleanHandler;
+import nl.knaw.huygens.timbuctoo.dataset.StoreProvider;
+import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbStoreProvider;
 import nl.knaw.huygens.timbuctoo.filehelper.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +86,11 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
       valueBinder,
       cleanHandler
     );
+  }
+
+  @Override
+  public StoreProvider createStoreProvider(String userId, String dataSetId) {
+    return new BdbStoreProvider(userId, dataSetId, this);
   }
 
   private File databasesPath(String userId, String dataSetName) {

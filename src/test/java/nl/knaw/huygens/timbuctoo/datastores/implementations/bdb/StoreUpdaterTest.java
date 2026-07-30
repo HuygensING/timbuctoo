@@ -6,6 +6,12 @@ import nl.knaw.huygens.timbuctoo.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.dataset.dto.ImportStatusLabel;
 import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.datastores.oldsubjecttypesstore.OldSubjectTypesStore;
+import nl.knaw.huygens.timbuctoo.datastores.patchversionstore.PatchVersionStore;
+import nl.knaw.huygens.timbuctoo.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.datastores.quadstore.QuadStore;
+import nl.knaw.huygens.timbuctoo.datastores.storeupdater.StoreUpdater;
+import nl.knaw.huygens.timbuctoo.datastores.updatedperpatchstore.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.filestorage.ChangeLogStorage;
 import org.junit.jupiter.api.Test;
 
@@ -26,9 +32,9 @@ public class StoreUpdaterTest {
 
     instance.start(0);
 
-    verify(importStatus).addProgressItem(BdbPatchVersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
-    verify(importStatus).addProgressItem(BdbQuadStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
-    verify(importStatus).addProgressItem(BdbTypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    verify(importStatus).addProgressItem(PatchVersionStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    verify(importStatus).addProgressItem(QuadStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
+    verify(importStatus).addProgressItem(TypeNameStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(UpdatedPerPatchStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
     verify(importStatus).addProgressItem(OldSubjectTypesStore.class.getSimpleName(), ImportStatusLabel.IMPORTING);
   }
@@ -54,9 +60,9 @@ public class StoreUpdaterTest {
     Thread.sleep(6000); // wait 6 seconds to let the second update trigger the notify
     instance.onQuad(true, "", "", "", "", "", "");
 
-    verify(importStatus).updateProgressItem(BdbPatchVersionStore.class.getSimpleName(), 2);
-    verify(importStatus).updateProgressItem(BdbQuadStore.class.getSimpleName(), 2);
-    verify(importStatus).updateProgressItem(BdbTypeNameStore.class.getSimpleName(), 2);
+    verify(importStatus).updateProgressItem(PatchVersionStore.class.getSimpleName(), 2);
+    verify(importStatus).updateProgressItem(QuadStore.class.getSimpleName(), 2);
+    verify(importStatus).updateProgressItem(TypeNameStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(UpdatedPerPatchStore.class.getSimpleName(), 2);
     verify(importStatus).updateProgressItem(OldSubjectTypesStore.class.getSimpleName(), 2);
   }
@@ -69,9 +75,9 @@ public class StoreUpdaterTest {
 
     instance.commit();
 
-    verify(importStatus).finishProgressItem(BdbPatchVersionStore.class.getSimpleName());
-    verify(importStatus).finishProgressItem(BdbQuadStore.class.getSimpleName());
-    verify(importStatus).finishProgressItem(BdbTypeNameStore.class.getSimpleName());
+    verify(importStatus).finishProgressItem(PatchVersionStore.class.getSimpleName());
+    verify(importStatus).finishProgressItem(QuadStore.class.getSimpleName());
+    verify(importStatus).finishProgressItem(TypeNameStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(UpdatedPerPatchStore.class.getSimpleName());
     verify(importStatus).finishProgressItem(OldSubjectTypesStore.class.getSimpleName());
   }
@@ -94,10 +100,10 @@ public class StoreUpdaterTest {
       throws IOException {
     BdbTypeNameStore bdbTypeNameStore = mock(BdbTypeNameStore.class);
     BdbQuadStore bdbQuadStore = mock(BdbQuadStore.class);
-    GraphStore graphStore = mock(GraphStore.class);
+    BdbGraphStore graphStore = mock(BdbGraphStore.class);
     BdbPatchVersionStore patchVersionStore = mock(BdbPatchVersionStore.class);
-    UpdatedPerPatchStore updatedPerPatchStore = mock(UpdatedPerPatchStore.class);
-    OldSubjectTypesStore oldSubjectTypesStore = mock(OldSubjectTypesStore.class);
+    BdbUpdatedPerPatchStore updatedPerPatchStore = mock(BdbUpdatedPerPatchStore.class);
+    BdbOldSubjectTypesStore oldSubjectTypesStore = mock(BdbOldSubjectTypesStore.class);
     ChangeLogStorage changeLogStorage = mock(ChangeLogStorage.class);
     given(changeLogStorage.getChangeLogOutputStream(anyInt())).willAnswer(inv -> OutputStream.nullOutputStream());
 

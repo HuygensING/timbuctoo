@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.datastores.rssource;
 
 import nl.knaw.huygens.timbuctoo.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.datastores.updatedperpatchstore.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncConstants;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsLn;
@@ -14,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.dataset.dto.LogList;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.filestorage.dto.CachedFile;
 
 import javax.annotation.Nullable;

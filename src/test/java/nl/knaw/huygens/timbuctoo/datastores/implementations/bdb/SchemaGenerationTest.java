@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.datastores.schemastore.dto.Type;
+import nl.knaw.huygens.timbuctoo.datastores.storeupdater.StoreUpdater;
 import nl.knaw.huygens.timbuctoo.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.filestorage.ChangeLogStorage;
 import nl.knaw.huygens.timbuctoo.util.RdfConstants;
@@ -570,7 +571,7 @@ public class SchemaGenerationTest {
       STRING_IS_CLEAN_HANDLER
     ));
 
-    final GraphStore graphStore = new GraphStore(
+    final BdbGraphStore graphStore = new BdbGraphStore(
         dataStoreFactory.getDatabase(
             USER,
             DATA_SET,
@@ -582,7 +583,7 @@ public class SchemaGenerationTest {
         )
     );
 
-    final DefaultResourcesStore defaultResourcesStore = new DefaultResourcesStore(
+    final BdbDefaultResourcesStore defaultResourcesStore = new BdbDefaultResourcesStore(
         dataStoreFactory.getDatabase(
             USER,
             DATA_SET,
@@ -608,7 +609,7 @@ public class SchemaGenerationTest {
         GRAPH_1
     );
 
-    final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
+    final BdbUpdatedPerPatchStore updatedPerPatchStore = new BdbUpdatedPerPatchStore(
       dataStoreFactory.getDatabase(
         USER,
         DATA_SET,
@@ -632,7 +633,7 @@ public class SchemaGenerationTest {
         )
     );
 
-    final OldSubjectTypesStore oldSubjectTypesStore = new OldSubjectTypesStore(dataStoreFactory.getDatabase(
+    final BdbOldSubjectTypesStore oldSubjectTypesStore = new BdbOldSubjectTypesStore(dataStoreFactory.getDatabase(
         USER,
         DATA_SET,
         "oldSubjectTypes",

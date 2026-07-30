@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
 
+import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.datastores.updatedperpatchstore.SubjectCursor;
+import nl.knaw.huygens.timbuctoo.datastores.updatedperpatchstore.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.util.Streams;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.berkeleydb.BdbWrapper;
@@ -14,59 +16,68 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class UpdatedPerPatchStore {
-  private static final Logger LOG = LoggerFactory.getLogger(UpdatedPerPatchStore.class);
+class BdbUpdatedPerPatchStore implements UpdatedPerPatchStore {
+  private static final Logger LOG = LoggerFactory.getLogger(BdbUpdatedPerPatchStore.class);
   private static final String ALL_VERSIONS_KEY = "allVersions";
 
   private final BdbWrapper<String, Integer> bdbWrapper;
 
-  public UpdatedPerPatchStore(BdbWrapper<String, Integer> bdbWrapper) throws DataStoreCreationException {
+  BdbUpdatedPerPatchStore(BdbWrapper<String, Integer> bdbWrapper) throws DataStoreCreationException {
     this.bdbWrapper = bdbWrapper;
   }
 
-  public void put(int version, String subject) throws DatabaseWriteException {
-    bdbWrapper.put(subject, version);
-    bdbWrapper.put(ALL_VERSIONS_KEY, version);
+  @Override
+  public void put(int version, String subject) throws RdfProcessingFailedException {
+    try {
+      bdbWrapper.put(subject, version);
+      bdbWrapper.put(ALL_VERSIONS_KEY, version);
+    } catch (DatabaseWriteException e) {
+      throw new RdfProcessingFailedException(e);
+    }
   }
 
+  @Override
   public Stream<String> ofVersion(int version) {
     return bdbWrapper.databaseGetter().getAll()
-                     .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
-                     .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY))
-                     .filter(tuple -> tuple.right() == version)
-                     .map(Tuple::left);
+        .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
+        .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY))
+        .filter(tuple -> tuple.right() == version)
+        .map(Tuple::left);
   }
 
+  @Override
   public Stream<SubjectCursor> fromVersion(int version, String cursor) {
     Stream<Tuple<String, Integer>> stream;
     String startSubject = !cursor.isEmpty() ? cursor.substring(2) : null;
     if (startSubject != null) {
       stream = bdbWrapper.databaseGetter()
-                         .skipToKey(startSubject)
-                         .skipToEnd()
-                         .skipOne()
-                         .forwards()
-                         .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
-                         .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY));
+          .skipToKey(startSubject)
+          .skipToEnd()
+          .skipOne()
+          .forwards()
+          .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
+          .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY));
     } else {
       stream = bdbWrapper.databaseGetter().getAll()
-                         .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
-                         .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY));
+          .getKeysAndValues(bdbWrapper.keyValueConverter(Tuple::new))
+          .filter(tuple -> !tuple.left().equals(ALL_VERSIONS_KEY));
     }
 
     return Streams.combine(stream, (scA, scB) -> scA.left().equals(scB.left()))
-                  .map(UpdatedPerPatchStore::makeSubjectCursor)
-                  .filter(subjectCursor -> subjectCursor.getVersions().stream().anyMatch(v -> v >= version));
+        .map(BdbUpdatedPerPatchStore::makeSubjectCursor)
+        .filter(subjectCursor -> subjectCursor.getVersions().stream().anyMatch(v -> v >= version));
   }
 
+  @Override
   public Stream<Integer> getVersions() {
     return bdbWrapper.databaseGetter()
-                     .key(ALL_VERSIONS_KEY)
-                     .dontSkip()
-                     .forwards()
-                     .getValues(bdbWrapper.valueRetriever());
+        .key(ALL_VERSIONS_KEY)
+        .dontSkip()
+        .forwards()
+        .getValues(bdbWrapper.valueRetriever());
   }
 
+  @Override
   public void close() {
     try {
       bdbWrapper.close();
@@ -75,18 +86,22 @@ public class UpdatedPerPatchStore {
     }
   }
 
+  @Override
   public void commit() {
     bdbWrapper.commit();
   }
 
+  @Override
   public void start() {
     bdbWrapper.beginTransaction();
   }
 
+  @Override
   public boolean isClean() {
     return bdbWrapper.isClean();
   }
 
+  @Override
   public void empty() {
     bdbWrapper.empty();
   }

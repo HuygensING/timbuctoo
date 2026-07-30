@@ -5,9 +5,8 @@ import nl.knaw.huygens.timbuctoo.berkeleydb.DatabaseGetter;
 import nl.knaw.huygens.timbuctoo.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.dataset.ImportStatus;
-import nl.knaw.huygens.timbuctoo.dataset.OptimizedPatchListener;
-import nl.knaw.huygens.timbuctoo.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.datastores.defaultresourcesstore.DefaultResourcesStore;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.QuadGraphs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,49 +18,60 @@ import static nl.knaw.huygens.timbuctoo.berkeleydb.DatabaseGetter.Iterate.FORWAR
 import static nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.RDF_TYPE;
 
-public class DefaultResourcesStore implements OptimizedPatchListener {
-  private static final Logger LOG = LoggerFactory.getLogger(DefaultResourcesStore.class);
+class BdbDefaultResourcesStore implements DefaultResourcesStore {
+  private static final Logger LOG = LoggerFactory.getLogger(BdbDefaultResourcesStore.class);
 
   private final BdbWrapper<String, String> bdbWrapper;
   private final ImportStatus importStatus;
 
-  public DefaultResourcesStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus)
-      throws DataStoreCreationException {
+  BdbDefaultResourcesStore(BdbWrapper<String, String> bdbWrapper, ImportStatus importStatus) {
     this.bdbWrapper = bdbWrapper;
     this.importStatus = importStatus;
   }
 
-  public void putIri(String iri) throws DatabaseWriteException {
-    bdbWrapper.put("iris", iri);
+  @Override
+  public void putIri(String iri) throws RdfProcessingFailedException {
+    try {
+      bdbWrapper.put("iris", iri);
+    } catch (DatabaseWriteException e) {
+      throw new RdfProcessingFailedException(e);
+    }
   }
 
-  public void deleteIri(String iri) throws DatabaseWriteException {
-    bdbWrapper.delete("iris", iri);
+  @Override
+  public void deleteIri(String iri) throws RdfProcessingFailedException {
+    try {
+      bdbWrapper.delete("iris", iri);
+    } catch (DatabaseWriteException e) {
+      throw new RdfProcessingFailedException(e);
+    }
   }
 
+  @Override
   public Stream<CursorUri> getDefaultResources(String cursor) {
     final DatabaseGetter<String, String> getter;
     if (cursor.isEmpty()) {
       getter = bdbWrapper.databaseGetter()
-                         .key("iris")
-                         .dontSkip()
-                         .forwards();
+          .key("iris")
+          .dontSkip()
+          .forwards();
     } else if (cursor.equals("LAST")) {
       getter = bdbWrapper.databaseGetter()
-                         .key("iris")
-                         .skipToEnd()
-                         .backwards();
+          .key("iris")
+          .skipToEnd()
+          .backwards();
     } else {
       getter = bdbWrapper.databaseGetter()
-                         .key("iris")
-                         .skipToValue(cursor.substring(2))
-                         .skipOne() //we start after the cursor
-                         .direction(cursor.startsWith("A\n") ? FORWARDS : BACKWARDS);
+          .key("iris")
+          .skipToValue(cursor.substring(2))
+          .skipOne() //we start after the cursor
+          .direction(cursor.startsWith("A\n") ? FORWARDS : BACKWARDS);
     }
 
     return getter.getValues(bdbWrapper.valueRetriever()).map(CursorUri::create);
   }
 
+  @Override
   public void close() {
     try {
       bdbWrapper.close();
@@ -70,6 +80,7 @@ public class DefaultResourcesStore implements OptimizedPatchListener {
     }
   }
 
+  @Override
   public void commit() {
     bdbWrapper.commit();
   }
@@ -97,8 +108,6 @@ public class DefaultResourcesStore implements OptimizedPatchListener {
         }
       }
       deleteIri(subject);
-    } catch (DatabaseWriteException e) {
-      throw new RdfProcessingFailedException(e);
     }
   }
 
@@ -107,10 +116,12 @@ public class DefaultResourcesStore implements OptimizedPatchListener {
     bdbWrapper.commit();
   }
 
+  @Override
   public boolean isClean() {
     return bdbWrapper.isClean();
   }
 
+  @Override
   public void empty() {
     bdbWrapper.empty();
   }

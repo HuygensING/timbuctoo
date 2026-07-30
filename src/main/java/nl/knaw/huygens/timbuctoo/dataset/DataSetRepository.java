@@ -53,7 +53,7 @@ public class DataSetRepository {
 
   private final ExecutorService executorService;
   private final PermissionFetcher permissionFetcher;
-  private final BdbEnvironmentCreator dataStoreFactory;
+  private final EnvironmentCreator dataStoreFactory;
   private final Metadata metadata;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final TimbuctooRdfIdHelper rdfIdHelper;
@@ -65,9 +65,8 @@ public class DataSetRepository {
   private final DataStorage dataStorage;
 
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
-                           BdbEnvironmentCreator dataStoreFactory, Metadata metadata,
-                           TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated,
-                           boolean publicByDefault, DataStorage dataStorage) {
+                           EnvironmentCreator dataStoreFactory, Metadata metadata, TimbuctooRdfIdHelper rdfIdHelper,
+                           Consumer<String> onUpdated, boolean publicByDefault, DataStorage dataStorage) {
     this.executorService = executorService;
     this.permissionFetcher = permissionFetcher;
     this.dataStoreFactory = dataStoreFactory;

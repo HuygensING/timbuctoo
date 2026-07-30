@@ -1,8 +1,7 @@
-package nl.knaw.huygens.timbuctoo.graphql.datafetchers.berkeleydb.stores;
+package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringIntegerIsCleanHandler;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.datastores.updatedperpatchstore.SubjectCursor;
 import nl.knaw.huygens.timbuctoo.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.jupiter.api.AfterEach;
@@ -20,12 +19,12 @@ import static org.hamcrest.Matchers.contains;
 public class UpdatedPerPatchStoreTest {
   public static final String EX = "http://example.org/";
   protected BdbNonPersistentEnvironmentCreator databaseCreator;
-  protected UpdatedPerPatchStore updatedPerPatchStore;
+  protected BdbUpdatedPerPatchStore updatedPerPatchStore;
 
   @BeforeEach
   public void makeCollection() throws Exception {
     databaseCreator = new BdbNonPersistentEnvironmentCreator();
-    updatedPerPatchStore = new UpdatedPerPatchStore(
+    updatedPerPatchStore = new BdbUpdatedPerPatchStore(
         databaseCreator.getDatabase(
             "userId",
             "dataSetId",

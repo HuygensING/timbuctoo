@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.datastores.prefixstore;
 
+import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 
@@ -30,4 +31,12 @@ public interface TypeNameStore extends AutoCloseable {
   Map<String, String> getMappings();
 
   boolean isClean();
+
+  void addPrefix(String prefix, String iri);
+
+  void commit() throws RdfProcessingFailedException;
+
+  void start();
+
+  void empty();
 }

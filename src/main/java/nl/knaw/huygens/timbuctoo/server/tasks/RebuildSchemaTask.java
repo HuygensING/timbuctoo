@@ -3,8 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.tasks;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbQuadStore;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbSchemaStore;
+import nl.knaw.huygens.timbuctoo.datastores.schemastore.SchemaStore;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -38,8 +37,8 @@ public class RebuildSchemaTask extends Task {
     output.println("Rebuilding schema for dataset: " + dataSet.getMetadata().getCombinedId());
     output.flush();
 
-    BdbSchemaStore schemaStore = (BdbSchemaStore) dataSet.getSchemaStore();
-    schemaStore.rebuildSchema((BdbQuadStore) dataSet.getQuadStore());
+    SchemaStore schemaStore = dataSet.getSchemaStore();
+    schemaStore.rebuildSchema(dataSet.getQuadStore());
 
     output.println("Finished rebuilding schema of dataset: " + dataSet.getMetadata().getCombinedId());
     output.flush();

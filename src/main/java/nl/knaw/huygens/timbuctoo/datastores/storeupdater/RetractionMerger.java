@@ -1,7 +1,8 @@
-package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.datastores.storeupdater;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
+import nl.knaw.huygens.timbuctoo.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.QuadGraphs;
 import org.slf4j.Logger;
 
@@ -35,7 +36,7 @@ class RetractionMerger implements Iterator<QuadGraphs> {
       if (stateHasNext && retractionsHasNext) {
         QuadGraphs leftQ = state.peek();
         QuadGraphs rightQ = retractions.peek();
-        int compareResult = BdbQuadStore.compare(leftQ, rightQ);
+        int compareResult = QuadStore.compare(leftQ, rightQ);
 
         // The current state and retraction do not match or they match exactly (including graphs)
         // If not, (the quads match, but some graphs are missing from the current state) we just move to the next
@@ -80,7 +81,7 @@ class RetractionMerger implements Iterator<QuadGraphs> {
     if (state.hasNext() && retractions.hasNext()) {
       QuadGraphs leftQ = state.peek();
       QuadGraphs rightQ = retractions.peek();
-      int compareResult = BdbQuadStore.compare(leftQ, rightQ);
+      int compareResult = QuadStore.compare(leftQ, rightQ);
 
       if (compareResult == 0) {
         //Huh? we have a retraction, but the thing is also part of the state?

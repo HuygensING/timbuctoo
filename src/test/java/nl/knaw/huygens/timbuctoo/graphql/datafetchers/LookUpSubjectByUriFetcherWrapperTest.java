@@ -16,6 +16,7 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.berkeleydb.BdbEnvironmentCreator;
+import nl.knaw.huygens.timbuctoo.dataset.EnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.dataset.ReadOnlyChecker;
 import nl.knaw.huygens.timbuctoo.dataset.dto.BasicDataSetMetaData;
@@ -23,15 +24,15 @@ import nl.knaw.huygens.timbuctoo.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSetMetaData;
 import nl.knaw.huygens.timbuctoo.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.datastorage.DataSetStorage;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbPatchVersionStore;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.DefaultResourcesStore;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.GraphStore;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.OldSubjectTypesStore;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.UpdatedPerPatchStore;
+import nl.knaw.huygens.timbuctoo.datastores.defaultresourcesstore.DefaultResourcesStore;
+import nl.knaw.huygens.timbuctoo.datastores.graphstore.GraphStore;
+import nl.knaw.huygens.timbuctoo.datastores.oldsubjecttypesstore.OldSubjectTypesStore;
+import nl.knaw.huygens.timbuctoo.datastores.patchversionstore.PatchVersionStore;
 import nl.knaw.huygens.timbuctoo.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.dataset.CurrentStateRetriever;
 import nl.knaw.huygens.timbuctoo.datastores.schemastore.SchemaStore;
+import nl.knaw.huygens.timbuctoo.datastores.updatedperpatchstore.UpdatedPerPatchStore;
 import nl.knaw.huygens.timbuctoo.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.graphql.datafetchers.dto.SubjectReference;
@@ -129,7 +130,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
         }
 
         @Override
-        public BdbPatchVersionStore getPatchVersionStore() {
+        public PatchVersionStore getPatchVersionStore() {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
 
@@ -212,7 +213,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
         }
 
         @Override
-        protected BdbEnvironmentCreator getBdbEnvironmentCreator() {
+        protected EnvironmentCreator getEnvironmentCreator() {
           throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
         }
       };

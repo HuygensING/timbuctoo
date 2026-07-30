@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import nl.knaw.huygens.timbuctoo.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.berkeleydb.exceptions.DatabaseWriteException;
@@ -18,25 +19,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class BdbTypeNameStore implements TypeNameStore {
+class BdbTypeNameStore implements TypeNameStore {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-    .registerModule(new Jdk8Module())
-    .registerModule(new GuavaModule())
-    .registerModule(new TimbuctooCustomSerializers())
-    .enable(SerializationFeature.INDENT_OUTPUT);
+      .registerModule(new Jdk8Module())
+      .registerModule(new GuavaModule())
+      .registerModule(new TimbuctooCustomSerializers())
+      .enable(SerializationFeature.INDENT_OUTPUT);
 
   protected final TypeNames data;
   private final DataStorage dataStore;
   private final String dataStoreRdfPrefix;
 
-  public BdbTypeNameStore(DataStorage dataStore, String dataStoreRdfPrefix) throws IOException {
+  BdbTypeNameStore(DataStorage dataStore, String dataStoreRdfPrefix) throws IOException {
     this.dataStoreRdfPrefix = dataStoreRdfPrefix;
     final String storedValue = dataStore.getValue();
     if (storedValue == null) {
       data = new TypeNames();
       addStandardPrefixes();
     } else {
-      data = OBJECT_MAPPER.readValue(storedValue, new TypeReference<>() {});
+      data = OBJECT_MAPPER.readValue(storedValue, new TypeReference<>() {
+      });
     }
     this.dataStore = dataStore;
   }
@@ -62,9 +64,9 @@ public class BdbTypeNameStore implements TypeNameStore {
     } else {
       String shortened = prefix + shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
       while (shortened.equals("PageInfo") ||
-        shortened.endsWith("Connection") ||
-        shortened.endsWith("Edge") ||
-        data.inverse.containsKey(shortened)) {
+          shortened.endsWith("Connection") ||
+          shortened.endsWith("Edge") ||
+          data.inverse.containsKey(shortened)) {
 
         shortened += "_";
       }
@@ -120,13 +122,19 @@ public class BdbTypeNameStore implements TypeNameStore {
     return dataStore.isClean();
   }
 
+  @Override
   public void addPrefix(String prefix, String iri) {
     data.prefixes.put(prefix, iri);
   }
 
-  public void commit() throws JsonProcessingException, DatabaseWriteException {
-    dataStore.setValue(OBJECT_MAPPER.writeValueAsString(data));
-    dataStore.commit();
+  @Override
+  public void commit() throws RdfProcessingFailedException {
+    try {
+      dataStore.setValue(OBJECT_MAPPER.writeValueAsString(data));
+      dataStore.commit();
+    } catch (DatabaseWriteException | JsonProcessingException e) {
+      throw new RdfProcessingFailedException(e);
+    }
   }
 
   @Override
@@ -160,10 +168,12 @@ public class BdbTypeNameStore implements TypeNameStore {
     addPrefix("local_col", this.dataStoreRdfPrefix + "/collection/");
   }
 
+  @Override
   public void start() {
     dataStore.beginTransaction();
   }
 
+  @Override
   public void empty() {
     dataStore.empty();
   }

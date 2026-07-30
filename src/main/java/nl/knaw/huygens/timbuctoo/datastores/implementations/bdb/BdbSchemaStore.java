@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import nl.knaw.huygens.timbuctoo.datastores.quadstore.QuadStore;
+import nl.knaw.huygens.timbuctoo.datastores.storeupdater.ChangeFetcherImpl;
 import nl.knaw.huygens.timbuctoo.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.util.Streams;
 import nl.knaw.huygens.timbuctoo.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.dataset.ImportStatus;
-import nl.knaw.huygens.timbuctoo.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.QuadGraphs;
@@ -35,23 +36,23 @@ import static nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.util.RdfConstants.RDFS_RESOURCE;
 
-public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
+class BdbSchemaStore implements SchemaStore {
   private static final Logger LOG = LoggerFactory.getLogger(BdbSchemaStore.class);
   private static final Function<String, Type> TYPE_MAKER = Type::new;
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-    .enable(SerializationFeature.INDENT_OUTPUT)
-    .registerModule(new Jdk8Module())
-    .registerModule(new GuavaModule())
-    .registerModule(new TimbuctooCustomSerializers())
-    .enable(SerializationFeature.INDENT_OUTPUT);
+      .enable(SerializationFeature.INDENT_OUTPUT)
+      .registerModule(new Jdk8Module())
+      .registerModule(new GuavaModule())
+      .registerModule(new TimbuctooCustomSerializers())
+      .enable(SerializationFeature.INDENT_OUTPUT);
   private final DataStorage dataStore;
   private final ImportStatus importStatus;
 
   private Map<String, Type> types = new HashMap<>();
   private Map<String, Type> stableTypes = new HashMap<>();
 
-  public BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
+  BdbSchemaStore(DataStorage dataStore, ImportStatus importStatus) throws IOException {
     this.dataStore = dataStore;
     final String storedValue = this.dataStore.getValue();
     if (storedValue != null) {
@@ -62,7 +63,8 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   }
 
   private Map<String, Type> readTypes(String storedValue) throws IOException {
-    return OBJECT_MAPPER.readValue(storedValue, new TypeReference<>() {});
+    return OBJECT_MAPPER.readValue(storedValue, new TypeReference<>() {
+    });
   }
 
   @Override
@@ -173,14 +175,14 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         boolean predicateSameAsPrev = prevPred.equals(quad.getPredicate()) && prevDir[0] == quad.getDirection();
         if (!predicateSameAsPrev) {
           updatePredicateOccurrence(
-            addedTypes,
-            removedTypes,
-            unchangedTypes,
-            retractedCount,
-            unchangedCount,
-            assertedCount,
-            prevPred,
-            prevDir[0]
+              addedTypes,
+              removedTypes,
+              unchangedTypes,
+              retractedCount,
+              unchangedCount,
+              assertedCount,
+              prevPred,
+              prevDir[0]
           );
 
           prevPred = quad.getPredicate();
@@ -223,14 +225,14 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       }
 
       updatePredicateOccurrence(
-        addedTypes,
-        removedTypes,
-        unchangedTypes,
-        retractedCount,
-        unchangedCount,
-        assertedCount,
-        prevPred,
-        prevDir[0]
+          addedTypes,
+          removedTypes,
+          unchangedTypes,
+          retractedCount,
+          unchangedCount,
+          assertedCount,
+          prevPred,
+          prevDir[0]
       );
     }
   }
@@ -238,17 +240,17 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   @Override
   public void notifyUpdate() {
     final long totalPredicateCount = types
-      .values().stream()
-      .flatMap(t -> t.getPredicates().stream())
-      .mapToLong(p -> p.getValueTypes().values().size() + p.getReferenceTypes().values().size())
-      .sum();
+        .values().stream()
+        .flatMap(t -> t.getPredicates().stream())
+        .mapToLong(p -> p.getValueTypes().values().size() + p.getReferenceTypes().values().size())
+        .sum();
     LOG.info("types-size is: " + totalPredicateCount);
     importStatus.setStatus("types-size is: " + totalPredicateCount);
   }
 
   private void updatePredicateOccurrence(List<Type> addedTypes, List<Type> removedTypes, List<Type> unchangedTypes,
-                                        int retractedCount, int unchangedCount, int assertedCount, String predicate,
-                                        Direction direction) {
+                                         int retractedCount, int unchangedCount, int assertedCount, String predicate,
+                                         Direction direction) {
     if (!predicate.isEmpty()) {
       boolean wasList = (retractedCount + unchangedCount) > 1;
       boolean isList = (unchangedCount + assertedCount) > 1;
@@ -257,31 +259,31 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
 
       for (Type type : removedTypes) {
         setPredicateOccurrence(
-          type,
-          predicate,
-          direction,
-          wasList ? -1 : 0,
-          wasPresent ? -1 : 0
+            type,
+            predicate,
+            direction,
+            wasList ? -1 : 0,
+            wasPresent ? -1 : 0
         );
       }
 
       for (Type type : unchangedTypes) {
         setPredicateOccurrence(
-          type,
-          predicate,
-          direction,
-          wasList == isList ? 0 : isList ? 1 : -1,
-          wasPresent == isPresent ? 0 : isPresent ? 1 : -1
+            type,
+            predicate,
+            direction,
+            wasList == isList ? 0 : isList ? 1 : -1,
+            wasPresent == isPresent ? 0 : isPresent ? 1 : -1
         );
       }
 
       for (Type type : addedTypes) {
         setPredicateOccurrence(
-          type,
-          predicate,
-          direction,
-          isList ? 1 : 0,
-          isPresent ? 1 : 0
+            type,
+            predicate,
+            direction,
+            isList ? 1 : 0,
+            isPresent ? 1 : 0
         );
       }
     }
@@ -318,7 +320,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
   }
 
   private void setPredicateOccurrence(Type type, String predicateUri, Direction direction, int listMutation,
-                                     int subjectMutation) {
+                                      int subjectMutation) {
     boolean isAssertion = listMutation > 0 || subjectMutation > 0;
     final Optional<Predicate> predicateOpt = getPredicateForType(type, isAssertion, predicateUri, direction);
 
@@ -366,7 +368,8 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     }
   }
 
-  public void rebuildSchema(BdbQuadStore quadStore) {
+  @Override
+  public void rebuildSchema(QuadStore quadStore) {
     types = new HashMap<>();
     stableTypes = new HashMap<>();
 
@@ -387,10 +390,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     return predicate.getDirection() == OUT ? IN : OUT;
   }
 
+  @Override
   public boolean isClean() {
     return dataStore.isClean();
   }
 
+  @Override
   public void empty() {
     dataStore.empty();
   }

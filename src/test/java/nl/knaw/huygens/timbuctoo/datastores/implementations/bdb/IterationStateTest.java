@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.QuadGraphs;
+import nl.knaw.huygens.timbuctoo.datastores.storeupdater.IterationState;
 import org.junit.jupiter.api.Test;
 
 import static com.google.common.collect.Lists.newArrayList;

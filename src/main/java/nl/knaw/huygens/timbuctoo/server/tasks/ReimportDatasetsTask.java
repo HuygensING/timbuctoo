@@ -4,9 +4,6 @@ import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbQuadStore;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbSchemaStore;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbTypeNameStore;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -44,11 +41,11 @@ public class ReimportDatasetsTask extends Task {
     output.println("Start with emptying stores");
     output.flush();
 
-    ((BdbQuadStore) dataSet.getQuadStore()).empty();
+    dataSet.getQuadStore().empty();
     dataSet.getGraphStore().empty();
     dataSet.getDefaultResourcesStore().empty();
-    ((BdbTypeNameStore) dataSet.getTypeNameStore()).empty();
-    ((BdbSchemaStore) dataSet.getSchemaStore()).empty();
+    dataSet.getTypeNameStore().empty();
+    dataSet.getSchemaStore().empty();
     dataSet.getUpdatedPerPatchStore().empty();
     dataSet.getOldSubjectTypesStore().empty();
 

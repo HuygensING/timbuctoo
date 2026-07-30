@@ -1,8 +1,7 @@
-package nl.knaw.huygens.timbuctoo.graphql.datafetchers.berkeleydb.stores;
+package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringStringIsCleanHandler;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.BdbQuadStore;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.dropwizard.BdbNonPersistentEnvironmentCreator;
@@ -24,9 +23,9 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
 public class BdbQuadStoreTest {
-  public static final String EX = "http://example.org/";
-  protected BdbNonPersistentEnvironmentCreator databaseCreator;
-  protected BdbQuadStore quadStore;
+  private static final String EX = "http://example.org/";
+  private BdbNonPersistentEnvironmentCreator databaseCreator;
+  private BdbQuadStore quadStore;
 
   @BeforeEach
   public void makeCollection() throws Exception {

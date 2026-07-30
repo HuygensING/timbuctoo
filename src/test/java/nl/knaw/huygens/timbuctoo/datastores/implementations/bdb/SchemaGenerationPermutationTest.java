@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
 import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.berkeleydb.exceptions.BdbDbCreationException;
+import nl.knaw.huygens.timbuctoo.datastores.storeupdater.StoreUpdater;
 import nl.knaw.huygens.timbuctoo.util.ListPartitionerTest;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringIntegerIsCleanHandler;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringStringIsCleanHandler;
@@ -279,7 +280,7 @@ public class SchemaGenerationPermutationTest {
       STRING_IS_CLEAN_HANDLER
     ));
 
-    final GraphStore graphStore = new GraphStore(
+    final BdbGraphStore graphStore = new BdbGraphStore(
         dataStoreFactory.getDatabase(
             USER,
             DATA_SET,
@@ -291,7 +292,7 @@ public class SchemaGenerationPermutationTest {
         )
     );
 
-    final DefaultResourcesStore defaultResourcesStore = new DefaultResourcesStore(
+    final BdbDefaultResourcesStore defaultResourcesStore = new BdbDefaultResourcesStore(
         dataStoreFactory.getDatabase(
             USER,
             DATA_SET,
@@ -317,7 +318,7 @@ public class SchemaGenerationPermutationTest {
       GRAPH
     );
 
-    final UpdatedPerPatchStore updatedPerPatchStore = new UpdatedPerPatchStore(
+    final BdbUpdatedPerPatchStore updatedPerPatchStore = new BdbUpdatedPerPatchStore(
       dataStoreFactory.getDatabase(
         USER,
         DATA_SET,
@@ -341,7 +342,7 @@ public class SchemaGenerationPermutationTest {
         )
     );
 
-    final OldSubjectTypesStore oldSubjectTypesStore = new OldSubjectTypesStore(dataStoreFactory.getDatabase(
+    final BdbOldSubjectTypesStore oldSubjectTypesStore = new BdbOldSubjectTypesStore(dataStoreFactory.getDatabase(
         USER,
         DATA_SET,
         "oldSubjectTypes",

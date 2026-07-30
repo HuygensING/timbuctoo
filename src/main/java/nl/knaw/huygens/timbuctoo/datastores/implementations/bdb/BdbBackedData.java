@@ -11,11 +11,11 @@ import java.util.stream.Stream;
  * A simple wrapper around serialized json so that we get the benefits of berkeley db for transactions
  * without having to change the code too much.
  */
-public class BdbBackedData implements DataStorage {
+class BdbBackedData implements DataStorage {
   private final BdbWrapper<String, String> bdbWrapper;
   private String value;
 
-  public BdbBackedData(BdbWrapper<String, String> bdbWrapper) {
+  BdbBackedData(BdbWrapper<String, String> bdbWrapper) {
     this.bdbWrapper = bdbWrapper;
 
     try (Stream<String> stream = this.bdbWrapper.databaseGetter().getAll().getValues(bdbWrapper.valueRetriever())) {

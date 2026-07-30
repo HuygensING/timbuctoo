@@ -1,6 +1,8 @@
-package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.datastores.storeupdater;
 
 import nl.knaw.huygens.timbuctoo.dataset.ChangeFetcher;
+import nl.knaw.huygens.timbuctoo.datastores.patchversionstore.PatchVersionStore;
+import nl.knaw.huygens.timbuctoo.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.ChangeType;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.datastores.quadstore.dto.QuadGraphs;
@@ -9,16 +11,16 @@ import java.util.stream.Stream;
 
 import static com.google.common.collect.Streams.stream;
 
-class ChangeFetcherImpl implements ChangeFetcher {
-  private final BdbPatchVersionStore patchVersionStore;
-  private final BdbQuadStore quadStore;
+public class ChangeFetcherImpl implements ChangeFetcher {
+  private final PatchVersionStore patchVersionStore;
+  private final QuadStore quadStore;
 
-  public ChangeFetcherImpl(BdbPatchVersionStore patchVersionStore, BdbQuadStore quadStore) {
+  public ChangeFetcherImpl(PatchVersionStore patchVersionStore, QuadStore quadStore) {
     this.patchVersionStore = patchVersionStore;
     this.quadStore = quadStore;
   }
 
-  public ChangeFetcherImpl(BdbQuadStore quadStore) {
+  public ChangeFetcherImpl(QuadStore quadStore) {
     this.patchVersionStore = null;
     this.quadStore = quadStore;
   }

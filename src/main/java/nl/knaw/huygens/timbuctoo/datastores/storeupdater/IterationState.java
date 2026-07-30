@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
+package nl.knaw.huygens.timbuctoo.datastores.storeupdater;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-class IterationState implements Iterator<QuadGraphs> {
+public class IterationState implements Iterator<QuadGraphs> {
   private final PeekingIterator<QuadGraphs> assertions;
   private final PeekingIterator<QuadGraphs> currentState;
   private final boolean getAsserted;

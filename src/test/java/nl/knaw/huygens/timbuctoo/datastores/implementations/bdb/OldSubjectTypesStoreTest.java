@@ -1,8 +1,7 @@
-package nl.knaw.huygens.timbuctoo.graphql.datafetchers.berkeleydb.stores;
+package nl.knaw.huygens.timbuctoo.datastores.implementations.bdb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.berkeleydb.isclean.StringStringIsCleanHandler;
-import nl.knaw.huygens.timbuctoo.datastores.implementations.bdb.OldSubjectTypesStore;
 import nl.knaw.huygens.timbuctoo.datastores.updatedperpatchstore.SubjectCursor;
 import nl.knaw.huygens.timbuctoo.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.jupiter.api.AfterEach;
@@ -21,12 +20,12 @@ public class OldSubjectTypesStoreTest {
   public static final String EX = "http://example.org/";
   public static final String PRED = "http://pred/";
   protected BdbNonPersistentEnvironmentCreator databaseCreator;
-  protected OldSubjectTypesStore oldSubjectTypesStore;
+  protected BdbOldSubjectTypesStore oldSubjectTypesStore;
 
   @BeforeEach
   public void makeCollection() throws Exception {
     databaseCreator = new BdbNonPersistentEnvironmentCreator();
-    oldSubjectTypesStore = new OldSubjectTypesStore(
+    oldSubjectTypesStore = new BdbOldSubjectTypesStore(
         databaseCreator.getDatabase(
             "userId",
             "dataSetId",
