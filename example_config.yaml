@@ -139,8 +139,6 @@ redirectionService:
 #  cypher:
 #  namingAuthority:
 #  prefix:
-# If using BitlyServiceFactory you need:
-#  accessToken:
 
 server:
   applicationConnectors:

@@ -30,16 +30,8 @@ redirectionService:
     prefix: <prefix>
 ----
 
-or, can be changed to use *Bit.ly* implementation as:
-----
-redirectionService:
-    "@class": nl.knaw.huygens.timbuctoo.redirectionService.Bitly.BitlyServiceFactory
-    accessToken: <bitly_access_token>
-
-----
-
 NOTE: While using a custom redirection service, it's the user's responsibility to make sure that the configuration
-parameters required by the implementation are added to the configuration file (as demonstrated above for Handle and Bit.ly).
+parameters required by the implementation are added to the configuration file (as demonstrated above for Handle.
 
 The factory class mentioned above should then be able to use the specified information to build a redirection service.
 
@@ -88,10 +80,9 @@ public abstract class RedirectionService {
         call processRequest
     }
 
-    protected abstract processRequest(); //handle specific/bitly specific code
+    protected abstract processRequest(); //handle specific code
 
-    protected abstract processRequestOld(); //handle specific/bitly specific code
-
+    protected abstract processRequestOld(); //handle specific code
 }
 ----
 
@@ -122,46 +113,6 @@ public class HandleService extends RedirectionService {
         ...
     }
 }
-----
-
-- Similarly, we will implement the RedirectionServiceFactory and RedirectionService classes for Bit.ly service (for test
-purposes) as follows:
-
-This means we will now have a BitlyServiceFactory that extends the RedirectionServiceFactory:
-----
-public class BitlyServiceFactory implements RedirectionServiceFactory {
-    @JsonCreator
-    public HandleServiceFactory(@JsonProperty("user") String user,
-        @JsonProperty("authKey") String authKey, ...) {
-        ...
-    }
-
-    RedirectionService makeRedirectionService() {
-        ...
-    }
-}
-----
-
-Here, makeRedirectionService will return a:
-----
-public class BitlyService extends RedirectionService {
-    void processRequest(..){
-        ...
-    }
-    void processOldRequest(...){
-        ...
-    }
-}
-----
-
-- This Bit.lyService will use the [Bit.ly Java API client](https://github.com/stackmagic/bitly-api-client)
-
-- The Bit.ly client will be used to call the Java client library as follows:
-
-----
-ShortenResponse respShort = new ShortenRequestBuilder("... the access token ...") //
-    .setLongUrl("https://example-timbuctoo-url/") //
-    .call();
 ----
 
 == Testing Redirection
